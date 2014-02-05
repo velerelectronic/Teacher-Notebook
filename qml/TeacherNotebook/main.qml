@@ -50,6 +50,7 @@ Rectangle {
             }
         }
     }
+
     Loader {
         id: pageLoader
         anchors.left: parent.left
@@ -119,8 +120,13 @@ Rectangle {
     }
     */
     Component.onCompleted: {
+//        Storage.destroyDatabase();
+//        Storage.removeAnnotationsTable();
         Storage.initDatabase();
+        Storage.createEducationTables();
         mainApp.openAnnotations();
         pageLoader.setSource('Annotations.qml')
+        pageLoader.setSource('XmlViewer.qml')
+        pageLoader.setSource('Filesystem.qml')
     }
 }

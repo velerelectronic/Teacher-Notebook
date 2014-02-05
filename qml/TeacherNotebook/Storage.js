@@ -1,9 +1,22 @@
 .import QtQuick.LocalStorage 2.0 as Sql
 
+String.prototype.repeat = function(times) {
+    return Array(times+1).join(this);
+}
+
+function fillArray (a, times) {
+    var vec = [];
+    for (var i=0; i<times; i++) {
+        // var a = new String(this);
+        vec.push(a);
+    }
+    return vec;
+}
+
 // Basic functions for creation and destruction
 
 function getDatabase() {
-    var db = Sql.LocalStorage.openDatabaseSync('ReceptesCuina',"1.0",'ReceptesCuina',1000 * 1024);
+    var db = Sql.LocalStorage.openDatabaseSync('EsquirolDatabase',"1.0",'EsquirolDatabase',1000 * 1024);
     return db;
 }
 
@@ -12,14 +25,19 @@ function initDatabase() {
     db.transaction(
             function(tx) {
                 // Init the table of the field names
-                createDimensionalTable(tx,'FieldNames',['table','field','desc'],['Table','Field','Description']);
+                tx.executeSql('CREATE TABLE IF NOT EXISTS FieldNames (instant TEXT NOT NULL, tblname TEXT NOT NULL, field TEXT NOT NULL, desc TEXT)');
             });
 }
 
-function destroyTables() {
+function destroyDatabase() {
     getDatabase().transaction(
             function(tx) {
+                var rs = tx.executeSql('SELECT DISTINCT tblname FROM FieldNames');
+                for (var i=0; i<rs.rows.length; i++) {
+                    tx.executeSql('DROP TABLE IF EXISTS ' + rs.rows.item(i).tblname);
+                }
                 tx.executeSql('DROP TABLE IF EXISTS FieldNames');
+                tx.executeSql('DROP TABLE annotations');
             });
 }
 
@@ -31,10 +49,19 @@ function currentTime() {
     return format;
 }
 
+function listTableFields(tx,tblname) {
+    var rs = tx.executeSql('SELECT field FROM FieldNames WHERE tblname=?',[tblname]);
+    var list = [];
+    for (var i=0; i<rs.rows.length; i++) {
+        list.push(rs.rows.item(i).field);
+    }
+    return list;
+}
+
 function removeDimensionalTable (tblname) {
     getDatabase().transaction(
             function (tx) {
-                tx.executeSql('DELETE FROM NomsCamps WHERE taula=?',[tblname]);
+                tx.executeSql('DELETE FROM FieldNames WHERE tblname=?',[tblname]);
                 tx.executeSql('DROP TABLE IF EXISTS ' + tblname);
             });
 }
@@ -53,18 +80,19 @@ function createDimensionalTable (tx,tblname,camps,desc) {
     // REF: If this row updates another row, then ref is the rowid of the latter
     try {
         tx.executeSql('CREATE TABLE ' + tblname + ' (created TEXT NOT NULL, ref INTEGER' + textcamps + ')');
-        if (desc!=null) {
-            var instant = currentTime();
-            for (var i=0; i<camps.length; i++) {
-                fillFieldNames(instant,'',nom,camps[i],desc[i]);
-            }
+        var instant = currentTime();
+        for (var i=0; i<camps.length; i++) {
+            console.log(i + '-' + camps[i]);
+            fillFieldNames(tx,instant,tblname,camps[i],desc[i]);
         }
     }
-    catch (err) { }
+    catch (err) {
+        console.log('Error ' + err);
+    }
 }
 
-function fillFieldNames (tx,created,ref,table,field,desc) {
-    tx.executeSql('INSERT INTO FieldNames VALUES(?,?,?,?,?)',[created,ref,table,field,desc]);
+function fillFieldNames (tx,created,table,field,desc) {
+    tx.executeSql('INSERT INTO FieldNames VALUES(?,?,?,?)',[created,table,field,desc]);
 }
 
 function newDimensionalTable (tblname,camps,desc) {
@@ -74,7 +102,7 @@ function newDimensionalTable (tblname,camps,desc) {
                 });
 }
 
-function listTableRecords (tblname,limit,sqlFilter,model) {
+function listTableRecords (model,tblname,limit,filterStr) {
         // If order is different from "", then the results will be sorted
         // If the limit is 0, all the results will be selected
     getDatabase().transaction(
@@ -82,13 +110,24 @@ function listTableRecords (tblname,limit,sqlFilter,model) {
                     var param = [];
                     var limitStr = [];
                     var qStr = "SELECT ROWID, * FROM " + tblname;
-                    var filterStr = sqlFilter[0];
-                    var param = sqlFilter[1];
+                    var filterQuery = '';
+                    var list = [];
+                    if (filterStr != '') {
+                        list = listTableFields(tx,tblname);
+                        var filterField = [];
+                        for (var i=0; i<list.length; i++) {
+                            filterField.push('instr(UPPER('+list[i]+'),UPPER(?))');
+                        }
+
+                        filterQuery = ' WHERE ' + filterField.join(' OR ');
+                    }
+
                     var orderStr = " ORDER BY ROWID DESC";
                     if (limit>0) {
                             limitStr += " LIMIT "+(limit.toString());
                     }
-                    var rs = tx.executeSql(qStr + filterStr + orderStr + limitStr,param);
+                    var rs = tx.executeSql(qStr + filterQuery + orderStr + limitStr, fillArray(filterStr,list.length));
+                    model.clear();
                     for (var i=0; i<rs.rows.length; i++) {
                         model.append(convertToArray(rs.rows.item(i)));
                     }
@@ -96,7 +135,7 @@ function listTableRecords (tblname,limit,sqlFilter,model) {
 }
 
 function convertToArray(item) {
-    var vector = Array();
+    var vector = {};
     for (var prop in item) {
         vector[prop] = item[prop];
     }
@@ -111,4 +150,48 @@ function listOneField (tblname, field, model) {
                         model.append(convertToArray(rs.rows.item(i)));
                     }
                 });
+}
+
+
+// Save functions
+
+function saveRecordsInTable(tblname,fields,refrowid) {
+    getDatabase().transaction(
+            function (tx) {
+                var text = '?,'.repeat(fields.length);
+                text += '?,?';
+                var instant = currentTime();
+                tx.executeSql("INSERT INTO " + tblname + " VALUES ("+text+")",[instant,((refrowid==null)?'':refrowid)].concat(fields));
+            });
+}
+
+// ----------------
+// Education tables
+// ----------------
+
+function createEducationTables() {
+    getDatabase().transaction(
+                function (tx) {
+                    createAnnotationsTable(tx);
+                });
+}
+
+// -----------
+// Annotations
+// -----------
+
+function createAnnotationsTable(tx) {
+    createDimensionalTable(tx,'annotations',['title','desc'],['Títol','Descripció']);
+}
+
+function saveAnnotation(title,desc) {
+    saveRecordsInTable('annotations',[title,desc],null);
+}
+
+function listAnnotations(model,limit,text) {
+    listTableRecords(model,'annotations',limit,text);
+}
+
+function removeAnnotationsTable() {
+    removeDimensionalTable('annotations');
 }

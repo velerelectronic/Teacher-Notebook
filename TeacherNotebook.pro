@@ -7,7 +7,8 @@ DEPLOYMENTFOLDERS = folder_01
 QML_IMPORT_PATH =
 
 # The .cpp file which was generated for your project. Feel free to hack it.
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    fileio.cpp
 
 # Installation path
 # target.path =
@@ -17,4 +18,9 @@ include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
 OTHER_FILES += \
-    qml/TeacherNotebook/ArisenWidget.qml
+    qml/TeacherNotebook/ArisenWidget.qml \
+    qml/TeacherNotebook/AnnotationEditor.qml \
+    qml/TeacherNotebook/AnnotationItem.qml
+
+HEADERS += \
+    fileio.h
