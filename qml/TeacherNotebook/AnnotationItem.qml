@@ -1,35 +1,50 @@
 import QtQuick 2.0
+import QtQuick.Layouts 1.1
 
 Rectangle {
     id: annotationItem
+    state: 'basic'
+    states: [
+        State {
+            name: 'basic'
+            PropertyChanges { target: annotationItem; color: 'white' }
+        },
+        State {
+            name: 'selected'
+            PropertyChanges { target: annotationItem; color: 'grey' }
+        }
+    ]
 
     property alias title: titleLabel.text
     property alias desc: descLabel.text
+    property int esquirolGraphicalUnit: 100
     signal annotationSelected (string title,string desc)
 
-    height: childrenRect.height
     border.color: "black";
+    height: childrenRect.height
 
-    Text {
-        id: titleLabel
-        anchors.top: parent.top
+    Column {
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.margins: 10
-        text: title
-        font.bold: true
-        font.pointSize: 16
-        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-    }
-    Text {
-        id: descLabel
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: titleLabel.bottom
-        anchors.margins: 10
-        text: desc
-        font.pointSize: 12
-        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+        height: childrenRect.height
+        Text {
+            id: titleLabel
+            anchors { left: parent.left; right: parent.right; margins: 10 }
+            text: title
+            font.bold: true
+            font.pointSize: 18
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            clip: true
+        }
+        Text {
+            id: descLabel
+            anchors { left: parent.left; right: parent.right; margins: 10 }
+            text: desc
+            font.pointSize: 12
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            clip: true
+        }
+
     }
 
     MouseArea {

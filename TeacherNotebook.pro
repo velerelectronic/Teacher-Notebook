@@ -1,3 +1,5 @@
+QT += sql
+
 # Add more folders to ship with the application, here
 folder_01.source = qml/TeacherNotebook
 folder_01.target = qml
@@ -20,7 +22,13 @@ qtcAddDeployment()
 OTHER_FILES += \
     qml/TeacherNotebook/ArisenWidget.qml \
     qml/TeacherNotebook/AnnotationEditor.qml \
-    qml/TeacherNotebook/AnnotationItem.qml
+    qml/TeacherNotebook/AnnotationItem.qml \
+    qml/TeacherNotebook/Storage.js \
+    qml/TeacherNotebook/EvernoteLib.js \
+    qml/TeacherNotebook/EditEvent.qml \
+    android/AndroidManifest.xml
 
 HEADERS += \
     fileio.h
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android

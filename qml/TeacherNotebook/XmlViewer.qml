@@ -4,6 +4,8 @@ import FileIO 1.0
 
 Rectangle {
     id: xmlViewer
+    property string title: qsTr('Visor XML');
+    property int esquirolGraphicalUnit: 100
     width: 100
     height: 62
     FileIO {
@@ -18,6 +20,12 @@ Rectangle {
         Component.onCompleted: {
             // webview.url = 'file:///Users/jmpayeras/Dropbox/Esquirol/MA%201r%20UD%2001%20-%20Nombres%20naturals.html'
             console.log(myFile.read())
+            var doc = XMLHttpRequest();
+            doc.open('get','file:///Users/jmpayeras/Dropbox/Esquirol/MA%201r%20UD%2001%20-%20Nombres%20naturals.html',false);
+            if (doc.readyState==XMLHttpRequest.DONE) {
+                var root = doc.responseXML.documentElement;
+                console.log(root.innerHTML);
+            }
         }
     }
 }

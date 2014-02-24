@@ -1,20 +1,19 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.1
+import QtQuick.Layouts 1.1
 import "Storage.js" as Storage
 
-Rectangle {
+ColumnLayout {
     id: mainApp
-    width: 768
-    height: 1014
+    property int esquirolGraphicalUnit: Math.min(width,height) / 10
 
     signal openAnnotations
+    signal openPage(string page)
 
     Rectangle {
         id: header
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: title.height + 50
+        Layout.fillWidth: true
+        height: title.height * 2
         color: "#009900"
         visible: true
         clip: false
@@ -23,7 +22,6 @@ Rectangle {
         Text {
             id: title
             anchors.verticalCenter: parent.verticalCenter
-            height: 25
             color: "#ffffff"
             text: "Teacher Notebook"
             anchors.left: parent.left
@@ -33,7 +31,10 @@ Rectangle {
             font.pointSize: 32
             verticalAlignment: Text.AlignVCenter
             font.family: "Tahoma"
-
+            MouseArea {
+                anchors.fill: parent
+                onClicked: mainApp.openMainPage()
+            }
         }
         Button {
             id: exit
@@ -53,25 +54,23 @@ Rectangle {
 
     Loader {
         id: pageLoader
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: header.bottom
-        anchors.bottom: statusBar.top
+        Layout.fillWidth: true
+        Layout.fillHeight: true
 
         Connections {
             target: pageLoader.item
             ignoreUnknownSignals: true
-            onOpenAnnotations: pageLoader.setSource('Annotations.qml')
-            onOpenDocumentsList: pageLoader.setSource('DocumentsList.qml')
-            /*
-            onNewReceipt: pageLoader.setSource('NewReceipt.qml', {receiptName: name})
-            onNoNewReceipt: openMainPage()
-            onSavedReceipt: pageLoader.setSource('ShowReceipt.qml', {receiptId: receiptId})
-            onShowReceipt: pageLoader.setSource('ShowReceipt.qml', {receiptId: id})
-            onCloseReceipt: openMainPage()
-            onBackup: pageLoader.setSource('Backup.qml')
-            onCloseBackup: openMainPage()
-            */
+            // Signals
+            onOpenPage: openSubPage(page)
+            onOpenAnnotations: openSubPage('Annotations.qml')
+            onOpenDocumentsList: openSubPage('DocumentsList.qml')
+            onNewEvent: openSubPage('EditEvent.qml')
+            onEditEvent: {
+                console.log('id: ' + id);
+                openSubPage('EditEvent.qml',{idEvent: id, title: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime});
+            }
+            onSaveEvent: openSubPage('Schedule.qml')
+            onCancelEvent: openSubPage('Schedule.qml')
         }
     }
 
@@ -102,9 +101,7 @@ Rectangle {
     StatusBar {
         id: statusBar
         height: 50
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
+        Layout.fillWidth: true
     }
 
     /*
@@ -124,9 +121,16 @@ Rectangle {
 //        Storage.removeAnnotationsTable();
         Storage.initDatabase();
         Storage.createEducationTables();
-        mainApp.openAnnotations();
-        pageLoader.setSource('Annotations.qml')
-        pageLoader.setSource('XmlViewer.qml')
-        pageLoader.setSource('Filesystem.qml')
+        mainApp.openMainPage();
+        Storage.exportDatabaseToText();
+    }
+
+    function openMainPage() {
+        openSubPage('MenuPage.qml')
+    }
+
+    function openSubPage (page) {
+        pageLoader.setSource(page,{ esquirolGraphicalUnit: mainApp.esquirolGraphicalUnit });
+        title.text = pageLoader.item.title
     }
 }

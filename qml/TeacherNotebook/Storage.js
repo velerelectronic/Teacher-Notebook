@@ -4,6 +4,14 @@ String.prototype.repeat = function(times) {
     return Array(times+1).join(this);
 }
 
+Date.prototype.toDateSpecificFormat = function() {
+    return this.getDate() + '/' + (this.getMonth()+1) + '/' + this.getFullYear();
+}
+
+Date.prototype.toTimeSpecificFormat = function() {
+    return this.getHours() + ':' + this.getMinutes();
+}
+
 function fillArray (a, times) {
     var vec = [];
     for (var i=0; i<times; i++) {
@@ -79,7 +87,7 @@ function createDimensionalTable (tx,tblname,camps,desc) {
 
     // REF: If this row updates another row, then ref is the rowid of the latter
     try {
-        tx.executeSql('CREATE TABLE ' + tblname + ' (created TEXT NOT NULL, ref INTEGER' + textcamps + ')');
+        tx.executeSql('CREATE TABLE ' + tblname + ' (id INTEGER PRIMARY KEY, created TEXT NOT NULL, ref INTEGER' + textcamps + ')');
         var instant = currentTime();
         for (var i=0; i<camps.length; i++) {
             console.log(i + '-' + camps[i]);
@@ -109,10 +117,10 @@ function listTableRecords (model,tblname,limit,filterStr) {
                 function(tx) {
                     var param = [];
                     var limitStr = [];
-                    var qStr = "SELECT ROWID, * FROM " + tblname;
+                    var qStr = "SELECT * FROM " + tblname;
                     var filterQuery = '';
                     var list = [];
-                    if (filterStr != '') {
+                    if ((filterStr != null) && (filterStr != '')) {
                         list = listTableFields(tx,tblname);
                         var filterField = [];
                         for (var i=0; i<list.length; i++) {
@@ -122,10 +130,11 @@ function listTableRecords (model,tblname,limit,filterStr) {
                         filterQuery = ' WHERE ' + filterField.join(' OR ');
                     }
 
-                    var orderStr = " ORDER BY ROWID DESC";
+                    var orderStr = " ORDER BY id DESC";
                     if (limit>0) {
                             limitStr += " LIMIT "+(limit.toString());
                     }
+                    console.log(qStr + filterQuery + orderStr + limitStr);
                     var rs = tx.executeSql(qStr + filterQuery + orderStr + limitStr, fillArray(filterStr,list.length));
                     model.clear();
                     for (var i=0; i<rs.rows.length; i++) {
@@ -139,6 +148,7 @@ function convertToArray(item) {
     for (var prop in item) {
         vector[prop] = item[prop];
     }
+    vector.selected = false;
     return vector;
 }
 
@@ -159,10 +169,22 @@ function saveRecordsInTable(tblname,fields,refrowid) {
     getDatabase().transaction(
             function (tx) {
                 var text = '?,'.repeat(fields.length);
-                text += '?,?';
+                text += '?,?,?';
                 var instant = currentTime();
-                tx.executeSql("INSERT INTO " + tblname + " VALUES ("+text+")",[instant,((refrowid==null)?'':refrowid)].concat(fields));
+                console.log("INSERT INTO " + tblname + " VALUES ("+text+")" + '-->' +[null,instant,((refrowid==null)?'':refrowid)].concat(fields));
+                var rs = tx.executeSql("INSERT INTO " + tblname + " VALUES ("+text+")",[null,instant,((refrowid==null)?'':refrowid)].concat(fields));
+                console.log('Insert ID ' + rs.insertId);
             });
+}
+
+// Record deletion funcions
+
+function removeRecordFromTable(tblname,id) {
+    getDatabase().transaction(
+                function (tx) {
+                    console.log("DELETE FROM " + tblname + " WHERE id=?" +'->' + [id]);
+                    var rs = tx.executeSql("DELETE FROM " + tblname + " WHERE id=?",[id]);
+                });
 }
 
 // ----------------
@@ -173,6 +195,7 @@ function createEducationTables() {
     getDatabase().transaction(
                 function (tx) {
                     createAnnotationsTable(tx);
+                    createScheduleTable(tx);
                 });
 }
 
@@ -192,6 +215,97 @@ function listAnnotations(model,limit,text) {
     listTableRecords(model,'annotations',limit,text);
 }
 
+function removeAnnotation(id) {
+    removeRecordFromTable('annotations',id);
+}
+
 function removeAnnotationsTable() {
     removeDimensionalTable('annotations');
+}
+
+
+// --------
+// Schedule
+// --------
+
+function createScheduleTable(tx) {
+    createDimensionalTable(tx,'schedule',['event','desc','startDate','startTime','endDate','endTime','state'],['Esdeveniment','Descripcio','Data inicial','Hora inicial','Data final','Hora final','Estat']);
+}
+
+function saveEvent(event,desc,startDate,startTime,endDate,endTime) {
+    saveRecordsInTable('schedule',[event,desc,startDate,startTime,endDate,endTime,null],null);
+}
+
+function listEvents(model,limit,filter) {
+    listTableRecords(model,'schedule',limit,filter);
+}
+
+function removeEvent(id) {
+    removeRecordFromTable('schedule',id);
+}
+
+function removeScheduleTable() {
+    removeDimensionalTable('schedule');
+}
+
+
+// Import and export functions
+
+function exportDatabaseToText() {
+    var exportObject = {};
+    exportObject.database = {}
+    exportObject.database.tables = [];
+
+    getDatabase().readTransaction(
+        function (tx) {
+            var rs = tx.executeSql("SELECT tbl_name FROM sqlite_master WHERE type='table'");
+            for (var i=0; i<rs.rows.length; i++) {
+                var tblname = rs.rows.item(i).tbl_name;
+
+                var objectTable = {}
+                objectTable.name = tblname;
+                objectTable.records = [];
+
+                var rs2 = tx.executeSql('SELECT * FROM ' + tblname);
+                for (var j=0; j<rs2.rows.length; j++) {
+                    objectTable.records.push(rs2.rows.item(j));
+                }
+                exportObject.database.tables.push(objectTable);
+            }
+        });
+    return JSON.stringify(exportObject);
+}
+
+function importDatabaseFromText(text) {
+    var importObject = JSON.parse(text);
+    var msgError = '';
+    getDatabase().transaction(
+        function (tx) {
+            // Iterate through the tables
+            for (var numTable=0; numTable<importObject.database.tables.length; numTable++) {
+                var table = importObject.database.tables[numTable];
+                // Iterate through the records of one table
+                var rs = tx.executeSql('DELETE FROM ' + table.name);
+                for (var numRecord=0; numRecord<table.records.length; numRecord++) {
+                    // Iterate through the fields and values of one record
+                    var fields = [];
+                    var unknowns = [];
+                    var values = [];
+                    for (var prop in table.records[numRecord]) {
+                        fields.push(prop);
+                        unknowns.push('?');
+                        values.push(table.records[numRecord][prop]);
+                    }
+                    var importSql = 'INSERT INTO ' + table.name + ' (' + fields.join(',') + ') VALUES (' + unknowns.join(',') +')';
+                    try {
+                        console.log(importSql + '--' + values.toString());
+                        var rs = tx.executeSql(importSql, values);
+                    }
+                    catch(error) {
+                        msgError += 'Ups! Error ha estat '+error+')\n';
+                    }
+                }
+            }
+        });
+    return msgError;
 }

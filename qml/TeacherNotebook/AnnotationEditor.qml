@@ -8,6 +8,7 @@ Rectangle {
     height: 200
 
     property alias title: title.text
+    property int esquirolGraphicalUnit: 100
     property alias desc: contents.text
     property int globalMargin: 10
     signal saveAnnotation(string title, string desc)
@@ -34,6 +35,7 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.top: parent.top
                 font.pointSize: 20
+                inputMethodHints: Qt.ImhNoPredictiveText
             }
         }
         ToolBar {
@@ -45,6 +47,20 @@ Rectangle {
             anchors.bottomMargin: 0
 
             RowLayout {
+                ToolButton {
+                    text: 'Predictive'
+                    checkable: true
+                    onClicked: {
+                        if (checked) {
+                            contents.inputMethodHints = Qt.ImhNone
+                            title.inputMethodHints = Qt.ImhNone
+                        } else {
+                            contents.inputMethodHints = Qt.ImhNoPredictiveText
+                            title.inputMethodHints = Qt.ImhNoPredictiveText
+                        }
+                    }
+                }
+
                 ToolButton {
                     text: 'Copia'
                     onClicked: contents.copy()
@@ -78,6 +94,7 @@ Rectangle {
             anchors.margins: globalMargin
             anchors.topMargin: 0
             font.pointSize: 20
+            inputMethodHints: Qt.ImhNoPredictiveText
         }
         Row {
             id: buttons
