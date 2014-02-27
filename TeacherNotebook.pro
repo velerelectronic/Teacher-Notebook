@@ -26,7 +26,8 @@ OTHER_FILES += \
     qml/TeacherNotebook/Storage.js \
     qml/TeacherNotebook/EvernoteLib.js \
     qml/TeacherNotebook/EditEvent.qml \
-    android/AndroidManifest.xml
+    android/AndroidManifest.xml \
+    qml/TeacherNotebook/common/UseUnits.qml
 
 HEADERS += \
     fileio.h

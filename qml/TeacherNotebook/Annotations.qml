@@ -7,21 +7,21 @@ import "Storage.js" as Storage
 Rectangle {
     id: annotations
     property string title: qsTr('Anotacions');
-    property int esquirolGraphicalUnit: 100
 
     width: 300
     height: 200
 
     signal editAnnotation (string title, string desc)
 
+    Common.UseUnits { id: units }
     ColumnLayout {
         anchors.fill: parent
         RowLayout {
             Layout.fillWidth: true
-            Layout.fillHeight: false
             Button {
                 id: button
-                Layout.fillHeight: true
+                Layout.preferredHeight: units.fingerUnit
+                anchors.margins: units.nailUnit
                 text: 'Nova'
                 onClicked: {
                     editAnnotation.setSource('AnnotationEditor.qml',{title: (searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'), desc: ''})
@@ -31,12 +31,14 @@ Rectangle {
             Common.SearchBox {
                 id: searchAnnotations
                 Layout.fillWidth: true
-                anchors.margins: 10
+                Layout.preferredHeight: units.fingerUnit
+                anchors.margins: units.nailUnit
                 onPerformSearch: Storage.listAnnotations(annotationsModel,0,text)
             }
             Button {
                 id: editButton
-                Layout.fillHeight: true
+                anchors.margins: units.nailUnit
+                Layout.preferredHeight: units.fingerUnit
                 text: 'Edita'
                 onClicked: editBox.state = 'show'
             }
@@ -44,15 +46,17 @@ Rectangle {
 
         Common.EditBox {
             id: editBox
+            maxHeight: units.fingerUnit
             Layout.preferredHeight: height
             Layout.fillWidth: true
+            anchors.margins: units.nailUnit
             onCancel: annotationsList.unselectAll()
             onDeleteItems: annotationsList.deleteSelected()
         }
 
         ListView {
             id: annotationsList
-            anchors.margins: 10
+            anchors.margins: units.nailUnit
             Layout.fillWidth: true
             Layout.fillHeight: true
 
@@ -64,36 +68,50 @@ Rectangle {
                 desc: model.desc
                 state: (model.selected)?'selected':'basic'
                 onAnnotationSelected: {
-                    console.log(model.selected)
                     if (editBox.state == 'show') {
                         annotationsModel.setProperty(model.index,'selected',!annotationsModel.get(model.index).selected);
                     } else {
                         editAnnotation.setSource('AnnotationEditor.qml',{title: title, desc: desc});
-                        editAnnotation.visible = true
+                        editAnnotation.parent.visible = true
                     }
                 }
             }
             model: ListModel { id: annotationsModel }
 
-            Loader {
-                id: editAnnotation
+            Item {
                 anchors.fill: parent
-                anchors.margins: 20
                 visible: false
-                Connections {
-                    target: editAnnotation.item
-                    onSaveAnnotation: {
-                        Storage.saveAnnotation(title,desc);
-                        editAnnotation.visible = false;
-                        Storage.listAnnotations(annotationsModel,0,'');
+                Rectangle {
+                    anchors.fill: parent
+                    color: 'black'
+                    opacity: 0.5
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: console.log('Cancel')
+                }
+                Loader {
+                    id: editAnnotation
+                    anchors.fill: parent
+                    anchors.margins: units.fingerUnit
+                    Connections {
+                        target: editAnnotation.item
+                        onSaveAnnotation: {
+                            Storage.saveAnnotation(title,desc);
+                            editAnnotation.parent.visible = false;
+                            Storage.listAnnotations(annotationsModel,0,'');
+                        }
+
+                        onCancelAnnotation: editAnnotation.parent.visible = false
                     }
 
-                    onCancelAnnotation: editAnnotation.visible = false
                 }
             }
+
             function unselectAll() {
                 for (var i=0; i<annotationsModel.count; i++) {
                     annotationsModel.setProperty(i,'state','basic');
+                    console.log('Desselecciona ' + i);
                 }
             }
             function deleteSelected() {

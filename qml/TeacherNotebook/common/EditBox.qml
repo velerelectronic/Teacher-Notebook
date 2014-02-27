@@ -1,13 +1,18 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
+import QtQuick.Controls 1.1
+import '../common' as Common
 
 Rectangle {
     id: editBox
-    state: 'hidden'
+    height: childrenRect.height
     clip: true
 
     signal cancel
     signal deleteItems
+    property int maxHeight: 0
+
+    Common.UseUnits { id: units }
 
     states: [
         State {
@@ -16,9 +21,11 @@ Rectangle {
         },
         State {
             name: 'show'
-            PropertyChanges { target: editBox; height: childrenRect.height }
+            PropertyChanges { target: editBox; height: editBox.maxHeight }
         }
     ]
+    state: 'hidden'
+
     onStateChanged: console.log(height);
 
     transitions: [
@@ -41,30 +48,31 @@ Rectangle {
     ]
 
     RowLayout {
-        anchors { left: parent.left; right: parent.right }
-        height: childrenRect.height
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: units.fingerUnit
 
-        SimpleButton {
-            label: 'Cancelar'
-            pointSize: 18
+        Button {
+            height: parent.height
+            text: qsTr('Cancelar')
             onClicked: {
                 editBox.cancel();
                 editBox.state = 'hidden';
             }
-            color: 'white'
         }
 
         Text {
-            font.pointSize: 18
-            text: 'Selecciona'
-            horizontalAlignment: Text.AlignHCenter
             Layout.fillWidth: true
+            height: parent.height
+            font.pixelSize: units.nailUnit
+            text: qsTr('Selecciona')
+            horizontalAlignment: Text.AlignHCenter
         }
 
-        SimpleButton {
-            label: 'Esborra'
-            pointSize: 18
-            color: 'white'
+        Button {
+            height: parent.height
+            text: qsTr('Esborra')
             onClicked: editBox.deleteItems();
         }
     }

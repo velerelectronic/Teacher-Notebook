@@ -10,7 +10,7 @@ Rectangle {
 
     signal saveEvent(string event, string desc,date startDate,date startTime,date endDate,date endTime)
     signal cancelEvent()
-    property int idEvent: undefined
+    property int idEvent: -1
     property alias event: event.text
     property alias desc: desc.text
     property alias startDate: startDate.date
@@ -62,31 +62,35 @@ Rectangle {
             id: labelStart
             text: qsTr('Inici')
         }
-        RowLayout {
+        Rectangle {
             Layout.fillWidth: true
-            height: childrenRect.height
 
-            TimePicker {
-                id: startTime
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
+            RowLayout {
+                width: parent.width
+                height: childrenRect.height
 
-            DatePicker {
-                id: startDate
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
-            Button {
-                text: qsTr('Avui')
-                onClicked: {
-                    var today = new Date();
-                    startDate.toDate(today);
-                    startTime.toDate(today);
+                TimePicker {
+                    id: startTime
+                    Layout.fillHeight: true
+                }
+
+                DatePicker {
+                    id: startDate
+                    Layout.fillHeight: true
+                }
+                Button {
+                    text: qsTr('Avui')
+                    onClicked: {
+                        var today = new Date();
+                        startDate.toDate(today);
+                        startTime.toDate(today);
+                    }
+                }
+                Item {
+                    Layout.fillWidth: true
                 }
             }
         }
-
         Text {
             text: qsTr('Final')
         }

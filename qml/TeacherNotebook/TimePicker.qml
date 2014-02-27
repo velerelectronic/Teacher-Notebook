@@ -4,90 +4,48 @@ import 'common' as Common
 
 Rectangle {
     id: timePicker
-    property int esquirolGraphicalUnit: 100
     property var time: new Date()
     anchors.fill: parent
 
-    GridLayout {
-        columns: 3
-        rows: 3
-
-        Common.SimpleButton {
-            // Hours plus
-            label: '+'
-            border.color: 'black'
-            onClicked: { time.setHours( time.getHours() + 1); timePicker.updateTime() }
-            onPressAndHold: { time.setHours( time.getHours() + 12); timePicker.updateTime() }
-        }
-
-        Text {
-            // Separator
-            text:' '
-        }
-
-        Common.SimpleButton {
-            // Minutes plus
-            label: '+'
-            border.color: 'black'
-            onClicked: { time.setMinutes( time.getMinutes() + 1); timePicker.updateTime() }
-            onPressAndHold: { time.setMinutes( time.getMinutes() + 10); timePicker.updateTime() }
-        }
-
-        Rectangle {
-            id: hourRect
-            width: childrenRect.width
-            height: childrenRect.height
-            color: 'yellow'
-            border.color: 'black'
-            Text {
+    Common.UseUnits { id: units }
+    Rectangle {
+        anchors.fill: parent
+        RowLayout {
+            anchors.fill: parent
+            Common.BitouchButton {
+                // Hours
                 id: hour
+                Layout.preferredWidth: units.fingerUnit * 2
+                content: '0'
+                onUpClicked: { time.setHours( time.getHours() + 1); timePicker.updateTime() }
+                onUpLongClicked:  { time.setHours( time.getHours() + 12); timePicker.updateTime() }
+                onDownClicked: { time.setHours( time.getHours() - 1); timePicker.updateTime() }
+                onDownLongClicked: { time.setHours( time.getHours() - 12); timePicker.updateTime() }
             }
-        }
-
-        Text {
-            text: ':'
-        }
-
-        Rectangle {
-            id: minuteRect
-            width: childrenRect.width
-            height: childrenRect.height
-            color: 'pink'
             Text {
+                text: ':'
+            }
+
+            Common.BitouchButton {
+                // Minutes
                 id: minute
+                Layout.preferredWidth: units.fingerUnit * 2
+                content: '00'
+                onUpClicked: { time.setMinutes( time.getMinutes() + 1); timePicker.updateTime() }
+                onUpLongClicked: { time.setMinutes( time.getMinutes() + 10); timePicker.updateTime() }
+                onDownClicked: { time.setMinutes( time.getMinutes() - 1); timePicker.updateTime() }
+                onDownLongClicked: { time.setMinutes( time.getMinutes() - 10); timePicker.updateTime() }
             }
         }
-
-        Common.SimpleButton {
-            // Hours minus
-            label: '-'
-            border.color: 'black'
-            onClicked: { time.setHours( time.getHours() - 1); timePicker.updateTime() }
-            onPressAndHold: { time.setHours( time.getHours() - 12); timePicker.updateTime() }
-        }
-
-        Text {
-            // Separator
-            text: ' '
-        }
-
-        Common.SimpleButton {
-            // Minutes minus
-            label: '-'
-            border.color: 'black'
-            onClicked: { time.setMinutes( time.getMinutes() - 1); timePicker.updateTime() }
-            onPressAndHold: { time.setMinutes( time.getMinutes() - 10); timePicker.updateTime() }
-        }
-
     }
 
     Component.onCompleted: timePicker.updateTime()
 
     function updateTime() {
         var h = time.getHours()
-        hour.text = ((h<10)?'0':'') + h
+        hour.content = ((h<10)?'0':'') + h
         var m = time.getMinutes()
-        minute.text = ((m<10)?'0':'') + m
+        minute.content = ((m<10)?'0':'') + m
     }
 
     function toDate(newDate) {

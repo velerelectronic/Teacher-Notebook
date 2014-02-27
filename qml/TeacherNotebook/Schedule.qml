@@ -11,38 +11,48 @@ Rectangle {
     signal newEvent
     signal editEvent(int id,string event, string desc,date startDate,date startTime,date endDate,date endTime)
 
+    Common.UseUnits { id: units }
+
     ColumnLayout {
         anchors.fill: parent
-        RowLayout {
+        Rectangle {
             Layout.fillWidth: true
-            Layout.fillHeight: false
-            Button {
-                id: buttons
-                Layout.fillHeight: true
-                text: 'Nou esdeveniment'
-                onClicked: schedule.newEvent()
+            Layout.preferredHeight: childrenRect.height
+
+            RowLayout {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                height: childrenRect.height
+
+                Button {
+                    id: buttons
+                    Layout.fillHeight: true
+                    text: qsTr('Nou esdeveniment')
+                    onClicked: schedule.newEvent()
+                }
+                Common.SearchBox {
+                    id: searchEvents
+                    Layout.fillWidth: true
+                    anchors.margins: units.nailUnit
+                    onPerformSearch: Storage.listEvents(scheduleModel,null,text)
+                }
+                Button {
+                    id: editButton
+                    Layout.fillHeight: true
+                    text: qsTr('Edita')
+                    onClicked: editBox.state = 'show'
+                }
             }
-            Common.SearchBox {
-                id: searchEvents
+            Common.EditBox {
+                id: editBox
                 Layout.fillWidth: true
-                anchors.margins: 10
-                onPerformSearch: Storage.listEvents(scheduleModel,null,text)
             }
-            Button {
-                id: editButton
-                Layout.fillHeight: true
-                text: 'Edita'
-                onClicked: editBox.state = 'show'
-            }
-        }
-        Common.EditBox {
-            id: editBox
-            Layout.preferredHeight: height
-            Layout.fillWidth: true
         }
 
+
         ListView {
-            Layout.fillWidth: true
+            Layout.preferredWidth: parent.width
             Layout.fillHeight: true
             clip: true
 
@@ -51,69 +61,71 @@ Rectangle {
                 id: element
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: childrenRect.height + 40
+                height: childrenRect.height
                 border.color: 'black'
 
                 RowLayout {
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.margins: 20
-                    height: mainContents.height
+                    width: parent.width
+                    height: childrenRect.height
+                    spacing: units.nailUnit
 
-                    ColumnLayout {
+                    Rectangle {
                         id: mainContents
-                        anchors.top: parent.top
+                        color: 'yellow'
+                        border.color: 'black'
                         Layout.fillWidth: true
-                        height: childrenRect.height
+                        Layout.preferredHeight: childrenRect.height
+                        clip: true
 
-                        Text {
-                            id: eventTitle
-                            font.bold: true
-                            text: event
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                        }
-                        Text {
-                            id: eventDesc
-                            text: desc
-                            anchors.left: parent.left
-                            anchors.right: parent.right
+                        ColumnLayout {
+                            Text {
+                                id: eventTitle
+                                Layout.preferredWidth: parent.width
+                                Layout.preferredHeight: paintedHeight
+                                font.bold: true
+                                text: event
+                                wrapMode: Text.Wrap
+                            }
+                            Text {
+                                id: eventDesc
+                                Layout.preferredWidth: parent.width
+                                Layout.preferredHeight: paintedHeight
+                                text: desc
+                                wrapMode: Text.Wrap
+                            }
                         }
                         MouseArea {
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: eventTitle.top
-                            anchors.bottom: eventDesc.bottom
+                            anchors.fill: mainContents
 
                             onClicked: schedule.editEvent(id,event,desc,startDate,startTime,endDate,endTime)
                             onPressAndHold: {
-                                Storage.removeEvent(id);
+//                                Storage.removeEvent(id);
                                 console.log(index);
                                 scheduleModel.remove(index);
                             }
                         }
                     }
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        Layout.preferredWidth: 100
-                        text: startDate
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        Layout.preferredWidth: 100
-                        text: startTime
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        Layout.preferredWidth: 100
-                        text: endDate
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        Layout.preferredWidth: 100
-                        text: endTime
+                    Rectangle {
+                        Layout.preferredWidth: units.fingerUnit * 8
+                        RowLayout {
+                            anchors.fill: parent
+                            Text {
+                                Layout.preferredWidth: units.fingerUnit * 2
+                                text: startDate
+                            }
+                            Text {
+                                Layout.preferredWidth: units.fingerUnit * 2
+                                text: startTime
+                            }
+                            Text {
+                                Layout.preferredWidth: units.fingerUnit * 2
+                                text: endDate
+                            }
+                            Text {
+                                Layout.preferredWidth: units.fingerUnit * 2
+                                text: endTime
+                            }
+                        }
                     }
                 }
             }

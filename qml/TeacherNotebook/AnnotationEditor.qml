@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
+import 'common' as Common
 
 Rectangle {
     id: annotationEditor
@@ -8,43 +9,45 @@ Rectangle {
     height: 200
 
     property alias title: title.text
-    property int esquirolGraphicalUnit: 100
     property alias desc: contents.text
     property int globalMargin: 10
     signal saveAnnotation(string title, string desc)
     signal cancelAnnotation
 
-    border.color: 'green'
+    Common.UseUnits { id: units }
 
-    Item {
+    border.color: 'green'
+    anchors.margins: units.fingerUnit
+
+    MouseArea {
+        // Intercept clicks
         anchors.fill: parent
-        anchors.margins: globalMargin * 2
+        onClicked: { mouse.accepted = true }
+    }
+
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: units.nailUnit
 
         Rectangle {
-            id: titleRect
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.margins: globalMargin
-            height: childrenRect.height
+            anchors.margins: units.nailUnit
+            Layout.preferredHeight: childrenRect.height
+            Layout.fillWidth: true
             border.color: 'green'
 
             TextInput {
                 id: title
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.top: parent.top
-                font.pointSize: 20
+                font.pixelSize: units.nailUnit * 2
                 inputMethodHints: Qt.ImhNoPredictiveText
+                clip: true
             }
         }
         ToolBar {
             id: toolbar
-            anchors.top: titleRect.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.margins: globalMargin
-            anchors.bottomMargin: 0
+            Layout.fillWidth: true
+            anchors.margins: units.nailUnit
 
             RowLayout {
                 ToolButton {
@@ -62,57 +65,45 @@ Rectangle {
                 }
 
                 ToolButton {
-                    text: 'Copia'
+                    text: qsTr('Copia')
                     onClicked: contents.copy()
                 }
                 ToolButton {
-                    text: 'Enganxa'
+                    text: qsTr('Enganxa')
                     onClicked: contents.paste()
                 }
                 ToolButton {
-                    text: 'Retalla'
+                    text: qsTr('Retalla')
                     onClicked: contents.cut()
                 }
                 ToolButton {
-                    text: 'Desfer'
+                    text: qsTr('Desfer')
                     onClicked: contents.undo()
-                    visible: false
                 }
                 ToolButton {
-                    text: 'Refer'
+                    text: qsTr('Refer')
                     onClicked: contents.redo()
+                }
+                ToolButton {}
+
+                ToolButton {
+                    text: qsTr('Desa')
+                    onClicked: annotationEditor.saveAnnotation(title.text,contents.text)
+                }
+                ToolButton {
+                    text: qsTr('Cancela')
+                    onClicked: annotationEditor.cancelAnnotation()
                 }
             }
         }
 
         TextArea {
             id: contents
-            anchors.top: toolbar.bottom
-            anchors.bottom: buttons.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.margins: globalMargin
-            anchors.topMargin: 0
-            font.pointSize: 20
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            anchors.margins: units.nailUnit
+            font.pixelSize: units.nailUnit * 2
             inputMethodHints: Qt.ImhNoPredictiveText
         }
-        Row {
-            id: buttons
-            anchors.bottom: parent.bottom
-            height: childrenRect.height
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.margins: globalMargin
-            Button {
-                text: qsTr('Desa')
-                onClicked: annotationEditor.saveAnnotation(title.text,contents.text)
-            }
-            Button {
-                text: qsTr('Cancela')
-                onClicked: annotationEditor.cancelAnnotation()
-            }
-        }
-
     }
-
 }

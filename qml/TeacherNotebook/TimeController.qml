@@ -1,53 +1,58 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
+import 'common' as Common
 
 Rectangle {
     property string title: qsTr('Rellotge');
-    property int esquirolGraphicalUnit: 100
-    width: 100
-    height: 62
+
+    Common.UseUnits { id: units }
 
     ColumnLayout {
         anchors.fill: parent
 
-        RowLayout {
-            id: row
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.margins: 20
-            height: childrenRect.height
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit * 3
 
-            Clock {
+            RowLayout {
+                id: row
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+                height: childrenRect.height
 
+                spacing: units.fingerUnit
+
+                Clock {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: parent.height
+                }
+
+                StopWatch {
+                    id: stopWatch
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: parent.height
+                }
             }
 
-            StopWatch {
-                id: stopWatch
-            }
         }
 
         ListView {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: row.bottom
-            anchors.bottom: parent.bottom
+            Layout.fillHeight: true
+            Layout.fillWidth: true
 
+            clip: true
             model: ListModel { id: chronoModel }
             delegate: Rectangle {
-                anchors.left: parent.left
-                anchors.right: parent.right
+                width: parent.width
                 height: childrenRect.height
                 color: 'green'
                 Text {
                     anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
                     text: title
                     color: 'white'
                 }
                 Text {
                     anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
                     text: h + ' h ' + m + ' min ' + s + ' s'
                     horizontalAlignment: Text.AlignRight
                 }

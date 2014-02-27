@@ -3,17 +3,22 @@ import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.1
 import 'common' as Common
 
-Common.BaseWidget {
+Rectangle {
     id: whiteboard
-    title: qsTr('Pissarra')
+
+    property string title: qsTr('Pissarra')
     // Possible drawing actions ['Clear', 'Path']
     property string drawingAction: 'Clear'
 
+    Common.UseUnits { id: units }
+
     ColumnLayout {
         anchors.fill:parent
+
         Rectangle {
             Layout.fillWidth: true;
-            height: 50
+            Layout.preferredHeight: units.fingerUnit
+
             RowLayout {
                 anchors.fill: parent
                 Button {

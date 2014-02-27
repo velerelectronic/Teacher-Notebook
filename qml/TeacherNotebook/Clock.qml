@@ -1,21 +1,24 @@
 import QtQuick 2.0
+import QtQuick.Layouts 1.1
+import 'common' as Common
 
 Rectangle {
     id: mainClock
-    property int esquirolGraphicalUnit: 100
 
-    height: time.height * 2
-    width: 200
+    Common.UseUnits { id: units }
+
     border.color: 'green'
-    border.width: 10
+    border.width: units.nailUnit / 2
     color: 'black'
 
     Text {
         id: time
         color: 'white'
-        font.pointSize: 30
+        fontSizeMode: Text.Fit
         font.bold: true
-        anchors.centerIn: parent
+        anchors.fill: parent
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
     }
 
     Timer {

@@ -155,13 +155,24 @@ function convertToArray(item) {
 function listOneField (tblname, field, model) {
     getDatabase().transaction(
                 function(tx) {
-                    var rs = tx.executeSql("SELECT DISTINCT " + camp + " FROM " + taula + " ORDER BY " + camp + " ASC");
+                    var rs = tx.executeSql("SELECT DISTINCT " + camp + " FROM " + tblname + " ORDER BY " + camp + " ASC");
                     for (var i=0; i<rs.rows.length; i++) {
                         model.append(convertToArray(rs.rows.item(i)));
                     }
                 });
 }
 
+function listOneRecord (tblname, id) {
+    var res = {};
+    getDatabase().transaction(
+                function (tx) {
+                    var rs = tx.executeSql("SELECT * FROM " + tblname + " WHERE id=?",[id]);
+                    if (rs.rows.length>0) {
+                        res = rs.rows.item(0);
+                    }
+                });
+    return res;
+}
 
 // Save functions
 
@@ -238,6 +249,10 @@ function saveEvent(event,desc,startDate,startTime,endDate,endTime) {
 
 function listEvents(model,limit,filter) {
     listTableRecords(model,'schedule',limit,filter);
+}
+
+function getDetailsEventId(id) {
+    return listOneRecord('schedule',id);
 }
 
 function removeEvent(id) {
