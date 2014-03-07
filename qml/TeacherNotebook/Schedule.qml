@@ -7,7 +7,6 @@ import 'Storage.js' as Storage
 Rectangle {
     id: schedule
     property string title: qsTr('Agenda');
-    property int esquirolGraphicalUnit: 100
     signal newEvent
     signal editEvent(int id,string event, string desc,string startDate,string startTime,string endDate,string endTime)
 
@@ -44,105 +43,57 @@ Rectangle {
                     onClicked: editBox.state = 'show'
                 }
             }
-            Common.EditBox {
-                id: editBox
-                Layout.fillWidth: true
-            }
         }
 
+        Common.EditBox {
+            id: editBox
+            maxHeight: units.fingerUnit
+            Layout.preferredHeight: height
+            Layout.fillWidth: true
+            onCancel: eventList.unselectAll()
+            onDeleteItems: eventList.deleteSelected()
+        }
 
         ListView {
+            id: eventList
             Layout.preferredWidth: parent.width
             Layout.fillHeight: true
             clip: true
 
             model: ListModel { id: scheduleModel }
-            delegate: Rectangle {
-                id: element
+            delegate: ScheduleItem {
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: childrenRect.height
-                border.color: 'black'
+                state: (model.selected)?'selected':'basic'
+                event: model.event
+                desc: model.desc
+                startDate: model.startDate
+                startTime: model.startTime
+                endDate: model.endDate
+                endTime: model.endTime
 
-                RowLayout {
-                    width: parent.width
-                    height: childrenRect.height
-                    spacing: 0
-
-                    Rectangle {
-                        color: 'yellow'
-                        border.color: 'black'
-                        Layout.preferredWidth: units.fingerUnit * 8
-                        Layout.preferredHeight: units.nailUnit * 3
-                        GridLayout {
-                            anchors.fill: parent
-                            rows: 2
-                            flow: GridLayout.TopToBottom
-                            columnSpacing: 0
-                            rowSpacing: 0
-
-                            Text {
-                                Layout.preferredWidth: units.fingerUnit * 2
-                                Layout.preferredHeight: units.nailUnit
-                                font.pixelSize: units.nailUnit
-                                text: startDate
-                            }
-                            Text {
-                                Layout.preferredWidth: units.fingerUnit * 2
-                                Layout.preferredHeight: units.nailUnit
-                                font.pixelSize: units.nailUnit
-                                text: startTime
-                            }
-                            Text {
-                                Layout.preferredWidth: units.fingerUnit * 2
-                                Layout.preferredHeight: units.nailUnit
-                                font.pixelSize: units.nailUnit
-                                text: endDate
-                            }
-                            Text {
-                                Layout.preferredWidth: units.fingerUnit * 2
-                                Layout.preferredHeight: units.nailUnit
-                                font.pixelSize: units.nailUnit
-                                text: endTime
-                            }
-                        }
+                onScheduleItemSelected: {
+                    if (editBox.state == 'show') {
+                        scheduleModel.setProperty(model.index,'selected',!scheduleModel.get(model.index).selected);
+                    } else {
+                        schedule.editEvent(id,event,desc,startDate,startTime,endDate,endTime);
                     }
+                }
+            }
 
-                    Rectangle {
-                        id: mainContents
-                        color: 'green'
-                        border.color: 'black'
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: childrenRect.height
-                        clip: true
+            function unselectAll() {
+                for (var i=0; i<scheduleModel.count; i++) {
+                    scheduleModel.setProperty(i,'selected',false);
+                    console.log('Desselecciona ' + i);
+                }
+            }
 
-                        ColumnLayout {
-                            Text {
-                                id: eventTitle
-                                Layout.preferredWidth: parent.width
-                                Layout.preferredHeight: paintedHeight
-                                font.bold: true
-                                text: event
-                                wrapMode: Text.Wrap
-                            }
-                            Text {
-                                id: eventDesc
-                                Layout.preferredWidth: parent.width
-                                Layout.preferredHeight: paintedHeight
-                                text: desc
-                                wrapMode: Text.Wrap
-                            }
-                        }
-                        MouseArea {
-                            anchors.fill: mainContents
-
-                            onClicked: schedule.editEvent(id,event,desc,startDate,startTime,endDate,endTime)
-                            onPressAndHold: {
-                                Storage.removeEvent(id);
-                                console.log(index);
-                                scheduleModel.remove(index);
-                            }
-                        }
+            function deleteSelected() {
+                // Start deleting from the end of the model, because the index of further items change when deleting a previous item.
+                for (var i=scheduleModel.count-1; i>=0; --i) {
+                    if (scheduleModel.get(i).selected) {
+                        Storage.removeEvent(scheduleModel.get(i).id);
+                        scheduleModel.remove(i);
                     }
                 }
             }

@@ -73,7 +73,10 @@ Rectangle {
         Button {
             height: parent.height
             text: qsTr('Esborra')
-            onClicked: editBox.deleteItems();
+            onClicked: {
+                editBox.deleteItems();
+                editBox.state = 'hidden';
+            }
         }
     }
 }

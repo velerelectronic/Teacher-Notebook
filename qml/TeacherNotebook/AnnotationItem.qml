@@ -16,6 +16,15 @@ Rectangle {
         }
     ]
 
+    transitions: [
+        Transition {
+            PropertyAnimation {
+                properties: 'color'
+                easing.type: Easing.Linear
+            }
+        }
+    ]
+
     property alias title: titleLabel.text
     property alias desc: descLabel.text
     signal annotationSelected (string title,string desc)

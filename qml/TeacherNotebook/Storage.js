@@ -48,6 +48,14 @@ Date.prototype.toTimeSpecificFormat = function() {
     return this.getHours() + ':' + this.getMinutes();
 }
 
+/*
+Date.prototype.toLongDate = function() {
+    var weekdays = ['diumenge','dilluns','dimarts','dimecres','dijous','divendres','dissabte'];
+    var months = ['gener','febrer','març','abril','maig','juny','juliol','agost','setembre','octubre','novembre','desembre'];
+    return (weekdays[this.getDay()] + ' ' + this.getDate() + ' de ' + months[this.getMonth()] + ' de ' + this.getFullYear());
+}
+*/
+
 function fillArray (a, times) {
     var vec = [];
     for (var i=0; i<times; i++) {

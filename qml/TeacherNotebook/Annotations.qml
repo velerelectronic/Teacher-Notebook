@@ -110,7 +110,7 @@ Rectangle {
 
             function unselectAll() {
                 for (var i=0; i<annotationsModel.count; i++) {
-                    annotationsModel.setProperty(i,'state','basic');
+                    annotationsModel.setProperty(i,'selected',false);
                     console.log('Desselecciona ' + i);
                 }
             }
