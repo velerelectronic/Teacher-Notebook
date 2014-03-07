@@ -80,7 +80,7 @@ Rectangle {
                 onOpenDocumentsList: openSubPage('DocumentsList.qml',{})
                 onNewEvent: openSubPage('EditEvent.qml',{})
                 onEditEvent: {
-                    console.log('id: ' + id + '-' + event + '-' + desc);
+                    console.log('id: ' + id + '-' + event + '-' + desc + '-' + startDate + '-' + startTime + '-' + endDate + '-' + endTime);
                     openSubPage('EditEvent.qml',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime});
                 }
                 onSaveEvent: openSubPage('Schedule.qml',{})

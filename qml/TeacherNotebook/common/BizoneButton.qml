@@ -12,6 +12,7 @@ Rectangle {
     property alias content: label.text
 
     height: units.fingerUnit * 2
+    width: label.width + units.nailUnit * 2
     border.color: 'black'
 
     Rectangle {
@@ -86,9 +87,9 @@ Rectangle {
         id: label
         anchors.top: upHalf.top
         anchors.bottom: downHalf.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        font.pixelSize: units.fingerUnit
+        anchors.horizontalCenter: parent.horizontalCenter
+//        anchors.left: parent.left
+        font.pixelSize: units.nailUnit * 2
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     }

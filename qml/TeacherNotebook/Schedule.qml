@@ -9,7 +9,7 @@ Rectangle {
     property string title: qsTr('Agenda');
     property int esquirolGraphicalUnit: 100
     signal newEvent
-    signal editEvent(int id,string event, string desc,date startDate,date startTime,date endDate,date endTime)
+    signal editEvent(int id,string event, string desc,string startDate,string startTime,string endDate,string endTime)
 
     Common.UseUnits { id: units }
 
@@ -67,11 +67,50 @@ Rectangle {
                 RowLayout {
                     width: parent.width
                     height: childrenRect.height
-                    spacing: units.nailUnit
+                    spacing: 0
+
+                    Rectangle {
+                        color: 'yellow'
+                        border.color: 'black'
+                        Layout.preferredWidth: units.fingerUnit * 8
+                        Layout.preferredHeight: units.nailUnit * 3
+                        GridLayout {
+                            anchors.fill: parent
+                            rows: 2
+                            flow: GridLayout.TopToBottom
+                            columnSpacing: 0
+                            rowSpacing: 0
+
+                            Text {
+                                Layout.preferredWidth: units.fingerUnit * 2
+                                Layout.preferredHeight: units.nailUnit
+                                font.pixelSize: units.nailUnit
+                                text: startDate
+                            }
+                            Text {
+                                Layout.preferredWidth: units.fingerUnit * 2
+                                Layout.preferredHeight: units.nailUnit
+                                font.pixelSize: units.nailUnit
+                                text: startTime
+                            }
+                            Text {
+                                Layout.preferredWidth: units.fingerUnit * 2
+                                Layout.preferredHeight: units.nailUnit
+                                font.pixelSize: units.nailUnit
+                                text: endDate
+                            }
+                            Text {
+                                Layout.preferredWidth: units.fingerUnit * 2
+                                Layout.preferredHeight: units.nailUnit
+                                font.pixelSize: units.nailUnit
+                                text: endTime
+                            }
+                        }
+                    }
 
                     Rectangle {
                         id: mainContents
-                        color: 'yellow'
+                        color: 'green'
                         border.color: 'black'
                         Layout.fillWidth: true
                         Layout.preferredHeight: childrenRect.height
@@ -99,31 +138,9 @@ Rectangle {
 
                             onClicked: schedule.editEvent(id,event,desc,startDate,startTime,endDate,endTime)
                             onPressAndHold: {
-//                                Storage.removeEvent(id);
+                                Storage.removeEvent(id);
                                 console.log(index);
                                 scheduleModel.remove(index);
-                            }
-                        }
-                    }
-                    Rectangle {
-                        Layout.preferredWidth: units.fingerUnit * 8
-                        RowLayout {
-                            anchors.fill: parent
-                            Text {
-                                Layout.preferredWidth: units.fingerUnit * 2
-                                text: startDate
-                            }
-                            Text {
-                                Layout.preferredWidth: units.fingerUnit * 2
-                                text: startTime
-                            }
-                            Text {
-                                Layout.preferredWidth: units.fingerUnit * 2
-                                text: endDate
-                            }
-                            Text {
-                                Layout.preferredWidth: units.fingerUnit * 2
-                                text: endTime
                             }
                         }
                     }

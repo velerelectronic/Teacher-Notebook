@@ -6,17 +6,19 @@ import "Storage.js" as Storage
 Rectangle {
     id: newEvent
     property string title: qsTr('Edita esdeveniment')
-    property int esquirolGraphicalUnit: 100
 
     signal saveEvent(string event, string desc,date startDate,date startTime,date endDate,date endTime)
     signal cancelEvent()
     property int idEvent: -1
     property alias event: event.text
     property alias desc: desc.text
-    property alias startDate: startDate.date
-    property alias startTime: startTime.time
-    property alias endDate: endDate.date
-    property alias endTime: endTime.time
+    property string startDate: ''
+    property string startTime: ''
+    property string endDate: ''
+    property string endTime: ''
+
+    property string specifyDate: qsTr('Especifica data')
+    property string specifyTime: qsTr('Especifica hora')
 
     GridLayout {
         anchors.fill: parent
@@ -62,33 +64,53 @@ Rectangle {
             id: labelStart
             text: qsTr('Inici')
         }
-        Rectangle {
+
+        RowLayout {
             Layout.fillWidth: true
+            Layout.preferredHeight: childrenRect.height
 
-            RowLayout {
-                width: parent.width
-                height: childrenRect.height
+            ColumnLayout {
+                CheckBox {
+                    id: startDateOption
+                    text: specifyDate
+                }
+                CheckBox {
+                    id: startTimeOption
+                    text: specifyTime
+                    // If the date is not specified then we don't show the option to change the time
+                    visible: startDateOption.checked
+                }
+            }
 
-                TimePicker {
-                    id: startTime
-                    Layout.fillHeight: true
-                }
+            DatePicker {
+                id: startDatePicker
+                // We can choose the date whenever the option has been enabled
+                visible: startDateOption.checked
+            }
 
-                DatePicker {
-                    id: startDate
-                    Layout.fillHeight: true
+            TimePicker {
+                id: startTimePicker
+                visible: startTimeOption.visible && startTimeOption.checked
+            }
+
+            Button {
+                id: buttonNow
+                text: qsTr('Ara')
+                visible: startDateOption.checked
+                onClicked: {
+                    var today = new Date();
+                    startDatePicker.setDate(today);
+                    startTimePicker.setDate(today);
                 }
-                Button {
-                    text: qsTr('Avui')
-                    onClicked: {
-                        var today = new Date();
-                        startDate.toDate(today);
-                        startTime.toDate(today);
-                    }
+            }
+            Button {
+                text: qsTr('Original')
+                onClicked: {
+
                 }
-                Item {
-                    Layout.fillWidth: true
-                }
+            }
+            Item {
+                Layout.fillWidth: true
             }
         }
         Text {
@@ -97,27 +119,47 @@ Rectangle {
 
         RowLayout {
             Layout.fillWidth: true
-            height: childrenRect.height
+            Layout.preferredHeight: childrenRect.height
+
+            ColumnLayout {
+                CheckBox {
+                    id: endDateOption
+                    text: specifyDate
+                }
+                CheckBox {
+                    id: endTimeOption
+                    text: specifyTime
+                    // If the date is not specified then we don't show the option to change the time
+                    visible: endDateOption.checked
+                }
+            }
 
             DatePicker {
-                id: endDate
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+                id: endDatePicker
+                visible: endDateOption.checked
             }
 
             TimePicker {
-                id: endTime
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+                id: endTimePicker
+                visible: endTimeOption.visible && endTimeOption.checked
             }
             Button {
-                text: qsTr('Avui')
+                text: qsTr('Ara')
+                visible: endDateOption.checked
                 onClicked: {
                     var today = new Date();
-                    endDate.toDate(today);
-                    endTime.toDate(today);
+                    endDatePicker.setDate(today);
+                    endTimePicker.setDate(today);
                 }
             }
+            Button {
+                text: qsTr('Original')
+                onClicked: {
+
+                }
+            }
+
+            Item { Layout.fillWidth: true }
         }
 
         Text { text: ' '}
@@ -126,8 +168,12 @@ Rectangle {
             Button {
                 text: qsTr('Desa')
                 onClicked: {
-                    newEvent.saveEvent(event.text,desc.text,startDate.getDate(),startTime.getTime(),endDate.getDate(),endTime.getTime());
-                    Storage.saveEvent(event.text,desc.text,startDate.getDate(),startTime.getTime(),endDate.getDate(),endTime.getTime());
+                    var startDateStr = (startDateOption.checked)?startDatePicker.getDate().toYYYYMMDDFormat():'';
+                    var startTimeStr = (startTimeOption.checked)?startTimePicker.getTime().toHHMMFormat():'';
+                    var endDateStr = (endDateOption.checked)?endDatePicker.getDate().toYYYYMMDDFormat():'';
+                    var endTimeStr = (endTimeOption.checked)?endTimePicker.getTime().toHHMMFormat():'';
+                    Storage.saveEvent(event.text,desc.text,startDateStr,startTimeStr,endDateStr,endTimeStr);
+                    newEvent.saveEvent(event.text,desc.text,startDateStr,startTimeStr,endDateStr,endTimeStr);
                 }
             }
             Button {
@@ -140,5 +186,20 @@ Rectangle {
         if (typeof newEvent.idEvent != 'undefined') {
             var details = Storage.getDetailsEventId();
         }
+        var start = new Date();
+        var end = new Date();
+
+        console.log('SD: ' + startDate + ' ST: ' + startTime + ' ED: ' + endDate + ' ET: ' + endTime);
+        startDatePicker.setDate((startDate!='')?start.fromYYYYMMDDFormat(startDate):start);
+        startDateOption.checked = (startDate!='');
+
+        startTimePicker.setDateTime((startTime!='')?start.fromHHMMFormat(startTime):start);
+        startTimeOption.checked = (startTime!='');
+
+        endDatePicker.setDate((endDate!='')?end.fromYYYYMMDDFormat(endDate):end);
+        endDateOption.checked = (endDate!='');
+
+        endTimePicker.setDateTime((endTime!='')?end.fromHHMMFormat(endTime):end);
+        endTimeOption.checked = (endTime!='');
     }
 }

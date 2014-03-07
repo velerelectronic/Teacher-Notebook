@@ -5,17 +5,21 @@ import 'common' as Common
 Rectangle {
     id: timePicker
     property var time: new Date()
-    anchors.fill: parent
+    width: childrenRect.width
+    height: childrenRect.height
 
     Common.UseUnits { id: units }
     Rectangle {
-        anchors.fill: parent
-        RowLayout {
-            anchors.fill: parent
-            Common.BitouchButton {
+        anchors.top: parent.top
+        anchors.left: parent.left
+        width: childrenRect.width
+        height: childrenRect.height
+        Row {
+            width: hour.width + separator.width + minute.width
+            height: childrenRect.height
+            Common.BizoneButton {
                 // Hours
                 id: hour
-                Layout.preferredWidth: units.fingerUnit * 2
                 content: '0'
                 onUpClicked: { time.setHours( time.getHours() + 1); timePicker.updateTime() }
                 onUpLongClicked:  { time.setHours( time.getHours() + 12); timePicker.updateTime() }
@@ -23,13 +27,17 @@ Rectangle {
                 onDownLongClicked: { time.setHours( time.getHours() - 12); timePicker.updateTime() }
             }
             Text {
+                id: separator
+                height: hour.height
+                width: units.nailUnit
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: hour.height / 2
                 text: ':'
             }
 
-            Common.BitouchButton {
+            Common.BizoneButton {
                 // Minutes
                 id: minute
-                Layout.preferredWidth: units.fingerUnit * 2
                 content: '00'
                 onUpClicked: { time.setMinutes( time.getMinutes() + 1); timePicker.updateTime() }
                 onUpLongClicked: { time.setMinutes( time.getMinutes() + 10); timePicker.updateTime() }
@@ -48,12 +56,12 @@ Rectangle {
         minute.content = ((m<10)?'0':'') + m
     }
 
-    function toDate(newDate) {
-        timePicker.time = newDate;
+    function setDateTime(newDate) {
+        timePicker.time = new Date(newDate);
         updateTime();
     }
 
     function getTime() {
-        return timePicker.time.toTimeSpecificFormat();
+        return timePicker.time;
     }
 }

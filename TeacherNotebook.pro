@@ -27,7 +27,8 @@ OTHER_FILES += \
     qml/TeacherNotebook/EvernoteLib.js \
     qml/TeacherNotebook/EditEvent.qml \
     android/AndroidManifest.xml \
-    qml/TeacherNotebook/common/UseUnits.qml
+    qml/TeacherNotebook/common/UseUnits.qml \
+    qml/TeacherNotebook/common/BizoneButton.qml
 
 HEADERS += \
     fileio.h

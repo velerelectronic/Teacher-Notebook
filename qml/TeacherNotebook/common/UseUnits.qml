@@ -18,5 +18,5 @@ Item {
         font.pointSize: 10
     }
 
-    Component.onCompleted: console.log('Created units: ' + fingerUnit + '-' + nailUnit)
+//    Component.onCompleted: console.log('Created units: ' + fingerUnit + '-' + nailUnit)
 }

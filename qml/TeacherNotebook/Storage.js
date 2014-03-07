@@ -8,6 +8,42 @@ Date.prototype.toDateSpecificFormat = function() {
     return this.getDate() + '/' + (this.getMonth()+1) + '/' + this.getFullYear();
 }
 
+Date.prototype.toYYYYMMDDFormat = function() {
+    var month = this.getMonth()+1;
+    month = ((month<10)?'0':'') + month;
+    var day = this.getDate();
+    day = ((day<10)?'0':'') + day;
+    return this.getFullYear() + '-' + month + '-' + day;
+}
+
+Date.prototype.toHHMMFormat = function() {
+    var hours = this.getHours();
+    hours = ((hours<10)?'0':'') + hours;
+    var minutes = this.getMinutes();
+    minutes = ((minutes<10)?'0':'') + minutes;
+    return hours + ':' + minutes;
+}
+
+Date.prototype.fromYYYYMMDDFormat = function(text) {
+    var param = text.split('-');
+    var year = param[0];
+    var month = param[1]-1;
+    var day = param[2];
+    this.setDate(day);
+    this.setMonth(month);
+    this.setFullYear(year);
+    return this;
+}
+
+Date.prototype.fromHHMMFormat = function(text) {
+    var param = text.split(':');
+    var hours = param[0];
+    var minutes = param[1];
+    this.setHours(hours);
+    this.setMinutes(minutes);
+    return this;
+}
+
 Date.prototype.toTimeSpecificFormat = function() {
     return this.getHours() + ':' + this.getMinutes();
 }
@@ -110,7 +146,7 @@ function newDimensionalTable (tblname,camps,desc) {
                 });
 }
 
-function listTableRecords (model,tblname,limit,filterStr) {
+function listTableRecords (model,tblname,limit,filterStr,orderStr) {
         // If order is different from "", then the results will be sorted
         // If the limit is 0, all the results will be selected
     getDatabase().transaction(
@@ -130,7 +166,7 @@ function listTableRecords (model,tblname,limit,filterStr) {
                         filterQuery = ' WHERE ' + filterField.join(' OR ');
                     }
 
-                    var orderStr = " ORDER BY id DESC";
+                    orderStr = (orderStr=='')?" ORDER BY id DESC":" ORDER BY " + orderStr;
                     if (limit>0) {
                             limitStr += " LIMIT "+(limit.toString());
                     }
@@ -223,7 +259,7 @@ function saveAnnotation(title,desc) {
 }
 
 function listAnnotations(model,limit,text) {
-    listTableRecords(model,'annotations',limit,text);
+    listTableRecords(model,'annotations',limit,text,'');
 }
 
 function removeAnnotation(id) {
@@ -248,7 +284,7 @@ function saveEvent(event,desc,startDate,startTime,endDate,endTime) {
 }
 
 function listEvents(model,limit,filter) {
-    listTableRecords(model,'schedule',limit,filter);
+    listTableRecords(model,'schedule',limit,filter,"startDate ASC, startTime ASC, endDate ASC, endTime ASC");
 }
 
 function getDetailsEventId(id) {
