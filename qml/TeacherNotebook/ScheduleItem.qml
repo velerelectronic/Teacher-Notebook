@@ -8,8 +8,8 @@ Rectangle {
     states: [
         State {
             name: 'basic'
-            PropertyChanges { target: datesRect; color: 'yellow' }
-            PropertyChanges { target: mainContents; color: 'green' }
+            PropertyChanges { target: datesRect; color: '#ffd06e' }
+            PropertyChanges { target: mainContents; color: '#EFFBF5' }
         },
         State {
             name: 'selected'
@@ -47,7 +47,6 @@ Rectangle {
 
         Rectangle {
             id: datesRect
-            color: 'yellow'
             border.color: 'black'
             Layout.preferredWidth: units.fingerUnit * 8
             Layout.preferredHeight: parent.height
@@ -89,7 +88,6 @@ Rectangle {
 
         Rectangle {
             id: mainContents
-            color: 'green'
             border.color: 'black'
             Layout.fillWidth: true
             Layout.preferredHeight: parent.height

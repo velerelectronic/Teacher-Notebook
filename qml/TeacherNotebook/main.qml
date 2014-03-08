@@ -76,49 +76,58 @@ Rectangle {
                 ignoreUnknownSignals: true
                 // Signals
                 onOpenPage: openSubPage(page,{})
-                onOpenAnnotations: openSubPage('Annotations.qml',{})
-                onOpenDocumentsList: openSubPage('DocumentsList.qml',{})
-                onNewEvent: openSubPage('EditEvent.qml',{})
-                onEditEvent: {
-                    console.log('id: ' + id + '-' + event + '-' + desc + '-' + startDate + '-' + startTime + '-' + endDate + '-' + endTime);
-                    openSubPage('EditEvent.qml',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime});
+
+                // Annotations
+                onOpenAnnotations: openSubPage('AnnotationsList',{})
+                onEditAnnotation: openSubPage('AnnotationEditor',{annotation: annotation, desc: desc})
+                onDeletedAnnotations: {
+                    messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
                 }
-                onSaveEvent: openSubPage('Schedule.qml',{})
-                onCancelEvent: openSubPage('Schedule.qml',{})
+                onSavedAnnotation: {
+                    messageBox.publishMessage('Desat «' + annotation + '» amb «' + desc + '»')
+                    openSubPage('AnnotationsList',{});
+                }
+                onCanceledAnnotation: {
+                    messageBox.publishMessage(qsTr("S'han descartat els canvis en l'anotació"))
+                    openSubPage('AnnotationsList',{});
+                }
+
+                onOpenDocumentsList: openSubPage('DocumentsList',{})
+
+                // Events
+                onNewEvent: openSubPage('EditEvent',{})
+                onEditEvent: {
+                    openSubPage('EditEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime});
+                }
+                onDeletedEvents: {
+                    messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'))
+                }
+                onSavedEvent: {
+                    messageBox.publishMessage(qsTr('Esdeveniment desat: titol «') + event + qsTr('», descripcio «') + desc + qsTr('»'))
+                    openSubPage('Schedule',{})
+                }
+                onCanceledEvent: {
+                    messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
+                    openSubPage('Schedule',{})
+                }
             }
         }
-
-        Menu {
-            id: mainMenu
-            title: 'Menú Teacher Notebook'
-
-            MenuItem {
-                text: qsTr("Inicial")
-    //            onTriggered:
-            }
-
-            MenuItem {
-                text: qsTr("Anotacions")
-            }
-            MenuItem {
-                text: qsTr("Valoracions")
-            }
-            MenuItem {
-                text: qsTr("Documents")
-            }
-            MenuItem {
-                text: qsTr("Rellotge")
-            }
-            enabled: true
-        }
-
-        StatusBar {
-            id: statusBar
-            Layout.preferredHeight: units.fingerUnit
-            Layout.fillWidth: true
-        }
-
     }
+    Common.MessageBox {
+        id: messageBox
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: units.nailUnit
+
+        color: 'yellow'
+        border.color: 'black'
+        radius: units.nailUnit
+        internalMargins: units.nailUnit
+        fontSize: units.nailUnit
+        interval: 2000
+    }
+
     Component.onCompleted: {
 //        Storage.destroyDatabase();
 //        Storage.removeAnnotationsTable();
@@ -129,12 +138,13 @@ Rectangle {
     }
 
     function openMainPage() {
-        openSubPage('MenuPage.qml',{})
+        openSubPage('MenuPage',{})
     }
 
     function openSubPage (page, param) {
-        pageLoader.setSource(page, param);
-        title.text = pageLoader.item.title
+        pageLoader.setSource(page + '.qml', param);
+        title.text = pageLoader.item.pageTitle
     }
+
 }
 

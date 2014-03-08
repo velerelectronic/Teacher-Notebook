@@ -4,8 +4,7 @@ import FileIO 1.0
 
 Rectangle {
     id: xmlViewer
-    property string title: qsTr('Visor XML');
-    property int esquirolGraphicalUnit: 100
+    property string pageTitle: qsTr('Visor XML');
     width: 100
     height: 62
     FileIO {

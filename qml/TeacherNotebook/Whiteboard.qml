@@ -6,7 +6,7 @@ import 'common' as Common
 Rectangle {
     id: whiteboard
 
-    property string title: qsTr('Pissarra')
+    property string pageTitle: qsTr('Pissarra')
     // Possible drawing actions ['Clear', 'Path']
     property string drawingAction: 'Clear'
 

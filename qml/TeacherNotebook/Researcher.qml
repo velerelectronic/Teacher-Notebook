@@ -5,8 +5,7 @@ import 'common' as Common
 
 Rectangle {
     id: researcher
-    property string title: qsTr('Recerca');
-    property int esquirolGraphicalUnit: 100
+    property string pageTitle: qsTr('Recerca');
 
     anchors.fill: parent
     ColumnLayout {

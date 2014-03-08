@@ -3,8 +3,7 @@ import 'common' as Common
 
 Rectangle {
     id: menuPage
-    property string title: qsTr('Teacher Notebook');
-    property int esquirolGraphicalUnit: 100
+    property string pageTitle: qsTr('Teacher Notebook');
 
     signal openPage (string page)
 
@@ -32,15 +31,15 @@ Rectangle {
         }
 
         Component.onCompleted: {
-            mainMenuModel.append({title: qsTr('Anotacions'), page: 'Annotations.qml'});
-            mainMenuModel.append({title: qsTr('Agenda'), page: 'Schedule.qml'});
-            mainMenuModel.append({title: qsTr('Pissarra'), page: 'Whiteboard.qml'});
-            mainMenuModel.append({title: qsTr('! Sistema de fitxers'), page: 'Filesystem.qml'});
-            mainMenuModel.append({title: qsTr('! Recerca de coneixement'), page: 'Researcher.qml'});
-            mainMenuModel.append({title: qsTr('! Document XML'), page: 'XmlViewer.qml'});
-            mainMenuModel.append({title: qsTr('! Documents'), page: 'DocumentsList.qml'});
-            mainMenuModel.append({title: qsTr('Rellotge'), page: 'TimeController.qml'});
-            mainMenuModel.append({title: qsTr('Gestor de dades'), page: 'DataMan.qml'});
+            mainMenuModel.append({title: qsTr('Anotacions'), page: 'AnnotationsList'});
+            mainMenuModel.append({title: qsTr('Agenda'), page: 'Schedule'});
+            mainMenuModel.append({title: qsTr('Pissarra'), page: 'Whiteboard'});
+            mainMenuModel.append({title: qsTr('! Sistema de fitxers'), page: 'Filesystem'});
+            mainMenuModel.append({title: qsTr('! Recerca de coneixement'), page: 'Researcher'});
+            mainMenuModel.append({title: qsTr('! Document XML'), page: 'XmlViewer'});
+            mainMenuModel.append({title: qsTr('! Documents'), page: 'DocumentsList'});
+            mainMenuModel.append({title: qsTr('Rellotge'), page: 'TimeController'});
+            mainMenuModel.append({title: qsTr('Gestor de dades'), page: 'DataMan'});
         }
     }
 }

@@ -6,9 +6,10 @@ import 'Storage.js' as Storage
 
 Rectangle {
     id: schedule
-    property string title: qsTr('Agenda');
+    property string pageTitle: qsTr('Agenda');
     signal newEvent
     signal editEvent(int id,string event, string desc,string startDate,string startTime,string endDate,string endTime)
+    signal deletedEvents (int num)
 
     Common.UseUnits { id: units }
 
@@ -90,12 +91,15 @@ Rectangle {
 
             function deleteSelected() {
                 // Start deleting from the end of the model, because the index of further items change when deleting a previous item.
+                var num = 0;
                 for (var i=scheduleModel.count-1; i>=0; --i) {
                     if (scheduleModel.get(i).selected) {
                         Storage.removeEvent(scheduleModel.get(i).id);
                         scheduleModel.remove(i);
+                        num++;
                     }
                 }
+                schedule.deletedEvents(num);
             }
         }
 

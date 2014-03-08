@@ -4,8 +4,7 @@ import QtQuick.Controls 1.1
 import "Storage.js" as Storage
 
 ColumnLayout {
-    property string title: qsTr('Gestor de dades')
-    property int esquirolGraphicalUnit: 100
+    property string pageTitle: qsTr('Gestor de dades')
 
     Text {
         id: exportLabel

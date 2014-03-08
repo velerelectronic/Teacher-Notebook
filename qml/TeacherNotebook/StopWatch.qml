@@ -4,7 +4,6 @@ import 'common' as Common
 
 Rectangle {
     id: stopWatch
-    property int esquirolGraphicalUnit: 100
     color: 'green'
 
     Common.UseUnits { id: units }

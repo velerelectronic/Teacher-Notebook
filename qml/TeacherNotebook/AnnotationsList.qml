@@ -6,12 +6,13 @@ import "Storage.js" as Storage
 
 Rectangle {
     id: annotations
-    property string title: qsTr('Anotacions');
+    property string pageTitle: qsTr('Anotacions');
 
     width: 300
     height: 200
 
-    signal editAnnotation (string title, string desc)
+    signal editAnnotation (string annotation, string desc)
+    signal deletedAnnotations (int num)
 
     Common.UseUnits { id: units }
     ColumnLayout {
@@ -24,8 +25,9 @@ Rectangle {
                 anchors.margins: units.nailUnit
                 text: 'Nova'
                 onClicked: {
-                    editAnnotation.setSource('AnnotationEditor.qml',{title: (searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'), desc: ''})
-                    editAnnotation.visible = true
+                    annotations.editAnnotation((searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'),'');
+//                    editAnnotation.setSource('AnnotationEditor.qml',{title: (searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'), desc: ''})
+//                    editAnnotation.visible = true
                 }
             }
             Common.SearchBox {
@@ -71,8 +73,9 @@ Rectangle {
                     if (editBox.state == 'show') {
                         annotationsModel.setProperty(model.index,'selected',!annotationsModel.get(model.index).selected);
                     } else {
-                        editAnnotation.setSource('AnnotationEditor.qml',{title: title, desc: desc});
-                        editAnnotation.parent.visible = true
+                        annotations.editAnnotation(title,desc)
+//                        editAnnotation.setSource('AnnotationEditor.qml',{title: title, desc: desc});
+//                        editAnnotation.parent.visible = true
                     }
                 }
             }
@@ -97,7 +100,6 @@ Rectangle {
                     Connections {
                         target: editAnnotation.item
                         onSaveAnnotation: {
-                            Storage.saveAnnotation(title,desc);
                             editAnnotation.parent.visible = false;
                             Storage.listAnnotations(annotationsModel,0,'');
                         }
@@ -116,12 +118,15 @@ Rectangle {
             }
             function deleteSelected() {
                 // Start deleting from the end of the model, because the index of further items change when deleting a previous item.
+                var num = 0;
                 for (var i=annotationsModel.count-1; i>=0; --i) {
                     if (annotationsModel.get(i).selected) {
                         Storage.removeAnnotation(annotationsModel.get(i).id);
                         annotationsModel.remove(i);
+                        num++;
                     }
                 }
+                annotations.deletedAnnotations(num);
             }
         }
     }

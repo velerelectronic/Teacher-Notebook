@@ -2,22 +2,22 @@ import QtQuick 2.0
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import 'common' as Common
+import 'Storage.js' as Storage
 
 Rectangle {
     id: annotationEditor
+    property string pageTitle: qsTr("Editor d'anotacions")
+
     width: 300
     height: 200
 
-    property alias title: title.text
+    property alias annotation: title.text
     property alias desc: contents.text
-    property int globalMargin: 10
-    signal saveAnnotation(string title, string desc)
-    signal cancelAnnotation
+
+    signal savedAnnotation(string annotation, string desc)
+    signal canceledAnnotation
 
     Common.UseUnits { id: units }
-
-    border.color: 'green'
-    anchors.margins: units.fingerUnit
 
     MouseArea {
         // Intercept clicks
@@ -65,34 +65,51 @@ Rectangle {
                 }
 
                 ToolButton {
-                    text: qsTr('Copia')
-                    onClicked: contents.copy()
+                    text: qsTr('Edita')
+                    onClicked: editMenu.popup()
                 }
-                ToolButton {
-                    text: qsTr('Enganxa')
-                    onClicked: contents.paste()
+                Menu {
+                    id: editMenu
+                    title: qsTr('Edició')
+                    MenuItem {
+                        text: qsTr('Copia')
+                        onTriggered: contents.copy()
+                    }
+                    MenuItem {
+                        text: qsTr('Retalla')
+                        onTriggered: contents.cut()
+                    }
+                    MenuItem {
+                        text: qsTr('Enganxa')
+                        onTriggered: contents.paste()
+                    }
+                    MenuSeparator {}
+                    MenuItem {
+                        text: qsTr('Refer')
+                        onTriggered: contents.redo()
+                    }
+                    MenuItem {
+                        text: qsTr('Desfer')
+                        onTriggered: contents.undo()
+                    }
                 }
-                ToolButton {
-                    text: qsTr('Retalla')
-                    onClicked: contents.cut()
-                }
-                ToolButton {
-                    text: qsTr('Desfer')
-                    onClicked: contents.undo()
-                }
-                ToolButton {
-                    text: qsTr('Refer')
-                    onClicked: contents.redo()
-                }
+
                 ToolButton {}
 
                 ToolButton {
                     text: qsTr('Desa')
-                    onClicked: annotationEditor.saveAnnotation(title.text,contents.text)
+                    onClicked: {
+                        Qt.inputMethod.hide()
+                        Storage.saveAnnotation(annotation,desc);
+                        annotationEditor.savedAnnotation(annotation,desc);
+                    }
                 }
                 ToolButton {
                     text: qsTr('Cancela')
-                    onClicked: annotationEditor.cancelAnnotation()
+                    onClicked: {
+                        Qt.inputMethod.hide()
+                        annotationEditor.canceledAnnotation()
+                    }
                 }
             }
         }

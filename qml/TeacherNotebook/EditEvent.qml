@@ -5,10 +5,10 @@ import "Storage.js" as Storage
 
 Rectangle {
     id: newEvent
-    property string title: qsTr('Edita esdeveniment')
+    property string pageTitle: qsTr('Edita esdeveniment')
 
-    signal saveEvent(string event, string desc,date startDate,date startTime,date endDate,date endTime)
-    signal cancelEvent()
+    signal savedEvent(string event, string desc,date startDate,date startTime,date endDate,date endTime)
+    signal canceledEvent()
     property int idEvent: -1
     property alias event: event.text
     property alias desc: desc.text
@@ -173,12 +173,12 @@ Rectangle {
                     var endDateStr = (endDateOption.checked)?endDatePicker.getDate().toYYYYMMDDFormat():'';
                     var endTimeStr = (endTimeOption.checked)?endTimePicker.getTime().toHHMMFormat():'';
                     Storage.saveEvent(event.text,desc.text,startDateStr,startTimeStr,endDateStr,endTimeStr);
-                    newEvent.saveEvent(event.text,desc.text,startDateStr,startTimeStr,endDateStr,endTimeStr);
+                    newEvent.savedEvent(event.text,desc.text,startDateStr,startTimeStr,endDateStr,endTimeStr);
                 }
             }
             Button {
                 text: qsTr('Cancela')
-                onClicked: newEvent.cancelEvent()
+                onClicked: newEvent.canceledEvent()
             }
         }
     }

@@ -3,7 +3,7 @@ import QtQuick.Layouts 1.1
 import 'common' as Common
 
 Rectangle {
-    property string title: qsTr('Rellotge');
+    property string pageTitle: qsTr('Rellotge');
 
     Common.UseUnits { id: units }
 
