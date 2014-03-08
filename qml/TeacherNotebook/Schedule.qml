@@ -120,6 +120,7 @@ Rectangle {
                     }
                 }
             }
+            snapMode: ListView.SnapToItem
 
             section.property: ((order==1)||(order==3))?"startDate":"endDate"
             section.criteria: ViewSection.FullString
