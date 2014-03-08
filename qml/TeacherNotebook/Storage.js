@@ -48,13 +48,13 @@ Date.prototype.toTimeSpecificFormat = function() {
     return this.getHours() + ':' + this.getMinutes();
 }
 
-/*
+
 Date.prototype.toLongDate = function() {
     var weekdays = ['diumenge','dilluns','dimarts','dimecres','dijous','divendres','dissabte'];
     var months = ['gener','febrer','març','abril','maig','juny','juliol','agost','setembre','octubre','novembre','desembre'];
     return (weekdays[this.getDay()] + ' ' + this.getDate() + ' de ' + months[this.getMonth()] + ' de ' + this.getFullYear());
 }
-*/
+
 
 function fillArray (a, times) {
     var vec = [];
@@ -291,8 +291,23 @@ function saveEvent(event,desc,startDate,startTime,endDate,endTime) {
     saveRecordsInTable('schedule',[event,desc,startDate,startTime,endDate,endTime,null],null);
 }
 
-function listEvents(model,limit,filter) {
-    listTableRecords(model,'schedule',limit,filter,"startDate ASC, startTime ASC, endDate ASC, endTime ASC");
+function listEvents(model,limit,filter,order) {
+    var orderText;
+    switch(order) {
+    case 4:
+        orderText = "endDate DESC, endTime DESC, startDate DESC, startTime DESC, id DESC";
+        break;
+    case 3:
+        orderText = "startDate DESC, startTime DESC, endDate DESC, endTime DESC, id DESC";
+        break;
+    case 2:
+        orderText = "endDate ASC, endTime ASC, startDate ASC, startTime ASC, id ASC";
+        break;
+    case 1:
+    default:
+        orderText = "startDate ASC, startTime ASC, endDate ASC, endTime ASC, id ASC";
+    }
+    listTableRecords(model,'schedule',limit,filter,orderText);
 }
 
 function getDetailsEventId(id) {

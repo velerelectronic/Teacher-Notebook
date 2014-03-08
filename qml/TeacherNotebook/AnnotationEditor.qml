@@ -94,7 +94,9 @@ Rectangle {
                     }
                 }
 
-                ToolButton {}
+                ToolButton {
+                    enabled: false
+                }
 
                 ToolButton {
                     text: qsTr('Desa')

@@ -35,8 +35,46 @@ Rectangle {
                     id: searchEvents
                     Layout.fillWidth: true
                     anchors.margins: units.nailUnit
-                    onPerformSearch: Storage.listEvents(scheduleModel,null,text)
+                    onPerformSearch: eventList.recalculateList()
                 }
+                Button {
+                    id: orderButton
+                    Layout.fillHeight: true
+                    text: qsTr('Ordre')
+                    menu: Menu {
+                        title: qsTr('Ordenacio')
+                        MenuItem {
+                            text: qsTr('Per data inici')
+                            onTriggered: {
+                                eventList.order = 1;
+                                eventList.recalculateList();
+                            }
+                        }
+                        MenuItem {
+                            text: qsTr('Per data final')
+                            onTriggered: {
+                                eventList.order = 2;
+                                eventList.recalculateList();
+                            }
+                        }
+                        MenuSeparator {}
+                        MenuItem {
+                            text: qsTr('Per data inici inversa')
+                            onTriggered: {
+                                eventList.order = 3;
+                                eventList.recalculateList();
+                            }
+                        }
+                        MenuItem {
+                            text: qsTr('Per data final inversa')
+                            onTriggered: {
+                                eventList.order = 4;
+                                eventList.recalculateList();
+                            }
+                        }
+                    }
+                }
+
                 Button {
                     id: editButton
                     Layout.fillHeight: true
@@ -59,6 +97,7 @@ Rectangle {
             id: eventList
             Layout.preferredWidth: parent.width
             Layout.fillHeight: true
+            property int order: 1
             clip: true
 
             model: ListModel { id: scheduleModel }
@@ -80,6 +119,29 @@ Rectangle {
                         schedule.editEvent(id,event,desc,startDate,startTime,endDate,endTime);
                     }
                 }
+            }
+
+            section.property: ((order==1)||(order==3))?"startDate":"endDate"
+            section.criteria: ViewSection.FullString
+            section.labelPositioning: ViewSection.InlineLabels
+            section.delegate: Component {
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    color: 'white'
+                    height: units.fingerUnit
+                    Text {
+                        anchors.fill: parent
+                        font.bold: true
+                        font.pixelSize: units.nailUnit * 1.5
+                        verticalAlignment: Text.AlignBottom
+                        text: ((eventList.order==1)||(eventList.order==3)?qsTr('A partir de'):qsTr('Fins a')) + ' ' + (section!=''?(new Date()).fromYYYYMMDDFormat(section).toLongDate():qsTr('no especificat'))
+                    }
+                }
+            }
+
+            function recalculateList() {
+                Storage.listEvents(scheduleModel,null,searchEvents.text,eventList.order)
             }
 
             function unselectAll() {
@@ -105,5 +167,5 @@ Rectangle {
 
     }
 
-    Component.onCompleted: Storage.listEvents(scheduleModel,null,null)
+    Component.onCompleted: eventList.recalculateList()
 }
