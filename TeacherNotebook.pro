@@ -29,7 +29,8 @@ OTHER_FILES += \
     android/AndroidManifest.xml \
     qml/TeacherNotebook/common/UseUnits.qml \
     qml/TeacherNotebook/common/BizoneButton.qml \
-    qml/TeacherNotebook/AnnotationsList.qml
+    qml/TeacherNotebook/AnnotationsList.qml \
+    qml/TeacherNotebook/common/FormatDates.js
 
 HEADERS += \
     fileio.h

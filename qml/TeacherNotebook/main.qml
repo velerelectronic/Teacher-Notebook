@@ -22,7 +22,6 @@ Rectangle {
             id: header
             Layout.fillWidth: true
             Layout.preferredHeight: units.nailUnit * 4
-            anchors.margins: units.nailUnit * 4
 
             color: "#009900"
             visible: true
@@ -41,6 +40,7 @@ Rectangle {
                 Text {
                     id: title
                     Layout.fillWidth: true
+                    Layout.preferredHeight: parent.height
                     color: "#ffffff"
                     text: "Teacher Notebook"
                     font.italic: false
@@ -76,6 +76,7 @@ Rectangle {
                 ignoreUnknownSignals: true
                 // Signals
                 onOpenPage: openSubPage(page,{})
+                onOpenPageArgs: openSubPage(page,args)
 
                 // Annotations
                 onOpenAnnotations: openSubPage('AnnotationsList',{})
@@ -142,8 +143,16 @@ Rectangle {
     }
 
     function openSubPage (page, param) {
-        pageLoader.setSource(page + '.qml', param);
-        title.text = pageLoader.item.pageTitle
+        var cont = true;
+        try {
+            cont = pageLoader.item.close();
+        }
+        catch(err) {
+        }
+        if (cont) {
+            pageLoader.setSource(page + '.qml', param);
+            title.text = pageLoader.item.pageTitle;
+        }
     }
 
 }

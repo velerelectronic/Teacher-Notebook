@@ -2,6 +2,8 @@ import QtQuick 2.0
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.1
 import "Storage.js" as Storage
+import 'common' as Common
+import 'common/FormatDates.js' as FormatDates
 
 Rectangle {
     id: newEvent
@@ -20,8 +22,11 @@ Rectangle {
     property string specifyDate: qsTr('Especifica data')
     property string specifyTime: qsTr('Especifica hora')
 
+    Common.UseUnits { id: units }
+
     GridLayout {
         anchors.fill: parent
+        anchors.margins: units.nailUnit
         columns: 2
         Text {
             text:qsTr('Esdeveniment o tasca')
@@ -35,11 +40,13 @@ Rectangle {
         Rectangle {
             border.color: 'black'
             Layout.fillWidth: true
-            height: 100
+            Layout.preferredHeight: childrenRect.height
             TextInput {
                 id: event
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
                 clip: true
+                font.pixelSize: units.fingerUnit
                 wrapMode: TextInput.WrapAtWordBoundaryOrAnywhere
                 inputMethodHints: Qt.ImhNoPredictiveText
             }
@@ -51,12 +58,12 @@ Rectangle {
             border.color: 'black'
             Layout.fillWidth: true
             Layout.fillHeight: true
-            height: 100
             TextInput {
                 id: desc
                 anchors.fill: parent
                 clip: true
                 wrapMode: TextInput.WrapAtWordBoundaryOrAnywhere
+                font.pixelSize: units.nailUnit
                 inputMethodHints: Qt.ImhNoPredictiveText
             }
         }
@@ -65,11 +72,16 @@ Rectangle {
             text: qsTr('Inici')
         }
 
-        RowLayout {
+        Flow {
             Layout.fillWidth: true
             Layout.preferredHeight: childrenRect.height
+            spacing: units.nailUnit
 
             ColumnLayout {
+                width: childrenRect.width
+                height: childrenRect.height
+                spacing: units.nailUnit
+
                 CheckBox {
                     id: startDateOption
                     text: specifyDate
@@ -117,11 +129,16 @@ Rectangle {
             text: qsTr('Final')
         }
 
-        RowLayout {
+        Flow {
             Layout.fillWidth: true
             Layout.preferredHeight: childrenRect.height
+            spacing: units.nailUnit
 
             ColumnLayout {
+                width: childrenRect.width
+                height: childrenRect.height
+                spacing: units.nailUnit
+
                 CheckBox {
                     id: endDateOption
                     text: specifyDate
@@ -165,8 +182,10 @@ Rectangle {
         Text { text: ' '}
 
         RowLayout {
+            Layout.preferredHeight: childrenRect.height
             Button {
                 text: qsTr('Desa')
+                Layout.preferredHeight: units.fingerUnit
                 onClicked: {
                     var startDateStr = (startDateOption.checked)?startDatePicker.getDate().toYYYYMMDDFormat():'';
                     var startTimeStr = (startTimeOption.checked)?startTimePicker.getTime().toHHMMFormat():'';
@@ -178,13 +197,34 @@ Rectangle {
             }
             Button {
                 text: qsTr('Cancela')
-                onClicked: newEvent.canceledEvent()
+                Layout.preferredHeight: units.fingerUnit
+                onClicked: newEvent.close()
             }
         }
     }
+    function close() {
+        if (newEvent.state != 'closing') {
+            newEvent.state = 'closing';
+            newEvent.canceledEvent();
+            return false;
+        } else {
+            return true;
+        }
+    }
     Component.onCompleted: {
-        if (typeof newEvent.idEvent != 'undefined') {
-            var details = Storage.getDetailsEventId();
+        function nullToEmpty(arg) {
+            return (arg)?arg:'';
+        }
+
+        if (newEvent.idEvent != -1) {
+            var details = Storage.getDetailsEventId(newEvent.idEvent);
+            console.log('Details ' + JSON.stringify(details));
+            newEvent.event = nullToEmpty(details.event);
+            newEvent.desc = nullToEmpty(details.desc);
+            newEvent.startDate = nullToEmpty(details.startDate);
+            newEvent.startTime = nullToEmpty(details.startTime);
+            newEvent.endDate = nullToEmpty(details.endDate);
+            newEvent.endTime = nullToEmpty(details.endTime);
         }
         var start = new Date();
         var end = new Date();

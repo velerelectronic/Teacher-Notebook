@@ -11,6 +11,7 @@ Rectangle {
     width: 300
     height: 200
 
+    property int idAnnotation: -1
     property alias annotation: title.text
     property alias desc: contents.text
 
@@ -109,8 +110,8 @@ Rectangle {
                 ToolButton {
                     text: qsTr('Cancela')
                     onClicked: {
-                        Qt.inputMethod.hide()
-                        annotationEditor.canceledAnnotation()
+                        Qt.inputMethod.hide();
+                        annotationEditor.close();
                     }
                 }
             }
@@ -123,6 +124,24 @@ Rectangle {
             anchors.margins: units.nailUnit
             font.pixelSize: units.nailUnit * 2
             inputMethodHints: Qt.ImhNoPredictiveText
+        }
+    }
+    function close() {
+        if (annotationEditor.state != 'closing') {
+            annotationEditor.state = 'closing';
+            annotationEditor.canceledAnnotation();
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    Component.onCompleted: {
+        if (annotationEditor.idAnnotation != -1) {
+            var details = Storage.getDetailsAnnotationId(annotationEditor.idAnnotation);
+            console.log('Details ' + JSON.stringify(details));
+            annotationEditor.annotation = details.title;
+            annotationEditor.desc = details.desc;
         }
     }
 }
