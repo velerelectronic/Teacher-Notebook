@@ -6,6 +6,7 @@ Rectangle {
     id: datePicker
     property var date: new Date()
     property var months: [qsTr('gen'),qsTr('feb'),qsTr('mar'),qsTr('abr'),qsTr('mai'),qsTr('jun'),qsTr('jul'),qsTr('ago'),qsTr('set'),qsTr('oct'),qsTr('nov'),qsTr('des')]
+    signal updatedByUser()
 
     width: childrenRect.width
     height: childrenRect.height
@@ -23,10 +24,10 @@ Rectangle {
                 id: days
                 width: units.fingerUnit * 2
                 content: '0'
-                onUpClicked: { date.setDate( date.getDate() + 1); datePicker.updateDate() }
-                onUpLongClicked: { date.setDate( date.getDate() + 7); datePicker.updateDate() }
-                onDownClicked: { date.setDate( date.getDate() - 1); datePicker.updateDate() }
-                onDownLongClicked: { date.setDate( date.getDate() - 7); datePicker.updateDate() }
+                onUpClicked: { date.setDate( date.getDate() + 1); datePicker.updateDate(true) }
+                onUpLongClicked: { date.setDate( date.getDate() + 7); datePicker.updateDate(true) }
+                onDownClicked: { date.setDate( date.getDate() - 1); datePicker.updateDate(true) }
+                onDownLongClicked: { date.setDate( date.getDate() - 7); datePicker.updateDate(true) }
             }
             Text {
                 text: '/'
@@ -37,10 +38,10 @@ Rectangle {
                 id: months
                 width: units.fingerUnit * 2
                 content: '00'
-                onUpClicked: { date.setMonth( date.getMonth() + 1); datePicker.updateDate() }
-                onUpLongClicked: { date.setMonth( date.getMonth() + 6); datePicker.updateDate() }
-                onDownClicked: { date.setMonth( date.getMonth() - 1); datePicker.updateDate() }
-                onDownLongClicked: { date.setMonth( date.getMonth() - 6); datePicker.updateDate() }
+                onUpClicked: { date.setMonth( date.getMonth() + 1); datePicker.updateDate(true) }
+                onUpLongClicked: { date.setMonth( date.getMonth() + 6); datePicker.updateDate(true) }
+                onDownClicked: { date.setMonth( date.getMonth() - 1); datePicker.updateDate(true) }
+                onDownLongClicked: { date.setMonth( date.getMonth() - 6); datePicker.updateDate(true) }
             }
             Text {
                 text: '/'
@@ -50,27 +51,30 @@ Rectangle {
                 id: year
                 width: units.fingerUnit * 2
                 content: '00'
-                onUpClicked: { date.setFullYear( date.getFullYear() + 1); datePicker.updateDate() }
+                onUpClicked: { date.setFullYear( date.getFullYear() + 1); datePicker.updateDate(true) }
                 onUpLongClicked: {}
-                onDownClicked: { date.setFullYear( date.getFullYear() - 1); datePicker.updateDate() }
+                onDownClicked: { date.setFullYear( date.getFullYear() - 1); datePicker.updateDate(true) }
                 onDownLongClicked: {}
             }
         }
     }
 
-    Component.onCompleted: datePicker.updateDate()
+    Component.onCompleted: datePicker.updateDate(false);
 
-    function updateDate() {
+    function updateDate(sendSignal) {
         days.content = date.getDate();
         var m = date.getMonth();
         months.content = datePicker.months[m];
-        year.content = date.getFullYear()
+        year.content = date.getFullYear();
+        if (sendSignal) {
+            datePicker.updatedByUser();
+        }
     }
 
 
     function setDate(newDate) {
         datePicker.date = newDate;
-        updateDate();
+        updateDate(true);
     }
 
     function getDate() {

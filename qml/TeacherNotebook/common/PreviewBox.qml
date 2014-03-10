@@ -83,9 +83,17 @@ Rectangle {
 
     }
     function makeSummary (model) {
-        for (var i=0; i<maxItems; i++) {
-            internalModel.append(model.get(i));
+        var idxModel=0;
+        var idxItem=0;
+        while ((idxItem<maxItems) && (idxModel<model.count)) {
+            var data = model.get(idxModel);
+            if ((!data.state) || (data.state!='done')) {
+                internalModel.append(data);
+                idxItem++;
+            }
+            idxModel++;
         }
+
         totalCount = model.count;
     }
 }

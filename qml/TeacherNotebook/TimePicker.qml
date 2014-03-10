@@ -5,6 +5,8 @@ import 'common' as Common
 Rectangle {
     id: timePicker
     property var time: new Date()
+    signal updatedByUser()
+
     width: childrenRect.width
     height: childrenRect.height
 
@@ -21,10 +23,10 @@ Rectangle {
                 // Hours
                 id: hour
                 content: '0'
-                onUpClicked: { time.setHours( time.getHours() + 1); timePicker.updateTime() }
-                onUpLongClicked:  { time.setHours( time.getHours() + 12); timePicker.updateTime() }
-                onDownClicked: { time.setHours( time.getHours() - 1); timePicker.updateTime() }
-                onDownLongClicked: { time.setHours( time.getHours() - 12); timePicker.updateTime() }
+                onUpClicked: { time.setHours( time.getHours() + 1); timePicker.updateTime(true) }
+                onUpLongClicked:  { time.setHours( time.getHours() + 12); timePicker.updateTime(true) }
+                onDownClicked: { time.setHours( time.getHours() - 1); timePicker.updateTime(true) }
+                onDownLongClicked: { time.setHours( time.getHours() - 12); timePicker.updateTime(true) }
             }
             Text {
                 id: separator
@@ -39,26 +41,29 @@ Rectangle {
                 // Minutes
                 id: minute
                 content: '00'
-                onUpClicked: { time.setMinutes( time.getMinutes() + 1); timePicker.updateTime() }
-                onUpLongClicked: { time.setMinutes( time.getMinutes() + 10); timePicker.updateTime() }
-                onDownClicked: { time.setMinutes( time.getMinutes() - 1); timePicker.updateTime() }
-                onDownLongClicked: { time.setMinutes( time.getMinutes() - 10); timePicker.updateTime() }
+                onUpClicked: { time.setMinutes( time.getMinutes() + 1); timePicker.updateTime(true) }
+                onUpLongClicked: { time.setMinutes( time.getMinutes() + 10); timePicker.updateTime(true) }
+                onDownClicked: { time.setMinutes( time.getMinutes() - 1); timePicker.updateTime(true) }
+                onDownLongClicked: { time.setMinutes( time.getMinutes() - 10); timePicker.updateTime(true) }
             }
         }
     }
 
-    Component.onCompleted: timePicker.updateTime()
+    Component.onCompleted: timePicker.updateTime(false)
 
-    function updateTime() {
+    function updateTime(sendSignal) {
         var h = time.getHours()
         hour.content = ((h<10)?'0':'') + h
         var m = time.getMinutes()
         minute.content = ((m<10)?'0':'') + m
+        if (sendSignal) {
+            updatedByUser()
+        }
     }
 
     function setDateTime(newDate) {
         timePicker.time = new Date(newDate);
-        updateTime();
+        updateTime(false);
     }
 
     function getTime() {

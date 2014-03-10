@@ -12,12 +12,16 @@ Rectangle {
         State {
             name: 'selected'
             PropertyChanges { target: annotationItem; color: 'grey' }
+        },
+        State {
+            name: 'hidden'
+            PropertyChanges { target: annotationItem; height: 0; visible: false }
         }
+
     ]
 
     property alias title: titleLabel.text
     property alias desc: descLabel.text
-    property int esquirolGraphicalUnit: 100
     signal annotationSelected (string title,string desc)
 
     border.color: "black";

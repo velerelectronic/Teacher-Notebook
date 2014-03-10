@@ -32,12 +32,39 @@ Rectangle {
                     text: qsTr('Nou esdeveniment')
                     onClicked: schedule.newEvent()
                 }
+                Button {
+                    id: editButton
+                    Layout.fillHeight: true
+                    text: qsTr('Edita')
+                    onClicked: editBox.state = 'show'
+                }
                 Common.SearchBox {
                     id: searchEvents
                     Layout.fillWidth: true
                     anchors.margins: units.nailUnit
                     onPerformSearch: eventList.recalculateList()
                 }
+                Button {
+                    id: showOptionsButton
+                    Layout.fillHeight: true
+                    text: qsTr('Mostra')
+                    menu: Menu {
+                        title: qsTr('Mostra esdeveniments')
+                        MenuItem {
+                            id: showOpen
+                            checkable: true
+                            checked: true
+                            text: qsTr('Oberts')
+                        }
+                        MenuItem {
+                            id: showDone
+                            checkable: true
+                            checked: false
+                            text: qsTr('Finalitzats')
+                        }
+                    }
+                }
+
                 Button {
                     id: orderButton
                     Layout.fillHeight: true
@@ -75,13 +102,6 @@ Rectangle {
                         }
                     }
                 }
-
-                Button {
-                    id: editButton
-                    Layout.fillHeight: true
-                    text: qsTr('Edita')
-                    onClicked: editBox.state = 'show'
-                }
             }
         }
 
@@ -105,13 +125,30 @@ Rectangle {
             delegate: ScheduleItem {
                 anchors.left: parent.left
                 anchors.right: parent.right
-                state: (model.selected)?'selected':'basic'
+                state: {
+                    if (model.selected)
+                        return 'selected'
+                    else {
+                        if ((model.state) && (model.state=='done')) {
+                            if (showDone.checked)
+                                return 'done'
+                            else
+                                return 'hidden'
+                        } else {
+                            if (showOpen.checked)
+                                return 'basic'
+                            else
+                                return 'hidden'
+                        }
+                    }
+                }
                 event: model.event
                 desc: model.desc
                 startDate: model.startDate
                 startTime: model.startTime
                 endDate: model.endDate
                 endTime: model.endTime
+                stateEvent: model.state
 
                 onScheduleItemSelected: {
                     if (editBox.state == 'show') {

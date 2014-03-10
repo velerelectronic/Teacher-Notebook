@@ -12,10 +12,20 @@ Rectangle {
             PropertyChanges { target: mainContents; color: '#EFFBF5' }
         },
         State {
+            name: 'done'
+            PropertyChanges { target: datesRect; color: '#E6E6E6' }
+            PropertyChanges { target: mainContents; color: '#E6E6E6' }
+        },
+        State {
             name: 'selected'
-            PropertyChanges { target: datesRect; color: 'grey' }
-            PropertyChanges { target: mainContents; color: 'grey' }
+            PropertyChanges { target: datesRect; color: '#58FAAC' }
+            PropertyChanges { target: mainContents; color: '#58FAAC' }
+        },
+        State {
+            name: 'hidden'
+            PropertyChanges { target: scheduleItem; height: 0 }
         }
+
     ]
     transitions: [
         Transition {
@@ -32,6 +42,7 @@ Rectangle {
     property alias startTime: startTime.text
     property alias endDate: endDate.text
     property alias endTime: endTime.text
+    property var stateEvent: ''
 
     signal scheduleItemSelected (string event,string desc,string startDate,string startTime,string endDate,string endTime)
 
@@ -90,22 +101,27 @@ Rectangle {
             id: mainContents
             border.color: 'black'
             Layout.fillWidth: true
-            Layout.preferredHeight: parent.height
+            Layout.preferredHeight: childrenRect.height
             clip: true
 
             ColumnLayout {
+                height: childrenRect.height
+                anchors.left: parent.left
+                anchors.right: parent.right
                 Text {
                     id: eventTitle
                     Layout.preferredWidth: parent.width
-                    Layout.preferredHeight: paintedHeight
+                    Layout.preferredHeight: height
                     font.bold: true
-                    wrapMode: Text.Wrap
+                    textFormat: Text.PlainText
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 }
                 Text {
                     id: eventDesc
                     Layout.preferredWidth: parent.width
-                    Layout.preferredHeight: paintedHeight
-                    wrapMode: Text.Wrap
+                    Layout.preferredHeight: height
+                    textFormat: Text.PlainText
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 }
             }
         }

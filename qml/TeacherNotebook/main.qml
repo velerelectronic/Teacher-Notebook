@@ -108,7 +108,9 @@ Rectangle {
                     openSubPage('Schedule',{})
                 }
                 onCanceledEvent: {
-                    messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
+                    if (changes) {
+                        messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
+                    }
                     openSubPage('Schedule',{})
                 }
             }
@@ -145,13 +147,15 @@ Rectangle {
     function openSubPage (page, param) {
         var cont = true;
         try {
-            cont = pageLoader.item.close();
+            cont = pageLoader.item.changePageRequested();
         }
         catch(err) {
         }
         if (cont) {
             pageLoader.setSource(page + '.qml', param);
             title.text = pageLoader.item.pageTitle;
+        } else {
+            messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
         }
     }
 

@@ -130,6 +130,7 @@ function listTableRecords (model,tblname,limit,filterStr,orderStr) {
                     var rs = tx.executeSql(qStr + filterQuery + orderStr + limitStr, fillArray(filterStr,list.length));
                     model.clear();
                     for (var i=0; i<rs.rows.length; i++) {
+                        console.log("Appending " + JSON.stringify(convertToArray(rs.rows.item(i))));
                         model.append(convertToArray(rs.rows.item(i)));
                     }
                 });
@@ -171,12 +172,20 @@ function listOneRecord (tblname, id) {
 function saveRecordsInTable(tblname,fields,refrowid) {
     getDatabase().transaction(
             function (tx) {
-                var text = '?,'.repeat(fields.length);
-                text += '?,?,?';
-                var instant = currentTime();
-                console.log("INSERT INTO " + tblname + " VALUES ("+text+")" + '-->' +[null,instant,((refrowid==null)?'':refrowid)].concat(fields));
-                var rs = tx.executeSql("INSERT INTO " + tblname + " VALUES ("+text+")",[null,instant,((refrowid==null)?'':refrowid)].concat(fields));
-                console.log('Insert ID ' + rs.insertId);
+                if (refrowid<0) {
+                    var text = '?,'.repeat(fields.length);
+                    text += '?,?,?';
+                    var instant = currentTime();
+                    console.log("INSERT INTO " + tblname + " VALUES ("+text+")" + '-->' +[null,instant,((refrowid==null)?'':refrowid)].concat(fields));
+                    var rs = tx.executeSql("INSERT INTO " + tblname + " VALUES ("+text+")",[null,instant,((refrowid==null)?'':refrowid)].concat(fields));
+                    console.log('Insert ID ' + rs.insertId);
+                } else {
+                    var fieldNames = listTableFields(tx,tblname);
+                    for (var i=0; i<fieldNames.length; i++) {
+                        var rs = tx.executeSql("UPDATE "+ tblname + " SET " + fieldNames[i] + "=? WHERE id=?",[fields[i],refrowid]);
+                        console.log("UPDATE "+ tblname + " SET " + fieldNames[i] + "=? WHERE id=?" + '--->' + [fields[i],refrowid]);
+                    }
+                }
             });
 }
 
@@ -239,8 +248,8 @@ function createScheduleTable(tx) {
     createDimensionalTable(tx,'schedule',['event','desc','startDate','startTime','endDate','endTime','state'],['Esdeveniment','Descripcio','Data inicial','Hora inicial','Data final','Hora final','Estat']);
 }
 
-function saveEvent(event,desc,startDate,startTime,endDate,endTime) {
-    saveRecordsInTable('schedule',[event,desc,startDate,startTime,endDate,endTime,null],null);
+function saveEvent(id,event,desc,startDate,startTime,endDate,endTime,state) {
+    saveRecordsInTable('schedule',[event,desc,startDate,startTime,endDate,endTime,state],id);
 }
 
 function listEvents(model,limit,filter,order) {
