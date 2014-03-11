@@ -46,23 +46,23 @@ Rectangle {
 
     signal scheduleItemSelected (string event,string desc,string startDate,string startTime,string endDate,string endTime)
 
-    height: Math.max(units.nailUnit * 3, eventTitle.height+eventDesc.height)
+    height: Math.max(units.fingerUnit, eventTitle.height+eventDesc.height)
     border.color: 'black'
 
     Common.UseUnits { id: units }
 
     RowLayout {
-        width: parent.width
-        height: parent.height
+        anchors.fill: parent
         spacing: 0
 
         Rectangle {
             id: datesRect
             border.color: 'black'
-            Layout.preferredWidth: units.fingerUnit * 8
+            Layout.preferredWidth: units.fingerUnit * 5
             Layout.preferredHeight: parent.height
             GridLayout {
                 anchors.fill: parent
+
                 rows: 2
                 flow: GridLayout.TopToBottom
                 columnSpacing: 0
@@ -101,17 +101,15 @@ Rectangle {
             id: mainContents
             border.color: 'black'
             Layout.fillWidth: true
-            Layout.preferredHeight: childrenRect.height
+            Layout.preferredHeight: parent.height
             clip: true
 
             ColumnLayout {
-                height: childrenRect.height
-                anchors.left: parent.left
-                anchors.right: parent.right
+                anchors.fill: parent
                 Text {
                     id: eventTitle
                     Layout.preferredWidth: parent.width
-                    Layout.preferredHeight: height
+                    Layout.preferredHeight: paintedHeight
                     font.bold: true
                     textFormat: Text.PlainText
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -119,7 +117,7 @@ Rectangle {
                 Text {
                     id: eventDesc
                     Layout.preferredWidth: parent.width
-                    Layout.preferredHeight: height
+                    Layout.preferredHeight: paintedHeight
                     textFormat: Text.PlainText
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 }

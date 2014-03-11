@@ -1,4 +1,5 @@
 .import QtQuick.LocalStorage 2.0 as Sql
+.import 'constants/NotebookEvent.js' as NotebookEvent
 
 String.prototype.repeat = function(times) {
     return Array(times+1).join(this);
@@ -102,7 +103,7 @@ function newDimensionalTable (tblname,camps,desc) {
                 });
 }
 
-function listTableRecords (model,tblname,limit,filterStr,orderStr) {
+function listTableRecords (model,tblname,limit,filterStr,orderStr,extraStr) {
         // If order is different from "", then the results will be sorted
         // If the limit is 0, all the results will be selected
     getDatabase().transaction(
@@ -112,6 +113,8 @@ function listTableRecords (model,tblname,limit,filterStr,orderStr) {
                     var qStr = "SELECT * FROM " + tblname;
                     var filterQuery = '';
                     var list = [];
+
+                    // Add a filter to look for strings in all fields
                     if ((filterStr != null) && (filterStr != '')) {
                         list = listTableFields(tx,tblname);
                         var filterField = [];
@@ -119,10 +122,21 @@ function listTableRecords (model,tblname,limit,filterStr,orderStr) {
                             filterField.push('instr(UPPER('+list[i]+'),UPPER(?))');
                         }
 
-                        filterQuery = ' WHERE ' + filterField.join(' OR ');
+                        filterQuery = ' WHERE (' + filterField.join(' OR ') + ')';
                     }
 
+                    // Add a filter based on extra conditions
+                    if (extraStr != '') {
+                        if (filterQuery == '')
+                            filterQuery = ' WHERE ' + extraStr;
+                        else
+                            filterQuery += ' AND ' + extraStr;
+                    }
+
+                    // Sort results
                     orderStr = (orderStr=='')?" ORDER BY id DESC":" ORDER BY " + orderStr;
+
+                    // Limit the number of results
                     if (limit>0) {
                             limitStr += " LIMIT "+(limit.toString());
                     }
@@ -130,7 +144,6 @@ function listTableRecords (model,tblname,limit,filterStr,orderStr) {
                     var rs = tx.executeSql(qStr + filterQuery + orderStr + limitStr, fillArray(filterStr,list.length));
                     model.clear();
                     for (var i=0; i<rs.rows.length; i++) {
-                        console.log("Appending " + JSON.stringify(convertToArray(rs.rows.item(i))));
                         model.append(convertToArray(rs.rows.item(i)));
                     }
                 });
@@ -224,7 +237,7 @@ function saveAnnotation(title,desc) {
 }
 
 function listAnnotations(model,limit,text) {
-    listTableRecords(model,'annotations',limit,text,'');
+    listTableRecords(model,'annotations',limit,text,'','');
 }
 
 function getDetailsAnnotationId(id) {
@@ -252,7 +265,7 @@ function saveEvent(id,event,desc,startDate,startTime,endDate,endTime,state) {
     saveRecordsInTable('schedule',[event,desc,startDate,startTime,endDate,endTime,state],id);
 }
 
-function listEvents(model,limit,filter,order) {
+function listEvents(model,limit,filter,order,stateType) {
     var orderText;
     switch(order) {
     case 4:
@@ -268,7 +281,20 @@ function listEvents(model,limit,filter,order) {
     default:
         orderText = "startDate ASC, startTime ASC, endDate ASC, endTime ASC, id ASC";
     }
-    listTableRecords(model,'schedule',limit,filter,orderText);
+    var extraFilter;
+    switch(stateType) {
+    case NotebookEvent.StateDone:
+        extraFilter = "state='done'";
+        break;
+    case NotebookEvent.StateNotDone:
+        extraFilter = "(state IS NULL OR state!='done')";
+        break;
+    case NotebookEvent.StateAll:
+    default:
+        extraFilter = '';
+    }
+
+    listTableRecords(model,'schedule',limit,filter,orderText,extraFilter);
 }
 
 function getDetailsEventId(id) {

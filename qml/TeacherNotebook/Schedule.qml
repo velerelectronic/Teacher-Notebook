@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.1
 import 'common' as Common
 import 'Storage.js' as Storage
 import 'common/FormatDates.js' as FormatDates
+import 'constants/NotebookEvent.js' as NotebookEvent
 
 Rectangle {
     id: schedule
@@ -55,13 +56,24 @@ Rectangle {
                             checkable: true
                             checked: true
                             text: qsTr('Oberts')
+                            onTriggered: {
+                                eventList.stateType = showOptionsButton.calculateStateType()
+                                eventList.recalculateList()
+                            }
                         }
                         MenuItem {
                             id: showDone
                             checkable: true
                             checked: false
                             text: qsTr('Finalitzats')
+                            onTriggered: {
+                                eventList.stateType = showOptionsButton.calculateStateType()
+                                eventList.recalculateList()
+                            }
                         }
+                    }
+                    function calculateStateType() {
+                        return ((showOpen.checked)?NotebookEvent.StateNotDone:0) + ((showDone.checked)?NotebookEvent.StateDone:0)
                     }
                 }
 
@@ -119,6 +131,7 @@ Rectangle {
             Layout.preferredWidth: parent.width
             Layout.fillHeight: true
             property int order: 1
+            property int stateType: NotebookEvent.StateNotDone
             clip: true
 
             model: ListModel { id: scheduleModel }
@@ -130,15 +143,9 @@ Rectangle {
                         return 'selected'
                     else {
                         if ((model.state) && (model.state=='done')) {
-                            if (showDone.checked)
-                                return 'done'
-                            else
-                                return 'hidden'
+                            return 'done'
                         } else {
-                            if (showOpen.checked)
-                                return 'basic'
-                            else
-                                return 'hidden'
+                            return 'basic'
                         }
                     }
                 }
@@ -180,7 +187,7 @@ Rectangle {
             }
 
             function recalculateList() {
-                Storage.listEvents(scheduleModel,null,searchEvents.text,eventList.order)
+                Storage.listEvents(scheduleModel,null,searchEvents.text,eventList.order,eventList.stateType);
             }
 
             function unselectAll() {
