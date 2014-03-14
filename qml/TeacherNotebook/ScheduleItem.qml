@@ -46,7 +46,7 @@ Rectangle {
 
     signal scheduleItemSelected (string event,string desc,string startDate,string startTime,string endDate,string endTime)
 
-    height: Math.max(units.fingerUnit, eventTitle.height+eventDesc.height)
+    height: Math.max(units.fingerUnit, eventTitle.height + eventDesc.height + units.nailUnit * 3)
     border.color: 'black'
 
     Common.UseUnits { id: units }
@@ -58,41 +58,50 @@ Rectangle {
         Rectangle {
             id: datesRect
             border.color: 'black'
-            Layout.preferredWidth: units.fingerUnit * 5
+            Layout.preferredWidth: units.fingerUnit * 6 + 2 * units.nailUnit
             Layout.preferredHeight: parent.height
             GridLayout {
                 anchors.fill: parent
+                anchors.margins: units.nailUnit
 
-                rows: 2
+                rows: 3
                 flow: GridLayout.TopToBottom
                 columnSpacing: 0
-                rowSpacing: 0
+                rowSpacing: units.nailUnit
 
                 Text {
                     id: startDate
-                    Layout.preferredWidth: units.fingerUnit * 2
+                    Layout.preferredWidth: units.fingerUnit * 3
                     Layout.preferredHeight: units.nailUnit
                     font.pixelSize: units.nailUnit
+                    horizontalAlignment: Text.AlignHCenter
                     font.bold: true
                 }
                 Text {
                     id: startTime
-                    Layout.preferredWidth: units.fingerUnit * 2
+                    Layout.preferredWidth: units.fingerUnit * 3
                     Layout.preferredHeight: units.nailUnit
+                    horizontalAlignment: Text.AlignHCenter
                     font.pixelSize: units.nailUnit
                 }
+                Item {
+                    Layout.fillHeight: true
+                }
+
                 Text {
                     id: endDate
-                    Layout.preferredWidth: units.fingerUnit * 2
+                    Layout.preferredWidth: units.fingerUnit * 3
                     Layout.preferredHeight: units.nailUnit
                     font.pixelSize: units.nailUnit
                     font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
                 }
                 Text {
                     id: endTime
-                    Layout.preferredWidth: units.fingerUnit * 2
+                    Layout.preferredWidth: units.fingerUnit * 3
                     Layout.preferredHeight: units.nailUnit
                     font.pixelSize: units.nailUnit
+                    horizontalAlignment: Text.AlignHCenter
                 }
             }
         }
@@ -106,6 +115,9 @@ Rectangle {
 
             ColumnLayout {
                 anchors.fill: parent
+                anchors.margins: units.nailUnit
+                spacing: units.nailUnit
+
                 Text {
                     id: eventTitle
                     Layout.preferredWidth: parent.width

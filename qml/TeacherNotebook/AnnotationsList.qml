@@ -11,7 +11,7 @@ Rectangle {
     width: 300
     height: 200
 
-    signal editAnnotation (string annotation, string desc)
+    signal editAnnotation (int id,string annotation, string desc)
     signal deletedAnnotations (int num)
 
     Common.UseUnits { id: units }
@@ -25,7 +25,7 @@ Rectangle {
                 anchors.margins: units.nailUnit
                 text: 'Nova'
                 onClicked: {
-                    annotations.editAnnotation((searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'),'');
+                    annotations.editAnnotation(-1,(searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'),'');
 //                    editAnnotation.setSource('AnnotationEditor.qml',{title: (searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'), desc: ''})
 //                    editAnnotation.visible = true
                 }
@@ -73,7 +73,7 @@ Rectangle {
                     if (editBox.state == 'show') {
                         annotationsModel.setProperty(model.index,'selected',!annotationsModel.get(model.index).selected);
                     } else {
-                        annotations.editAnnotation(title,desc)
+                        annotations.editAnnotation(model.id,title,desc)
 //                        editAnnotation.setSource('AnnotationEditor.qml',{title: title, desc: desc});
 //                        editAnnotation.parent.visible = true
                     }

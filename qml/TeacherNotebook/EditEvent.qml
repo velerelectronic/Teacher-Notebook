@@ -5,14 +5,12 @@ import "Storage.js" as Storage
 import 'common' as Common
 import 'common/FormatDates.js' as FormatDates
 
-Rectangle {
+Common.AbstractEditor {
     id: newEvent
     property string pageTitle: qsTr('Edita esdeveniment')
 
     signal savedEvent(string event, string desc,date startDate,date startTime,date endDate,date endTime)
     signal canceledEvent(bool changes)
-
-    property bool changes: false
 
     property int idEvent: -1
     property alias event: event.text
@@ -53,7 +51,7 @@ Rectangle {
                 font.pixelSize: units.fingerUnit
                 wrapMode: TextInput.WrapAtWordBoundaryOrAnywhere
                 inputMethodHints: Qt.ImhNoPredictiveText
-                onTextChanged: newEvent.changes = true
+                onTextChanged: newEvent.setChanges(true)
             }
         }
         Text {
@@ -66,7 +64,7 @@ Rectangle {
             Component.onCompleted: checked = (newEvent.stateEvent == 'done')
             onClicked: {
                 newEvent.stateEvent = (checked)?'done':'';
-                newEvent.changes = true;
+                newEvent.setChanges(true);
             }
         }
         Text {
@@ -83,7 +81,7 @@ Rectangle {
                 wrapMode: TextInput.WrapAtWordBoundaryOrAnywhere
                 font.pixelSize: units.nailUnit
                 inputMethodHints: Qt.ImhNoPredictiveText
-                onTextChanged: newEvent.changes = true
+                onTextChanged: newEvent.setChanges(true)
             }
         }
         Text {
@@ -104,14 +102,14 @@ Rectangle {
                 CheckBox {
                     id: startDateOption
                     text: specifyDate
-                    onCheckedChanged: newEvent.changes = true
+                    onCheckedChanged: newEvent.setChanges(true)
                 }
                 CheckBox {
                     id: startTimeOption
                     text: specifyTime
                     // If the date is not specified then we don't show the option to change the time
                     visible: startDateOption.checked
-                    onCheckedChanged: newEvent.changes = true
+                    onCheckedChanged: newEvent.setChanges(true)
                 }
             }
 
@@ -119,13 +117,13 @@ Rectangle {
                 id: startDatePicker
                 // We can choose the date whenever the option has been enabled
                 visible: startDateOption.checked
-                onUpdatedByUser: newEvent.changes = true
+                onUpdatedByUser: newEvent.setChanges(true)
             }
 
             TimePicker {
                 id: startTimePicker
                 visible: startTimeOption.visible && startTimeOption.checked
-                onUpdatedByUser: newEvent.changes = true
+                onUpdatedByUser: newEvent.setChanges(true)
             }
 
             Button {
@@ -136,7 +134,7 @@ Rectangle {
                     var today = new Date();
                     startDatePicker.setDate(today);
                     startTimePicker.setDateTime(today);
-                    newEvent.changes = true;
+                    newEvent.setChanges(true);
                 }
             }
             Button {
@@ -166,27 +164,27 @@ Rectangle {
                 CheckBox {
                     id: endDateOption
                     text: specifyDate
-                    onCheckedChanged: newEvent.changes = true
+                    onCheckedChanged: newEvent.setChanges(true)
                 }
                 CheckBox {
                     id: endTimeOption
                     text: specifyTime
                     // If the date is not specified then we don't show the option to change the time
                     visible: endDateOption.checked
-                    onCheckedChanged: newEvent.changes = true
+                    onCheckedChanged: newEvent.setChanges(true)
                 }
             }
 
             DatePicker {
                 id: endDatePicker
                 visible: endDateOption.checked
-                onUpdatedByUser: newEvent.changes = true
+                onUpdatedByUser: newEvent.setChanges(true)
             }
 
             TimePicker {
                 id: endTimePicker
                 visible: endTimeOption.visible && endTimeOption.checked
-                onUpdatedByUser: newEvent.changes = true
+                onUpdatedByUser: newEvent.setChanges(true)
             }
             Button {
                 text: qsTr('Ara')
@@ -195,7 +193,7 @@ Rectangle {
                     var today = new Date();
                     endDatePicker.setDate(today);
                     endTimePicker.setDateTime(today);
-                    newEvent.changes = true;
+                    newEvent.setChanges(true);
                 }
             }
             Button {
@@ -222,7 +220,7 @@ Rectangle {
                 Layout.preferredHeight: units.fingerUnit
                 onClicked: {
                     var changes = newEvent.changes;
-                    newEvent.changes = false;
+                    newEvent.setChanges(false);
                     newEvent.canceledEvent(changes);
                 }
             }
@@ -240,17 +238,10 @@ Rectangle {
         var endDateStr = (endDateOption.checked)?endDatePicker.getDate().toYYYYMMDDFormat():'';
         var endTimeStr = (endTimeOption.checked)?endTimePicker.getTime().toHHMMFormat():'';
         Storage.saveEvent(idCode,event.text,desc.text,startDateStr,startTimeStr,endDateStr,endTimeStr,newEvent.stateEvent);
-        newEvent.changes = false;
+        newEvent.setChanges(false);
         newEvent.savedEvent(event.text,desc.text,startDateStr,startTimeStr,endDateStr,endTimeStr);
     }
 
-    function changePageRequested() {
-        if (newEvent.changes) {
-            return false;
-        } else {
-            return true;
-        }
-    }
     Component.onCompleted: {
         function nullToEmpty(arg) {
             return (arg)?arg:'';
@@ -284,6 +275,6 @@ Rectangle {
         endTimeOption.checked = (endTime!='');
 
         // Reinit changes
-        newEvent.changes = false;
+        newEvent.setChanges(false);
     }
 }

@@ -232,8 +232,8 @@ function createAnnotationsTable(tx) {
     createDimensionalTable(tx,'annotations',['title','desc'],['Títol','Descripció']);
 }
 
-function saveAnnotation(title,desc) {
-    saveRecordsInTable('annotations',[title,desc],null);
+function saveAnnotation(id,title,desc) {
+    saveRecordsInTable('annotations',[title,desc],id);
 }
 
 function listAnnotations(model,limit,text) {

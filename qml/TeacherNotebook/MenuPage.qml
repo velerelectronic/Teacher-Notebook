@@ -24,19 +24,18 @@ Rectangle {
             Common.PreviewBox {
                 id: lastAnnotations
                 width: parent.width
+                Layout.preferredHeight: height
 
                 ListModel {
                     id: annotationsModel
                 }
                 delegate: Item {
                     width: parent.width
-                    height: textAnnot.height
+                    height: units.fingerUnit
                     Text {
                         id: textAnnot
-                        anchors.left: parent.left
-                        anchors.right: parent.right
+                        anchors.fill: parent
                         anchors.margins: units.nailUnit
-                        height: units.fingerUnit
                         elide: Text.ElideRight
                         maximumLineCount: 1
                         font.pixelSize: units.nailUnit
@@ -44,7 +43,7 @@ Rectangle {
                         text: '– ' + title + ' ' + desc
                     }
                     MouseArea {
-                        anchors.fill: textAnnot
+                        anchors.fill: parent
                         onClicked: menuPage.openPageArgs('AnnotationEditor',{idAnnotation: id})
                     }
                 }
@@ -66,21 +65,21 @@ Rectangle {
             Common.PreviewBox {
                 id: nextEvents
                 width: parent.width
+                Layout.preferredHeight: height
 
                 ListModel {
                     id: eventsModel
                 }
                 delegate: Item {
                     width: parent.width
-                    height: textEvents.height
+                    height: units.fingerUnit
                     RowLayout {
                         id: textEvents
-                        anchors.left: parent.left
-                        anchors.right: parent.right
+                        anchors.fill: parent
                         anchors.margins: units.nailUnit
 
                         Text {
-                            height: units.fingerUnit
+                            Layout.preferredHeight: parent.height
                             text: endDate
                             font.bold: true
                             font.pixelSize: units.nailUnit
@@ -89,7 +88,7 @@ Rectangle {
 
                         Text {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: units.fingerUnit
+                            Layout.preferredHeight: parent.height
                             elide: Text.ElideRight
                             maximumLineCount: 1
                             font.pixelSize: units.nailUnit

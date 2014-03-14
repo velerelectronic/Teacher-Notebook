@@ -13,6 +13,8 @@ Rectangle {
     signal openAnnotations
     signal openPage(string page)
 
+    property string lastRequestedPage: ''
+
     Common.UseUnits { id: units }
 
     ColumnLayout {
@@ -80,17 +82,19 @@ Rectangle {
 
                 // Annotations
                 onOpenAnnotations: openSubPage('AnnotationsList',{})
-                onEditAnnotation: openSubPage('AnnotationEditor',{annotation: annotation, desc: desc})
+                onEditAnnotation: openSubPage('AnnotationEditor',{idAnnotation: id, annotation: annotation, desc: desc})
                 onDeletedAnnotations: {
                     messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
                 }
                 onSavedAnnotation: {
-                    messageBox.publishMessage('Desat «' + annotation + '» amb «' + desc + '»')
+                    messageBox.publishMessage('Anotació desada: títol «' + annotation + '», descripció «' + desc + '»')
                     openSubPage('AnnotationsList',{});
                 }
                 onCanceledAnnotation: {
-                    messageBox.publishMessage(qsTr("S'han descartat els canvis en l'anotació"))
-                    openSubPage('AnnotationsList',{});
+                    if (changes) {
+                        messageBox.publishMessage(qsTr("S'han descartat els canvis en l'anotació"))
+                    }
+                    forceOpenSubPage('AnnotationsList',{});
                 }
 
                 onOpenDocumentsList: openSubPage('DocumentsList',{})
@@ -104,15 +108,22 @@ Rectangle {
                     messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'))
                 }
                 onSavedEvent: {
-                    messageBox.publishMessage(qsTr('Esdeveniment desat: titol «') + event + qsTr('», descripcio «') + desc + qsTr('»'))
-                    openSubPage('Schedule',{})
+                    messageBox.publishMessage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'))
+                    forceOpenSubPage('Schedule',{})
                 }
                 onCanceledEvent: {
                     if (changes) {
                         messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
                     }
-                    openSubPage('Schedule',{})
+                    forceOpenSubPage('Schedule',{})
                 }
+
+                // Editors
+                onAcceptedCloseEditorRequest: {
+                    console.log(lastRequestedPage)
+                    forceOpenSubPage(lastRequestedPage,{})
+                }
+                onRefusedCloseEditorRequest: messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
             }
         }
     }
@@ -144,20 +155,24 @@ Rectangle {
         openSubPage('MenuPage',{})
     }
 
-    function openSubPage (page, param) {
-        var cont = true;
-        try {
-            cont = pageLoader.item.changePageRequested();
-        }
-        catch(err) {
-        }
-        if (cont) {
-            pageLoader.setSource(page + '.qml', param);
-            title.text = pageLoader.item.pageTitle;
-        } else {
-            messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
-        }
+    function forceOpenSubPage(page,param) {
+        pageLoader.setSource(page + '.qml', param);
+        title.text = pageLoader.item.pageTitle;
     }
 
+    function openSubPage (page, param) {
+        console.log('Open subpage: ' + page)
+        var cont = false;
+        lastRequestedPage = page;
+        try {
+            pageLoader.item.requestCloseEditor();
+        }
+        catch(err) {
+            cont = true;
+        }
+        if (cont) {
+            forceOpenSubPage(page,param)
+        }
+    }
 }
 

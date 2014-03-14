@@ -4,7 +4,7 @@ import QtQuick.Layouts 1.1
 import 'common' as Common
 import 'Storage.js' as Storage
 
-Rectangle {
+Common.AbstractEditor {
     id: annotationEditor
     property string pageTitle: qsTr("Editor d'anotacions")
 
@@ -16,7 +16,7 @@ Rectangle {
     property alias desc: contents.text
 
     signal savedAnnotation(string annotation, string desc)
-    signal canceledAnnotation
+    signal canceledAnnotation(bool changes)
 
     Common.UseUnits { id: units }
 
@@ -43,6 +43,7 @@ Rectangle {
                 font.pixelSize: units.nailUnit * 2
                 inputMethodHints: Qt.ImhNoPredictiveText
                 clip: true
+                onTextChanged: annotationEditor.setChanges(true)
             }
         }
         ToolBar {
@@ -103,7 +104,8 @@ Rectangle {
                     text: qsTr('Desa')
                     onClicked: {
                         Qt.inputMethod.hide()
-                        Storage.saveAnnotation(annotation,desc);
+                        Storage.saveAnnotation(idAnnotation,annotation,desc);
+                        annotationEditor.setChanges(false);
                         annotationEditor.savedAnnotation(annotation,desc);
                     }
                 }
@@ -111,7 +113,8 @@ Rectangle {
                     text: qsTr('Cancela')
                     onClicked: {
                         Qt.inputMethod.hide();
-                        annotationEditor.close();
+                        var prev = annotationEditor.setChanges(false);
+                        annotationEditor.canceledAnnotation(prev);
                     }
                 }
             }
@@ -124,15 +127,7 @@ Rectangle {
             anchors.margins: units.nailUnit
             font.pixelSize: units.nailUnit * 2
             inputMethodHints: Qt.ImhNoPredictiveText
-        }
-    }
-    function close() {
-        if (annotationEditor.state != 'closing') {
-            annotationEditor.state = 'closing';
-            annotationEditor.canceledAnnotation();
-            return false;
-        } else {
-            return true;
+            onTextChanged: annotationEditor.setChanges(true)
         }
     }
 
@@ -142,6 +137,7 @@ Rectangle {
             console.log('Details ' + JSON.stringify(details));
             annotationEditor.annotation = details.title;
             annotationEditor.desc = details.desc;
+            annotationEditor.setChanges(false);
         }
     }
 }

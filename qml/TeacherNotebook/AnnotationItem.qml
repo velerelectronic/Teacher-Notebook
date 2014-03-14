@@ -30,11 +30,12 @@ Rectangle {
     signal annotationSelected (string title,string desc)
 
     border.color: "black";
-    height: childrenRect.height
+    height: contents.height + units.nailUnit * 2
 
     Common.UseUnits { id: units }
 
     Item {
+        id: contents
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
@@ -42,12 +43,16 @@ Rectangle {
         anchors.margins: units.nailUnit
 
         ColumnLayout {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+
             spacing: units.nailUnit
             Text {
                 id: titleLabel
     //            anchors { left: parent.left; right: parent.right; margins: units.nailUnit }
                 Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit
+                Layout.preferredHeight: units.nailUnit * 2
                 text: title
                 font.bold: true
                 font.pixelSize: units.nailUnit * 2
@@ -69,7 +74,7 @@ Rectangle {
     }
 
     MouseArea {
-        anchors.fill: parent
+        anchors.fill: contents
         onClicked: annotationItem.annotationSelected(annotationItem.title, annotationItem.desc)
     }
 }

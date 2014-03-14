@@ -31,7 +31,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.margins: 1
-        height: childrenRect.height + 2
+        height: childrenRect.height
 
         interactive: false
         model: ListModel { id: internalModel }
@@ -39,11 +39,13 @@ Rectangle {
         header: Rectangle {
             id: listHeader
             width: parent.width
-            height: childrenRect.height + units.nailUnit * 2
             border.width: 0
-            color: previewBox.captionBackgroundColor
+            anchors.top: parent.top
+            height: childrenRect.height + units.nailUnit * 2
+            color: previewBox.captionBackgroundColor + units.nailUnit * 2
 
             Text {
+                id: textHeader
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
