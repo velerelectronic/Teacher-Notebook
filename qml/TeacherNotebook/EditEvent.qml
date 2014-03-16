@@ -70,19 +70,16 @@ Common.AbstractEditor {
         Text {
             text: qsTr('Descripció')
         }
-        Rectangle {
-            border.color: 'black'
+        Common.TextAreaEditor {
+            id: desc
             Layout.fillWidth: true
             Layout.fillHeight: true
-            TextArea {
-                id: desc
-                anchors.fill: parent
-                clip: true
-                wrapMode: TextInput.WrapAtWordBoundaryOrAnywhere
-                font.pixelSize: units.nailUnit
-                inputMethodHints: Qt.ImhNoPredictiveText
-                onTextChanged: newEvent.setChanges(true)
-            }
+
+            border.color: 'black'
+            fontPixelSize: units.nailUnit
+            toolHeight: units.fingerUnit
+            wrapMode: TextInput.WrapAtWordBoundaryOrAnywhere
+            onTextChanged: newEvent.setChanges(true)
         }
         Text {
             id: labelStart

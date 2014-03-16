@@ -46,88 +46,37 @@ Common.AbstractEditor {
                 onTextChanged: annotationEditor.setChanges(true)
             }
         }
-        ToolBar {
-            id: toolbar
-            Layout.fillWidth: true
-            anchors.margins: units.nailUnit
 
-            RowLayout {
-                ToolButton {
-                    text: 'Predictive'
-                    checkable: true
-                    onClicked: {
-                        if (checked) {
-                            contents.inputMethodHints = Qt.ImhNone
-                            title.inputMethodHints = Qt.ImhNone
-                        } else {
-                            contents.inputMethodHints = Qt.ImhNoPredictiveText
-                            title.inputMethodHints = Qt.ImhNoPredictiveText
-                        }
-                    }
-                }
-
-                ToolButton {
-                    text: qsTr('Edita')
-                    onClicked: editMenu.popup()
-                }
-                Menu {
-                    id: editMenu
-                    title: qsTr('Edició')
-                    MenuItem {
-                        text: qsTr('Copia')
-                        onTriggered: contents.copy()
-                    }
-                    MenuItem {
-                        text: qsTr('Retalla')
-                        onTriggered: contents.cut()
-                    }
-                    MenuItem {
-                        text: qsTr('Enganxa')
-                        onTriggered: contents.paste()
-                    }
-                    MenuSeparator {}
-                    MenuItem {
-                        text: qsTr('Refer')
-                        onTriggered: contents.redo()
-                    }
-                    MenuItem {
-                        text: qsTr('Desfer')
-                        onTriggered: contents.undo()
-                    }
-                }
-
-                ToolButton {
-                    enabled: false
-                }
-
-                ToolButton {
-                    text: qsTr('Desa')
-                    onClicked: {
-                        Qt.inputMethod.hide()
-                        Storage.saveAnnotation(idAnnotation,annotation,desc);
-                        annotationEditor.setChanges(false);
-                        annotationEditor.savedAnnotation(annotation,desc);
-                    }
-                }
-                ToolButton {
-                    text: qsTr('Cancela')
-                    onClicked: {
-                        Qt.inputMethod.hide();
-                        var prev = annotationEditor.setChanges(false);
-                        annotationEditor.canceledAnnotation(prev);
-                    }
-                }
-            }
-        }
-
-        TextArea {
+        Common.TextAreaEditor {
             id: contents
             Layout.fillHeight: true
             Layout.fillWidth: true
             anchors.margins: units.nailUnit
-            font.pixelSize: units.nailUnit * 2
-            inputMethodHints: Qt.ImhNoPredictiveText
+            fontPixelSize: units.nailUnit * 2
+            toolHeight: units.fingerUnit
             onTextChanged: annotationEditor.setChanges(true)
+        }
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit
+            Button {
+                text: qsTr('Desa')
+                onClicked: {
+                    Qt.inputMethod.hide()
+                    Storage.saveAnnotation(idAnnotation,annotation,desc);
+                    annotationEditor.setChanges(false);
+                    annotationEditor.savedAnnotation(annotation,desc);
+                }
+            }
+            Button {
+                text: qsTr('Cancela')
+                onClicked: {
+                    Qt.inputMethod.hide();
+                    var prev = annotationEditor.setChanges(false);
+                    annotationEditor.canceledAnnotation(prev);
+                }
+            }
+
         }
     }
 
