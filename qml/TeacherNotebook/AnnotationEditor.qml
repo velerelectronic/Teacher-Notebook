@@ -29,6 +29,7 @@ Common.AbstractEditor {
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: units.nailUnit
+        spacing: units.nailUnit
 
         Rectangle {
             anchors.margins: units.nailUnit
@@ -51,9 +52,9 @@ Common.AbstractEditor {
             id: contents
             Layout.fillHeight: true
             Layout.fillWidth: true
-            anchors.margins: units.nailUnit
             fontPixelSize: units.nailUnit * 2
             toolHeight: units.fingerUnit
+            buttonMargins: units.nailUnit
             onTextChanged: annotationEditor.setChanges(true)
         }
         RowLayout {

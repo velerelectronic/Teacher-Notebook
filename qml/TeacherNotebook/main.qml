@@ -1,5 +1,15 @@
-// Licenses:
-// Image: http://pixabay.com/es/peque%C3%B1os-bellota-dibujos-animados-41255/
+/* Licenses:
+
+  CC0
+  * Image: http://pixabay.com/es/peque%C3%B1os-bellota-dibujos-animados-41255/
+
+  Altres:
+  * http://pixabay.com/es/bloc-de-notas-nota-l%C3%A1piz-117597/
+  * http://pixabay.com/es/pila-papeles-de-pila-notas-cuadro-156015/
+  * http://pixabay.com/es/port%C3%A1til-oficina-por-escrito-151261/
+
+*/
+
 
 import QtQuick 2.0
 import QtQuick.Controls 1.1
@@ -23,7 +33,7 @@ Rectangle {
         Rectangle {
             id: header
             Layout.fillWidth: true
-            Layout.preferredHeight: units.nailUnit * 4
+            Layout.preferredHeight: units.nailUnit * 5
 
             color: "#009900"
             visible: true
@@ -32,12 +42,18 @@ Rectangle {
 
             RowLayout {
                 anchors.fill: parent
+                anchors.margins: units.nailUnit / 2
 
                 Image {
-                    Layout.preferredWidth: units.fingerUnit
-                    Layout.preferredHeight: units.fingerUnit
-                    source: 'res/small-41255.svg'
+                    Layout.preferredWidth: units.nailUnit * 4
+                    Layout.preferredHeight: units.nailUnit * 4
+
+                    source: 'res/small-41255_150.png'
                     fillMode: Image.PreserveAspectFit
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: mainApp.openMainPage()
+                    }
                 }
                 Text {
                     id: title
@@ -50,10 +66,6 @@ Rectangle {
                     font.pixelSize: units.nailUnit * 2
                     verticalAlignment: Text.AlignVCenter
                     font.family: "Tahoma"
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: mainApp.openMainPage()
-                    }
                 }
                 Button {
                     id: exit

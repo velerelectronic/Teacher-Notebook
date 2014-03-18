@@ -78,6 +78,7 @@ Common.AbstractEditor {
             border.color: 'black'
             fontPixelSize: units.nailUnit
             toolHeight: units.fingerUnit
+            buttonMargins: units.nailUnit / 2
             wrapMode: TextInput.WrapAtWordBoundaryOrAnywhere
             onTextChanged: newEvent.setChanges(true)
         }
