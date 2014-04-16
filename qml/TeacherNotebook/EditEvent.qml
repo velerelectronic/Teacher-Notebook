@@ -5,9 +5,9 @@ import "Storage.js" as Storage
 import 'common' as Common
 import 'common/FormatDates.js' as FormatDates
 
-Common.AbstractEditor {
+Common.ItemInspector {
     id: newEvent
-    property string pageTitle: qsTr('Edita esdeveniment')
+    pageTitle: qsTr('Edita esdeveniment')
 
     signal savedEvent(string event, string desc,date startDate,date startTime,date endDate,date endTime)
     signal canceledEvent(bool changes)
@@ -27,6 +27,7 @@ Common.AbstractEditor {
     Common.UseUnits { id: units }
 
     GridLayout {
+        visible: false
         anchors.fill: parent
         anchors.margins: units.nailUnit
         columns: 2
@@ -271,6 +272,12 @@ Common.AbstractEditor {
 
         endTimePicker.setDateTime((endTime!='')?end.fromHHMMFormat(endTime):end);
         endTimeOption.checked = (endTime!='');
+
+        newEvent.addSection(qsTr('Esdeveniment'),nullToEmpty(details.event),'yellow');
+        newEvent.addSection(qsTr('Estat'),nullToEmpty(details.state),'yellow');
+        newEvent.addSection(qsTr('Descripcio'),nullToEmpty(details.desc),'yellow');
+        newEvent.addSection(qsTr('Inici'),nullToEmpty(details.startDate),'green');
+        newEvent.addSection(qsTr('Final'),nullToEmpty(details.endDate),'green');
 
         // Reinit changes
         newEvent.setChanges(false);
