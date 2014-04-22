@@ -64,7 +64,7 @@ ItemInspector {
 
         newEvent.idxEvent = newEvent.addSection(qsTr('Esdeveniment'), newEvent.event,'yellow',editorType.TextLine);
         newEvent.idxState = newEvent.addSection(qsTr('Estat'), newEvent.stateEvent,'yellow',editorType.State);
-        newEvent.idxDesc = newEvent.addSection(qsTr('Descripcio'), newEvent.desc,'yellow',editorType.TextArea);
+        newEvent.idxDesc = newEvent.addSection(qsTr('Descripció'), newEvent.desc,'yellow',editorType.TextArea);
         newEvent.idxStart = newEvent.addSection(qsTr('Inici'),{date: newEvent.startDate, time: newEvent.startTime},'green',editorType.Date);
         newEvent.idxEnd = newEvent.addSection(qsTr('Final'),{date: newEvent.endDate, time: newEvent.endTime},'green',editorType.Date);
 

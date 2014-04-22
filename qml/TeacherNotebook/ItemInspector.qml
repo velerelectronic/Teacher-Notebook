@@ -26,7 +26,7 @@ Common.AbstractEditor {
         Text {
             id: titlePage
             Layout.fillWidth: true
-            font.pixelSize: units.fingerUnit
+            font.pixelSize: units.nailUnit
             font.bold: true
         }
         ListView {
@@ -96,6 +96,7 @@ Common.AbstractEditor {
                             height: contentHeight
                             verticalAlignment: Text.AlignVCenter
                             text: transformContent(model.content)
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -177,11 +178,11 @@ Common.AbstractEditor {
             }
             Button {
                 visible: (itemInspector.idEvent != -1)
-                text: qsTr('Copia')
+                text: qsTr('Duplica')
                 Layout.preferredHeight: units.fingerUnit
                 onClicked: {
                     collapseEditors();
-                    itemInspector.copyDataRequested();
+                    messageCopy.open();
                 }
             }
         }
@@ -189,14 +190,14 @@ Common.AbstractEditor {
 
     MessageDialog {
         id: messageSave
-        title: qsTr('Atenció!');
+        title: qsTr('Desar canvis');
         text: qsTr('Es desaran els canvis. Vols continuar?')
         standardButtons: StandardButton.Ok | StandardButton.Cancel
         onAccepted: itemInspector.saveDataRequested()
     }
     MessageDialog {
         id: messageDiscard
-        title: qsTr('Atencio!');
+        title: qsTr('Descartar canvis');
         text: qsTr('Es descartaran els canvis. N\'estàs segur?')
         standardButtons: StandardButton.Ok | StandardButton.Cancel
         onAccepted: {
@@ -204,6 +205,13 @@ Common.AbstractEditor {
             itemInspector.setChanges(false);
             itemInspector.discardDataRequested(changes);
         }
+    }
+    MessageDialog {
+        id: messageCopy
+        title: qsTr('Duplicar');
+        text: qsTr('Es duplicaran totes les dades a un nou element. Vols continuar?')
+        standardButtons: StandardButton.Ok | StandardButton.Cancel
+        onAccepted: itemInspector.copyDataRequested();
     }
 
     function addSection(fieldName,content,color,editor) {

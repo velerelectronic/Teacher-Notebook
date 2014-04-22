@@ -98,7 +98,7 @@ Rectangle {
                     }
                     MouseArea {
                         anchors.fill: textEvents
-                        onClicked: openPageArgs('EditEvent',{idEvent: id})
+                        onClicked: openPageArgs('ShowEvent',{idEvent: id})
                     }
                 }
                 caption: qsTr("Pròxims terminis")

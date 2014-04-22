@@ -94,7 +94,7 @@ Rectangle {
 
                 // Annotations
                 onOpenAnnotations: openSubPage('AnnotationsList',{})
-                onEditAnnotation: openSubPage('AnnotationEditor',{idAnnotation: id, annotation: annotation, desc: desc})
+                onEditAnnotation: openSubPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc})
                 onDeletedAnnotations: {
                     messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
                 }

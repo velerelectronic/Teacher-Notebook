@@ -50,7 +50,7 @@ ItemInspector {
             annotationEditor.desc = details.desc;
             annotationEditor.setChanges(false);
         }
-        idxAnnotation = addSection(qsTr('Anotacio'),annotation,'yellow',editorType['TextLine']);
-        idxDesc = addSection(qsTr('Descripcio'),desc,'yellow',editorType['TextArea']);
+        idxAnnotation = addSection(qsTr('Anotació'),annotation,'yellow',editorType['TextLine']);
+        idxDesc = addSection(qsTr('Descripció'),desc,'yellow',editorType['TextArea']);
     }
 }
