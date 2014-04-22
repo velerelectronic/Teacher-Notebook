@@ -30,11 +30,13 @@ Date.prototype.fromYYYYMMDDFormat = function(text) {
 }
 
 Date.prototype.fromHHMMFormat = function(text) {
+    console.log('Hour parse string: ' + text);
     var param = text.split(':');
     var hours = param[0];
     var minutes = param[1];
     this.setHours(hours);
     this.setMinutes(minutes);
+    console.log('Parsed: ' + hours + '_' + minutes);
     return this;
 }
 

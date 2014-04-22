@@ -112,9 +112,9 @@ Rectangle {
                 onOpenDocumentsList: openSubPage('DocumentsList',{})
 
                 // Events
-                onNewEvent: openSubPage('EditEvent',{})
+                onNewEvent: openSubPage('ShowEvent',{})
                 onEditEvent: {
-                    openSubPage('EditEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime});
+                    openSubPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime});
                 }
                 onDeletedEvents: {
                     messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'))
@@ -132,7 +132,6 @@ Rectangle {
 
                 // Editors
                 onAcceptedCloseEditorRequest: {
-                    console.log(lastRequestedPage)
                     forceOpenSubPage(lastRequestedPage,{})
                 }
                 onRefusedCloseEditorRequest: messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
@@ -173,7 +172,6 @@ Rectangle {
     }
 
     function openSubPage (page, param) {
-        console.log('Open subpage: ' + page)
         var cont = false;
         lastRequestedPage = page;
         try {

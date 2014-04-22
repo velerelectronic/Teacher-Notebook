@@ -8,11 +8,20 @@ Rectangle {
 
     Common.UseUnits { id: units }
 
-    property bool changes: true
+    property bool changes: false
+    property bool trackChanges: false
     property bool closeRequested: false
+    property bool autoEnableChangeTracking: true
 
     signal acceptedCloseEditorRequest()
     signal refusedCloseEditorRequest()
+    signal newChanges()
+
+    onChangesChanged: {
+        if (changes) {
+            abstractEditor.newChanges();
+        }
+    }
 
     function acceptOrRefuseRequest() {
         if (changes) {
@@ -25,10 +34,18 @@ Rectangle {
         }
     }
 
+    function enableChangesTracking(value) {
+        trackChanges = value;
+    }
+
     function setChanges(value) {
-        var prev = changes;
-        changes = value;
-        return prev;
+        if (trackChanges) {
+            var prev = changes;
+            changes = value;
+            return prev;
+        } else {
+            return false;
+        }
     }
 
     function requestCloseEditor() {
@@ -37,6 +54,14 @@ Rectangle {
     }
 
     function showEditMenu(widget) {
+
+    }
+
+    Component.onCompleted: {
+        if (autoEnableChangeTracking)
+            enableChangesTracking(true);
+        // Enabling the changes tracking is important because when the main content is initialized, the variable changes is set to true,
+        // but it shouldn't be, because it is not a real change.
 
     }
 }

@@ -83,7 +83,6 @@ function createDimensionalTable (tx,tblname,camps,desc) {
         tx.executeSql('CREATE TABLE ' + tblname + ' (id INTEGER PRIMARY KEY, created TEXT NOT NULL, ref INTEGER' + textcamps + ')');
         var instant = currentTime();
         for (var i=0; i<camps.length; i++) {
-            console.log(i + '-' + camps[i]);
             fillFieldNames(tx,instant,tblname,camps[i],desc[i]);
         }
     }
@@ -140,7 +139,6 @@ function listTableRecords (model,tblname,limit,filterStr,orderStr,extraStr) {
                     if (limit>0) {
                             limitStr += " LIMIT "+(limit.toString());
                     }
-                    console.log(qStr + filterQuery + orderStr + limitStr);
                     var rs = tx.executeSql(qStr + filterQuery + orderStr + limitStr, fillArray(filterStr,list.length));
                     model.clear();
                     for (var i=0; i<rs.rows.length; i++) {
@@ -189,14 +187,11 @@ function saveRecordsInTable(tblname,fields,refrowid) {
                     var text = '?,'.repeat(fields.length);
                     text += '?,?,?';
                     var instant = currentTime();
-                    console.log("INSERT INTO " + tblname + " VALUES ("+text+")" + '-->' +[null,instant,((refrowid==null)?'':refrowid)].concat(fields));
                     var rs = tx.executeSql("INSERT INTO " + tblname + " VALUES ("+text+")",[null,instant,((refrowid==null)?'':refrowid)].concat(fields));
-                    console.log('Insert ID ' + rs.insertId);
                 } else {
                     var fieldNames = listTableFields(tx,tblname);
                     for (var i=0; i<fieldNames.length; i++) {
                         var rs = tx.executeSql("UPDATE "+ tblname + " SET " + fieldNames[i] + "=? WHERE id=?",[fields[i],refrowid]);
-                        console.log("UPDATE "+ tblname + " SET " + fieldNames[i] + "=? WHERE id=?" + '--->' + [fields[i],refrowid]);
                     }
                 }
             });
@@ -207,7 +202,6 @@ function saveRecordsInTable(tblname,fields,refrowid) {
 function removeRecordFromTable(tblname,id) {
     getDatabase().transaction(
                 function (tx) {
-                    console.log("DELETE FROM " + tblname + " WHERE id=?" +'->' + [id]);
                     var rs = tx.executeSql("DELETE FROM " + tblname + " WHERE id=?",[id]);
                 });
 }
@@ -359,7 +353,6 @@ function importDatabaseFromText(text) {
                     }
                     var importSql = 'INSERT INTO ' + table.name + ' (' + fields.join(',') + ') VALUES (' + unknowns.join(',') +')';
                     try {
-                        console.log(importSql + '--' + values.toString());
                         var rs = tx.executeSql(importSql, values);
                     }
                     catch(error) {

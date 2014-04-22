@@ -130,7 +130,11 @@ Rectangle {
         inputMethodHints: Qt.ImhNoPredictiveText
         font.pixelSize: fontPixelSize
 
-        onSelectedTextChanged: {
+        onSelectedTextChanged: enableButtons()
+        onFocusChanged: focus && enableButtons()
+        onVisibleChanged: visible && forceActiveFocus()
+
+        function enableButtons() {
             if (selectedText != '') {
                 copyButton.visible = true;
                 cutButton.visible = true;

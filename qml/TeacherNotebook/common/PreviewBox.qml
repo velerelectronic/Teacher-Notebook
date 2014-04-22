@@ -31,7 +31,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.margins: 1
-        height: childrenRect.height
+        height: contentItem.height
 
         interactive: false
         model: ListModel { id: internalModel }
@@ -40,8 +40,7 @@ Rectangle {
             id: listHeader
             width: parent.width
             border.width: 0
-            anchors.top: parent.top
-            height: childrenRect.height + units.nailUnit * 2
+            height: textHeader.height + units.nailUnit * 2
             color: previewBox.captionBackgroundColor + units.nailUnit * 2
 
             Text {
@@ -64,11 +63,12 @@ Rectangle {
         footer: Rectangle {
             id: listFooter
             width: parent.width
-            height: childrenRect.height + units.nailUnit * 2
+            height: textFooter.height + units.nailUnit * 2
             border.width: 0
             color: previewBox.totalBackgroundColor
 
             Text {
+                id: textFooter
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top

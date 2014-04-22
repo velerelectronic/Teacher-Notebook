@@ -21,16 +21,17 @@ qtcAddDeployment()
 
 OTHER_FILES += \
     qml/TeacherNotebook/ArisenWidget.qml \
-    qml/TeacherNotebook/AnnotationEditor.qml \
     qml/TeacherNotebook/AnnotationItem.qml \
     qml/TeacherNotebook/Storage.js \
     qml/TeacherNotebook/EvernoteLib.js \
-    qml/TeacherNotebook/EditEvent.qml \
     android/AndroidManifest.xml \
     qml/TeacherNotebook/common/UseUnits.qml \
     qml/TeacherNotebook/common/BizoneButton.qml \
     qml/TeacherNotebook/AnnotationsList.qml \
-    qml/TeacherNotebook/common/FormatDates.js
+    qml/TeacherNotebook/common/FormatDates.js \
+    qml/TeacherNotebook/editors/DateTimeEditor.qml \
+    qml/TeacherNotebook/ShowEvent.qml \
+    qml/TeacherNotebook/ShowAnnotation.qml
 
 HEADERS += \
     fileio.h

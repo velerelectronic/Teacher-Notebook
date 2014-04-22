@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
-import 'common' as Common
+import '../common' as Common
 
 Rectangle {
     id: timePicker
@@ -9,6 +9,7 @@ Rectangle {
 
     width: childrenRect.width
     height: childrenRect.height
+    anchors.margins: units.nailUnit
 
     Common.UseUnits { id: units }
     Rectangle {
@@ -23,10 +24,10 @@ Rectangle {
                 // Hours
                 id: hour
                 content: '0'
-                onUpClicked: { time.setHours( time.getHours() + 1); timePicker.updateTime(true) }
-                onUpLongClicked:  { time.setHours( time.getHours() + 12); timePicker.updateTime(true) }
-                onDownClicked: { time.setHours( time.getHours() - 1); timePicker.updateTime(true) }
-                onDownLongClicked: { time.setHours( time.getHours() - 12); timePicker.updateTime(true) }
+                onUpClicked: moveTime(1,0)
+                onUpLongClicked: moveTime(12,0)
+                onDownClicked: moveTime(-1,0)
+                onDownLongClicked: moveTime(-12,0)
             }
             Text {
                 id: separator
@@ -41,29 +42,34 @@ Rectangle {
                 // Minutes
                 id: minute
                 content: '00'
-                onUpClicked: { time.setMinutes( time.getMinutes() + 1); timePicker.updateTime(true) }
-                onUpLongClicked: { time.setMinutes( time.getMinutes() + 10); timePicker.updateTime(true) }
-                onDownClicked: { time.setMinutes( time.getMinutes() - 1); timePicker.updateTime(true) }
-                onDownLongClicked: { time.setMinutes( time.getMinutes() - 10); timePicker.updateTime(true) }
+                onUpClicked: moveTime(0,1)
+                onUpLongClicked: moveTime(0,10)
+                onDownClicked: moveTime(0,-1)
+                onDownLongClicked: moveTime(0,-10)
             }
         }
     }
 
-    Component.onCompleted: timePicker.updateTime(false)
+    function moveTime(hours,minutes) {
+        if (hours != 0)
+            time.setHours(time.getHours()+hours);
+        if (minutes != 0)
+            time.setMinutes(time.getMinutes()+minutes);
+        updateDisplay();
+        updatedByUser();
+    }
 
-    function updateTime(sendSignal) {
+    function updateDisplay() {
         var h = time.getHours()
         hour.content = ((h<10)?'0':'') + h
         var m = time.getMinutes()
         minute.content = ((m<10)?'0':'') + m
-        if (sendSignal) {
-            updatedByUser()
-        }
     }
 
     function setDateTime(newDate) {
         timePicker.time = new Date(newDate);
-        updateTime(false);
+        console.log('Hora: ' + newDate.toString());
+        updateDisplay();
     }
 
     function getTime() {

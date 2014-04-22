@@ -44,7 +44,7 @@ Rectangle {
                     }
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: menuPage.openPageArgs('AnnotationEditor',{idAnnotation: id})
+                        onClicked: menuPage.openPageArgs('ShowAnnotation',{idAnnotation: id})
                     }
                 }
                 caption: qsTr('Darreres anotacions')
@@ -79,7 +79,7 @@ Rectangle {
                         anchors.margins: units.nailUnit
 
                         Text {
-                            Layout.preferredHeight: parent.height
+                            Layout.fillHeight: true
                             text: endDate
                             font.bold: true
                             font.pixelSize: units.nailUnit
@@ -88,7 +88,7 @@ Rectangle {
 
                         Text {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: parent.height
+                            Layout.fillHeight: true
                             elide: Text.ElideRight
                             maximumLineCount: 1
                             font.pixelSize: units.nailUnit
