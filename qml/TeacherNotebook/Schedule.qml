@@ -12,6 +12,7 @@ Rectangle {
     signal newEvent
     signal editEvent(int id,string event, string desc,string startDate,string startTime,string endDate,string endTime)
     signal deletedEvents (int num)
+    property bool canClose: true
 
     Common.UseUnits { id: units }
 

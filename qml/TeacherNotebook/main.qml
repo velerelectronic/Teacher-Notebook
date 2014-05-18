@@ -61,13 +61,21 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: parent.height
                     color: "#ffffff"
-                    text: "Teacher Notebook"
+                    text: (pageList.currentItem)?pageList.currentItem.pageTitle:"Teacher Notebook"
                     font.italic: false
                     font.bold: true
                     font.pixelSize: units.nailUnit * 2
                     verticalAlignment: Text.AlignVCenter
                     font.family: "Tahoma"
                 }
+                Button {
+                    Layout.preferredHeight: units.fingerUnit
+                    Layout.preferredWidth: units.nailUnit * 2
+                    text: 'x'
+                    visible: (pageList.currentItem.canClose)?pageList.currentItem.canClose:false
+                    onClicked: removeCurrentPage()
+                }
+
                 Button {
                     id: exit
                     Layout.preferredWidth: units.fingerUnit
@@ -86,7 +94,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             orientation: ListView.Horizontal
-            snapMode: ListView.SnapToItem
+            snapMode: ListView.SnapOneItem
             highlightFollowsCurrentItem: true
             highlightRangeMode: ListView.StrictlyEnforceRange
             highlightMoveDuration: 500
@@ -95,71 +103,64 @@ Rectangle {
                 id: pageModel
             }
 
-            onCurrentIndexChanged: {
-                console.log('Current item' + currentItem.showTitle)
-//                title.text = pageList.currentItem.pageTitle
-            }
-
             delegate: Rectangle {
                 width: pageList.width
                 height: pageList.height
                 border.color: 'black'
                 color: 'yellow'
-                property bool showTitle: false
-                onShowTitleChanged: {
-                    if (showTitle) {
-                        title.text = pageLoader.item.pageTitle
-                        showTitle = false
-                    }
-                }
+                property string pageTitle: (pageLoader.item)?pageLoader.item.pageTitle:''
+                property bool canClose: (pageLoader.item && pageLoader.item.canClose)?pageLoader.item.canClose:false
 
                 Loader {
                     id: pageLoader
                     anchors.fill: parent
-                    source: page + '.qml'
+                    Component.onCompleted: {
+                        pageLoader.setSource(page + '.qml', parameters);
+                    }
+
                     Connections {
                         target: pageLoader.item
                         ignoreUnknownSignals: true
                         // Signals
-                        onOpenPage: openSubPage(page,{})
-                        onOpenPageArgs: openSubPage(page,args)
+                        onOpenPage: openSubPage(page,{},'')
+                        onOpenPageArgs: openSubPage(page,args,'')
 
                         // Annotations
-                        onOpenAnnotations: openSubPage('AnnotationsList',{})
-                        onEditAnnotation: openSubPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc})
+                        onOpenAnnotations: openSubPage('AnnotationsList',{},'')
+                        onEditAnnotation: openSubPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id)
                         onDeletedAnnotations: {
                             messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
                         }
                         onSavedAnnotation: {
                             messageBox.publishMessage('Anotació desada: títol «' + annotation + '», descripció «' + desc + '»')
-                            openSubPage('AnnotationsList',{});
+                            removeCurrentPage();
                         }
                         onCanceledAnnotation: {
                             if (changes) {
                                 messageBox.publishMessage(qsTr("S'han descartat els canvis en l'anotació"))
                             }
-                            forceOpenSubPage('AnnotationsList',{});
+                            removeCurrentPage();
                         }
 
-                        onOpenDocumentsList: openSubPage('DocumentsList',{})
+                        onOpenDocumentsList: openSubPage('DocumentsList',{},'')
 
                         // Events
-                        onNewEvent: openSubPage('ShowEvent',{})
+                        onNewEvent: openSubPage('ShowEvent',{},'')
                         onEditEvent: {
-                            openSubPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime});
+                            openSubPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime},id);
                         }
                         onDeletedEvents: {
                             messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'))
                         }
                         onSavedEvent: {
                             messageBox.publishMessage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'))
-                            forceOpenSubPage('Schedule',{})
+                            removeCurrentPage();
                         }
                         onCanceledEvent: {
                             if (changes) {
                                 messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
                             }
-                            forceOpenSubPage('Schedule',{})
+                            removeCurrentPage();
                         }
 
                         // Editors
@@ -171,21 +172,8 @@ Rectangle {
                 }
             }
         }
-
-        /*
-        Loader {
-            id: pageLoader
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            visible: false
-
-            Connections {
-                target: pageLoader.item
-                ignoreUnknownSignals: true
-            }
-        }
-        */
     }
+
     Common.MessageBox {
         id: messageBox
         anchors.left: parent.left
@@ -239,6 +227,10 @@ Rectangle {
             pageList.currentIndex = i;
             // Open existing page
         }
+    }
+
+    function removeCurrentPage() {
+        pageModel.remove(pageList.currentIndex);
     }
 }
 

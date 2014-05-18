@@ -10,6 +10,7 @@ ItemInspector {
     anchors.margins: units.nailUnit
 
     pageTitle: qsTr('Edita esdeveniment')
+    property bool canClose: !changes
 
     signal savedEvent(string event, string desc,date startDate,date startTime,date endDate,date endTime)
     signal canceledEvent(bool changes)

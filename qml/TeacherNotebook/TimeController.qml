@@ -4,6 +4,7 @@ import 'common' as Common
 
 Rectangle {
     property string pageTitle: qsTr('Rellotge');
+    property bool canClose: true
 
     Common.UseUnits { id: units }
 

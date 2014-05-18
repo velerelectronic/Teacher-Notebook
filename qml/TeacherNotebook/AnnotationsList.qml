@@ -13,6 +13,7 @@ Rectangle {
 
     signal editAnnotation (int id,string annotation, string desc)
     signal deletedAnnotations (int num)
+    property bool canClose: true
 
     Common.UseUnits { id: units }
     ColumnLayout {

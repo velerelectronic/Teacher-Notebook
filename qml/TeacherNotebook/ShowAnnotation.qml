@@ -7,6 +7,7 @@ import 'Storage.js' as Storage
 ItemInspector {
     id: annotationEditor
     pageTitle: qsTr("Editor d'anotacions")
+    property bool canClose: !changes
 
     signal savedAnnotation(string annotation, string desc)
     signal canceledAnnotation(bool changes)
