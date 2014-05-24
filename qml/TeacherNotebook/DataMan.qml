@@ -6,6 +6,7 @@ import 'common' as Common
 
 Rectangle {
     property string pageTitle: qsTr('Gestor de dades')
+    property bool canClose: true
 
     ColumnLayout {
         anchors.fill: parent

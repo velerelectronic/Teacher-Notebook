@@ -7,6 +7,7 @@ Rectangle {
 
     Common.UseUnits { id: units }
 
+    property bool canClose: true
     border.color: 'green'
     border.width: units.nailUnit / 2
     color: 'black'

@@ -7,6 +7,7 @@ Rectangle {
     id: whiteboard
 
     property string pageTitle: qsTr('Pissarra')
+    property bool canClose: true
     // Possible drawing actions ['Clear', 'Path']
     property string drawingAction: 'Clear'
 

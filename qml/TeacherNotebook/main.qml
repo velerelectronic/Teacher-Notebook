@@ -98,6 +98,7 @@ Rectangle {
             highlightFollowsCurrentItem: true
             highlightRangeMode: ListView.StrictlyEnforceRange
             highlightMoveDuration: 500
+            keyNavigationWraps: true
 
             model: ListModel {
                 id: pageModel
@@ -107,7 +108,7 @@ Rectangle {
                 width: pageList.width
                 height: pageList.height
                 border.color: 'black'
-                color: 'yellow'
+                color: 'white'
                 property string pageTitle: (pageLoader.item)?pageLoader.item.pageTitle:''
                 property bool canClose: (pageLoader.item && pageLoader.item.canClose)?pageLoader.item.canClose:false
 
@@ -170,6 +171,12 @@ Rectangle {
                         onRefusedCloseEditorRequest: messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
                     }
                 }
+            }
+            add: Transition {
+                NumberAnimation { properties: "opacity"; from: 0; to: 1.0; duration: 500 }
+            }
+            remove: Transition {
+                NumberAnimation { properties: "opacity"; from: 1.0; to: 0; duration: 1000 }
             }
         }
     }

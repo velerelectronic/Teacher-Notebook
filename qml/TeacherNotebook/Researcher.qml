@@ -6,6 +6,7 @@ import 'common' as Common
 Rectangle {
     id: researcher
     property string pageTitle: qsTr('Recerca');
+    property bool canClose: true
 
     anchors.fill: parent
     ColumnLayout {
