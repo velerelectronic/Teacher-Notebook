@@ -16,7 +16,7 @@ Common.AbstractEditor {
         clip: true
         font.pixelSize: units.nailUnit * 2
         wrapMode: TextInput.WrapAtWordBoundaryOrAnywhere
-        inputMethodHints: Qt.ImhNoPredictiveText
+//        inputMethodHints: Qt.ImhNoPredictiveText
         onTextChanged: editor.setChanges(true)
         onVisibleChanged: {
             if (visible) {

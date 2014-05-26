@@ -28,6 +28,7 @@ Rectangle {
     Common.UseUnits { id: units }
 
     ColumnLayout {
+        id: column
         anchors.fill: parent
         spacing: 0
 
@@ -53,7 +54,11 @@ Rectangle {
                     fillMode: Image.PreserveAspectFit
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: mainApp.openMainPage()
+                        onClicked: {
+                            if (pageList.model.count==0)
+                                openMainPage();
+                            (pageList.state == 'onewidget')?minimizeAllWidgets():maximizeCurrentWidget();
+                        }
                     }
                 }
                 Text {
@@ -67,13 +72,6 @@ Rectangle {
                     font.pixelSize: units.nailUnit * 2
                     verticalAlignment: Text.AlignVCenter
                     font.family: "Tahoma"
-                }
-                Button {
-                    Layout.preferredHeight: units.fingerUnit
-                    Layout.preferredWidth: units.nailUnit * 2
-                    text: 'x'
-                    visible: (pageList.currentItem.canClose)?pageList.currentItem.canClose:false
-                    onClicked: removeCurrentPage()
                 }
 
                 Button {
@@ -89,89 +87,52 @@ Rectangle {
             }
         }
 
-        ListView {
+        GridView {
             id: pageList
             Layout.fillWidth: true
             Layout.fillHeight: true
-            orientation: ListView.Horizontal
-            snapMode: ListView.SnapOneItem
-            highlightFollowsCurrentItem: true
-            highlightRangeMode: ListView.StrictlyEnforceRange
+
+            states: [
+                State {
+                    name: 'onewidget'
+                    PropertyChanges {
+                        target: pageList
+                        interactive: false
+                    }
+                },
+                State {
+                    name: 'tableofwidgets'
+                    PropertyChanges {
+                        target: pageList
+                        interactive: true
+                    }
+                }
+            ]
+            state: 'onewidget'
+            snapMode: GridView.NoSnap
+
             highlightMoveDuration: 500
-            keyNavigationWraps: true
+            highlightFollowsCurrentItem: true
+            highlightRangeMode: GridView.ApplyRange
+            onCurrentIndexChanged: {
+                console.log('Changed index ' + pageList.currentIndex);
+            }
+
+            cellHeight: Math.round(height * 0.3)
+            cellWidth: Math.round(width * 0.3)
 
             model: ListModel {
                 id: pageModel
             }
 
-            delegate: Rectangle {
+            highlight: Rectangle {
                 width: pageList.width
                 height: pageList.height
-                border.color: 'black'
-                color: 'white'
-                property string pageTitle: (pageLoader.item)?pageLoader.item.pageTitle:''
-                property bool canClose: (pageLoader.item && pageLoader.item.canClose)?pageLoader.item.canClose:false
-
-                Loader {
-                    id: pageLoader
-                    anchors.fill: parent
-                    Component.onCompleted: {
-                        pageLoader.setSource(page + '.qml', parameters);
-                    }
-
-                    Connections {
-                        target: pageLoader.item
-                        ignoreUnknownSignals: true
-                        // Signals
-                        onOpenPage: openSubPage(page,{},'')
-                        onOpenPageArgs: openSubPage(page,args,'')
-
-                        // Annotations
-                        onOpenAnnotations: openSubPage('AnnotationsList',{},'')
-                        onEditAnnotation: openSubPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id)
-                        onDeletedAnnotations: {
-                            messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
-                        }
-                        onSavedAnnotation: {
-                            messageBox.publishMessage('Anotació desada: títol «' + annotation + '», descripció «' + desc + '»')
-                            removeCurrentPage();
-                        }
-                        onCanceledAnnotation: {
-                            if (changes) {
-                                messageBox.publishMessage(qsTr("S'han descartat els canvis en l'anotació"))
-                            }
-                            removeCurrentPage();
-                        }
-
-                        onOpenDocumentsList: openSubPage('DocumentsList',{},'')
-
-                        // Events
-                        onNewEvent: openSubPage('ShowEvent',{},'')
-                        onEditEvent: {
-                            openSubPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime},id);
-                        }
-                        onDeletedEvents: {
-                            messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'))
-                        }
-                        onSavedEvent: {
-                            messageBox.publishMessage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'))
-                            removeCurrentPage();
-                        }
-                        onCanceledEvent: {
-                            if (changes) {
-                                messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
-                            }
-                            removeCurrentPage();
-                        }
-
-                        // Editors
-                        onAcceptedCloseEditorRequest: {
-                            forceOpenSubPage(lastRequestedPage,{})
-                        }
-                        onRefusedCloseEditorRequest: messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
-                    }
-                }
+                color: 'yellow'
             }
+
+            delegate: widgetDelegate
+
             add: Transition {
                 NumberAnimation { properties: "opacity"; from: 0; to: 1.0; duration: 500 }
             }
@@ -196,12 +157,146 @@ Rectangle {
         interval: 2000
     }
 
+    Component {
+        id: widgetDelegate
+        Rectangle {
+            id: widgetRect
+            width: pageList.width
+            height: pageList.height
+            border.color: 'blue'
+            border.width: units.nailUnit
+
+            scale: 0.3
+            transformOrigin: Item.TopLeft
+
+            color: 'white'
+
+            property string pageTitle: (pageLoader.item)?pageLoader.item.pageTitle:''
+            property bool canClose: (pageLoader.item && pageLoader.item.canClose)?pageLoader.item.canClose:false
+            clip: true
+
+            states: [
+                State {
+                    name: 'maximized'
+                    ParentChange {
+                        target: pageLoader
+                        parent: pageList
+                        scale: 1
+                    }
+                },
+                State {
+                    name: 'twowidgets'
+                },
+                State {
+                    name: 'minimized'
+                    ParentChange {
+                        target: pageLoader
+                        parent: widgetRect
+                    }
+                }
+            ]
+            state: widgetState
+            onStateChanged: console.log('nou estat: ' + widgetRect.state)
+
+            transitions: [
+                Transition {
+                    ParentAnimation {
+                        NumberAnimation { properties: 'scale'; easing.type: Easing.InOutQuad }
+                        NumberAnimation { properties: 'x,y'; easing.type: Easing.InOutQuad; }
+                    }
+                }
+            ]
+
+            MouseArea {
+                anchors.fill: parent
+                z: 2
+                onClicked: {
+                    if (widgetRect.state == 'minimized') {
+                        mouse.accepted = true;
+                        pageList.currentIndex = index;
+                        maximizeCurrentWidget();
+                    }
+                    else
+                        mouse.accepted = false;
+                }
+                onPressAndHold: {
+                    if (widgetRect.state == 'minimized') {
+                        mouse.accepted = true;
+                        removeCurrentPage(index);
+                    }
+                }
+            }
+
+            Loader {
+                id: pageLoader
+                anchors.fill: parent
+                Component.onCompleted: {
+                    pageLoader.setSource(page + '.qml', parameters);
+                }
+
+                Connections {
+                    target: pageLoader.item
+                    ignoreUnknownSignals: true
+                    // Signals
+                    onOpenPage: openSubPage(page,{},'')
+                    onOpenPageArgs: openSubPage(page,args,'')
+
+                    // Annotations
+                    onOpenAnnotations: openSubPage('AnnotationsList',{},'')
+                    onEditAnnotation: openSubPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id)
+                    onDeletedAnnotations: {
+                        messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
+                    }
+                    onSavedAnnotation: {
+                        messageBox.publishMessage('Anotació desada: títol «' + annotation + '», descripció «' + desc + '»')
+                        removeCurrentPage();
+                    }
+                    onCanceledAnnotation: {
+                        if (changes) {
+                            messageBox.publishMessage(qsTr("S'han descartat els canvis en l'anotació"))
+                        }
+                        removeCurrentPage();
+                    }
+
+                    onOpenDocumentsList: openSubPage('DocumentsList',{},'')
+
+                    // Events
+                    onNewEvent: openSubPage('ShowEvent',{},'')
+                    onEditEvent: {
+                        openSubPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime},id);
+                    }
+                    onDeletedEvents: {
+                        messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'))
+                    }
+                    onSavedEvent: {
+                        messageBox.publishMessage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'))
+                        removeCurrentPage();
+                    }
+                    onCanceledEvent: {
+                        if (changes) {
+                            messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
+                        }
+                        removeCurrentPage();
+                    }
+
+                    // Editors
+                    onAcceptedCloseEditorRequest: {
+                        forceOpenSubPage(lastRequestedPage,{})
+                    }
+                    onRefusedCloseEditorRequest: messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
+                }
+            }
+
+        }
+    }
+
     Component.onCompleted: {
 //        Storage.destroyDatabase();
 //        Storage.removeAnnotationsTable();
         Storage.initDatabase();
         Storage.createEducationTables();
         mainApp.openMainPage();
+        pageList.model.setProperty(0,'widgetState','maximized');
         Storage.exportDatabaseToText();
     }
 
@@ -210,13 +305,13 @@ Rectangle {
     }
 
     function forceOpenSubPage(page,param,ident) {
-//        pageLoader.setSource(page + '.qml', param);
-//        title.text = pageLoader.item.pageTitle;
-        pageModel.append({page: page, parameters: param, identification: ident});
+        pageModel.append({page: page, parameters: param, identification: ident, widgetState: 'maximized'});
         pageList.currentIndex = pageModel.count-1;
+        console.log('obrint ' + pageList.currentIndex);
     }
 
     function openSubPage (page, param, ident) {
+        minimizeAllWidgets();
         var i=0;
         var found=false;
         while ((i<pageModel.count) && (!found)) {
@@ -234,10 +329,30 @@ Rectangle {
             pageList.currentIndex = i;
             // Open existing page
         }
+        maximizeCurrentWidget();
     }
 
-    function removeCurrentPage() {
-        pageModel.remove(pageList.currentIndex);
+    function removeCurrentPage(index) {
+        minimizeAllWidgets();
+        pageModel.remove(index);
+        // maximizeCurrentWidget();
+    }
+
+    function minimizeAllWidgets() {
+        pageList.state = 'tableofwidgets';
+        for (var i=0; i<pageList.model.count; i++) {
+            console.log('Canviant tots estats de ' + pageList.model.get(i).page + pageList.model.get(i).widgetState);
+            pageList.model.setProperty(i,'widgetState','minimized');
+        }
+    }
+
+    function maximizeCurrentWidget() {
+        pageList.state = 'onewidget';
+        if (!pageList.currentIndex)
+            pageList.currentIndex = 0;
+        pageList.model.setProperty(pageList.currentIndex,'widgetState','maximized');
+        var obj = pageList.model.get(pageList.currentIndex);
+        console.log('Canviant un sol estat ' + obj.page + '->' + obj.widgetState);
     }
 }
 
