@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 3.1.1, 2014-05-26T12:43:24. -->
+<!-- Written by QtCreator 3.1.1, 2014-06-03T23:02:00. -->
 <qtcreator>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
-  <value type="int">0</value>
+  <value type="int">2</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.EditorSettings</variable>
@@ -854,7 +854,7 @@
     <value type="int" key="Ios.device_type">0</value>
     <valuelist type="QVariantList" key="Ios.run_arguments"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Run on iPod de Joan Miquel Payeras Crespí</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Run TeacherNotebook on iPod de Joan Miquel Payeras Crespí</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Run libTeacherNotebook.so on iPod de Joan Miquel Payeras Crespí</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.IosRunConfiguration:/Users/jmpayeras/Desenvolupament/TeacherNotebook/TeacherNotebook.pro</value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
@@ -1052,7 +1052,7 @@
     <value type="int" key="Ios.device_type">3</value>
     <valuelist type="QVariantList" key="Ios.run_arguments"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Run on iOS Simulator</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Run TeacherNotebook on iOS Simulator</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Run libTeacherNotebook.so on iOS Simulator</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.IosRunConfiguration:/Users/jmpayeras/Desenvolupament/TeacherNotebook/TeacherNotebook.pro</value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
