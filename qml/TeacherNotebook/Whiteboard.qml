@@ -11,7 +11,9 @@ Rectangle {
     property bool canClose: true
     // Possible drawing actions ['Clear', 'Path']
     property string drawingAction: ''
-    property string selectedTool: ''
+    property string selectedDrawingTool: 'pencil'
+    property string selectedEditTool: ''
+    property string selectedOptionTool: ''
 
     Common.UseUnits { id: units }
 
@@ -22,131 +24,77 @@ Rectangle {
             Layout.fillWidth: true;
             Layout.preferredHeight: units.fingerUnit
 
-            RowLayout {
+            ExclusiveGroup {
+                id: mainTool
+            }
+
+            ListView {
                 anchors.fill: parent
-
-                ExclusiveGroup {
-                    id: mainTool
-                }
-
-                Button {
-                    id: moveButton
-                    Layout.fillHeight: true
-                    text: qsTr('Mou')
-                    checkable: true
-                    exclusiveGroup: mainTool
-                    onCheckedChanged: if (checked) whiteboard.selectedTool = 'move';
-                }
-
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Llapis')
-                    checkable: true
-                    exclusiveGroup: mainTool
-                    onCheckedChanged: if (checked) whiteboard.selectedTool = 'pencil';
-                }
-
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Figura')
-                    checkable: true
-                    exclusiveGroup: mainTool
-
-                    menu: Menu {
-                        title: qsTr('Figura geomètrica')
-                        MenuItem {
-                            text: qsTr('Rectangle')
-                            checkable: true
-                            exclusiveGroup: mainTool
-                            onTriggered: if (checked) whiteboard.selectedTool = 'rect'
-                        }
-
-                        MenuItem {
-                            text: qsTr('Cercle')
-                            checkable: true
-                            exclusiveGroup: mainTool
-                            onTriggered: if (checked) whiteboard.selectedTool = 'circle'
-                        }
-
-                        MenuItem {
-                            text: qsTr('El·lipse')
-                            checkable: true
-                            exclusiveGroup: mainTool
-                            onTriggered: whiteboard.selectedTool = 'ellipse'
+                orientation: ListView.Horizontal
+                model: ListModel { id: toolModel }
+                snapMode: ListView.SnapOneItem
+                boundsBehavior: Flickable.StopAtBounds
+                delegate: Item {
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    width: childrenRect.width
+                    Button {
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        anchors.left: parent.left
+                        width: (model.code != '')?undefined:0
+                        visible: (model.code != '')
+                        enabled: (model.code != '')
+                        checkable: model.checkable
+                        text: model.name
+                        exclusiveGroup: mainTool
+                        onClicked: {
+                            switch(model.type) {
+                            case 'draw':
+                                whiteboard.selectedDrawingTool = model.code;
+                                break;
+                            case 'edit':
+                                whiteboard.selectedEditTool = model.code;
+                                break;
+                            case 'option':
+                                whiteboard.selectedOptionTool = model.code;
+                                break;
+                            }
                         }
                     }
-                }
-
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Undo')
-                    enabled: whiteArea.undoable
-                    onClicked: whiteArea.undoDrawings()
-                }
-
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Redo')
-                    enabled: whiteArea.redoable
-                    onClicked: whiteArea.redoDrawings()
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Guix')
-                    menu: Menu {
-                        title: qsTr('Color del guix')
-                        MenuItem {
-                            text: qsTr('Blanc')
-                            onTriggered: whiteArea.foreground = 'white'
-                        }
-                        MenuItem {
-                            text: qsTr('Verd')
-                            onTriggered: whiteArea.foreground = '#00ff00'
-                        }
-                        MenuItem {
-                            text: qsTr('Negre')
-                            onTriggered: whiteArea.foreground = 'black'
-                        }
+                    Item {
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        anchors.left: parent.left
+                        width: units.nailUnit
+                        visible: model.code == ''
+                        enabled: model.code == ''
                     }
                 }
+            }
 
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Fons')
-                    menu: Menu {
-                        title: qsTr('Color del fons')
-                        MenuItem {
-                            text: qsTr('Fosc')
-                            onTriggered: whiteArea.background = '#585858'
-                        }
-                        MenuItem {
-                            text: qsTr('Verd')
-                            onTriggered: whiteArea.background = '#007700'
-                        }
-                        MenuItem {
-                            text: qsTr('Clar')
-                            onTriggered: whiteArea.background = '#F5F6CE'
-                        }
-                    }
-                }
-
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Desa')
-                    height: 50
-                }
-
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Neteja')
-                    onClicked: messageErase.open()
-                }
-
+            Component.onCompleted: {
+                toolModel.append({type: 'edit', name: qsTr('Undo'), checkable: false, code: 'undo'});
+                toolModel.append({type: 'edit', name: qsTr('Redo'), checkable: false, code: 'redo'});
+                toolModel.append({name: '', code: ''});
+                toolModel.append({type: 'draw', name: qsTr('Mou'), checkable: true, code: 'move'});
+                toolModel.append({type: 'draw', name: qsTr('Llapis'), checkable: true, code: 'pencil'});
+                toolModel.append({name: '', code: ''});
+                toolModel.append({type: 'draw', name: qsTr('Recta'), checkable: true, code: 'rect'});
+                toolModel.append({type: 'draw', name: qsTr('Rectangle'), checkable: true, code: 'rectangle'});
+                toolModel.append({type: 'draw', name: qsTr('Cercle'), checkable: true, code: 'circle'});
+                toolModel.append({type: 'draw', name: qsTr('El·lipse'), checkable: true, code: 'ellipse'});
+                toolModel.append({name: '', code: ''});
+                toolModel.append({type: 'option', name: qsTr('Blanc'), checkable: true, code: 'foreWhite'});
+                toolModel.append({type: 'option', name: qsTr('Verd'), checkable: true, code: 'foreGreen'});
+                toolModel.append({type: 'option', name: qsTr('Negre'), checkable: true, code: 'foreBlack'});
+                toolModel.append({name: '', code: ''});
+                toolModel.append({type: 'option', name: qsTr('Fosc'), checkable: true, code: 'backDark'});
+                toolModel.append({type: 'option', name: qsTr('Verd'), checkable: true, code: 'backGreen'});
+                toolModel.append({type: 'option', name: qsTr('Clar'), checkable: true, code: 'backLight'});
+                toolModel.append({name: '', code: ''});
+                toolModel.append({type: 'edit', name: qsTr('Desa'), checkable: false, code: 'save'});
+                toolModel.append({type: 'edit', name: qsTr('Neteja'), checkable: false, code: 'clear'});
             }
         }
 
@@ -154,7 +102,7 @@ Rectangle {
             id: flickCanvas
             Layout.fillWidth: true
             Layout.fillHeight: true
-            interactive: whiteboard.selectedTool == 'move'
+            interactive: whiteboard.selectedDrawingTool == 'move'
             contentWidth: 2000 // contentItem.width
             contentHeight: 2000 // contentItem.height
             clip: true
@@ -186,7 +134,7 @@ Rectangle {
                 MouseArea {
                     id: mouseArea
                     anchors.fill: parent
-                    enabled: whiteboard.selectedTool != 'move'
+                    enabled: whiteboard.selectedDrawingTool != 'move'
 
                     property int px;
                     property int py;
@@ -203,15 +151,15 @@ Rectangle {
 
                         item.color = whiteArea.foreground;
                         item.addPoint({x: Math.round(mouseArea.mouseX), y: Math.round(mouseArea.mouseY)});
-                        switch(selectedTool) {
+                        switch(selectedDrawingTool) {
                         case 'pencil':
                             item.itemType = canvasPoint.typePolygon;
                             break;
-                        case 'line':
-                            item.itemType = canvasPoint.typeLine;
-                            break;
                         case 'rect':
                             item.itemType = canvasPoint.typeRect;
+                            break;
+                        case 'rectangle':
+                            item.itemType = canvasPoint.typeRectangle;
                             break;
                         case 'circle':
                             item.itemType = canvasPoint.typeCircle;
@@ -255,11 +203,17 @@ Rectangle {
                     case 'Clear':
                     default:
                         clearArea(ctx,whiteArea.background);
-                        for (var i=0; i<actionIndex; i++)
-                            allElements[i].paint(ctx);
+                        var i=0;
+                        while (i<actionIndex) {
+                            allElements[i].paint(ctx, 1.0);
+                            i++;
+                        }
+                        while (i<allElements.length) {
+                            allElements[i].paint(ctx, 0.5);
+                            i++;
+                        }
                         break;
                     }
-                    whiteboard.drawingAction = '';
                 }
 
                 function clearArea(ctx,color) {
@@ -271,6 +225,7 @@ Rectangle {
 
                 function undoDrawings() {
                     if (undoable) {
+                        console.log('Undo');
                         actionIndex--;
                         requestPaint();
                     }
@@ -278,6 +233,7 @@ Rectangle {
 
                 function redoDrawings() {
                     if (redoable) {
+                        console.log('Redo');
                         actionIndex++;
                         requestPaint();
                     }
@@ -295,6 +251,53 @@ Rectangle {
             while (whiteArea.allElements.length>0)
                 whiteArea.allElements.pop();
             whiteArea.requestPaint();
+        }
+    }
+
+    onSelectedEditToolChanged: {
+        switch(selectedEditTool) {
+        case 'undo':
+            whiteArea.undoDrawings();
+            break;
+        case 'redo':
+            whiteArea.redoDrawings();
+            break;
+        case 'save':
+            break;
+        case 'clear':
+            messageErase.open();
+            break;
+        default:
+            break;
+        }
+        selectedEditTool = '';
+    }
+
+    onSelectedOptionToolChanged: {
+        switch(selectedOptionTool) {
+        case 'foreWhite':
+            whiteArea.foreground = 'white';
+            break
+        case 'foreGreen':
+            whiteArea.foreground = '#00ff00';
+            break;
+        case 'foreBlack':
+            whiteArea.foreground = 'black';
+            break;
+        case 'backDark':
+            whiteArea.background = '#585858';
+            whiteArea.requestPaint();
+            break;
+        case 'backGreen':
+            whiteArea.background = '#007700';
+            whiteArea.requestPaint();
+            break;
+        case 'backLight':
+            whiteArea.background = '#F5F6CE';
+            whiteArea.requestPaint();
+            break;
+        default:
+            break;
         }
     }
 

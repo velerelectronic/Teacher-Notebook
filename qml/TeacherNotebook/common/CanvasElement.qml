@@ -6,8 +6,8 @@ Item {
     height: 10
     // Types of figures
     property int typePolygon: 1
-    property int typeLine: 2
-    property int typeRect: 3
+    property int typeRect: 2
+    property int typeRectangle: 3
     property int typeImage: 4
     property int typeText: 5
     property int typeCircle: 6
@@ -39,7 +39,7 @@ Item {
         ctx.closePath();
     }
 
-    function drawRect(ctx,px,py,qx,qy) {
+    function drawRectangle(ctx,px,py,qx,qy) {
         ctx.beginPath();
         ctx.strokeStyle = color;
         ctx.lineWidth = 3;
@@ -71,10 +71,11 @@ Item {
         ctx.closePath();
     }
 
-    function paint(ctx) {
+    function paint(ctx, alpha) {
         ctx.save();
+        ctx.globalAlpha = alpha;
         switch(itemType) {
-        case typeLine:
+        case typeRect:
         case typePolygon:
             var l = points.length;
             for (var i=1; i<l; i++) {
@@ -83,11 +84,11 @@ Item {
                 drawLineSegment(ctx,p.x,p.y,q.x,q.y);
             }
             break;
-        case typeRect:
+        case typeRectangle:
             if (points.length==2) {
                 var p = points[0];
                 var q = points[1];
-                drawRect(ctx,p.x,p.y,q.x,q.y);
+                drawRectangle(ctx,p.x,p.y,q.x,q.y);
             }
             break;
 
@@ -114,8 +115,8 @@ Item {
 
     function addPoint(newpoint) {
         switch(itemType) {
-        case typeLine:
         case typeRect:
+        case typeRectangle:
         case typeCircle:
         case typeEllipse:
             if (points.length>1)
