@@ -11,7 +11,7 @@ Rectangle {
     property bool canClose: true
     // Possible drawing actions ['Clear', 'Path']
     property string drawingAction: ''
-    property string selectedDrawingTool: 'pencil'
+    property string selectedDrawingTool: canvasPoint.typePolygon
     property string selectedEditTool: ''
     property string selectedOptionTool: ''
 
@@ -31,7 +31,10 @@ Rectangle {
             ListView {
                 anchors.fill: parent
                 orientation: ListView.Horizontal
-                model: ListModel { id: toolModel }
+                model: ListModel {
+                    id: toolModel
+                    dynamicRoles: true
+                }
                 snapMode: ListView.SnapOneItem
                 boundsBehavior: Flickable.StopAtBounds
                 delegate: Item {
@@ -45,7 +48,7 @@ Rectangle {
                         width: (model.code != '')?undefined:0
                         visible: (model.code != '')
                         enabled: (model.code != '')
-                        checkable: model.checkable
+                        checkable: (model.checkable)?model.checkable:false
                         text: model.name
                         exclusiveGroup: mainTool
                         onClicked: {
@@ -78,12 +81,12 @@ Rectangle {
                 toolModel.append({type: 'edit', name: qsTr('Redo'), checkable: false, code: 'redo'});
                 toolModel.append({name: '', code: ''});
                 toolModel.append({type: 'draw', name: qsTr('Mou'), checkable: true, code: 'move'});
-                toolModel.append({type: 'draw', name: qsTr('Llapis'), checkable: true, code: 'pencil'});
+                toolModel.append({type: 'draw', name: qsTr('Llapis'), checkable: true, code: canvasPoint.typePolygon});
                 toolModel.append({name: '', code: ''});
-                toolModel.append({type: 'draw', name: qsTr('Recta'), checkable: true, code: 'rect'});
-                toolModel.append({type: 'draw', name: qsTr('Rectangle'), checkable: true, code: 'rectangle'});
-                toolModel.append({type: 'draw', name: qsTr('Cercle'), checkable: true, code: 'circle'});
-                toolModel.append({type: 'draw', name: qsTr('El·lipse'), checkable: true, code: 'ellipse'});
+                toolModel.append({type: 'draw', name: qsTr('Recta'), checkable: true, code: canvasPoint.typeRect});
+                toolModel.append({type: 'draw', name: qsTr('Rectangle'), checkable: true, code: canvasPoint.typeRectangle});
+                toolModel.append({type: 'draw', name: qsTr('Cercle'), checkable: true, code: canvasPoint.typeCircle});
+                toolModel.append({type: 'draw', name: qsTr('El·lipse'), checkable: true, code: canvasPoint.typeEllipse});
                 toolModel.append({name: '', code: ''});
                 toolModel.append({type: 'option', name: qsTr('Blanc'), checkable: true, code: 'foreWhite'});
                 toolModel.append({type: 'option', name: qsTr('Verd'), checkable: true, code: 'foreGreen'});
@@ -142,6 +145,7 @@ Rectangle {
                     onPressed: {
                         var component = Qt.createComponent('common/CanvasElement.qml');
                         var item = component.createObject(whiteArea);
+                        item.ctx = whiteArea.getContext("2d");
                         // Remove items between actionIndex and the last one, because these items have been undone
                         while (whiteArea.actionIndex<whiteArea.allElements.length)
                             whiteArea.allElements.pop();
@@ -149,59 +153,39 @@ Rectangle {
                         whiteArea.allElements.push(item);
                         whiteArea.actionIndex++;
 
-                        item.color = whiteArea.foreground;
-                        item.addPoint({x: Math.round(mouseArea.mouseX), y: Math.round(mouseArea.mouseY)});
-                        switch(selectedDrawingTool) {
-                        case 'pencil':
-                            item.itemType = canvasPoint.typePolygon;
-                            break;
-                        case 'rect':
-                            item.itemType = canvasPoint.typeRect;
-                            break;
-                        case 'rectangle':
-                            item.itemType = canvasPoint.typeRectangle;
-                            break;
-                        case 'circle':
-                            item.itemType = canvasPoint.typeCircle;
-                            break;
-                        case 'ellipse':
-                            item.itemType = canvasPoint.typeEllipse;
-                            break;
-                        default:
-                            break;
-                        }
-
-                        whiteArea.requestPaint();
+                        item.addFirstPoint(selectedDrawingTool, {x: Math.round(mouseArea.mouseX), y: Math.round(mouseArea.mouseY)}, whiteArea.foreground);
                     }
 
                     onPositionChanged: {
+                        var ctx = whiteArea.getContext("2d");
                         var item = whiteArea.allElements[whiteArea.allElements.length-1];
-                        item.color = whiteArea.foreground;
                         item.addPoint({x: Math.round(mouseArea.mouseX), y: Math.round(mouseArea.mouseY)});
-                        whiteboard.drawingAction = ''
-//                        whiteboard.drawingAction = 'LastItem'
+                        whiteboard.drawingAction = 'LastItem';
                         whiteArea.requestPaint();
                     }
 
                     onReleased: {
                         var item = whiteArea.allElements[whiteArea.allElements.length-1];
-                        item.color = whiteArea.foreground;
                         item.addPoint({x: Math.round(mouseArea.mouseX), y: Math.round(mouseArea.mouseY)});
-                        whiteboard.drawingAction = ''
-//                        whiteboard.drawingAction = 'LastItem'
+                        whiteboard.drawingAction = 'LastItem';
                         whiteArea.requestPaint();
                     }
                 }
 
                 onPaint: {
-                    var ctx = whiteArea.getContext("2d");
-
                     switch(whiteboard.drawingAction) {
                     case 'LastItem':
-                        allElements[allElements.length-1].paint(ctx);
+                        /*
+                        var item = allElements[allElements.length-1];
+                        if (item.itemType==canvasPoint.typePolygon)
+                            item.paintLast(ctx);
+                        else
+                            item.paint(ctx);
+                            */
                         break;
-                    case 'Clear':
                     default:
+                        console.log('Paint all');
+                        var ctx = whiteArea.getContext("2d");
                         clearArea(ctx,whiteArea.background);
                         var i=0;
                         while (i<actionIndex) {

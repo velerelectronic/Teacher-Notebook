@@ -20,6 +20,7 @@ Item {
     property real scale: 1
     property string color: ''
     property string content: ''
+    property var ctx
 
     signal selected
 
@@ -31,8 +32,6 @@ Item {
 
     function drawLineSegment(ctx,px,py,qx,qy) {
         ctx.beginPath();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3
         ctx.moveTo(px, py);
         ctx.lineTo(qx, qy);
         ctx.stroke();
@@ -41,8 +40,6 @@ Item {
 
     function drawRectangle(ctx,px,py,qx,qy) {
         ctx.beginPath();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3;
         ctx.moveTo(px,py);
         ctx.lineTo(px,qy);
         ctx.lineTo(qx,qy);
@@ -54,21 +51,25 @@ Item {
 
     function drawCircle(ctx,px,py,qx,qy) {
         ctx.beginPath();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3;
         ctx.arc(px,py,Math.sqrt(Math.pow(px-qx,2)+Math.pow(py-qy,2)),0,Math.PI*2, true);
         ctx.stroke();
         ctx.closePath();
     }
 
     function drawAnEllipse(ctx,px,py,qx,qy) {
-        console.log('Draw ellipse');
         ctx.beginPath();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3;
         ctx.ellipse(px,py,qx-px,qy-py);
         ctx.stroke();
         ctx.closePath();
+    }
+
+    function paintLast() {
+        ctx.save();
+        var l = points.length;
+        var p = points[(l>1)?(l-2):(l-1)];
+        var q = points[l-1];
+        drawLineSegment(ctx,p.x,p.y,q.x,q.y);
+        ctx.restore();
     }
 
     function paint(ctx, alpha) {
@@ -127,6 +128,19 @@ Item {
             points.push(newpoint);
             break;
         }
+        if (itemType==typePolygon) {
+            paintLast();
+        }
+    }
+
+    function addFirstPoint(type,newpoint,forecolor) {
+        itemType = type;
+        color = forecolor;
+        points = [];
+        points.push(newpoint);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        paintLast();
     }
 
     function writeText(ctx) {
