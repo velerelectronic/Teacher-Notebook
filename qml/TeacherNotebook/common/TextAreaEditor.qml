@@ -23,111 +23,123 @@ Rectangle {
     property int buttonMargins: 0
     property alias text: textArea.text
     property bool selection: false
+    property bool isVertical: width<height
 
-    ToolBar {
+    Flow {
         id: toolbar
         anchors.top: parent.top
-        anchors.left: parent.left
         anchors.right: parent.right
-        anchors.margins: 0
-        height: toolHeight + buttonMargins
+        anchors.left: (isVertical)?parent.left:parent.horizontalCenter
+        anchors.bottom: (isVertical)?parent.verticalCenter:parent.bottom
+        anchors.margins: units.nailUnit
 
-        RowLayout {
-            anchors.fill: parent.fill
-            spacing: buttonMargins
+        spacing: buttonMargins
 
-            ToolButton {
-                anchors.margins: buttonMargins
-                checkable: true
-                Image {
-                    anchors.fill: parent
-                    source: '../icons/dialog-148815_150.png'
-                    fillMode: Image.PreserveAspectFit
-                }
-                onClicked: textArea.inputMethodHints = (checked)?Qt.ImhNone:Qt.ImhNoPredictiveText
+        ToolButton {
+            anchors.margins: buttonMargins
+            width: units.fingerUnit
+            height: units.fingerUnit
+            checkable: true
+            Image {
+                anchors.fill: parent
+                source: '../icons/dialog-148815_150.png'
+                fillMode: Image.PreserveAspectFit
             }
-            ToolButton {
-                id: undoButton
-                enabled: textArea.canUndo
-                Image {
-                    anchors.fill: parent
-                    source: '../icons/undo-97591_150.png'
-                    fillMode: Image.PreserveAspectFit
-                }
-                onClicked: textArea.undo()
+            onClicked: textArea.inputMethodHints = (checked)?Qt.ImhNone:Qt.ImhNoPredictiveText
+        }
+        ToolButton {
+            id: undoButton
+            width: units.fingerUnit
+            height: units.fingerUnit
+            enabled: textArea.canUndo
+            Image {
+                anchors.fill: parent
+                source: '../icons/undo-97591_150.png'
+                fillMode: Image.PreserveAspectFit
             }
-            ToolButton {
-                id: redoButton
-                enabled: textArea.canRedo
-                Image {
-                    anchors.fill: parent
-                    source: '../icons/redo-97589_150.png'
-                    fillMode: Image.PreserveAspectFit
-                }
-                onClicked: textArea.redo()
+            onClicked: textArea.undo()
+        }
+        ToolButton {
+            id: redoButton
+            width: units.fingerUnit
+            height: units.fingerUnit
+            enabled: textArea.canRedo
+            Image {
+                anchors.fill: parent
+                source: '../icons/redo-97589_150.png'
+                fillMode: Image.PreserveAspectFit
             }
+            onClicked: textArea.redo()
+        }
 
-            ToolButton {
-                id: copyButton
-                visible: false
-                Image {
-                    anchors.fill: parent
-                    source: '../icons/copy-97584_150.png'
-                    fillMode: Image.PreserveAspectFit
-                }
-                Action {
-                    shortcut: 'Ctrl+C'
-                }
-                onClicked: textArea.copy()
+        ToolButton {
+            id: copyButton
+            width: units.fingerUnit
+            height: units.fingerUnit
+            visible: false
+            Image {
+                anchors.fill: parent
+                source: '../icons/copy-97584_150.png'
+                fillMode: Image.PreserveAspectFit
             }
-            ToolButton {
-                id: cutButton
-                visible: false
-                Image {
-                    anchors.fill: parent
-                    source: '../icons/scissors-147115_150.png'
-                    fillMode: Image.PreserveAspectFit
-                }
-                Action {
-                    shortcut: 'Ctrl+X'
-                }
-                onClicked: textArea.cut()
+            Action {
+                shortcut: 'Ctrl+C'
             }
-            ToolButton {
-                id: pasteButton
-                visible: false
-                Image {
-                    anchors.fill: parent
-                    source: '../icons/paste-35946_150.png'
-                    fillMode: Image.PreserveAspectFit
-                }
-                Action {
-                    shortcut: "Ctrl+V"
-                }
-                onClicked: textArea.paste()
+            onClicked: textArea.copy()
+        }
+        ToolButton {
+            id: cutButton
+            width: units.fingerUnit
+            height: units.fingerUnit
+            visible: false
+            Image {
+                anchors.fill: parent
+                source: '../icons/scissors-147115_150.png'
+                fillMode: Image.PreserveAspectFit
             }
-            ToolButton {
-                id: deleteButton
-                visible: false
-                Image {
-                    anchors.fill: parent
-                    source: '../icons/erase-34105_150.png'
-                    fillMode: Image.PreserveAspectFit
-                }
-                onClicked: textArea.remove(textArea.selectionStart,textArea.selectionEnd)
+            Action {
+                shortcut: 'Ctrl+X'
             }
+            onClicked: textArea.cut()
+        }
+        ToolButton {
+            id: pasteButton
+            width: units.fingerUnit
+            height: units.fingerUnit
+            visible: false
+            Image {
+                anchors.fill: parent
+                source: '../icons/paste-35946_150.png'
+                fillMode: Image.PreserveAspectFit
+            }
+            Action {
+                shortcut: "Ctrl+V"
+            }
+            onClicked: textArea.paste()
+        }
+        ToolButton {
+            id: deleteButton
+            width: units.fingerUnit
+            height: units.fingerUnit
+            visible: false
+            Image {
+                anchors.fill: parent
+                source: '../icons/erase-34105_150.png'
+                fillMode: Image.PreserveAspectFit
+            }
+            onClicked: textArea.remove(textArea.selectionStart,textArea.selectionEnd)
         }
     }
 
     TextArea {
         id: textArea
-        anchors.top: toolbar.bottom
         anchors.left: parent.left
-        anchors.right: parent.right
         anchors.bottom: parent.bottom
+        anchors.top: (isVertical)?parent.verticalCenter:parent.top
+        anchors.right: (isVertical)?parent.right:parent.horizontalCenter
 
         clip: true
-        inputMethodHints: Qt.ImhNoPredictiveText
+//        inputMethodHints: Qt.ImhNoPredictiveText
         font.pixelSize: fontPixelSize
 
         onSelectedTextChanged: enableButtons()
