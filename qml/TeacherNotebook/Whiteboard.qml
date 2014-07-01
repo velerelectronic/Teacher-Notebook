@@ -138,6 +138,7 @@ Rectangle {
                     id: mouseArea
                     anchors.fill: parent
                     enabled: whiteboard.selectedDrawingTool != 'move'
+                    preventStealing: true
 
                     property int px;
                     property int py;
