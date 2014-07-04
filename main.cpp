@@ -2,7 +2,6 @@
 #include <QtQml>
 #include "qtquick2applicationviewer.h"
 
-#include "fileio.h"
 
 Q_DECL_EXPORT int main(int argc, char *argv[])
 {

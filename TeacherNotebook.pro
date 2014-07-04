@@ -1,4 +1,4 @@
-QT += sql
+QT += sql xml xmlpatterns svg
 
 # Add more folders to ship with the application, here
 folder_01.source = qml/TeacherNotebook
