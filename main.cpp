@@ -1,17 +1,16 @@
-#include <QtGui/QGuiApplication>
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
 #include <QtQml>
-#include "qtquick2applicationviewer.h"
 
+#include "fileio.h"
 
-Q_DECL_EXPORT int main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    QtQuick2ApplicationViewer viewer;
     qmlRegisterType<FileIO, 1>("FileIO", 1, 0, "FileIO");
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:///qml/main.qml")));
 
-    viewer.setMainQmlFile(QStringLiteral("qml/TeacherNotebook/main.qml"));
-    viewer.showExpanded();
-
-    return app.exec();
+    return app.exec();    
 }

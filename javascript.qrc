@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>javascript/EvernoteBox.js</file>
+        <file>javascript/EvernoteLib.js</file>
+        <file>javascript/Storage.js</file>
+        <file>javascript/NotebookEvent.js</file>
+    </qresource>
+</RCC>

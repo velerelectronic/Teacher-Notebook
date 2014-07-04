@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/computer-31223.svg</file>
+        <file>icons/copy-97584_150.png</file>
+        <file>icons/copy-97584.svg</file>
+        <file>icons/dialog-148815_150.png</file>
+        <file>icons/dialog-148815.svg</file>
+        <file>icons/document-97576.svg</file>
+        <file>icons/erase-34105_150.png</file>
+        <file>icons/erase-34105.svg</file>
+        <file>icons/flat-28213.svg</file>
+        <file>icons/notepad-97841.svg</file>
+        <file>icons/paste-35946_150.png</file>
+        <file>icons/paste-35946.svg</file>
+        <file>icons/redo-97589_150.png</file>
+        <file>icons/redo-97589.svg</file>
+        <file>icons/scissors-147115_150.png</file>
+        <file>icons/scissors-147115.svg</file>
+        <file>icons/undo-97591_150.png</file>
+        <file>icons/undo-97591.svg</file>
+    </qresource>
+</RCC>
