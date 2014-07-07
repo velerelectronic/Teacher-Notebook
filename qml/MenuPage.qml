@@ -152,7 +152,7 @@ Rectangle {
                 mainMenuModel.append({title: qsTr('Pissarra'), page: 'Whiteboard'});
                 mainMenuModel.append({title: qsTr('Documents'), page: 'DocumentsList'});
                 mainMenuModel.append({title: qsTr('! Recerca de coneixement'), page: 'Researcher'});
-                mainMenuModel.append({title: qsTr('! Document XML'), page: 'XmlViewer'});
+                mainMenuModel.append({title: qsTr('Exemple PA'), page: 'ProgramacioAula'});
                 mainMenuModel.append({title: qsTr('Rellotge'), page: 'TimeController'});
                 mainMenuModel.append({title: qsTr('Gestor de dades'), page: 'DataMan'});
             }

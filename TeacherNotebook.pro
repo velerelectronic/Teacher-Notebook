@@ -1,16 +1,18 @@
 TEMPLATE = app
 
-QT += qml quick sql
+QT += qml quick sql xml xmlpatterns svg
 
 SOURCES += main.cpp \
-    fileio.cpp
+    fileio.cpp \
+    XmlReader.cpp \
+    xmlmodel.cpp
 
 RESOURCES += qml.qrc \
     icons.qrc \
-    common.qrc \
     editors.qrc \
     images.qrc \
-    javascript.qrc
+    javascript.qrc \
+    common.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -19,4 +21,6 @@ QML_IMPORT_PATH =
 include(deployment.pri)
 
 HEADERS += \
-    fileio.h
+    fileio.h \
+    XmlReader.h \
+    xmlmodel.h

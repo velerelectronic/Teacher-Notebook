@@ -20,6 +20,6 @@
         <file>qml/StopWatch.qml</file>
         <file>qml/TimeController.qml</file>
         <file>qml/Whiteboard.qml</file>
-        <file>qml/XmlViewer.qml</file>
+        <file>qml/ProgramacioAula.qml</file>
     </qresource>
 </RCC>

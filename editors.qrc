@@ -6,5 +6,9 @@
         <file>editors/TextAreaEditor.qml</file>
         <file>editors/TextLineEditor.qml</file>
         <file>editors/TimePicker.qml</file>
+        <file>editors/XmlTextEditor.qml</file>
+        <file>editors/XmlListEditor.qml</file>
+        <file>editors/XmlMultipleListEditor.qml</file>
+        <file>editors/XmlListTextEditor.qml</file>
     </qresource>
 </RCC>
