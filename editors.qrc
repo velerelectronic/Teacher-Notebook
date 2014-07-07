@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>editors/DatePicker.qml</file>
+        <file>editors/DateTimeEditor.qml</file>
+        <file>editors/StateEditor.qml</file>
+        <file>editors/TextAreaEditor.qml</file>
+        <file>editors/TextLineEditor.qml</file>
+        <file>editors/TimePicker.qml</file>
+        <file>editors/XmlTextEditor.qml</file>
+        <file>editors/XmlListEditor.qml</file>
+        <file>editors/XmlMultipleListEditor.qml</file>
+        <file>editors/XmlListTextEditor.qml</file>
+    </qresource>
+</RCC>

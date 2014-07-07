@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file>common/AbstractEditor.qml</file>
+        <file>common/BackShadow.qml</file>
+        <file>common/BizoneButton.qml</file>
+        <file>common/CanvasElement.qml</file>
+        <file>common/EditBox.qml</file>
+        <file>common/FormatDates.js</file>
+        <file>common/MessageBox.qml</file>
+        <file>common/PreviewBox.qml</file>
+        <file>common/ScheduleItem.qml</file>
+        <file>common/SearchBox.qml</file>
+        <file>common/SimpleButton.qml</file>
+        <file>common/SqlModel.qml</file>
+        <file>common/TextAreaEditor.qml</file>
+        <file>common/ToolButton.qml</file>
+        <file>common/UseUnits.qml</file>
+        <file>editors/XmlListTextEditor.qml</file>
+    </qresource>
+</RCC>

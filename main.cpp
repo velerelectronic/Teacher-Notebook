@@ -1,18 +1,21 @@
-#include <QtGui/QGuiApplication>
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
 #include <QtQml>
-#include "qtquick2applicationviewer.h"
 
 #include "fileio.h"
+#include "XmlReader.h"
+#include "xmlmodel.h"
 
-Q_DECL_EXPORT int main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    QtQuick2ApplicationViewer viewer;
     qmlRegisterType<FileIO, 1>("FileIO", 1, 0, "FileIO");
+    qmlRegisterType<XmlReader, 1>("XmlReader", 1, 0, "XmlReader");
+    qmlRegisterType<XmlModel, 1>("XmlModel", 1, 0, "XmlModel");
 
-    viewer.setMainQmlFile(QStringLiteral("qml/TeacherNotebook/main.qml"));
-    viewer.showExpanded();
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:///qml/main.qml")));
 
-    return app.exec();
+    return app.exec();    
 }
