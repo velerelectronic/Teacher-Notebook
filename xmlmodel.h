@@ -8,49 +8,35 @@
 class XmlModel : public QObject
 {
     Q_OBJECT
+
 public:
     explicit XmlModel(QObject *parent = 0);
+    explicit XmlModel(QObject *parent, const QDomElement &, const QString &tagname);
     XmlModel(const XmlModel &);
-    XmlModel &operator= (const XmlModel &);
-    ~XmlModel();
+    XmlModel operator= (const XmlModel &);
 
-    Q_PROPERTY(QString source
-               READ source
-               WRITE setSource
-               NOTIFY sourceChanged)
+    Q_PROPERTY(QString tagName READ tagName NOTIFY tagNameChanged)
 
-    Q_PROPERTY(QString tagName
-               READ tagName
-               WRITE setTagName
-               NOTIFY tagNameChanged)
+    Q_PROPERTY(QVariantList list READ list WRITE setList NOTIFY listChanged)
 
-    Q_PROPERTY(QVariantList list
-               READ list
-               WRITE setList
-               NOTIFY listChanged)
-
-    QString source();
-    QString tagName();
+    const QString &tagName();
     const QVariantList &list();
     void setRootElement(const QDomElement &);
 
+    void recalculateList();
+
 signals:
-    void sourceChanged(QString);
     void tagNameChanged(QString);
     void listChanged(QVariantList);
 
 public slots:
-    void setSource(const QString &);
     void setTagName(const QString &);
     void setList(const QVariantList &);
 
 private:
-    QString innerSource;
     QString innerTagName;
-    QVariantList innerList;
     QDomElement rootElement;
-
-    void recalculateList();
+    QVariantList innerList;
 
 };
 

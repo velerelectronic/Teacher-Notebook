@@ -5,7 +5,7 @@ QT += qml quick sql xml xmlpatterns svg
 SOURCES += main.cpp \
     fileio.cpp \
     xmlmodel.cpp \
-    programacioaulamodel.cpp
+    teachingplanning.cpp
 
 RESOURCES += qml.qrc \
     icons.qrc \
@@ -23,4 +23,4 @@ include(deployment.pri)
 HEADERS += \
     fileio.h \
     xmlmodel.h \
-    programacioaulamodel.h
+    teachingplanning.h

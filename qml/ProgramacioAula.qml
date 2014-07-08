@@ -22,30 +22,15 @@ Rectangle {
         }
     }*/
 
-    ProgramacioAulaModel {
+    TeachingPlanning {
         id: xmlReader
         source: '/Users/jmpayeras/Desenvolupament/prova.xml'
-    }
 
-    Rectangle {
-        color: 'yellow'
-        anchors.fill: parent
-        Text {
-            anchors.fill: parent
-            text: '' // JSON.stringify(pa.objectives.list)
+        Component.onCompleted: {
+            xmlReader.loadXml();
+            reload();
         }
     }
-
-
-    XmlModel {
-        //source: '/Users/jmpayeras/Desenvolupament/prova.xml'
-        source: '<objectives>
-<objective>hello</objective>
-<objective>hola</objective></objectives>'
-        tagName: 'objective'
-        onListChanged: console.log('Llista ' + list);
-    }
-
 
     ListView {
         id: sectionsList
@@ -99,9 +84,12 @@ Rectangle {
 
     function reload() {
         sectionsModel.clear();
-        sectionsModel.append({title: qsTr('Introducció'), editor: 'XmlTextEditor', model: xmlReader.introduction});
+
+        sectionsModel.append({title: qsTr('Introducció'), editor: 'XmlListEditor', model: xmlReader.introduction});
         sectionsModel.append({title: qsTr('Dades generals'), editor: 'XmlListEditor', model: xmlReader.basicData});
+
         sectionsModel.append({title: qsTr('Objectius'), editor: 'XmlListEditor', model: xmlReader.objectives});
+
         sectionsModel.append({title: qsTr('Competències bàsiques'), editor: 'XmlMultipleListEditor', model: [
                                      {title: qsTr('Comunicació lingüística i audiovisual'), dades: xmlReader.competenceLing},
                                      {title: qsTr('Matemàtica'), editor: 'XmlTextEditor', dades: xmlReader.competenceMat},
@@ -111,6 +99,7 @@ Rectangle {
                                      {title: qsTr('Aprendre a aprendre'), editor: 'XmlTextEditor', dades: xmlReader.competenceLearn},
                                      {title: qsTr('Autonomia i iniciativa personal'), editor: 'XmlTextEditor', dades: xmlReader.competenceAuto}
                                  ]});
+
         sectionsModel.append({title: qsTr('Avaluació'), editor: 'XmlMultipleListEditor', model: [
                                      {title: qsTr('Tasques'), dades: xmlReader.assessmentTasks},
                                      {title: qsTr('Criteris'), dades: xmlReader.assessmentCriteria},
@@ -126,11 +115,11 @@ Rectangle {
         sectionsModel.append({title: qsTr('Recursos'), editor: 'XmlListEditor', model: xmlReader.resources});
         sectionsModel.append({title: qsTr('Referències'), editor: 'XmlListEditor', model: xmlReader.references});
         sectionsModel.append({title: qsTr('Activitats'), editor: 'XmlListEditor', model: xmlReader.activities});
-        sectionsModel.append({title: qsTr('Comentaris'), editor: 'XmlTextEditor', model: xmlReader.comments});
+        sectionsModel.append({title: qsTr('Comentaris'), editor: 'XmlListEditor', model: xmlReader.comments});
     }
 
     Component.onCompleted: {
-        reload();
+        /*
 
         xmlReader.objectives.push({text: 'hola'});
         xmlReader.objectives = [{text: 'res'},{text: 'un altre exemple'}];
@@ -141,5 +130,6 @@ Rectangle {
         }
 
         reload();
+*/
     }
 }

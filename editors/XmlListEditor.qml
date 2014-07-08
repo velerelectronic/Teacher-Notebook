@@ -1,10 +1,15 @@
 import QtQuick 2.2
+import PersonalTypes 1.0
 
 Rectangle {
     id: editor
     property var dataModel
 
     color: 'pink'
+
+    Component.onCompleted: {
+        console.log('Data model: ' + JSON.stringify(dataModel));
+    }
 
     ListView {
         id: llista
