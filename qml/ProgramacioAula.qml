@@ -1,8 +1,7 @@
 import QtQuick 2.2
 import QtWebKit 3.0
 import FileIO 1.0
-import XmlReader 1.0
-import XmlModel 1.0
+import PersonalTypes 1.0
 
 Rectangle {
     id: xmlViewer
@@ -10,6 +9,7 @@ Rectangle {
     width: parent.width
     height: parent.height
 
+    /*
     XmlReader {
         id: xmlReader
         source: '/Users/jmpayeras/Desenvolupament/prova.xml'
@@ -20,7 +20,22 @@ Rectangle {
                 console.log('-> ' + prop + ' -- ' + JSON.stringify(objectives[prop]));
             }
         }
+    }*/
+
+    ProgramacioAulaModel {
+        id: xmlReader
+        source: '/Users/jmpayeras/Desenvolupament/prova.xml'
     }
+
+    Rectangle {
+        color: 'yellow'
+        anchors.fill: parent
+        Text {
+            anchors.fill: parent
+            text: '' // JSON.stringify(pa.objectives.list)
+        }
+    }
+
 
     XmlModel {
         //source: '/Users/jmpayeras/Desenvolupament/prova.xml'

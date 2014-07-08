@@ -4,8 +4,8 @@ QT += qml quick sql xml xmlpatterns svg
 
 SOURCES += main.cpp \
     fileio.cpp \
-    XmlReader.cpp \
-    xmlmodel.cpp
+    xmlmodel.cpp \
+    programacioaulamodel.cpp
 
 RESOURCES += qml.qrc \
     icons.qrc \
@@ -22,5 +22,5 @@ include(deployment.pri)
 
 HEADERS += \
     fileio.h \
-    XmlReader.h \
-    xmlmodel.h
+    xmlmodel.h \
+    programacioaulamodel.h
