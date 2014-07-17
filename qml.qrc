@@ -21,5 +21,6 @@
         <file>qml/TimeController.qml</file>
         <file>qml/Whiteboard.qml</file>
         <file>qml/ProgramacioAula.qml</file>
+        <file>qml/ImageMapper.qml</file>
     </qresource>
 </RCC>

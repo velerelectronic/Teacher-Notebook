@@ -25,7 +25,7 @@
 #define TAG_COMPETENCE_TIC QString("tic")
 #define TAG_COMPETENCE_SOC QString("social")
 #define TAG_COMPETENCE_CULT QString("cult")
-#define TAG_COMPETENCE_LEARN QString("apren")
+#define TAG_COMPETENCE_LEARN QString("learn")
 #define TAG_COMPETENCE_AUTO QString("auto")
 
 #define TAG_ASSESSMENT QString("assessment")
@@ -65,6 +65,8 @@ const QString &TeachingPlanning::source() {
 
 void TeachingPlanning::setSource(const QString &source) {
     innerSource = source;
+    if (innerSource.startsWith("file://"))
+        innerSource.remove(0,7);
     loadXml();
     emit sourceChanged();
 }

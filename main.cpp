@@ -3,7 +3,6 @@
 #include <QtQml>
 
 #include "fileio.h"
-#include "XmlReader.h"
 #include "xmlmodel.h"
 #include "teachingplanning.h"
 

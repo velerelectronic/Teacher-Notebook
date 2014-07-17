@@ -17,6 +17,7 @@ ItemInspector {
 
     property int idxAnnotation
     property int idxDesc
+    property int idxImage
 
     Common.UseUnits { id: units }
 
@@ -51,5 +52,6 @@ ItemInspector {
         }
         idxAnnotation = addSection(qsTr('Anotació'),annotation,'yellow',editorType['TextLine']);
         idxDesc = addSection(qsTr('Descripció'),desc,'yellow',editorType['TextArea']);
+        idxImage = addSection(qsTr('Imatge'), '', 'white', editorType['Image']);
     }
 }

@@ -15,9 +15,9 @@ Common.AbstractEditor {
         anchors.margins: units.nailUnit
 
         border.color: 'black'
-        fontPixelSize: units.nailUnit
+        fontPixelSize: units.readUnit
         toolHeight: units.fingerUnit
-        buttonMargins: units.nailUnit / 2
+        buttonMargins: units.nailUnit
         wrapMode: TextInput.WrapAtWordBoundaryOrAnywhere
         onTextChanged: editor.setChanges(true)
     }

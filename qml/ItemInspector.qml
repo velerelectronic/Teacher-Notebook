@@ -10,7 +10,7 @@ Common.AbstractEditor {
     property alias pageTitle: titlePage.text
     property alias pageBackground: backgroundImage.source
     property alias model: inspectorGrid.model
-    property var editorType: { "TextLine": 1, "TextArea": 2, "Date": 3, "Time": 4, "State": 5 }
+    property var editorType: { "TextLine": 1, "TextArea": 2, "Date": 3, "Time": 4, "State": 5, "Image": 6 }
 
     signal saveDataRequested
     signal copyDataRequested
@@ -27,7 +27,7 @@ Common.AbstractEditor {
         Text {
             id: titlePage
             Layout.fillWidth: true
-            font.pixelSize: units.nailUnit
+            font.pixelSize: units.readUnit
             font.bold: true
         }
         ListView {
@@ -85,7 +85,8 @@ Common.AbstractEditor {
                             anchors.left: parent.left
                             anchors.right: parent.horizontalCenter
                             anchors.top: parent.top
-                            height: units.fingerUnit
+                            height: contentHeight
+                            font.pixelSize: units.readUnit
                             verticalAlignment: Text.AlignVCenter
                             text: model.fieldName
                         }
@@ -95,6 +96,7 @@ Common.AbstractEditor {
                             anchors.right: parent.right
                             anchors.top: parent.top
                             height: contentHeight
+                            font.pixelSize: units.readUnit
                             verticalAlignment: Text.AlignVCenter
                             text: transformContent(model.content)
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -127,19 +129,22 @@ Common.AbstractEditor {
                         var editorPage;
                         switch(model.editorType) {
                         case (itemInspector.editorType.TextLine):
-                            editorPage = 'TextLineEditor.qml'
+                            editorPage = 'TextLineEditor.qml';
                             break;
                         case (itemInspector.editorType.TextArea):
-                            editorPage = 'TextAreaEditor.qml'
+                            editorPage = 'TextAreaEditor.qml';
                             break;
                         case (itemInspector.editorType.Date):
-                            editorPage = 'DateTimeEditor.qml'
+                            editorPage = 'DateTimeEditor.qml';
                             break;
                         case (itemInspector.editorType.State):
-                            editorPage = 'StateEditor.qml'
+                            editorPage = 'StateEditor.qml';
+                            break;
+                        case (itemInspector.editorType.Image):
+                            editorPage = 'ImageEditor.qml';
                             break;
                         default:
-                            editorPage = 'GeneralEditor.qml'
+                            editorPage = 'GeneralEditor.qml';
                         }
                         var newcontent = model.content;
                         editorLoader.setSource('qrc:///editors/' + editorPage, {content: newcontent, width: viewerBox.width});
@@ -151,6 +156,7 @@ Common.AbstractEditor {
                         }
 
                         // Release the source inside the loader
+                        editorLoader.sourceComponent = undefined;
                         editorLoader.active = false;
                         editorLoader.active = true;
                     }

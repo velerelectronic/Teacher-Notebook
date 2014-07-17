@@ -15,6 +15,5 @@
         <file>common/TextAreaEditor.qml</file>
         <file>common/ToolButton.qml</file>
         <file>common/UseUnits.qml</file>
-        <file>editors/XmlListTextEditor.qml</file>
     </qresource>
 </RCC>

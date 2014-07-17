@@ -14,7 +14,7 @@ Common.AbstractEditor {
         anchors.fill: parent
         anchors.margins: units.nailUnit
         clip: true
-        font.pixelSize: units.nailUnit * 2
+        font.pixelSize: units.readUnit
         wrapMode: TextInput.WrapAtWordBoundaryOrAnywhere
 //        inputMethodHints: Qt.ImhNoPredictiveText
         onTextChanged: editor.setChanges(true)

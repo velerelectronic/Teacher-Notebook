@@ -46,16 +46,17 @@ Rectangle {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
+            height: childrenRect.height
 
             spacing: units.nailUnit
             Text {
                 id: titleLabel
     //            anchors { left: parent.left; right: parent.right; margins: units.nailUnit }
                 Layout.fillWidth: true
-                Layout.preferredHeight: units.nailUnit * 2
+                Layout.preferredHeight: contentHeight
                 text: title
                 font.bold: true
-                font.pixelSize: units.nailUnit * 2
+                font.pixelSize: units.readUnit
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 clip: true
             }
@@ -63,9 +64,9 @@ Rectangle {
                 id: descLabel
     //            anchors { left: parent.left; right: parent.right; margins: units.nailUnit }
                 Layout.fillWidth: true
-                Layout.preferredHeight: units.nailUnit
+                Layout.preferredHeight: contentHeight
                 text: desc
-                font.pixelSize: units.nailUnit
+                font.pixelSize: units.readUnit
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 clip: true
             }

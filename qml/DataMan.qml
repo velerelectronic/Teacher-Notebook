@@ -17,7 +17,7 @@ Rectangle {
         Text {
             id: exportLabel
             Layout.fillWidth: true
-            font.pixelSize: units.nailUnit * 2
+            font.pixelSize: units.readUnit
             font.bold: true
             text: qsTr('Exporta')
         }
@@ -28,7 +28,7 @@ Rectangle {
             focus: true
             wrapMode: TextEdit.WrapAnywhere
             readOnly: true
-            font.pixelSize: units.nailUnit
+            font.pixelSize: units.readUnit
         }
         RowLayout {
             id: exportButtonsRow
@@ -37,24 +37,30 @@ Rectangle {
 
             Button {
                 Layout.preferredHeight: units.fingerUnit
-                text: 'Exporta'
+                text: qsTr('Exporta')
                 onClicked: exportContents.text = Storage.exportDatabaseToText()
             }
 
             Button {
                 Layout.preferredHeight: units.fingerUnit
-                text: 'Copia al clipboard'
+                text: qsTr('Copia al clipboard')
                 onClicked: {
                     exportContents.selectAll()
                     exportContents.copy()
                 }
+            }
+
+            Button {
+                Layout.preferredHeight: units.fingerUnit
+                text: qsTr('Envia per correu')
+                onClicked: Qt.openUrlExternally('mailto:?subject=' + encodeURIComponent('[TeacherNotebook] Backup ' + Storage.currentTime()) + '&body=' + encodeURIComponent(exportContents.text))
             }
         }
 
         Text {
             id: importLabel
             Layout.fillWidth: true
-            font.pixelSize: units.nailUnit * 2
+            font.pixelSize: units.readUnit
             font.bold: true
             text: qsTr('Importa')
         }
@@ -65,7 +71,7 @@ Rectangle {
             focus: true
             wrapMode: TextEdit.WrapAnywhere
             readOnly: true
-            font.pixelSize: units.nailUnit
+            font.pixelSize: units.readUnit
         }
         RowLayout {
             id: importButtonsRow

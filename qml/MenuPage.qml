@@ -38,7 +38,7 @@ Rectangle {
                         anchors.margins: units.nailUnit
                         elide: Text.ElideRight
                         maximumLineCount: 1
-                        font.pixelSize: units.nailUnit
+                        font.pixelSize: units.readUnit
                         verticalAlignment: Text.AlignVCenter
                         text: '– ' + title + ' ' + desc
                     }
@@ -82,7 +82,7 @@ Rectangle {
                             Layout.fillHeight: true
                             text: Storage.convertNull(model.endDate)
                             font.bold: true
-                            font.pixelSize: units.nailUnit
+                            font.pixelSize: units.readUnit
                             verticalAlignment: Text.AlignVCenter
                         }
 
@@ -91,7 +91,7 @@ Rectangle {
                             Layout.fillHeight: true
                             elide: Text.ElideRight
                             maximumLineCount: 1
-                            font.pixelSize: units.nailUnit
+                            font.pixelSize: units.readUnit
                             verticalAlignment: Text.AlignVCenter
                             text: Storage.convertNull(model.event)
                         }
@@ -132,12 +132,12 @@ Rectangle {
             // cellWidth: units.fingerUnit * 4 + units.nailUnit * 2
             delegate: Rectangle {
                 width: parent.width
-                height: units.fingerUnit
-                // width: units.fingerUnit * 4
+                height: units.fingerUnit * 2
                 border.color: "green"
                 color: "#d5ffcc"
                 Text {
                     anchors.centerIn: parent
+                    font.pixelSize: units.readUnit
                     text: title
                 }
                 MouseArea {

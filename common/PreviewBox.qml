@@ -41,7 +41,7 @@ Rectangle {
             width: parent.width
             border.width: 0
             height: textHeader.height + units.nailUnit * 2
-            color: previewBox.captionBackgroundColor + units.nailUnit * 2
+            color: previewBox.captionBackgroundColor
 
             Text {
                 id: textHeader
@@ -50,7 +50,7 @@ Rectangle {
                 anchors.top: parent.top
                 anchors.margins: units.nailUnit
                 font.bold: true
-                font.pixelSize: units.nailUnit * 2
+                font.pixelSize: units.readUnit
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 text: previewBox.caption
                 MouseArea {
@@ -73,7 +73,7 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.margins: units.nailUnit
-                font.pixelSize: units.nailUnit
+                font.pixelSize: units.readUnit
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 text: previewBox.prefixTotal + ' ' + totalCount + ' ' + previewBox.suffixTotal
                 MouseArea {

@@ -11,12 +11,20 @@ Rectangle {
                 target: editor
                 height: mainText.height + 2 * units.nailUnit
             }
+            PropertyChanges {
+                target: textEditor
+                visible: false
+            }
         },
         State {
             name: 'edit'
             PropertyChanges {
                 target: editor
                 height: mainText.height + textEditor.height + 2 * units.nailUnit
+            }
+            PropertyChanges {
+                target: textEditor
+                visible: true
             }
         }
     ]
@@ -38,7 +46,7 @@ Rectangle {
 
         MouseArea {
             anchors.fill: parent
-            onClicked: (editor.state === 'show')?'edit':'show'
+            onClicked: editor.state = (editor.state == 'show')?'edit':'show'
         }
     }
     TextAreaEditor {

@@ -15,6 +15,7 @@ Rectangle {
     width: 300
     height: 200
     property string pageTitle: 'Documents'
+    signal openDocument(string document)
 
     ColumnLayout {
         anchors.fill: parent
@@ -61,7 +62,7 @@ Rectangle {
             delegate: Rectangle {
                 border.color: 'black'
                 width: parent.width
-                height: units.fingerUnit
+                height: units.fingerUnit * 2
 
                 RowLayout {
                     anchors.fill: parent
@@ -101,7 +102,15 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: folderList.folder = model.fileURL
+                    onClicked: {
+                        // Different actions whether it is a file or a folder
+                        if (fileIsDir)
+                            folderList.folder = model.fileURL;
+                        else {
+                            console.log("open document " + fileURL);
+                            openDocument(fileURL);
+                        }
+                    }
                 }
             }
         }

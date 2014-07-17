@@ -35,7 +35,7 @@ Window {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        height: units.fingerUnit
+        height: units.fingerUnit * 1.5
 
         color: "#009900"
         visible: true
@@ -44,11 +44,11 @@ Window {
 
         RowLayout {
             anchors.fill: parent
-            anchors.margins: units.nailUnit / 2
+            anchors.margins: units.nailUnit
 
             Image {
-                Layout.preferredWidth: units.nailUnit * 4
-                Layout.preferredHeight: units.nailUnit * 4
+                Layout.preferredWidth: units.fingerUnit
+                Layout.preferredHeight: units.fingerUnit
 
                 source: 'qrc:///images/small-41255_150.png'
                 fillMode: Image.PreserveAspectFit
@@ -69,7 +69,7 @@ Window {
                 text: pageListModel.get(pagesView.currentIndex)['pageTitle']
                 font.italic: false
                 font.bold: true
-                font.pixelSize: units.nailUnit * 2
+                font.pixelSize: units.readUnit
                 verticalAlignment: Text.AlignVCenter
                 font.family: "Tahoma"
             }
@@ -135,7 +135,7 @@ Window {
             //anchors.right: pageList.right
             color: 'white'
 
-            property string pageTitle: (pageLoader.item)?pageLoader.item.pageTitle:''
+            property string pageTitle: pageLoader.pageTitle
             property bool closingBlocked: ((pageLoader.item) && (pageLoader.item.changes))?pageLoader.item.changes:false
             clip: true
 
@@ -143,7 +143,7 @@ Window {
                 id: pageLoader
                 anchors.fill: parent
 
-                property string pageTitle: (item.pageTitle)?item.pageTitle:''
+                property string pageTitle: (item && item.pageTitle)?item.pageTitle:''
                 onPageTitleChanged: pageListModel.setProperty(model.index,'pageTitle',pageTitle)
 
                 Connections {
@@ -197,6 +197,24 @@ Window {
                         forceOpenSubPage(lastRequestedPage,{})
                     }
                     onRefusedCloseEditorRequest: messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
+
+                    // Document list
+                    onOpenDocument: {
+                        var ext = /^.+\.([^\.]*)$/.exec(document);
+                        var extensio = (ext == null)?'':ext[1];
+                        console.log(extensio);
+
+                        switch(extensio) {
+                        case 'xml':
+                            openSubPage('ProgramacioAula',{document: document});
+                            break;
+                        case 'jpg':
+                        case 'png':
+                        case 'svg':
+                            openSubPage('ImageMapper',{background: document});
+                        }
+
+                    }
                 }
             }
             Component.onCompleted: pageLoader.setSource(model.page + '.qml',model.parameters)
@@ -214,7 +232,7 @@ Window {
         border.color: 'black'
         radius: units.nailUnit
         internalMargins: units.nailUnit
-        fontSize: units.nailUnit
+        fontSize: units.readUnit
         interval: 2000
     }
 

@@ -6,6 +6,8 @@ import PersonalTypes 1.0
 Rectangle {
     id: xmlViewer
     property string pageTitle: qsTr('Programació d\'aula');
+    property string document
+
     width: parent.width
     height: parent.height
 
@@ -24,7 +26,7 @@ Rectangle {
 
     TeachingPlanning {
         id: xmlReader
-        source: '/Users/jmpayeras/Desenvolupament/prova.xml'
+        source: document // '/Users/jmpayeras/Desenvolupament/prova.xml'
 
         Component.onCompleted: {
             xmlReader.loadXml();
@@ -85,8 +87,8 @@ Rectangle {
     function reload() {
         sectionsModel.clear();
 
-        sectionsModel.append({title: qsTr('Introducció'), editor: 'XmlListEditor', model: xmlReader.introduction});
         sectionsModel.append({title: qsTr('Dades generals'), editor: 'XmlListEditor', model: xmlReader.basicData});
+        sectionsModel.append({title: qsTr('Introducció'), editor: 'XmlListEditor', model: xmlReader.introduction});
 
         sectionsModel.append({title: qsTr('Objectius'), editor: 'XmlListEditor', model: xmlReader.objectives});
 
@@ -114,8 +116,8 @@ Rectangle {
                                  ]});
         sectionsModel.append({title: qsTr('Recursos'), editor: 'XmlListEditor', model: xmlReader.resources});
         sectionsModel.append({title: qsTr('Referències'), editor: 'XmlListEditor', model: xmlReader.references});
-        sectionsModel.append({title: qsTr('Activitats'), editor: 'XmlListEditor', model: xmlReader.activities});
         sectionsModel.append({title: qsTr('Comentaris'), editor: 'XmlListEditor', model: xmlReader.comments});
+        sectionsModel.append({title: qsTr('Sessions'), editor: 'XmlListEditor', model: xmlReader.activities});
     }
 
     Component.onCompleted: {
