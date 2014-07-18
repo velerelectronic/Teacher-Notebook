@@ -69,6 +69,7 @@ Rectangle {
                 anchors.right: parent.right
                 title: model.title
                 desc: model.desc
+                image: (model.image)?model.image:''
                 state: (model.selected)?'selected':'basic'
                 onAnnotationSelected: {
                     if (editBox.state == 'show') {

@@ -27,6 +27,8 @@ Rectangle {
 
     property alias title: titleLabel.text
     property alias desc: descLabel.text
+    property alias image: imageLabel.source
+
     signal annotationSelected (string title,string desc)
 
     border.color: "black";
@@ -70,7 +72,13 @@ Rectangle {
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 clip: true
             }
-
+            Image {
+                id: imageLabel
+                Layout.fillWidth: true
+                Layout.preferredHeight: sourceSize.height * (width / sourceSize.width)
+                source: image
+                fillMode: Image.PreserveAspectFit
+            }
         }
     }
 

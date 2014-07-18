@@ -1,10 +1,13 @@
 import QtQuick 2.2
 import QtMultimedia 5.0
+import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
-Item {
-    id: imageItem
-    height: units.fingerUnit * 3
+Common.AbstractEditor {
+    id: imageEditor
+    property string content: ''
+
+    height: units.fingerUnit * 10
 
     Common.UseUnits { id: units }
 
@@ -12,7 +15,10 @@ Item {
         id: camera
         captureMode: Camera.CaptureStillImage
         imageCapture {
-            onImageCaptured: imageFromCamera.source = preview
+            onImageSaved: {
+                console.log(path);
+                imageData.source = path;
+            }
         }
     }
 
@@ -24,6 +30,14 @@ Item {
         MouseArea {
             anchors.fill: parent
             onClicked: camera.imageCapture.capture()
+        }
+    }
+
+    ImageData {
+        id: imageData
+        onSourceChanged: {
+            imageEditor.content = "data:image/png;base64," + dataURL;
+            imageEditor.setChanges(true);
         }
     }
 

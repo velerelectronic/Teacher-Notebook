@@ -10,7 +10,30 @@ Common.AbstractEditor {
     property alias pageTitle: titlePage.text
     property alias pageBackground: backgroundImage.source
     property alias model: inspectorGrid.model
-    property var editorType: { "TextLine": 1, "TextArea": 2, "Date": 3, "Time": 4, "State": 5, "Image": 6 }
+    property var editorType: {
+                'TextLine': 1,
+                'TextArea': 2,
+                'Date': 3,
+                'Time': 4,
+                'State': 5,
+                'Image': 6
+    }
+    property var showComponent: {
+                1: showText,
+                2: showText,
+                3: showDateTime,
+                4: showDateTime,
+                5: showState,
+                6: showImage
+    }
+    property var editComponent: {
+                1: 'TextLineEditor',
+                2: 'TextAreaEditor',
+                3: 'DateTimeEditor',
+                4: 'DateTimeEditor',
+                5: 'StateEditor',
+                6: 'ImageEditor'
+    }
 
     signal saveDataRequested
     signal copyDataRequested
@@ -34,6 +57,9 @@ Common.AbstractEditor {
             id: inspectorGrid
             Layout.fillWidth: true
             Layout.fillHeight: true
+
+            property int captionsWidth: units.fingerUnit
+
             clip: true
             model: ListModel {
                 id: attributesModel
@@ -83,24 +109,25 @@ Common.AbstractEditor {
                         Text {
                             id: fieldNameBox
                             anchors.left: parent.left
-                            anchors.right: parent.horizontalCenter
+                            width: inspectorGrid.captionsWidth
                             anchors.top: parent.top
                             height: contentHeight
                             font.pixelSize: units.readUnit
                             verticalAlignment: Text.AlignVCenter
                             text: model.fieldName
                         }
-                        Text {
+                        Loader {
                             id: contentBox
-                            anchors.left: parent.horizontalCenter
+                            property string content: model.content
+                            anchors.left: fieldNameBox.right
                             anchors.right: parent.right
                             anchors.top: parent.top
-                            height: contentHeight
-                            font.pixelSize: units.readUnit
-                            verticalAlignment: Text.AlignVCenter
-                            text: transformContent(model.content)
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            height: (item)?item.requiredHeight:0
+                            sourceComponent: showComponent[model.editorType]
+                            onLoaded: item.content = model.content
+                            Component.onCompleted: console.log('Component ' + model.editorType + '-' + showComponent['Image']);
                         }
+
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
@@ -126,33 +153,14 @@ Common.AbstractEditor {
                 }
                 onStateChanged: {
                     if (variableViewer.state == 'editMode') {
-                        var editorPage;
-                        switch(model.editorType) {
-                        case (itemInspector.editorType.TextLine):
-                            editorPage = 'TextLineEditor.qml';
-                            break;
-                        case (itemInspector.editorType.TextArea):
-                            editorPage = 'TextAreaEditor.qml';
-                            break;
-                        case (itemInspector.editorType.Date):
-                            editorPage = 'DateTimeEditor.qml';
-                            break;
-                        case (itemInspector.editorType.State):
-                            editorPage = 'StateEditor.qml';
-                            break;
-                        case (itemInspector.editorType.Image):
-                            editorPage = 'ImageEditor.qml';
-                            break;
-                        default:
-                            editorPage = 'GeneralEditor.qml';
-                        }
                         var newcontent = model.content;
-                        editorLoader.setSource('qrc:///editors/' + editorPage, {content: newcontent, width: viewerBox.width});
+                        editorLoader.setSource('qrc:///editors/' + editComponent[model.editorType] + '.qml', {content: newcontent, width: viewerBox.width});
                         editorLoader.focus = true;
                     } else {
                         // Then state is viewMode
                         if (editorLoader.item && editorLoader.item.content) {
                             attributesModel.setProperty(model.index, 'content', editorLoader.item.content);
+                            contentBox.item.content = editorLoader.item.content;
                         }
 
                         // Release the source inside the loader
@@ -160,6 +168,10 @@ Common.AbstractEditor {
                         editorLoader.active = false;
                         editorLoader.active = true;
                     }
+                }
+                ListView.onAdd: {
+                    if (fieldNameBox.contentWidth > inspectorGrid.captionsWidth)
+                        inspectorGrid.captionsWidth = fieldNameBox.contentWidth + units.fingerUnit;
                 }
             }
         }
@@ -196,6 +208,52 @@ Common.AbstractEditor {
             }
         }
     }
+
+    Component {
+        id: showText
+
+        Text {
+            property string content: ''
+            property int requiredHeight: contentHeight
+            font.pixelSize: units.readUnit
+            verticalAlignment: Text.AlignVCenter
+            text: content
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+        }
+    }
+    Component {
+        id: showDateTime
+        Text {
+            property string content: ''
+            property int requiredHeight: contentHeight
+            font.pixelSize: units.readUnit
+            verticalAlignment: Text.AlignVCenter
+            text: transformContent(content)
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+        }
+    }
+    Component {
+        id: showState
+        Text {
+            property string content: ''
+
+        }
+    }
+    Component {
+        id: showImage
+        Image {
+            id: imageBox
+            property string content: ''
+            property int requiredHeight: Math.round(sourceSize.height * (width / sourceSize.width))
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            // height: sourceSize.height
+            fillMode: Image.PreserveAspectFit
+            source: content
+        }
+    }
+
 
     MessageDialog {
         id: messageSave

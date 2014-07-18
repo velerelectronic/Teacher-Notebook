@@ -223,11 +223,11 @@ function createEducationTables() {
 // -----------
 
 function createAnnotationsTable(tx) {
-    createDimensionalTable(tx,'annotations',['title','desc'],['Títol','Descripció']);
+    createDimensionalTable(tx,'annotations',['title','desc','image'],['Títol','Descripció','Imatge']);
 }
 
-function saveAnnotation(id,title,desc) {
-    saveRecordsInTable('annotations',[title,desc],id);
+function saveAnnotation(id,title,desc,image) {
+    saveRecordsInTable('annotations',[title,desc,image],id);
 }
 
 function listAnnotations(model,limit,text) {

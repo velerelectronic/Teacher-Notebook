@@ -14,6 +14,7 @@ ItemInspector {
     property int idAnnotation: -1
     property string annotation: ''
     property string desc: ''
+    property string image: ''
 
     property int idxAnnotation
     property int idxDesc
@@ -40,7 +41,8 @@ ItemInspector {
     function prepareDataAndSave(idCode) {
         annotation = getContent(idxAnnotation);
         desc = getContent(idxDesc);
-        Storage.saveAnnotation(idCode,annotation,desc);
+        image = getContent(idxImage);
+        Storage.saveAnnotation(idCode,annotation,desc,image);
     }
 
     Component.onCompleted: {
@@ -48,10 +50,11 @@ ItemInspector {
             var details = Storage.getDetailsAnnotationId(annotationEditor.idAnnotation);
             annotationEditor.annotation = details.title;
             annotationEditor.desc = details.desc;
+            annotationEditor.image = (details.image == null)?'':details.image;
             annotationEditor.setChanges(false);
         }
         idxAnnotation = addSection(qsTr('Anotació'),annotation,'yellow',editorType['TextLine']);
         idxDesc = addSection(qsTr('Descripció'),desc,'yellow',editorType['TextArea']);
-        idxImage = addSection(qsTr('Imatge'), '', 'white', editorType['Image']);
+        idxImage = addSection(qsTr('Imatge'),image,'yellow',editorType['Image']);
     }
 }

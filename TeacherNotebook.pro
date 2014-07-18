@@ -1,11 +1,16 @@
 TEMPLATE = app
 
-QT += qml quick sql xml xmlpatterns svg
+QT += qml \
+    quick \
+    sql \
+    xml xmlpatterns svg \
+    multimedia
 
 SOURCES += main.cpp \
     fileio.cpp \
     xmlmodel.cpp \
-    teachingplanning.cpp
+    teachingplanning.cpp \
+    imagedata.cpp
 
 RESOURCES += qml.qrc \
     icons.qrc \
@@ -23,4 +28,5 @@ include(deployment.pri)
 HEADERS += \
     fileio.h \
     xmlmodel.h \
-    teachingplanning.h
+    teachingplanning.h \
+    imagedata.h

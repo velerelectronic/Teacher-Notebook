@@ -2,6 +2,7 @@ import QtQuick 2.2
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.2
 import 'qrc:///common' as Common
+import 'PersonalTypes' 1.0
 
 
 Rectangle {
