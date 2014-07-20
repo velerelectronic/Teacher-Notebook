@@ -3,6 +3,7 @@ import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
 import "qrc:///javascript/Storage.js" as Storage
+import PersonalTypes 1.0
 
 Rectangle {
     id: annotations
@@ -16,6 +17,8 @@ Rectangle {
     property bool canClose: true
 
     Common.UseUnits { id: units }
+
+
     ColumnLayout {
         anchors.fill: parent
         RowLayout {
@@ -68,7 +71,7 @@ Rectangle {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 title: model.title
-                desc: model.desc
+                desc: (model.desc)?model.desc:''
                 image: (model.image)?model.image:''
                 state: (model.selected)?'selected':'basic'
                 onAnnotationSelected: {
@@ -81,7 +84,8 @@ Rectangle {
                     }
                 }
             }
-            model: ListModel { id: annotationsModel }
+            // Bo -> model: ListModel { id: annotationsModel }
+            model: annotationsModel
 
             Item {
                 anchors.fill: parent
@@ -103,7 +107,7 @@ Rectangle {
                         target: editAnnotation.item
                         onSaveAnnotation: {
                             editAnnotation.parent.visible = false;
-                            Storage.listAnnotations(annotationsModel,0,'');
+                            // Storage.listAnnotations(annotationsModel,0,'');
                         }
 
                         onCancelAnnotation: editAnnotation.parent.visible = false
@@ -133,6 +137,6 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        Storage.listAnnotations(annotationsModel,0,'');
+        annotationsModel.select();
     }
 }

@@ -18,7 +18,7 @@ Item {
     property var image: []
     property int rotation: 0
     property real scale: 1
-    property string color: ''
+    property var strokeStyle
     property string content: ''
     property var ctx
 
@@ -75,6 +75,7 @@ Item {
     function paint(ctx, alpha) {
         ctx.save();
         ctx.globalAlpha = alpha;
+        ctx.strokeStyle = strokeStyle;
         switch(itemType) {
         case typeRect:
         case typePolygon:
@@ -135,10 +136,10 @@ Item {
 
     function addFirstPoint(type,newpoint,forecolor) {
         itemType = type;
-        color = forecolor;
+        strokeStyle = forecolor;
         points = [];
         points.push(newpoint);
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = strokeStyle;
         ctx.lineWidth = 3;
         paintLast();
     }

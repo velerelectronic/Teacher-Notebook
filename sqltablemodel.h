@@ -1,0 +1,55 @@
+/*
+ * Example in: http://qt-project.org/wiki/QML_and_QSqlTableModel
+ *
+ */
+
+#ifndef SQLTABLEMODEL_H
+#define SQLTABLEMODEL_H
+
+#include <QObject>
+#include <QSqlDatabase>
+#include <QSqlRelationalTableModel>
+#include <QVariantMap>
+
+class SqlTableModel : public QSqlRelationalTableModel
+{
+    Q_OBJECT
+    Q_PROPERTY(QString tableName READ tableName WRITE setTableName NOTIFY tableNameChanged)
+    Q_PROPERTY(QStringList fieldNames READ fieldNames WRITE setFieldNames NOTIFY fieldNamesChanged)
+//    Q_PROPERTY(int count READ count NOTIFY countChanged)
+
+public:
+    explicit SqlTableModel(QObject *parent = 0,QSqlDatabase db = QSqlDatabase());
+
+    const QStringList &fieldNames();
+    virtual QHash<int, QByteArray> roleNames() const;
+    const QString &tableName();
+
+    Q_INVOKABLE QVariant data(const QModelIndex &index, int role) const;
+
+    Q_INVOKABLE bool setData(const QModelIndex &item,const QVariant &value,int role = Qt::EditRole);
+
+    void setFieldNames(QStringList fields);
+    void setTableName(const QString &);
+
+    Q_INVOKABLE QVariantMap getObject(QString key) const;
+    Q_INVOKABLE bool insertObject(const QVariantMap &);
+    Q_INVOKABLE bool select();
+    Q_INVOKABLE bool updateObject(const QVariantMap &);
+
+signals:
+    void fieldNamesChanged();
+    void tableNameChanged();
+//    void countChanged();
+
+public slots:
+
+private:
+    QString innerTableName;
+    QStringList innerFieldNames;
+    QHash<int, QByteArray> roles;
+
+    void generateRoleNames();
+};
+
+#endif // SQLTABLEMODEL_H

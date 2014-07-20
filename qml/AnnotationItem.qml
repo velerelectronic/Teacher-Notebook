@@ -44,6 +44,12 @@ Rectangle {
         height: childrenRect.height + units.nailUnit
         anchors.margins: units.nailUnit
 
+        Behavior on height {
+            NumberAnimation {
+                duration: 500
+            }
+        }
+
         ColumnLayout {
             anchors.left: parent.left
             anchors.right: parent.right

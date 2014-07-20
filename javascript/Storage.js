@@ -50,6 +50,10 @@ function currentTime() {
     return format;
 }
 
+function currentTimeForFileName() {
+    return currentTime().replace(/\:/g,"-");
+}
+
 function listTableFields(tx,tblname) {
     var rs = tx.executeSql('SELECT field FROM FieldNames WHERE tblname=?',[tblname]);
     var list = [];

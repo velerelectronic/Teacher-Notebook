@@ -3,12 +3,13 @@ import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
 import "qrc:///javascript/Storage.js" as Storage
+import PersonalTypes 1.0
 
 ItemInspector {
     id: annotationEditor
     pageTitle: qsTr("Editor d'anotacions")
 
-    signal savedAnnotation(string annotation, string desc)
+    signal savedAnnotation(string id,string annotation, string desc)
     signal canceledAnnotation(bool changes)
 
     property int idAnnotation: -1
@@ -25,13 +26,13 @@ ItemInspector {
     onSaveDataRequested: {
         prepareDataAndSave(idAnnotation);
         annotationEditor.setChanges(false);
-        annotationEditor.savedAnnotation(annotation,desc);
+        annotationEditor.savedAnnotation(idAnnotation,annotation,desc);
     }
 
     onCopyDataRequested: {
         prepareDataAndSave(-1);
         annotationEditor.setChanges(false);
-        annotationEditor.savedAnnotation(annotation,desc);
+        annotationEditor.savedAnnotation(-1,annotation,desc);
     }
 
     onDiscardDataRequested: {
@@ -42,14 +43,18 @@ ItemInspector {
         annotation = getContent(idxAnnotation);
         desc = getContent(idxDesc);
         image = getContent(idxImage);
-        Storage.saveAnnotation(idCode,annotation,desc,image);
+        if (idCode == -1) {
+            annotationsModel.insertObject({created: Storage.currentTime(), title: annotation, desc: desc, image: image});
+        } else {
+            annotationsModel.updateObject({id: idCode, title: annotation, desc: desc, image: image});
+        }
     }
 
     Component.onCompleted: {
         if (annotationEditor.idAnnotation != -1) {
-            var details = Storage.getDetailsAnnotationId(annotationEditor.idAnnotation);
+            var details = annotationsModel.getObject(annotationEditor.idAnnotation);
             annotationEditor.annotation = details.title;
-            annotationEditor.desc = details.desc;
+            annotationEditor.desc = (details.desc == null)?'':details.desc;
             annotationEditor.image = (details.image == null)?'':details.image;
             annotationEditor.setChanges(false);
         }

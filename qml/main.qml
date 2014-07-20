@@ -14,6 +14,7 @@ import QtQuick 2.2
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import QtQuick.Window 2.0
+import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import "qrc:///javascript/Storage.js" as Storage
 
@@ -122,6 +123,13 @@ Window {
                     pageListModel.remove(index);
             }
         }
+        function sendMessage(page,message) {
+            for (var i=0; i<pageListModel.count; i++) {
+                if (get(i)['page'] == page) {
+                    pagesView.contentItem.children[i].sendMessage(message);
+                }
+            }
+        }
     }
 
     Component {
@@ -154,7 +162,7 @@ Window {
                     onOpenPageArgs: openSubPage(page,args)
 
                     // Annotations
-                    onOpenAnnotations: openSubPage('AnnotationsList',{},'')
+                    onOpenAnnotations: openSubPage('AnnotationsList',{annotationsModel: annotationsModel},'')
                     onEditAnnotation: openSubPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id)
                     onDeletedAnnotations: {
                         messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
@@ -212,9 +220,19 @@ Window {
                         case 'png':
                         case 'svg':
                             openSubPage('ImageMapper',{background: document});
+                            break;
+                        case 'backup':
+                            openSubPage('DataMan',{document: document});
                         }
 
                     }
+
+                    // Backup
+                    onBackupReadFromFile: messageBox.publishMessage(qsTr("S'ha llegit el backup del fitxer " + filename));
+                    onBackupSavedToFile: messageBox.publishMessage(qsTr("S'ha desat el backup en el fitxer " + filename));
+                    onChooseDirectory: openSubPage('DocumentsList',{selectDirectory: true, goBack: 'DataMan'});
+                    onOpenDirectoryWithPage: openSubPage(page,{directory: directory});
+
                 }
             }
             Component.onCompleted: pageLoader.setSource(model.page + '.qml',model.parameters)
@@ -240,6 +258,14 @@ Window {
     Component.onCompleted: {
 //        Storage.destroyDatabase();
 //        Storage.removeAnnotationsTable();
+
+        annotationsModel.tableName = 'annotations';
+        annotationsModel.fieldNames =  ['created','id','title','desc','image'];
+        annotationsModel.select();
+
+        scheduleModel.tableName = 'schedule';
+        scheduleModel.fieldNames = ['created','id','event','desc','startDate','startTime','endDate','endTime','state'];
+
         Storage.initDatabase();
         Storage.createEducationTables();
         mainApp.openMainPage();
@@ -255,8 +281,23 @@ Window {
     }
 
     function openSubPage (page, param) {
-        pageListModel.append({page: page, parameters: param});
-        pagesView.currentIndex = pageListModel.count-1;
+        var i=0;
+        var found = false;
+        while ((!found) && (i<pageListModel.count)) {
+            var obj = pageListModel.get(i);
+            if (obj['qmlPage']==page) {
+                found = true;
+            } else {
+                i++;
+            }
+        }
+
+        if (found) {
+            pagesView.currentIndex = i;
+        } else {
+            pageListModel.append({page: page, qmlPage: page, parameters: param});
+            pagesView.currentIndex = pageListModel.count-1;
+        }
     }
 
     function removeCurrentPage() {

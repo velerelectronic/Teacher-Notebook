@@ -1,5 +1,5 @@
 import QtQuick 2.2
-import QtMultimedia 5.0
+import QtMultimedia 5.2
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
@@ -26,6 +26,7 @@ Common.AbstractEditor {
         anchors.fill: parent
         source: camera
         focus: visible
+        autoOrientation: true
 
         MouseArea {
             anchors.fill: parent

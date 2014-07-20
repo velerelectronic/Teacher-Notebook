@@ -10,7 +10,8 @@ SOURCES += main.cpp \
     fileio.cpp \
     xmlmodel.cpp \
     teachingplanning.cpp \
-    imagedata.cpp
+    imagedata.cpp \
+    sqltablemodel.cpp
 
 RESOURCES += qml.qrc \
     icons.qrc \
@@ -29,4 +30,5 @@ HEADERS += \
     fileio.h \
     xmlmodel.h \
     teachingplanning.h \
-    imagedata.h
+    imagedata.h \
+    sqltablemodel.h

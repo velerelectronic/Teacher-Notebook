@@ -135,7 +135,7 @@ Rectangle {
             property int stateType: NotebookEvent.StateNotDone
             clip: true
 
-            model: ListModel { id: scheduleModel }
+            model: scheduleModel
             delegate: ScheduleItem {
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -188,7 +188,7 @@ Rectangle {
             }
 
             function recalculateList() {
-                Storage.listEvents(scheduleModel,null,searchEvents.text,eventList.order,eventList.stateType);
+                scheduleModel.select();
             }
 
             function unselectAll() {

@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.2
 import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
 import "qrc:///javascript/Storage.js" as Storage
@@ -121,41 +121,58 @@ Rectangle {
             }
         }
 
+        VisualItemModel {
+            id: buttonsModel
+            Common.BigButton {
+                width: buttonsList.width
+                title: qsTr('Anotacions')
+                onClicked: menuPage.openPage('AnnotationsList')
+            }
+            Common.BigButton {
+                width: buttonsList.width
+                title: qsTr('Agenda')
+                onClicked: menuPage.openPage('Schedule')
+            }
+            Common.BigButton {
+                width: buttonsList.width
+                title: qsTr('Pissarra')
+                onClicked: menuPage.openPage('Whiteboard')
+            }
+            Common.BigButton {
+                width: buttonsList.width
+                title: qsTr('Documents')
+                onClicked: menuPage.openPage('DocumentsList')
+            }
+            Common.BigButton {
+                width: buttonsList.width
+                title: qsTr('! Recerca de coneixement')
+                onClicked: menuPage.openPage('Researcher')
+            }
+            Common.BigButton {
+                width: buttonsList.width
+                title: qsTr('Exemple PA')
+                onClicked: menuPage.openPage('ProgramacioAula')
+            }
+            Common.BigButton {
+                width: buttonsList.width
+                title: qsTr('Rellotge')
+                onClicked: menuPage.openPage('TimeController')
+            }
+            Common.BigButton {
+                width: buttonsList.width
+                title: qsTr('Gestor de dades')
+                onClicked: menuPage.openPage('DataMan')
+            }
+        }
+
         ListView {
+            id: buttonsList
             Layout.fillWidth: true
             Layout.fillHeight: true
             anchors.margins: units.nailUnit
             clip: true
-            spacing: units.nailUnit / 2
-            model: ListModel { id: mainMenuModel }
-            // cellHeight: units.fingerUnit * 2 + units.nailUnit * 2
-            // cellWidth: units.fingerUnit * 4 + units.nailUnit * 2
-            delegate: Rectangle {
-                width: parent.width
-                height: units.fingerUnit * 2
-                border.color: "green"
-                color: "#d5ffcc"
-                Text {
-                    anchors.centerIn: parent
-                    font.pixelSize: units.readUnit
-                    text: title
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: menuPage.openPage(page)
-                }
-            }
-
-            Component.onCompleted: {
-                mainMenuModel.append({title: qsTr('Anotacions'), page: 'AnnotationsList'});
-                mainMenuModel.append({title: qsTr('Agenda'), page: 'Schedule'});
-                mainMenuModel.append({title: qsTr('Pissarra'), page: 'Whiteboard'});
-                mainMenuModel.append({title: qsTr('Documents'), page: 'DocumentsList'});
-                mainMenuModel.append({title: qsTr('! Recerca de coneixement'), page: 'Researcher'});
-                mainMenuModel.append({title: qsTr('Exemple PA'), page: 'ProgramacioAula'});
-                mainMenuModel.append({title: qsTr('Rellotge'), page: 'TimeController'});
-                mainMenuModel.append({title: qsTr('Gestor de dades'), page: 'DataMan'});
-            }
+            spacing: units.nailUnit
+            model: buttonsModel
         }
     }
 

@@ -52,7 +52,7 @@ ItemInspector {
 
         var details = {}
         if (newEvent.idEvent != -1) {
-            details = Storage.getDetailsEventId(newEvent.idEvent);
+            details = scheduleModel.getObject(newEvent.idEvent);
             newEvent.event = nullToEmpty(details.event);
             newEvent.desc = nullToEmpty(details.desc);
             newEvent.startDate = nullToEmpty(details.startDate);
@@ -83,7 +83,24 @@ ItemInspector {
         newEvent.endDate = end['date'];
         newEvent.endTime = end['time'];
 
-        Storage.saveEvent(idCode,newEvent.event,newEvent.desc,newEvent.startDate,newEvent.startTime,newEvent.endDate,newEvent.endTime,newEvent.stateEvent);
+        var object = {
+            id: idCode,
+            created: Storage.currentTime(),
+            event: newEvent.event,
+            desc: newEvent.desc,
+            startDate: newEvent.startDate,
+            startTime: newEvent.startTime,
+            endDate: newEvent.endDate,
+            endTime: newEvent.endTime,
+            state: newEvent.stateEvent
+        }
+
+        if (idCode == -1)
+            scheduleModel.insertObject(object);
+        else {
+            object['id'] = idCode;
+            scheduleModel.updateObject(object);
+        }
         newEvent.setChanges(false);
         newEvent.savedEvent(newEvent.event,newEvent.desc,newEvent.startDate,newEvent.startTime,newEvent.endDate,newEvent.endTime);
     }

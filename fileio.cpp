@@ -2,6 +2,8 @@
 #include "fileio.h"
 #include <QFile>
 #include <QTextStream>
+#include <QDebug>
+#include <QString>
 
 FileIO::FileIO(QObject *parent) :
     QObject(parent)
@@ -9,10 +11,22 @@ FileIO::FileIO(QObject *parent) :
 
 }
 
+QString FileIO::source() {
+    return mSource;
+}
+
+void FileIO::setSource(const QString& source) {
+    mSource = source;
+    if (mSource.startsWith("file://")) {
+        mSource.remove(0,6);
+    }
+    sourceChanged();
+}
+
 QString FileIO::read()
 {
     if (mSource.isEmpty()){
-        emit error("source is empty");
+        emit error("Source is empty");
         return QString();
     }
 
@@ -36,12 +50,16 @@ QString FileIO::read()
 
 bool FileIO::write(const QString& data)
 {
-    if (mSource.isEmpty())
+    if (mSource.isEmpty()) {
+        qDebug() << "Empty";
         return false;
+    }
 
     QFile file(mSource);
-    if (!file.open(QFile::WriteOnly | QFile::Truncate))
+    if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
+        qDebug() << "No file";
         return false;
+    }
 
     QTextStream out(&file);
     out << data;
@@ -49,4 +67,8 @@ bool FileIO::write(const QString& data)
     file.close();
 
     return true;
+}
+
+QString FileIO::filePath() {
+    // Change this
 }

@@ -15,7 +15,12 @@ Rectangle {
     width: 300
     height: 200
     property string pageTitle: 'Documents'
+    property bool selectDirectory: false
+    property string goBack: ''
+
     signal openDocument(string document)
+    signal closePageRequested()
+    signal openDirectoryWithPage(string directory, string page)
 
     ColumnLayout {
         anchors.fill: parent
@@ -44,6 +49,16 @@ Rectangle {
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 }
+                Button {
+                    id: selectButton
+                    visible: selectDirectory
+                    text: qsTr('Selecciona')
+                    onClicked: {
+                        closePageRequested();
+                        openDirectoryWithPage(folderList.folder,goBack);
+                    }
+                }
+
                 Button {
                     id: opcioDetalls
                     text: qsTr('Detalls')
