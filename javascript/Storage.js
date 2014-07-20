@@ -170,17 +170,6 @@ function listOneField (tblname, field, model) {
                 });
 }
 
-function listOneRecord (tblname, id) {
-    var res = {};
-    getDatabase().transaction(
-                function (tx) {
-                    var rs = tx.executeSql("SELECT * FROM " + tblname + " WHERE id=?",[id]);
-                    if (rs.rows.length>0) {
-                        res = rs.rows.item(0);
-                    }
-                });
-    return res;
-}
 
 // Save functions
 

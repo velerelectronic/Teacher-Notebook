@@ -180,7 +180,7 @@ Rectangle {
                     Text {
                         anchors.fill: parent
                         font.bold: true
-                        font.pixelSize: units.nailUnit * 1.5
+                        font.pixelSize: units.readUnit
                         verticalAlignment: Text.AlignBottom
                         text: ((eventList.order==1)||(eventList.order==3)?qsTr('A partir de'):qsTr('Fins a')) + ' ' + (section!=''?(new Date()).fromYYYYMMDDFormat(section).toLongDate():qsTr('no especificat'))
                     }

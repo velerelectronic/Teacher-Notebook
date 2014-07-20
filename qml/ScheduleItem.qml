@@ -72,17 +72,17 @@ Rectangle {
                 Text {
                     id: startDate
                     Layout.preferredWidth: units.fingerUnit * 3
-                    Layout.preferredHeight: units.nailUnit
-                    font.pixelSize: units.nailUnit
+                    Layout.preferredHeight: units.fingerUnit
+                    font.pixelSize: units.readUnit
                     horizontalAlignment: Text.AlignHCenter
                     font.bold: true
                 }
                 Text {
                     id: startTime
                     Layout.preferredWidth: units.fingerUnit * 3
-                    Layout.preferredHeight: units.nailUnit
+                    Layout.preferredHeight: units.fingerUnit
                     horizontalAlignment: Text.AlignHCenter
-                    font.pixelSize: units.nailUnit
+                    font.pixelSize: units.readUnit
                 }
                 Item {
                     Layout.fillHeight: true
@@ -91,16 +91,16 @@ Rectangle {
                 Text {
                     id: endDate
                     Layout.preferredWidth: units.fingerUnit * 3
-                    Layout.preferredHeight: units.nailUnit
-                    font.pixelSize: units.nailUnit
+                    Layout.preferredHeight: units.fingerUnit
+                    font.pixelSize: units.readUnit
                     font.bold: true
                     horizontalAlignment: Text.AlignHCenter
                 }
                 Text {
                     id: endTime
                     Layout.preferredWidth: units.fingerUnit * 3
-                    Layout.preferredHeight: units.nailUnit
-                    font.pixelSize: units.nailUnit
+                    Layout.preferredHeight: units.fingerUnit
+                    font.pixelSize: units.readUnit
                     horizontalAlignment: Text.AlignHCenter
                 }
             }

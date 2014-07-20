@@ -73,14 +73,12 @@ Rectangle {
                 title: model.title
                 desc: (model.desc)?model.desc:''
                 image: (model.image)?model.image:''
-                state: (model.selected)?'selected':'basic'
+                state: (isSelected)?'selected':'basic'
                 onAnnotationSelected: {
                     if (editBox.state == 'show') {
-                        annotationsModel.setProperty(model.index,'selected',!annotationsModel.get(model.index).selected);
+                        isSelected = !isSelected;
                     } else {
                         annotations.editAnnotation(model.id,title,desc)
-//                        editAnnotation.setSource('AnnotationEditor.qml',{title: title, desc: desc});
-//                        editAnnotation.parent.visible = true
                     }
                 }
             }
@@ -124,10 +122,11 @@ Rectangle {
             function deleteSelected() {
                 // Start deleting from the end of the model, because the index of further items change when deleting a previous item.
                 var num = 0;
-                for (var i=annotationsModel.count-1; i>=0; --i) {
-                    if (annotationsModel.get(i).selected) {
-                        Storage.removeAnnotation(annotationsModel.get(i).id);
-                        annotationsModel.remove(i);
+                console.log(annotationsList.contentItem.children.length);
+                for (var i=annotationsList.contentItem.children.length; i>=0; --i) {
+                    console.log(annotationsList.children[i]);
+                    if (annotationsList.children[i].isSelected) {
+                        annotationsModel.removeObject(i);
                         num++;
                     }
                 }

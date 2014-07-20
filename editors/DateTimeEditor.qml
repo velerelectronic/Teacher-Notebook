@@ -100,7 +100,7 @@ Common.AbstractEditor {
 
     Component.onCompleted: {
         var refDate = new Date();
-
+        console.log('DateTimeEditor');
         limitDatePicker.setDate((editor.content['date']!='')?refDate.fromYYYYMMDDFormat(editor.content['date']):refDate);
         limitTimePicker.setDateTime((editor.content['time']!='')?refDate.fromHHMMFormat(editor.content['time']):refDate);
         enableChangesTracking(true);
@@ -116,4 +116,5 @@ Common.AbstractEditor {
         }
         editor.content = {date: dateStr, time: timeStr};
     }
+
 }

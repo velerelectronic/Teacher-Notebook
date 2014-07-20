@@ -17,6 +17,10 @@ const QStringList &SqlTableModel::fieldNames() {
     return innerFieldNames;
 }
 
+const QString &SqlTableModel::filter() {
+    return QSqlRelationalTableModel::filter();
+}
+
 const QString &SqlTableModel::tableName() {
     return innerTableName;
 }
@@ -29,6 +33,10 @@ bool SqlTableModel::setData(const QModelIndex &item, const QVariant &value, int 
 void SqlTableModel::setFieldNames(QStringList fields) {
     innerFieldNames = fields;
     fieldNamesChanged();
+}
+
+void SqlTableModel::setFilter(const QString &filter) {
+    QSqlRelationalTableModel::setFilter(filter);
 }
 
 void SqlTableModel::setTableName(const QString &tableName) {
@@ -105,12 +113,7 @@ bool SqlTableModel::insertObject(const QVariantMap &object) {
     return result;
 }
 
-bool SqlTableModel::select() {
-    qDebug() << "Select";
-    return QSqlRelationalTableModel::select();
-}
-
-bool SqlTableModel::updateObject(const QVariantMap &object) {
+int SqlTableModel::searchRecordWithKey(const QVariantMap &object) {
     QSqlRecord searchRecord;
     int row=0;
     bool found = false;
@@ -122,9 +125,30 @@ bool SqlTableModel::updateObject(const QVariantMap &object) {
         else
             row++;
     }
+    return (found)?row:-1;
+}
 
+bool SqlTableModel::removeObject(int row) {
+    return removeRows(row,1);
+}
+
+bool SqlTableModel::removeObject(QVariantMap &object) {
+    int row = searchRecordWithKey(object);
+    if (row>-1)
+        return removeRows(row,1);
+    else
+        return false;
+}
+
+bool SqlTableModel::select() {
+    qDebug() << "Select";
+    return QSqlRelationalTableModel::select();
+}
+
+bool SqlTableModel::updateObject(const QVariantMap &object) {
+    int row = searchRecordWithKey(object);
     bool result = false;
-    if (found) {
+    if (row>-1) {
         qDebug() << "Updating";
         QSqlRecord record;
         QVariantMap::const_iterator i = object.constBegin();

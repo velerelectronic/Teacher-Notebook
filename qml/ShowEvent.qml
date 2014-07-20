@@ -46,27 +46,22 @@ ItemInspector {
     }
 
     Component.onCompleted: {
-        function nullToEmpty(arg) {
-            return (arg)?arg:'';
-        }
-
-        var details = {}
         if (newEvent.idEvent != -1) {
-            details = scheduleModel.getObject(newEvent.idEvent);
-            newEvent.event = nullToEmpty(details.event);
-            newEvent.desc = nullToEmpty(details.desc);
-            newEvent.startDate = nullToEmpty(details.startDate);
-            newEvent.startTime = nullToEmpty(details.startTime);
-            newEvent.endDate = nullToEmpty(details.endDate);
-            newEvent.endTime = nullToEmpty(details.endTime);
-            newEvent.stateEvent = nullToEmpty(details.state);
+            var details = scheduleModel.getObject(newEvent.idEvent);
+            newEvent.event = details.event;
+            newEvent.desc = details.desc;
+            newEvent.startDate = details.startDate;
+            newEvent.startTime = details.startTime;
+            newEvent.endDate = details.endDate;
+            newEvent.endTime = details.endTime;
+            newEvent.stateEvent = details.state;
         }
 
-        newEvent.idxEvent = newEvent.addSection(qsTr('Esdeveniment'), newEvent.event,'yellow',editorType.TextLine);
-        newEvent.idxState = newEvent.addSection(qsTr('Estat'), newEvent.stateEvent,'yellow',editorType.State);
-        newEvent.idxDesc = newEvent.addSection(qsTr('Descripció'), newEvent.desc,'yellow',editorType.TextArea);
-        newEvent.idxStart = newEvent.addSection(qsTr('Inici'),{date: newEvent.startDate, time: newEvent.startTime},'green',editorType.Date);
-        newEvent.idxEnd = newEvent.addSection(qsTr('Final'),{date: newEvent.endDate, time: newEvent.endTime},'green',editorType.Date);
+        idxEvent = addSection(qsTr('Esdeveniment'), newEvent.event,'yellow',editorType['TextLine']);
+        idxState = addSection(qsTr('Estat'), newEvent.stateEvent,'yellow',editorType['State']);
+        idxDesc = addSection(qsTr('Descripció'), newEvent.desc,'yellow',editorType['TextArea']);
+        idxStart = addSection(qsTr('Inici'),{date: newEvent.startDate, time: newEvent.startTime},'green',editorType['DateTime']);
+        idxEnd = addSection(qsTr('Final'),{date: newEvent.endDate, time: newEvent.endTime},'green',editorType['DateTime']);
 
         // Reinit changes
         newEvent.setChanges(false);

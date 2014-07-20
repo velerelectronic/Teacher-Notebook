@@ -13,26 +13,23 @@ Common.AbstractEditor {
     property var editorType: {
                 'TextLine': 1,
                 'TextArea': 2,
-                'Date': 3,
-                'Time': 4,
-                'State': 5,
-                'Image': 6
+                'DateTime': 3,
+                'State': 4,
+                'Image': 5
     }
     property var showComponent: {
                 1: showText,
                 2: showText,
                 3: showDateTime,
-                4: showDateTime,
-                5: showState,
-                6: showImage
+                4: showState,
+                5: showImage
     }
     property var editComponent: {
                 1: 'TextLineEditor',
                 2: 'TextAreaEditor',
                 3: 'DateTimeEditor',
-                4: 'DateTimeEditor',
-                5: 'StateEditor',
-                6: 'ImageEditor'
+                4: 'StateEditor',
+                5: 'ImageEditor'
     }
 
     signal saveDataRequested
@@ -118,14 +115,13 @@ Common.AbstractEditor {
                         }
                         Loader {
                             id: contentBox
-                            property string content: model.content
+                            //property string content: model.content
                             anchors.left: fieldNameBox.right
                             anchors.right: parent.right
                             anchors.top: parent.top
                             height: (item)?item.requiredHeight:0
                             sourceComponent: showComponent[model.editorType]
                             onLoaded: item.content = model.content
-                            Component.onCompleted: console.log('Component ' + model.editorType + '-' + showComponent['Image']);
                         }
 
                         MouseArea {
@@ -224,7 +220,7 @@ Common.AbstractEditor {
     Component {
         id: showDateTime
         Text {
-            property string content: ''
+            property var content: ''
             property int requiredHeight: contentHeight
             font.pixelSize: units.readUnit
             verticalAlignment: Text.AlignVCenter

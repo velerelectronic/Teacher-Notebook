@@ -29,6 +29,8 @@ Rectangle {
     property alias desc: descLabel.text
     property alias image: imageLabel.source
 
+    property bool isSelected: false
+
     signal annotationSelected (string title,string desc)
 
     border.color: "black";
