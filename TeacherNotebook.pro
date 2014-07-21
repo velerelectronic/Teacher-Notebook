@@ -32,3 +32,6 @@ HEADERS += \
     teachingplanning.h \
     imagedata.h \
     sqltablemodel.h
+
+OTHER_FILES += \
+    android/AndroidManifest.xml
