@@ -8,6 +8,7 @@ import PersonalTypes 1.0
 Rectangle {
     id: annotations
     property string pageTitle: qsTr('Anotacions');
+    property var subSelection: []
 
     width: 300
     height: 200
@@ -56,8 +57,8 @@ Rectangle {
             Layout.preferredHeight: height
             Layout.fillWidth: true
             anchors.margins: units.nailUnit
-            onCancel: annotationsList.unselectAll()
-            onDeleteItems: annotationsList.deleteSelected()
+            onCancel: annotationsModel.deselectAllObjects()
+            onDeleteItems: deletedAnnotations(annotationsModel.removeSelectedObjects())
         }
 
         ListView {
@@ -73,16 +74,16 @@ Rectangle {
                 title: model.title
                 desc: (model.desc)?model.desc:''
                 image: (model.image)?model.image:''
-                state: (isSelected)?'selected':'basic'
+                state: (model.selected)?'selected':'basic'
                 onAnnotationSelected: {
                     if (editBox.state == 'show') {
-                        isSelected = !isSelected;
+                        annotationsModel.selectObject(model.index,!annotationsModel.isSelectedObject(model.index));
                     } else {
+                        // State == 'hidden'
                         annotations.editAnnotation(model.id,title,desc)
                     }
                 }
             }
-            // Bo -> model: ListModel { id: annotationsModel }
             model: annotationsModel
 
             Item {
@@ -112,25 +113,6 @@ Rectangle {
                     }
 
                 }
-            }
-
-            function unselectAll() {
-                for (var i=0; i<annotationsModel.count; i++) {
-                    annotationsModel.setProperty(i,'selected',false);
-                }
-            }
-            function deleteSelected() {
-                // Start deleting from the end of the model, because the index of further items change when deleting a previous item.
-                var num = 0;
-                console.log(annotationsList.contentItem.children.length);
-                for (var i=annotationsList.contentItem.children.length; i>=0; --i) {
-                    console.log(annotationsList.children[i]);
-                    if (annotationsList.children[i].isSelected) {
-                        annotationsModel.removeObject(i);
-                        num++;
-                    }
-                }
-                annotations.deletedAnnotations(num);
             }
         }
     }

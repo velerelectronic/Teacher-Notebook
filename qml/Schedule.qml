@@ -123,8 +123,8 @@ Rectangle {
             maxHeight: units.fingerUnit
             Layout.preferredHeight: height
             Layout.fillWidth: true
-            onCancel: eventList.unselectAll()
-            onDeleteItems: eventList.deleteSelected()
+            onCancel: scheduleModel.deselectAllObjects()
+            onDeleteItems: deletedEvents(scheduleModel.removeSelectedObjects())
         }
 
         ListView {
@@ -160,7 +160,7 @@ Rectangle {
 
                 onScheduleItemSelected: {
                     if (editBox.state == 'show') {
-                        scheduleModel.setProperty(model.index,'selected',!scheduleModel.get(model.index).selected);
+                        scheduleModel.selectObject(model.index,!scheduleModel.isSelectedObject(model.index));
                     } else {
                         schedule.editEvent(id,event,desc,startDate,startTime,endDate,endTime);
                     }
@@ -186,32 +186,8 @@ Rectangle {
                     }
                 }
             }
-
-            function recalculateList() {
-                scheduleModel.select();
-            }
-
-            function unselectAll() {
-                for (var i=0; i<scheduleModel.count; i++) {
-                    scheduleModel.setProperty(i,'selected',false);
-                }
-            }
-
-            function deleteSelected() {
-                // Start deleting from the end of the model, because the index of further items change when deleting a previous item.
-                var num = 0;
-                for (var i=scheduleModel.count-1; i>=0; --i) {
-                    if (scheduleModel.get(i).selected) {
-                        Storage.removeEvent(scheduleModel.get(i).id);
-                        scheduleModel.remove(i);
-                        num++;
-                    }
-                }
-                schedule.deletedEvents(num);
-            }
         }
-
     }
 
-    Component.onCompleted: eventList.recalculateList()
+    Component.onCompleted: scheduleModel.select()
 }

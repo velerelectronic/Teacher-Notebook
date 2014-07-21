@@ -63,7 +63,7 @@ Rectangle {
         Text {
             Layout.fillWidth: true
             height: parent.height
-            font.pixelSize: units.nailUnit
+            font.pixelSize: units.readUnit
             text: qsTr('Selecciona')
             horizontalAlignment: Text.AlignHCenter
         }

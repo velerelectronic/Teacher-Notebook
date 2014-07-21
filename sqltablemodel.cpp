@@ -59,13 +59,19 @@ QVariant SqlTableModel::data(const QModelIndex &index, int role) const {
         return QSqlQueryModel::data(index, role);
     else {
         // search for relationships
-        for (int i = 0; i < columnCount(); i++) {
-            if (this->relation(i).isValid()) {
-                return record(index.row()).value(QString(roles.value(role)));
+        int nbCols = columnCount();
+
+        if (role == Qt::UserRole + nbCols + 1) {
+            return subselectedRows.contains(index.row());
+        } else {
+            for (int i = 0; i < nbCols; i++) {
+                if (this->relation(i).isValid()) {
+                    return record(index.row()).value(QString(roles.value(role)));
+                }
             }
+            // if no valid relationship was found
+            return QSqlQueryModel::data(this->index(index.row(), role - Qt::UserRole - 1), Qt::DisplayRole);
         }
-        // if no valid relationship was found
-        return QSqlQueryModel::data(this->index(index.row(), role - Qt::UserRole - 1), Qt::DisplayRole);
     }
 }
 
@@ -142,6 +148,7 @@ bool SqlTableModel::removeObject(QVariantMap &object) {
 
 bool SqlTableModel::select() {
     qDebug() << "Select";
+    deselectAllObjects();
     return QSqlRelationalTableModel::select();
 }
 
@@ -177,8 +184,45 @@ void SqlTableModel::generateRoleNames() {
     for (int i = 0; i < nbCols; i++) {
         roles[Qt::UserRole + i + 1] = QVariant(this->headerData(i, Qt::Horizontal).toString()).toByteArray();
     }
+    roles[Qt::UserRole + nbCols + 1] = QByteArray("selected");
+
 #ifndef HAVE_QT5
 //    setRoleNames(roles);
 #endif
 
+}
+
+
+int SqlTableModel::removeSelectedObjects() {
+    int i = 0;
+    QMap<int,bool>::iterator row = subselectedRows.end();
+    while (row != subselectedRows.begin()) {
+        --row;
+        if (removeObject(row.key()))
+            i++;
+    }
+    subselectedRows.clear();
+    select();
+    return i;
+}
+
+void SqlTableModel::selectObject(const int &row,bool activate) {
+    qDebug() << "Selecting " << row;
+    if (activate)
+        subselectedRows.insert(row,true);
+    else
+        subselectedRows.remove(row);
+    QModelIndex index = this->createIndex(row,Qt::UserRole + columnCount() + 1);
+    this->dataChanged(index,index);
+}
+
+void SqlTableModel::deselectAllObjects() {
+    subselectedRows.clear();
+    QModelIndex indexStart = this->createIndex(0,Qt::UserRole + columnCount() + 1);
+    QModelIndex indexEnd = this->createIndex(rowCount(),Qt::UserRole + columnCount() + 1);
+    this->dataChanged(indexStart,indexEnd);
+}
+
+bool SqlTableModel::isSelectedObject(const int &row) {
+    return subselectedRows.contains(row);
 }

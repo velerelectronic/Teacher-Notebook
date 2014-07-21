@@ -10,6 +10,7 @@
 #include <QSqlDatabase>
 #include <QSqlRelationalTableModel>
 #include <QVariantMap>
+#include <QMap>
 
 class SqlTableModel : public QSqlRelationalTableModel
 {
@@ -42,6 +43,12 @@ public:
     Q_INVOKABLE bool select();
     Q_INVOKABLE bool updateObject(const QVariantMap &);
 
+    // Subselections
+    Q_INVOKABLE void deselectAllObjects();
+    Q_INVOKABLE bool isSelectedObject(const int &);
+    Q_INVOKABLE void selectObject(const int &, bool);
+    Q_INVOKABLE int removeSelectedObjects();
+
 signals:
     void fieldNamesChanged();
     void filterChanged();
@@ -54,6 +61,7 @@ private:
     QString innerTableName;
     QStringList innerFieldNames;
     QHash<int, QByteArray> roles;
+    QMap<int,bool> subselectedRows;
 
     void generateRoleNames();
     int searchRecordWithKey(const QVariantMap &);
