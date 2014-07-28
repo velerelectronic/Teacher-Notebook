@@ -1,161 +1,146 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.1
-import FileIO 1.0
+import Qt.labs.folderlistmodel 2.1
+import PersonalTypes 1.0
 
 import 'qrc:///common' as Common
-import "qrc:///javascript/Storage.js" as Storage
 
-Rectangle {
+Item {
+    id: backup
     property string pageTitle: qsTr('Gestor de dades')
     property string document: ''
     property string directory: ''
 
-    signal backupSavedToFile(string filename)
-    signal backupReadFromFile(string filename)
-    signal chooseDirectory()
+    signal savedBackupToDirectory(string directory)
+    signal unsavedBackup()
+    signal backupReadFromFile(string file)
+    signal backupNotReadFromFile(string file)
+    signal closeBackup
 
-    FileIO {
-        id: inFile
-        source: document
+    Common.UseUnits {
+        id: units
     }
 
-    FileIO {
-        id: outFile
+    DatabaseBackup {
+        id: fileDb
     }
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: units.nailUnit
-
-        Common.UseUnits { id: units }
-        spacing: units.nailUnit
+        anchors.margins: units.nailUnit * 2
 
         Text {
             id: exportLabel
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            font.pixelSize: units.readUnit
-            font.bold: true
             text: qsTr('Exporta')
-        }
-        TextArea {
-            id: exportContents
             Layout.fillWidth: true
-            Layout.fillHeight: true
-            focus: true
-            wrapMode: TextEdit.WrapAnywhere
-            readOnly: true
-            font.pixelSize: units.readUnit
+            Layout.preferredHeight: contentHeight
+            anchors.margins: units.nailUnit
         }
         RowLayout {
             id: exportButtonsRow
             Layout.fillWidth: true
-            Layout.preferredHeight: childrenRect.height
+            Layout.preferredHeight: units.fingerUnit
 
             Button {
-                Layout.preferredHeight: units.fingerUnit
-                text: qsTr('Selecciona directori')
-                onClicked: chooseDirectory()
-            }
-
-            Button {
-                Layout.preferredHeight: units.fingerUnit
-                enabled: directory != ''
-                text: qsTr('Desa a fitxer')
+                text: qsTr('Exporta a fitxer en format JSON')
                 onClicked: {
-                    if (directory != '') {
-                        outFile.source = directory + '/' + Storage.currentTimeForFileName() + '.backup';
-                        if (outFile.write(Storage.exportDatabaseToText())) {
-                            backupSavedToFile(outFile.source);
-                            console.log('written');
-                        } else
-                            console.log('failure');
-                        console.log(outFile.source);
+                    if (fileDb.saveContents(fileDb.homePath + "/database-")) {
+                        savedBackupToDirectory(file);
+                    } else {
+                        unsavedBackup();
                     }
                 }
             }
-
-            Button {
-                Layout.preferredHeight: units.fingerUnit
-                text: qsTr('Exporta')
-                onClicked: exportContents.text = Storage.exportDatabaseToText()
-            }
-
-            Button {
-                Layout.preferredHeight: units.fingerUnit
-                text: qsTr('Copia al clipboard')
-                onClicked: {
-                    exportContents.selectAll()
-                    exportContents.copy()
-                }
-            }
-
-            Button {
-                Layout.preferredHeight: units.fingerUnit
-                text: qsTr('Envia per correu')
-                onClicked: Qt.openUrlExternally('mailto:?subject=' + encodeURIComponent('[TeacherNotebook] Backup ' + Storage.currentTime()) + '&body=' + encodeURIComponent(exportContents.text))
-            }
         }
-
         Text {
             id: importLabel
-            Layout.fillWidth: true
-            font.pixelSize: units.readUnit
-            font.bold: true
             text: qsTr('Importa')
-        }
-        TextArea {
-            id: importContents
             Layout.fillWidth: true
-            Layout.fillHeight: true
-            focus: true
-            wrapMode: TextEdit.WrapAnywhere
-            readOnly: true
-            font.pixelSize: units.readUnit
+            Layout.preferredHeight: contentHeight
         }
+
+        ListView {
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            model: folderList
+            clip: true
+            delegate: Rectangle {
+                border.color: 'black'
+                color: 'white'
+                height: Math.max(units.fingerUnit * 2,file.height)
+                width: parent.width
+
+                RowLayout {
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: Math.max(file.height,details.height)
+                    Text {
+                        id: file
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: contentHeight
+                        Layout.alignment: Text.AlignVCenter
+                        verticalAlignment: Text.AlignVCenter
+                        text: model.fileName
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    }
+                    Text {
+                        id: details
+                        Layout.preferredWidth: contentWidth
+                        Layout.fillHeight: true
+                        verticalAlignment: Text.AlignVCenter
+                        text: model.fileModified
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        importButton.file = model.fileName
+                        importButton.enabled = true;
+                    }
+                }
+            }
+        }
+
         RowLayout {
             id: importButtonsRow
             Layout.fillWidth: true
-            Layout.preferredHeight: childrenRect.height
+            Layout.preferredHeight: units.fingerUnit
 
             Button {
-                enabled: inFile.source != ''
-                text: qsTr('Llegeix fitxer')
+                id: importButton
+                property string file: ''
+                text: (file=='')?qsTr('Importa'):(qsTr('Importa ') + file)
+                enabled: false
                 onClicked: {
-                    importContents.readOnly = false;
-                    importContents.text = inFile.read();
-                    importContents.readOnly = true;
-                    backupReadFromFile(inFile.source);
+                    enabled = false;
+                    if (fileDb.readContents(fileDb.homePath + '/' + file))
+                        backupReadFromFile(file);
+                    else
+                        backupNotReadFromFile(file);
+                    file = '';
                 }
             }
 
-            Button {
-                Layout.preferredHeight: units.fingerUnit
-                text: 'Enganxa del clipboard'
-                onClicked: {
-                    importContents.readOnly = false;
-                    importContents.paste();
-                    importContents.readOnly = true;
-                }
-            }
-
-            Button {
-                Layout.preferredHeight: units.fingerUnit
-                text: 'Importa'
-                onClicked: {
-                    console.log('Import contents');
-                    console.log(importContents.text);
-                    var error = Storage.importDatabaseFromText(importContents.text);
-                    if (error != '')
-                        importContents.text = error
-                    else {
-                        importContents.text = 'OK'
-                        text = 'Inserides!'
-                    }
-                }
-            }
         }
 
+        Button {
+            text: qsTr('Torna')
+            Layout.preferredHeight:  units.fingerUnit
+            Layout.fillWidth: true
+            onClicked: backup.closeBackup()
+        }
+
+
+    }
+    FolderListModel {
+        id: folderList
+        folder: 'file://' + fileDb.homePath
+        sortField: FolderListModel.Name
+        // nameFilters: ['*.backup']
+        showDirs: false
+        showFiles: true
     }
 }

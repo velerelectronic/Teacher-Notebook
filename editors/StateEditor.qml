@@ -18,7 +18,7 @@ Common.AbstractEditor {
         checked: editor.content == 'done'
         text: qsTr('Finalitzat')
         onClicked: {
-            editor.content = (checked)?'done':'';
+            editor.content = (checked)?'done':'not-done';
             editor.setChanges(true);
         }
     }

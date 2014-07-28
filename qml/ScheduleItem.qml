@@ -8,16 +8,38 @@ Rectangle {
     states: [
         State {
             name: 'basic'
+            PropertyChanges {
+                target: scheduleItem
+                height: units.fingerUnit * 2
+            }
+            PropertyChanges { target: datesRect; color: '#ffd06e' }
+            PropertyChanges { target: mainContents; color: '#EFFBF5' }
+        },
+        State {
+            name: 'expanded'
+            PropertyChanges {
+                target: scheduleItem
+                height: Math.max(units.fingerUnit * 2, eventTitle.height + eventDesc.height + units.nailUnit * 3)
+            }
+
             PropertyChanges { target: datesRect; color: '#ffd06e' }
             PropertyChanges { target: mainContents; color: '#EFFBF5' }
         },
         State {
             name: 'done'
+            PropertyChanges {
+                target: scheduleItem
+                height: Math.max(units.fingerUnit * 2, eventTitle.height + eventDesc.height + units.nailUnit * 3)
+            }
             PropertyChanges { target: datesRect; color: '#E6E6E6' }
             PropertyChanges { target: mainContents; color: '#E6E6E6' }
         },
         State {
             name: 'selected'
+            PropertyChanges {
+                target: scheduleItem
+                height: units.fingerUnit * 2
+            }
             PropertyChanges { target: datesRect; color: '#58FAAC' }
             PropertyChanges { target: mainContents; color: '#58FAAC' }
         },
@@ -45,8 +67,8 @@ Rectangle {
     property var stateEvent: ''
 
     signal scheduleItemSelected (string event,string desc,string startDate,string startTime,string endDate,string endTime)
+    signal scheduleItemLongSelected (string event,string desc,string startDate,string startTime,string endDate,string endTime)
 
-    height: Math.max(units.fingerUnit, eventTitle.height + eventDesc.height + units.nailUnit * 3)
     border.color: 'black'
 
     Common.UseUnits { id: units }
@@ -140,7 +162,15 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         onClicked: scheduleItem.scheduleItemSelected(scheduleItem.event,scheduleItem.desc,scheduleItem.startDate,scheduleItem.startTime,scheduleItem.endDate,scheduleItem.endTime)
+        onPressAndHold: scheduleItem.scheduleItemLongSelected(scheduleItem.event,scheduleItem.desc,scheduleItem.startDate,scheduleItem.startTime,scheduleItem.endDate,scheduleItem.endTime)
     }
+
+    Common.ExtraInfo {
+        minHeight: units.fingerUnit * 2
+        contentHeight: eventTitle.height + eventDesc.height + units.nailUnit * 3
+        available: scheduleItem.state == 'basic'
+    }
+
 }
 
 

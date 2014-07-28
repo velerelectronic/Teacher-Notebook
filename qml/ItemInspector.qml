@@ -102,7 +102,7 @@ Common.AbstractEditor {
                         id: variableBox
                         Layout.fillWidth: true
                         Layout.preferredHeight: height
-                        height: Math.max(fieldNameBox.height,contentBox.height)
+                        height: Math.max(units.fingerUnit * 2,fieldNameBox.height,contentBox.height)
                         Text {
                             id: fieldNameBox
                             anchors.left: parent.left

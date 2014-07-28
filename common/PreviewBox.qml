@@ -18,6 +18,8 @@ Rectangle {
     property string suffixTotal: 'items'
     property string captionBackgroundColor: '#CEF6CE'
     property string totalBackgroundColor: ''
+    property alias model: list.model
+
     signal totalCountClicked()
     signal captionClicked()
 
@@ -34,11 +36,10 @@ Rectangle {
         height: contentItem.height
 
         interactive: false
-        model: ListModel { id: internalModel }
 
         header: Rectangle {
             id: listHeader
-            width: parent.width
+            width: list.width
             border.width: 0
             height: textHeader.height + units.nailUnit * 2
             color: previewBox.captionBackgroundColor
@@ -62,7 +63,7 @@ Rectangle {
 
         footer: Rectangle {
             id: listFooter
-            width: parent.width
+            width: list.width
             height: textFooter.height + units.nailUnit * 2
             border.width: 0
             color: previewBox.totalBackgroundColor
@@ -82,20 +83,5 @@ Rectangle {
                 }
             }
         }
-
-    }
-    function makeSummary (model) {
-        var idxModel=0;
-        var idxItem=0;
-        while ((idxItem<maxItems) && (idxModel<model.count)) {
-            var data = model.get(idxModel);
-            if ((!data.state) || (data.state!='done')) {
-                internalModel.append(data);
-                idxItem++;
-            }
-            idxModel++;
-        }
-
-        totalCount = model.count;
     }
 }

@@ -79,7 +79,6 @@ ItemInspector {
         newEvent.endTime = end['time'];
 
         var object = {
-            id: idCode,
             created: Storage.currentTime(),
             event: newEvent.event,
             desc: newEvent.desc,
@@ -90,9 +89,17 @@ ItemInspector {
             state: newEvent.stateEvent
         }
 
-        if (idCode == -1)
+        console.log("Updating event");
+        console.log(object.state);
+
+        if (idCode == -1) {
+            console.log("Inserting object");
+            for (var prop in object) {
+                console.log(prop + " --> " + object[prop]);
+            }
+
             scheduleModel.insertObject(object);
-        else {
+        } else {
             object['id'] = idCode;
             scheduleModel.updateObject(object);
         }

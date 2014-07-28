@@ -44,7 +44,7 @@ Rectangle {
                     id: searchEvents
                     Layout.fillWidth: true
                     anchors.margins: units.nailUnit
-                    onPerformSearch: eventList.recalculateList()
+                    onPerformSearch: scheduleModel.searchString = text
                 }
                 Button {
                     id: showOptionsButton
@@ -53,28 +53,20 @@ Rectangle {
                     menu: Menu {
                         title: qsTr('Mostra esdeveniments')
                         MenuItem {
-                            id: showOpen
-                            checkable: true
-                            checked: true
-                            text: qsTr('Oberts')
-                            onTriggered: {
-                                eventList.stateType = showOptionsButton.calculateStateType()
-                                eventList.recalculateList()
-                            }
+                            id: showPending
+                            text: qsTr('Pendents')
+                            onTriggered: eventList.stateType = NotebookEvent.StateNotDone
                         }
                         MenuItem {
                             id: showDone
-                            checkable: true
-                            checked: false
                             text: qsTr('Finalitzats')
-                            onTriggered: {
-                                eventList.stateType = showOptionsButton.calculateStateType()
-                                eventList.recalculateList()
-                            }
+                            onTriggered: eventList.stateType = NotebookEvent.StateDone
                         }
-                    }
-                    function calculateStateType() {
-                        return ((showOpen.checked)?NotebookEvent.StateNotDone:0) + ((showDone.checked)?NotebookEvent.StateDone:0)
+                        MenuItem {
+                            id: showAll
+                            text: qsTr('Tots')
+                            onTriggered: eventList.stateType = NotebookEvent.StateAll
+                        }
                     }
                 }
 
@@ -83,35 +75,23 @@ Rectangle {
                     Layout.fillHeight: true
                     text: qsTr('Ordre')
                     menu: Menu {
-                        title: qsTr('Ordenacio')
+                        title: qsTr('Ordenació')
                         MenuItem {
                             text: qsTr('Per data inici')
-                            onTriggered: {
-                                eventList.order = 1;
-                                eventList.recalculateList();
-                            }
+                            onTriggered: eventList.order = 1;
                         }
                         MenuItem {
                             text: qsTr('Per data final')
-                            onTriggered: {
-                                eventList.order = 2;
-                                eventList.recalculateList();
-                            }
+                            onTriggered: eventList.order = 2;
                         }
                         MenuSeparator {}
                         MenuItem {
                             text: qsTr('Per data inici inversa')
-                            onTriggered: {
-                                eventList.order = 3;
-                                eventList.recalculateList();
-                            }
+                            onTriggered: eventList.order = 3;
                         }
                         MenuItem {
                             text: qsTr('Per data final inversa')
-                            onTriggered: {
-                                eventList.order = 4;
-                                eventList.recalculateList();
-                            }
+                            onTriggered: eventList.order = 4;
                         }
                     }
                 }
@@ -131,12 +111,49 @@ Rectangle {
             id: eventList
             Layout.preferredWidth: parent.width
             Layout.fillHeight: true
-            property int order: 1
+            property int order: 0
             property int stateType: NotebookEvent.StateNotDone
             clip: true
 
+            onOrderChanged: {
+                switch(eventList.order) {
+                case 1:
+                    scheduleModel.setSort(4,Qt.AscendingOrder);
+                    break;
+                case 2:
+                    scheduleModel.setSort(6,Qt.AscendingOrder);
+                    break;
+                case 3:
+                    scheduleModel.setSort(4,Qt.DescendingOrder);
+                    break;
+                case 4:
+                    scheduleModel.setSort(6,Qt.DescendingOrder);
+                    break;
+                }
+                scheduleModel.select();
+            }
+
+            onStateTypeChanged: {
+                var filter;
+                switch(eventList.stateType) {
+                case NotebookEvent.StateNotDone:
+                    filter = ["ifnull(state,'') != 'done'"];
+                    break;
+                case NotebookEvent.StateDone:
+                    filter = ["state = 'done'"];
+                    break;
+                case NotebookEvent.StateAll:
+                default:
+                    filter = [];
+                }
+
+                scheduleModel.filters = filter;
+                scheduleModel.select();
+            }
+
             model: scheduleModel
             delegate: ScheduleItem {
+                id: oneScheduleItem
                 anchors.left: parent.left
                 anchors.right: parent.right
                 state: {
@@ -162,8 +179,20 @@ Rectangle {
                     if (editBox.state == 'show') {
                         scheduleModel.selectObject(model.index,!scheduleModel.isSelectedObject(model.index));
                     } else {
-                        schedule.editEvent(id,event,desc,startDate,startTime,endDate,endTime);
+                        switch(oneScheduleItem.state) {
+                        case 'basic':
+                            oneScheduleItem.state = 'expanded';
+                            break;
+                        case 'expanded':
+                            oneScheduleItem.state = 'basic';
+                            break;
+                        default:
+                            break;
+                        }
                     }
+                }
+                onScheduleItemLongSelected: {
+                    schedule.editEvent(id,event,desc,startDate,startTime,endDate,endTime);
                 }
             }
             snapMode: ListView.SnapToItem
@@ -189,5 +218,8 @@ Rectangle {
         }
     }
 
-    Component.onCompleted: scheduleModel.select()
+    Component.onCompleted: {
+        scheduleModel.searchFields = ['event','desc'];
+        eventList.order = 1;
+    }
 }

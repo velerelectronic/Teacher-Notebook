@@ -16,5 +16,6 @@
         <file>common/ToolButton.qml</file>
         <file>common/UseUnits.qml</file>
         <file>common/BigButton.qml</file>
+        <file>common/ExtraInfo.qml</file>
     </qresource>
 </RCC>

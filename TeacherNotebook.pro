@@ -11,7 +11,8 @@ SOURCES += main.cpp \
     xmlmodel.cpp \
     teachingplanning.cpp \
     imagedata.cpp \
-    sqltablemodel.cpp
+    sqltablemodel.cpp \
+    databasebackup.cpp
 
 RESOURCES += qml.qrc \
     icons.qrc \
@@ -31,7 +32,8 @@ HEADERS += \
     xmlmodel.h \
     teachingplanning.h \
     imagedata.h \
-    sqltablemodel.h
+    sqltablemodel.h \
+    databasebackup.h
 
 OTHER_FILES += \
     android/AndroidManifest.xml

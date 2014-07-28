@@ -8,12 +8,29 @@ Rectangle {
     states: [
         State {
             name: 'basic'
-            PropertyChanges { target: annotationItem; color: 'white' }
+            PropertyChanges {
+                target: annotationItem
+                color: 'white'
+                height: units.fingerUnit * 2
+            }
         },
         State {
             name: 'selected'
-            PropertyChanges { target: annotationItem; color: 'grey' }
+            PropertyChanges {
+                target: annotationItem
+                color: 'grey'
+                height: units.fingerUnit * 2
+            }
+        },
+        State {
+            name: 'expanded'
+            PropertyChanges {
+                target: annotationItem
+                color: 'white'
+                height: contents.height + units.nailUnit * 2
+            }
         }
+
     ]
 
     transitions: [
@@ -32,12 +49,13 @@ Rectangle {
     property bool isSelected: false
 
     signal annotationSelected (string title,string desc)
+    signal annotationLongSelected(string title,string desc)
 
     border.color: "black";
-    height: contents.height + units.nailUnit * 2
 
     Common.UseUnits { id: units }
 
+    clip: true
     Item {
         id: contents
         anchors.left: parent.left
@@ -93,5 +111,12 @@ Rectangle {
     MouseArea {
         anchors.fill: contents
         onClicked: annotationItem.annotationSelected(annotationItem.title, annotationItem.desc)
+        onPressAndHold: annotationItem.annotationLongSelected(annotationItem.title, annotationItem.desc)
+    }
+
+    Common.ExtraInfo {
+        minHeight: units.fingerUnit * 2
+        contentHeight: contents.height + units.nailUnit * 2
+        available: annotationItem.state == 'basic'
     }
 }

@@ -2,6 +2,7 @@ import QtQuick 2.2
 import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
 import "qrc:///javascript/Storage.js" as Storage
+import PersonalTypes 1.0
 
 Rectangle {
     id: menuPage
@@ -24,10 +25,15 @@ Rectangle {
             Common.PreviewBox {
                 id: lastAnnotations
                 width: parent.width
-                Layout.preferredHeight: height
+                // Layout.preferredHeight: height
 
-                ListModel {
-                    id: annotationsModel
+                model: SqlTableModel {
+                    tableName: 'annotations'
+                    limit: 3
+                    Component.onCompleted: {
+                        setSort(0,Qt.DescendingOrder);
+                        select();
+                    }
                 }
                 delegate: Item {
                     width: parent.width
@@ -53,23 +59,26 @@ Rectangle {
                 totalBackgroundColor: '#F2F5A9'
                 maxItems: 3
                 prefixTotal: qsTr('Hi ha')
+                totalCount: annotationsTotal.count
                 suffixTotal: qsTr('anotacions')
                 onCaptionClicked: menuPage.openPage('AnnotationsList')
                 onTotalCountClicked: menuPage.openPage('AnnotationsList')
-
-                Component.onCompleted: {
-                    Storage.listAnnotations(annotationsModel,null,'');
-                    makeSummary(annotationsModel);
-                }
             }
             Common.PreviewBox {
                 id: nextEvents
                 width: parent.width
-                Layout.preferredHeight: height
+                // Layout.preferredHeight: height
 
-                ListModel {
-                    id: eventsModel
+                model: SqlTableModel {
+                    tableName: 'schedule'
+                    limit: 3
+                    filters: ["ifnull(state,'') != 'done'"]
+                    Component.onCompleted: {
+                        setSort(6,Qt.AscendingOrder); // Order by end date
+                        select();
+                    }
                 }
+
                 delegate: Item {
                     width: parent.width
                     height: units.fingerUnit
@@ -80,7 +89,7 @@ Rectangle {
 
                         Text {
                             Layout.fillHeight: true
-                            text: Storage.convertNull(model.endDate)
+                            text: model.endDate
                             font.bold: true
                             font.pixelSize: units.readUnit
                             verticalAlignment: Text.AlignVCenter
@@ -93,7 +102,7 @@ Rectangle {
                             maximumLineCount: 1
                             font.pixelSize: units.readUnit
                             verticalAlignment: Text.AlignVCenter
-                            text: Storage.convertNull(model.event)
+                            text: model.event
                         }
                     }
                     MouseArea {
@@ -107,14 +116,10 @@ Rectangle {
                 totalBackgroundColor: '#F5D0A9'
                 maxItems: 3
                 prefixTotal: qsTr('Hi ha')
+                totalCount: scheduleTotal.count
                 suffixTotal: qsTr('esdeveniments')
                 onCaptionClicked: menuPage.openPage('Schedule')
                 onTotalCountClicked: menuPage.openPage('Schedule')
-
-                Component.onCompleted: {
-                    Storage.listEvents(eventsModel,null,'',2);
-                    makeSummary(eventsModel);
-                }
             }
             Item {
                 Layout.fillHeight: true
@@ -176,4 +181,15 @@ Rectangle {
         }
     }
 
+    SqlTableModel {
+        id: annotationsTotal
+        tableName: 'annotations'
+        Component.onCompleted: select()
+    }
+    SqlTableModel {
+        id: scheduleTotal
+        tableName: 'schedule'
+        filters: ["ifnull(state,'') != 'done'"]
+        Component.onCompleted: select();
+    }
 }

@@ -160,7 +160,7 @@ Rectangle {
                 Button {
                     text: qsTr('Desa')
                     onClicked: {
-                        Storage.saveAnnotation(-1,'Whiteboard ' + Storage.currentTime(),'',whiteArea.toDataURL());
+                        annotationsModel.insertObject({title: 'Whiteboard ' + Storage.currentTime(), image: whiteArea.toDataURL()});
                         messageSave.open();
                     }
                 }

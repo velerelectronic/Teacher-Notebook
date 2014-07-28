@@ -2,13 +2,11 @@ import QtQuick 2.0
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
-import "qrc:///javascript/Storage.js" as Storage
 import PersonalTypes 1.0
 
 Rectangle {
     id: annotations
     property string pageTitle: qsTr('Anotacions');
-    property var subSelection: []
 
     width: 300
     height: 200
@@ -40,7 +38,10 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: units.fingerUnit
                 anchors.margins: units.nailUnit
-                onPerformSearch: Storage.listAnnotations(annotationsModel,0,text)
+                onPerformSearch: {
+                    console.log('Perform search');
+                    annotationsModel.searchString = text;
+                }
             }
             Button {
                 id: editButton
@@ -69,20 +70,22 @@ Rectangle {
 
             clip: true
             delegate: AnnotationItem {
+                id: oneAnnotation
                 anchors.left: parent.left
                 anchors.right: parent.right
                 title: model.title
                 desc: (model.desc)?model.desc:''
                 image: (model.image)?model.image:''
-                state: (model.selected)?'selected':'basic'
+                // state: (model.selected)?'selected':'basic'
                 onAnnotationSelected: {
                     if (editBox.state == 'show') {
                         annotationsModel.selectObject(model.index,!annotationsModel.isSelectedObject(model.index));
                     } else {
                         // State == 'hidden'
-                        annotations.editAnnotation(model.id,title,desc)
+                        oneAnnotation.state = (oneAnnotation.state == 'basic')?'expanded':'basic';
                     }
                 }
+                onAnnotationLongSelected: annotations.editAnnotation(model.id,title,desc)
             }
             model: annotationsModel
 
@@ -106,7 +109,6 @@ Rectangle {
                         target: editAnnotation.item
                         onSaveAnnotation: {
                             editAnnotation.parent.visible = false;
-                            // Storage.listAnnotations(annotationsModel,0,'');
                         }
 
                         onCancelAnnotation: editAnnotation.parent.visible = false
@@ -118,6 +120,6 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        annotationsModel.select();
+        annotationsModel.searchFields = ['title','desc'];
     }
 }

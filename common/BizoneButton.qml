@@ -1,5 +1,5 @@
 import QtQuick 2.0
-import '../common' as Common
+import 'qrc:///common' as Common
 
 Rectangle {
     id: bitouch

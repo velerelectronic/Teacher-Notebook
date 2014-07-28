@@ -16,7 +16,6 @@ import QtQuick.Layouts 1.1
 import QtQuick.Window 2.0
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
-import "qrc:///javascript/Storage.js" as Storage
 
 Window {
     id: mainApp
@@ -106,7 +105,7 @@ Window {
             anchors.left: parent.left
 
             menuWidth: units.fingerUnit * 5
-            sectionsHeight: units.fingerUnit
+            sectionsHeight: units.fingerUnit * 2
             readUnit: units.readUnit
             durationEffect: 200
             model: pagesView.model
@@ -228,11 +227,10 @@ Window {
                     }
 
                     // Backup
-                    onBackupReadFromFile: messageBox.publishMessage(qsTr("S'ha llegit el backup del fitxer " + filename));
-                    onBackupSavedToFile: messageBox.publishMessage(qsTr("S'ha desat el backup en el fitxer " + filename));
-                    onChooseDirectory: openSubPage('DocumentsList',{selectDirectory: true, goBack: 'DataMan'});
-                    onOpenDirectoryWithPage: openSubPage(page,{directory: directory});
-
+                    onSavedBackupToDirectory: messageBox.publishMessage(qsTr("S'ha desat una còpia de seguretat dins ") + directory)
+                    onUnsavedBackup: messageBox.publishMessage(qsTr("No s'ha pogut desar la còpia de seguretat"))
+                    onBackupReadFromFile: messageBox.publishMessage(qsTr("S'ha introduït el fitxer ") + file + qsTr(" dins la base de dades"))
+                    onBackupNotReadFromFile: messageBox.publishMessage(qsTr("Error en intentar introduir el fitxer ") + file + qsTr(" dins la base de dades"))
                 }
             }
             Component.onCompleted: pageLoader.setSource(model.page + '.qml',model.parameters)
@@ -256,8 +254,7 @@ Window {
 
 
     Component.onCompleted: {
-//        Storage.destroyDatabase();
-//        Storage.removeAnnotationsTable();
+        createTables();
 
         annotationsModel.tableName = 'annotations';
         annotationsModel.fieldNames =  ['created','id','title','desc','image'];
@@ -265,11 +262,26 @@ Window {
 
         scheduleModel.tableName = 'schedule';
         scheduleModel.fieldNames = ['created','id','event','desc','startDate','startTime','endDate','endTime','state'];
+        scheduleModel.setSort(5,Qt.AscendingOrder);
 
-        Storage.initDatabase();
-        Storage.createEducationTables();
         mainApp.openMainPage();
-        Storage.exportDatabaseToText();
+    }
+
+    DatabaseBackup {
+        id: dataBck
+    }
+
+    function createTables() {
+        //dataBck.dropTable('annotations');
+        //dataBck.dropTable('schedule');
+        dataBck.createTable('annotations','(id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, image BLOB, ref INTEGER)');
+        dataBck.createTable('schedule','(id INTEGER PRIMARY KEY, created TEXT, event TEXT, desc TEXT, startDate TEXT, startTime TEXT, endDate TEXT, endTime TEXT, state TEXT, ref INTEGER)');
+        annotationsModel.tableName = 'annotations';
+        annotationsModel.fieldNames = ['id', 'created' ,'title', 'desc', 'image', 'ref'];
+        annotationsModel.setSort(0,Qt.AscendingOrder);
+        scheduleModel.tableName = 'schedule';
+        scheduleModel.fieldNames = ['id', 'created', 'event', 'desc', 'startDate', 'startTime', 'endDate', 'endTime', 'state', 'ref'];
+        scheduleModel.setSort(4,Qt.AscendingOrder);
     }
 
     function openMainPage() {
@@ -294,6 +306,7 @@ Window {
 
         if (found) {
             pagesView.currentIndex = i;
+            pageListModel.setProperty(i,'param',param);
         } else {
             pageListModel.append({page: page, qmlPage: page, parameters: param});
             pagesView.currentIndex = pageListModel.count-1;

@@ -22,12 +22,15 @@ Rectangle {
         inputMethodHints: Qt.ImhNoPredictiveText
         onTextChanged: {
             waitTimer.restart();
-            toolTip.visible = (searchText.text == '')?true:false
         }
-        onAccepted: searchBox.performSearch(searchText.text)
+        onAccepted: {
+            waitTimer.stop();
+            searchBox.performSearch(searchText.text);
+        }
 
         Text {
             id: toolTip
+            visible: searchText.text == ''
             anchors.fill: parent
             anchors.verticalCenter: parent.verticalCenter
             text: 'Cerca...'
@@ -40,6 +43,7 @@ Rectangle {
         id: waitTimer
         interval: 500
         running: false
+        repeat: false
         onTriggered: searchBox.performSearch(searchText.text)
     }
 }
