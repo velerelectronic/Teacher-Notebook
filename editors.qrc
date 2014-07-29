@@ -8,8 +8,6 @@
         <file>editors/TimePicker.qml</file>
         <file>editors/XmlTextEditor.qml</file>
         <file>editors/XmlListEditor.qml</file>
-        <file>editors/XmlMultipleListEditor.qml</file>
-        <file>editors/XmlListTextEditor.qml</file>
         <file>editors/ImageEditor.qml</file>
     </qresource>
 </RCC>

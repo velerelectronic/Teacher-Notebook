@@ -13,32 +13,32 @@ class TeachingPlanning : public QObject
     Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QString xml READ xml WRITE setXml NOTIFY xmlChanged)
 
-    Q_PROPERTY(QVariantList basicData READ basicData WRITE setBasicData NOTIFY basicDataChanged)
+    Q_PROPERTY(XmlModel* basicData READ basicData WRITE setBasicData NOTIFY basicDataChanged)
 
-    Q_PROPERTY(QVariantList introduction READ introduction WRITE setIntroduction NOTIFY introductionChanged)
-    Q_PROPERTY(QVariantList objectives READ objectives WRITE setObjectives NOTIFY objectivesChanged)
+    Q_PROPERTY(XmlModel* introduction READ introduction WRITE setIntroduction NOTIFY introductionChanged)
+    Q_PROPERTY(XmlModel* objectives READ objectives WRITE setObjectives NOTIFY objectivesChanged)
 
-    Q_PROPERTY(QVariantList competenceLing READ competenceLing WRITE setCompetenceLing NOTIFY competenceLingChanged)
-    Q_PROPERTY(QVariantList competenceMat READ competenceMat WRITE setCompetenceMat NOTIFY competenceMatChanged)
-    Q_PROPERTY(QVariantList competenceTic READ competenceTic WRITE setCompetenceTic NOTIFY competenceTicChanged)
-    Q_PROPERTY(QVariantList competenceSoc READ competenceSoc WRITE setCompetenceSoc NOTIFY competenceSocChanged)
-    Q_PROPERTY(QVariantList competenceCult READ competenceCult WRITE setCompetenceCult NOTIFY competenceCultChanged)
-    Q_PROPERTY(QVariantList competenceLearn READ competenceLearn WRITE setCompetenceLearn NOTIFY competenceLearnChanged)
-    Q_PROPERTY(QVariantList competenceAuto READ competenceAuto WRITE setCompetenceAuto NOTIFY competenceAutoChanged)
+    Q_PROPERTY(XmlModel* competenceLing READ competenceLing WRITE setCompetenceLing NOTIFY competenceLingChanged)
+    Q_PROPERTY(XmlModel* competenceMat READ competenceMat WRITE setCompetenceMat NOTIFY competenceMatChanged)
+    Q_PROPERTY(XmlModel* competenceTic READ competenceTic WRITE setCompetenceTic NOTIFY competenceTicChanged)
+    Q_PROPERTY(XmlModel* competenceSoc READ competenceSoc WRITE setCompetenceSoc NOTIFY competenceSocChanged)
+    Q_PROPERTY(XmlModel* competenceCult READ competenceCult WRITE setCompetenceCult NOTIFY competenceCultChanged)
+    Q_PROPERTY(XmlModel* competenceLearn READ competenceLearn WRITE setCompetenceLearn NOTIFY competenceLearnChanged)
+    Q_PROPERTY(XmlModel* competenceAuto READ competenceAuto WRITE setCompetenceAuto NOTIFY competenceAutoChanged)
 
-    Q_PROPERTY(QVariantList assessmentTasks READ assessmentTasks WRITE setAssessmentTasks NOTIFY assessmentTasksChanged)
-    Q_PROPERTY(QVariantList assessmentCriteria READ assessmentCriteria WRITE setAssessmentCriteria NOTIFY assessmentCriteriaChanged)
-    Q_PROPERTY(QVariantList assessmentInstruments READ assessmentInstruments WRITE setAssessmentInstruments NOTIFY assessmentInstrumentsChanged)
+    Q_PROPERTY(XmlModel* assessmentTasks READ assessmentTasks WRITE setAssessmentTasks NOTIFY assessmentTasksChanged)
+    Q_PROPERTY(XmlModel* assessmentCriteria READ assessmentCriteria WRITE setAssessmentCriteria NOTIFY assessmentCriteriaChanged)
+    Q_PROPERTY(XmlModel* assessmentInstruments READ assessmentInstruments WRITE setAssessmentInstruments NOTIFY assessmentInstrumentsChanged)
 
-    Q_PROPERTY(QVariantList contentsKnowledge READ contentsKnowledge WRITE setContentsKnowledge NOTIFY contentsKnowledgeChanged)
-    Q_PROPERTY(QVariantList contentsHabilities READ contentsHabilities WRITE setContentsHabilities NOTIFY contentsHabilitiesChanged)
-    Q_PROPERTY(QVariantList contentsLanguage READ contentsLanguage WRITE setContentsLanguage NOTIFY contentsLanguageChanged)
-    Q_PROPERTY(QVariantList contentsValues READ contentsValues WRITE setContentsValues NOTIFY contentsValuesChanged)
+    Q_PROPERTY(XmlModel* contentsKnowledge READ contentsKnowledge WRITE setContentsKnowledge NOTIFY contentsKnowledgeChanged)
+    Q_PROPERTY(XmlModel* contentsHabilities READ contentsHabilities WRITE setContentsHabilities NOTIFY contentsHabilitiesChanged)
+    Q_PROPERTY(XmlModel* contentsLanguage READ contentsLanguage WRITE setContentsLanguage NOTIFY contentsLanguageChanged)
+    Q_PROPERTY(XmlModel* contentsValues READ contentsValues WRITE setContentsValues NOTIFY contentsValuesChanged)
 
-    Q_PROPERTY(QVariantList resources READ resources WRITE setResources NOTIFY resourcesChanged)
-    Q_PROPERTY(QVariantList references READ references WRITE setReferences NOTIFY referencesChanged)
-    Q_PROPERTY(QVariantList activities READ activities WRITE setActivities NOTIFY activitiesChanged)
-    Q_PROPERTY(QVariantList comments READ comments WRITE setComments NOTIFY commentsChanged)
+    Q_PROPERTY(XmlModel* resources READ resources WRITE setResources NOTIFY resourcesChanged)
+    Q_PROPERTY(XmlModel* references READ references WRITE setReferences NOTIFY referencesChanged)
+    Q_PROPERTY(XmlModel* activities READ activities WRITE setActivities NOTIFY activitiesChanged)
+    Q_PROPERTY(XmlModel* comments READ comments WRITE setComments NOTIFY commentsChanged)
 
 public:
     explicit TeachingPlanning(QObject *parent = 0);
@@ -48,64 +48,64 @@ public:
     const QString &source();
     QString xml();
 
-    QVariantList basicData();
+    XmlModel *basicData();
 
-    QVariantList introduction();
-    QVariantList objectives();
+    XmlModel *introduction();
+    XmlModel *objectives();
 
-    QVariantList competenceLing();
-    QVariantList competenceMat();
-    QVariantList competenceTic();
-    QVariantList competenceSoc();
-    QVariantList competenceCult();
-    QVariantList competenceLearn();
-    QVariantList competenceAuto();
+    XmlModel *competenceLing();
+    XmlModel *competenceMat();
+    XmlModel *competenceTic();
+    XmlModel *competenceSoc();
+    XmlModel *competenceCult();
+    XmlModel *competenceLearn();
+    XmlModel *competenceAuto();
 
-    QVariantList assessmentTasks();
-    QVariantList assessmentCriteria();
-    QVariantList assessmentInstruments();
+    XmlModel *assessmentTasks();
+    XmlModel *assessmentCriteria();
+    XmlModel *assessmentInstruments();
 
-    QVariantList contentsKnowledge();
-    QVariantList contentsHabilities();
-    QVariantList contentsLanguage();
-    QVariantList contentsValues();
+    XmlModel *contentsKnowledge();
+    XmlModel *contentsHabilities();
+    XmlModel *contentsLanguage();
+    XmlModel *contentsValues();
 
-    QVariantList resources();
-    QVariantList references();
-    QVariantList activities();
-    QVariantList comments();
+    XmlModel *resources();
+    XmlModel *references();
+    XmlModel *activities();
+    XmlModel *comments();
 
     // Setters
 
     void setSource(const QString &);
     void setXml(const QString &);
 
-    void setBasicData(const QVariantList &);
+    void setBasicData(const XmlModel *);
 
-    void setIntroduction(const QVariantList &);
-    void setObjectives(const QVariantList &);
+    void setIntroduction(XmlModel *);
+    void setObjectives(XmlModel *);
 
-    void setCompetenceLing(const QVariantList &);
-    void setCompetenceMat(const QVariantList &);
-    void setCompetenceTic(const QVariantList &);
-    void setCompetenceSoc(const QVariantList &);
-    void setCompetenceCult(const QVariantList &);
-    void setCompetenceLearn(const QVariantList &);
-    void setCompetenceAuto(const QVariantList &);
+    void setCompetenceLing(const XmlModel *);
+    void setCompetenceMat(const XmlModel *);
+    void setCompetenceTic(const XmlModel *);
+    void setCompetenceSoc(const XmlModel *);
+    void setCompetenceCult(const XmlModel *);
+    void setCompetenceLearn(const XmlModel *);
+    void setCompetenceAuto(const XmlModel *);
 
-    void setAssessmentTasks(const QVariantList &);
-    void setAssessmentCriteria(const QVariantList &);
-    void setAssessmentInstruments(const QVariantList &);
+    void setAssessmentTasks(const XmlModel *);
+    void setAssessmentCriteria(const XmlModel *);
+    void setAssessmentInstruments(const XmlModel *);
 
-    void setContentsKnowledge(const QVariantList &);
-    void setContentsHabilities(const QVariantList &);
-    void setContentsLanguage(const QVariantList &);
-    void setContentsValues(const QVariantList &);
+    void setContentsKnowledge(const XmlModel *);
+    void setContentsHabilities(const XmlModel *);
+    void setContentsLanguage(const XmlModel *);
+    void setContentsValues(const XmlModel *);
 
-    void setResources(const QVariantList &);
-    void setReferences(const QVariantList &);
-    void setActivities(const QVariantList &);
-    void setComments(const QVariantList &);
+    void setResources(const XmlModel *);
+    void setReferences(const XmlModel *);
+    void setActivities(const XmlModel *);
+    void setComments(const XmlModel *);
 
 signals:
     void sourceChanged();

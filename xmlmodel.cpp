@@ -1,42 +1,64 @@
 #include <QDebug>
 #include <QVariantMap>
+#include <QDomDocument>
 #include "xmlmodel.h"
 
 XmlModel::XmlModel(QObject *parent) :
-    QObject(parent)
+    QStringListModel(parent)
 {
-}
-
-XmlModel::XmlModel(QObject *parent, const QDomElement &baseElement, const QString &tagname) :
-    QObject(parent)
-{
-    setTagName(tagname);
-    setRootElement(baseElement);
-    recalculateList();
 }
 
 XmlModel::XmlModel(const XmlModel &other) {
-    // Not sure about this fragment
-    this->innerTagName = other.innerTagName;
-    this->rootElement = other.rootElement;
-    this->innerList = other.innerList;
+    innerTagName = other.innerTagName;
+    rootElement = other.rootElement;
 }
 
-XmlModel XmlModel::operator=(const XmlModel &other) {
+XmlModel::~XmlModel() {
+
+}
+
+XmlModel &XmlModel::operator=(XmlModel &other) {
 // Not sure about this fragment
-    this->innerTagName = other.innerTagName;
-    this->rootElement = other.rootElement;
-    this->innerList = other.innerList;
+    // this->QStringListModel::operator=(other);
+    // this->innerTagName = other.innerTagName;
+    // this->rootElement = other.rootElement;
     return *this;
+}
+
+void XmlModel::print() {
+    qDebug() << stringList();
+}
+
+void XmlModel::recalculateList() {
+    QStringList innerList;
+
+    if (innerTagName.isEmpty()) {
+        innerList << rootElement.text();
+    } else {
+        QDomElement traverse = rootElement.firstChildElement(innerTagName);
+        int i = 0;
+        while (!traverse.isNull()) {
+            innerList << traverse.text();
+            i++;
+            traverse = traverse.nextSiblingElement(innerTagName);
+        }
+    }
+    setStringList(innerList);
+}
+
+void XmlModel::recalculateDomElement() {
+    QStringList innerList = stringList();
+    QDomDocument document = rootElement.ownerDocument();
+    rootElement.clear();
+    QStringList::const_iterator index = innerList.constBegin();
+    while (index != innerList.constEnd()) {
+        rootElement.appendChild(document.createElement(innerTagName).appendChild(document.createTextNode(*index)));
+        ++index;
+    }
 }
 
 void XmlModel::setRootElement(const QDomElement &newRoot) {
     rootElement = newRoot;
-}
-
-// Tag name
-const QString &XmlModel::tagName() {
-    return innerTagName;
 }
 
 void XmlModel::setTagName(const QString &newTagName) {
@@ -44,34 +66,18 @@ void XmlModel::setTagName(const QString &newTagName) {
     tagNameChanged(innerTagName);
 }
 
-
-const QVariantList &XmlModel::list() {
-    return innerList;
+const QString &XmlModel::tagName() {
+    return innerTagName;
 }
 
-void XmlModel::setList(const QVariantList &) {
-
+bool XmlModel::toDomElement(const QString &tagName) {
+    setTagName(tagName);
+    recalculateDomElement();
 }
 
-void XmlModel::recalculateList() {
-    innerList.clear();
-    if (innerTagName.isEmpty()) {
-        QVariantMap obj;
-        obj["text"] = rootElement.text();
-        innerList.append(obj);
-        listChanged(innerList);
-    } else {
-        QDomElement traverse = rootElement.firstChildElement(innerTagName);
-        int i = 0;
-        while (!traverse.isNull()) {
-            QVariantMap obj;
-            obj["text"] = traverse.text();
-            qDebug() << obj["text"];
-            innerList.append(obj);
-            i++;
-            traverse = traverse.nextSiblingElement(innerTagName);
-        }
-        listChanged(innerList);
-        qDebug() << i;
-    }
+XmlModel *XmlModel::readList(const QDomElement &baseElement, const QString &tagname) {
+    setTagName(tagname);
+    setRootElement(baseElement);
+    recalculateList();
+    return this;
 }

@@ -2,6 +2,7 @@ import QtQuick 2.2
 import QtWebKit 3.0
 import FileIO 1.0
 import PersonalTypes 1.0
+import 'qrc:///editors' as Editors
 
 Rectangle {
     id: xmlViewer
@@ -26,11 +27,225 @@ Rectangle {
 
     TeachingPlanning {
         id: xmlReader
-        source: document // '/Users/jmpayeras/Desenvolupament/prova.xml'
+        source: document
+        // source: '/Users/jmpayeras/Desenvolupament/prova.xml'
 
         Component.onCompleted: {
+            console.log(document);
             xmlReader.loadXml();
-            reload();
+        }
+
+        onObjectivesChanged: console.log(xmlReader.objectives)
+    }
+
+    VisualItemModel {
+        // In the future, it will change into ObjectModel
+        id: mainSectionsModel
+
+        PlanningMainSection {
+            width: sectionsList.width
+            height: sectionsList.height
+            title: qsTr('Dades generals')
+            Editors.XmlListEditor {
+                width: parent.width
+                dataModel: xmlReader.basicData
+            }
+        }
+        PlanningMainSection {
+            width: sectionsList.width
+            height: sectionsList.height
+            title: qsTr('Introducció')
+            Editors.XmlListEditor {
+                anchors.fill: parent
+                dataModel: xmlReader.introduction
+            }
+        }
+        PlanningMainSection {
+            width: sectionsList.width
+            height: sectionsList.height
+            title: qsTr('Objectius')
+            Editors.XmlListEditor {
+                anchors.fill: parent
+                dataModel: xmlReader.objectives
+                onUpdatedList: console.log('updated list...')
+            }
+        }
+        PlanningMainSection {
+            width: sectionsList.width
+            height: sectionsList.height
+            title: qsTr('Competències bàsiques')
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Comunicació lingüística i audiovisual')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.competenceLing
+                }
+            }
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Matemàtica')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.competenceMat
+                }
+            }
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Tractament de la informació i competència digital')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.competenceTic
+                }
+            }
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Social i ciutadana')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.competenceSoc
+                }
+            }
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Cultural i artística')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.competenceCult
+                }
+            }
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Aprendre a aprendre')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.competenceLearn
+                }
+            }
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Autonomia i iniciativa personal')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.competenceAuto
+                }
+            }
+        }
+        PlanningMainSection {
+            width: sectionsList.width
+            height: sectionsList.height
+            title: qsTr('Avaluació')
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Tasques')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.assessmentTasks
+                }
+            }
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Criteris')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.assessmentCriteria
+                }
+            }
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Instruments')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.assessmentInstruments
+                }
+            }
+        }
+        PlanningMainSection {
+            width: sectionsList.width
+            height: sectionsList.height
+            title: qsTr('Continguts')
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Coneixements')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.contentsKnowledge
+                }
+            }
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Habilitats')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.contentsHabilities
+                }
+            }
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Llenguatge')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.contentsLanguage
+                }
+            }
+            PlanningSubSection {
+                width: parent.width
+                title: qsTr('Valors')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.contentsValues
+                }
+            }
+        }
+        PlanningMainSection {
+            width: sectionsList.width
+            height: sectionsList.height
+            title: qsTr('Recursos')
+            Editors.XmlListEditor {
+                anchors.fill: parent
+                dataModel: xmlReader.resources
+            }
+        }
+        PlanningMainSection {
+            width: sectionsList.width
+            height: sectionsList.height
+            title: qsTr('Referències')
+            Editors.XmlListEditor {
+                anchors.fill: parent
+                dataModel: xmlReader.references
+            }
+        }
+        PlanningMainSection {
+            width: sectionsList.width
+            height: sectionsList.height
+            title: qsTr('Comentaris')
+            Editors.XmlListEditor {
+                anchors.fill: parent
+                dataModel: xmlReader.comments
+            }
+        }
+        PlanningMainSection {
+            width: sectionsList.width
+            height: sectionsList.height
+            title: qsTr('Sessions')
+            Editors.XmlListEditor {
+                anchors.fill: parent
+                dataModel: xmlReader.activities
+            }
         }
     }
 
@@ -38,100 +253,9 @@ Rectangle {
         id: sectionsList
         anchors.fill: parent
         anchors.margins: units.nailUnit
-        model: ListModel {
-            id: sectionsModel
-            dynamicRoles: true
-        }
+        model: mainSectionsModel
         orientation: ListView.Horizontal
         boundsBehavior: Flickable.StopAtBounds
         snapMode: ListView.SnapToItem
-
-        delegate: Rectangle {
-            width: sectionsList.width
-            height: sectionsList.height
-            color: 'white'
-            Rectangle {
-                id: titleText
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: childrenRect.height + 2 * units.nailUnit
-                color: 'green'
-
-                Text {
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    height: contentHeight
-                    anchors.margins: units.nailUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: title
-                    color: 'white'
-                    font.pixelSize: units.readUnit
-                }
-            }
-
-            Loader {
-                id: mainSectionLoader
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: titleText.bottom
-                anchors.bottom: parent.bottom
-            }
-            Component.onCompleted: {
-                mainSectionLoader.setSource('qrc:///editors/' + editor + '.qml',{dataModel: model});
-            }
-        }
-    }
-
-    function reload() {
-        sectionsModel.clear();
-
-        sectionsModel.append({title: qsTr('Dades generals'), editor: 'XmlListEditor', model: xmlReader.basicData});
-        sectionsModel.append({title: qsTr('Introducció'), editor: 'XmlListEditor', model: xmlReader.introduction});
-
-        sectionsModel.append({title: qsTr('Objectius'), editor: 'XmlListEditor', model: xmlReader.objectives});
-
-        sectionsModel.append({title: qsTr('Competències bàsiques'), editor: 'XmlMultipleListEditor', model: [
-                                     {title: qsTr('Comunicació lingüística i audiovisual'), dades: xmlReader.competenceLing},
-                                     {title: qsTr('Matemàtica'), editor: 'XmlTextEditor', dades: xmlReader.competenceMat},
-                                     {title: qsTr('Tractament de la informació i competència digital'), editor: 'XmlTextEditor', dades: xmlReader.competenceTic},
-                                     {title: qsTr('Social i ciutadana'), editor: 'XmlTextEditor', dades: xmlReader.competenceSoc},
-                                     {title: qsTr('Cultural i artística'), editor: 'XmlTextEditor', dades: xmlReader.competenceCult},
-                                     {title: qsTr('Aprendre a aprendre'), editor: 'XmlTextEditor', dades: xmlReader.competenceLearn},
-                                     {title: qsTr('Autonomia i iniciativa personal'), editor: 'XmlTextEditor', dades: xmlReader.competenceAuto}
-                                 ]});
-
-        sectionsModel.append({title: qsTr('Avaluació'), editor: 'XmlMultipleListEditor', model: [
-                                     {title: qsTr('Tasques'), dades: xmlReader.assessmentTasks},
-                                     {title: qsTr('Criteris'), dades: xmlReader.assessmentCriteria},
-                                     {title: qsTr('Instruments'), dades: xmlReader.assessmentInstruments}
-                                 ]});
-
-        sectionsModel.append({title: qsTr('Continguts'), editor: 'XmlMultipleListEditor', model: [
-                                     {title: qsTr('Coneixements'), dades: xmlReader.contentsKnowledge},
-                                     {title: qsTr('Habilitats'), dades: xmlReader.contentsHabilities},
-                                     {title: qsTr('Llenguatge'), dades: xmlReader.contentsLanguage},
-                                     {title: qsTr('Valors'), dades: xmlReader.contentsValues}
-                                 ]});
-        sectionsModel.append({title: qsTr('Recursos'), editor: 'XmlListEditor', model: xmlReader.resources});
-        sectionsModel.append({title: qsTr('Referències'), editor: 'XmlListEditor', model: xmlReader.references});
-        sectionsModel.append({title: qsTr('Comentaris'), editor: 'XmlListEditor', model: xmlReader.comments});
-        sectionsModel.append({title: qsTr('Sessions'), editor: 'XmlListEditor', model: xmlReader.activities});
-    }
-
-    Component.onCompleted: {
-        /*
-
-        xmlReader.objectives.push({text: 'hola'});
-        xmlReader.objectives = [{text: 'res'},{text: 'un altre exemple'}];
-
-        var a = xmlReader.objectives;
-        for (var prop in a) {
-            console.log(prop + '-' + a[prop]);
-        }
-
-        reload();
-*/
     }
 }

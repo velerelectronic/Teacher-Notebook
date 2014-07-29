@@ -1,43 +1,46 @@
 #include <QObject>
 #include <QDomDocument>
 #include <QVariantList>
+#include <QStringListModel>
 
 #ifndef XMLMODEL_H
 #define XMLMODEL_H
 
-class XmlModel : public QObject
+class XmlModel : public QStringListModel
 {
     Q_OBJECT
 
 public:
     explicit XmlModel(QObject *parent = 0);
-    explicit XmlModel(QObject *parent, const QDomElement &, const QString &tagname);
+
     XmlModel(const XmlModel &);
-    XmlModel operator= (const XmlModel &);
+    ~XmlModel();
 
     Q_PROPERTY(QString tagName READ tagName NOTIFY tagNameChanged)
 
-    Q_PROPERTY(QVariantList list READ list WRITE setList NOTIFY listChanged)
-
+    XmlModel &operator=(XmlModel &);
+    void print();
     const QString &tagName();
-    const QVariantList &list();
-    void setRootElement(const QDomElement &);
-
     void recalculateList();
 
+    void setRootElement(const QDomElement &);
+
 signals:
-    void tagNameChanged(QString);
-    void listChanged(QVariantList);
+    void tagNameChanged(const QString &);
 
 public slots:
-    void setTagName(const QString &);
-    void setList(const QVariantList &);
+    void setTagName(const QString &tagName);
+    XmlModel *readList(const QDomElement &, const QString &tagname);
+    bool toDomElement(const QString &tagName);
 
 private:
     QString innerTagName;
     QDomElement rootElement;
-    QVariantList innerList;
+
+    void recalculateDomElement();
 
 };
+
+// Q_DECLARE_METATYPE(XmlModel)
 
 #endif // XMLMODEL_H

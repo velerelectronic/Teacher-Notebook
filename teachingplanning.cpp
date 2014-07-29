@@ -84,223 +84,260 @@ void TeachingPlanning::setXml(const QString &xml) {
     emit TeachingPlanning::xmlChanged();
     emit TeachingPlanning::documentLoaded();
     emit xmlChanged();
-    qDebug() << "Final càrrega XML";
+
+    emit basicDataChanged();
+    emit introductionChanged();
+    emit objectivesChanged();
+    emit competenceLingChanged();
+    emit competenceMatChanged();
+    emit competenceTicChanged();
+    emit competenceSocChanged();
+    emit competenceCultChanged();
+    emit competenceLearnChanged();
+    emit competenceAutoChanged();
+
+    emit assessmentTasksChanged();
+    emit assessmentCriteriaChanged();
+    emit assessmentInstrumentsChanged();
+
+    emit contentsKnowledgeChanged();
+    emit contentsHabilitiesChanged();
+    emit contentsLanguageChanged();
+    emit contentsValuesChanged();
+
+    emit resourcesChanged();
+    emit referencesChanged();
+    emit commentsChanged();
+    emit activitiesChanged();
 }
 
 // Basic data
 
-QVariantList TeachingPlanning::basicData() {
-    XmlModel model(this);
-    model.setRootElement(planningRoot.firstChildElement(TAG_BASIC_DATA));
+XmlModel *TeachingPlanning::basicData() {
+    XmlModel *model = new XmlModel(this);
+    model->setRootElement(planningRoot.firstChildElement(TAG_BASIC_DATA));
 
     QStringList listBasicData;
     listBasicData << TAG_BASIC_DATA_UNIT_TITLE << TAG_BASIC_DATA_PROJECT << TAG_BASIC_DATA_AUTHOR << TAG_BASIC_DATA_SUPPORT
     << TAG_BASIC_DATA_GROUP << TAG_BASIC_DATA_AREAS << TAG_BASIC_DATA_KEYWORDS << TAG_BASIC_DATA_TIMING;
 
-    QVariantList result;
+    QStringList result;
     for (int i=0; i<listBasicData.length(); i++) {
-        model.setTagName(listBasicData.at(i));
-        model.recalculateList();
-        result += model.list();
+        model->setTagName(listBasicData.at(i));
+        model->recalculateList();
+        result << model->stringList();
     }
-    return result;
+    qDebug() << result;
+    // QStringListModel::setStringList(result);
+    return model;
 }
 
-void TeachingPlanning::setBasicData(const QVariantList &) {
+void TeachingPlanning::setBasicData(const XmlModel *) {
 
 }
 
 // Introduction
 
-QVariantList TeachingPlanning::introduction() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_INTRODUCTION),"").list();
+XmlModel *TeachingPlanning::introduction() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_INTRODUCTION),"");
 }
 
-void TeachingPlanning::setIntroduction(const QVariantList &list) {
+void TeachingPlanning::setIntroduction(XmlModel *list) {
 
 }
 
 // Objectives
 
-QVariantList TeachingPlanning::objectives() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_OBJECTIVES),TAG_SINGLE_OBJECTIVE).list();
+XmlModel *TeachingPlanning::objectives() {
+    XmlModel *model = new XmlModel(this);
+    model->readList(planningRoot.firstChildElement(TAG_OBJECTIVES),TAG_SINGLE_OBJECTIVE);
+    model->print();
+    qDebug() << model->roleNames();
+    return model;
 }
 
-void TeachingPlanning::setObjectives(const QVariantList &list) {
-
+void TeachingPlanning::setObjectives(XmlModel *list) {
+    qDebug() << "setting objectives";
+//    model->setRootElement(planningRoot.firstChildElement(TAG_OBJECTIVES));
+//    model->setStringList(&list);
+    list->setRootElement(planningRoot.firstChildElement(TAG_OBJECTIVES));
+    list->toDomElement(TAG_SINGLE_OBJECTIVE);
+    objectivesChanged();
 }
 
 // Competences
 
-QVariantList TeachingPlanning::competenceLing() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_LING).list();
+XmlModel *TeachingPlanning::competenceLing() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_LING);
 }
 
-QVariantList TeachingPlanning::competenceMat() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_MAT).list();
+XmlModel *TeachingPlanning::competenceMat() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_MAT);
 }
 
-QVariantList TeachingPlanning::competenceTic() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_TIC).list();
+XmlModel *TeachingPlanning::competenceTic() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_TIC);
 }
 
-QVariantList TeachingPlanning::competenceSoc() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_SOC).list();
+XmlModel *TeachingPlanning::competenceSoc() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_SOC);
 }
 
-QVariantList TeachingPlanning::competenceCult() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_CULT).list();
+XmlModel *TeachingPlanning::competenceCult() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_CULT);
 }
 
-QVariantList TeachingPlanning::competenceLearn() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_LEARN).list();
+XmlModel *TeachingPlanning::competenceLearn() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_LEARN);
 }
 
-QVariantList TeachingPlanning::competenceAuto() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_AUTO).list();
+XmlModel *TeachingPlanning::competenceAuto() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_AUTO);
 }
 
-void TeachingPlanning::setCompetenceLing(const QVariantList &) {
-
-}
-
-void TeachingPlanning::setCompetenceMat(const QVariantList &) {
+void TeachingPlanning::setCompetenceLing(const XmlModel *) {
 
 }
 
-void TeachingPlanning::setCompetenceTic(const QVariantList &) {
+void TeachingPlanning::setCompetenceMat(const XmlModel *) {
 
 }
 
-void TeachingPlanning::setCompetenceSoc(const QVariantList &) {
+void TeachingPlanning::setCompetenceTic(const XmlModel *) {
 
 }
 
-void TeachingPlanning::setCompetenceCult(const QVariantList &) {
+void TeachingPlanning::setCompetenceSoc(const XmlModel *) {
 
 }
 
-void TeachingPlanning::setCompetenceLearn(const QVariantList &) {
+void TeachingPlanning::setCompetenceCult(const XmlModel *) {
 
 }
 
-void TeachingPlanning::setCompetenceAuto(const QVariantList &) {
+void TeachingPlanning::setCompetenceLearn(const XmlModel *) {
+
+}
+
+void TeachingPlanning::setCompetenceAuto(const XmlModel *) {
 
 }
 
 
 // Assessment: tasks, criteria, instruments
 
-QVariantList TeachingPlanning::assessmentTasks() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_ASSESSMENT),TAG_ASSESSMENT_TASK).list();
+XmlModel *TeachingPlanning::assessmentTasks() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_ASSESSMENT),TAG_ASSESSMENT_TASK);
 }
 
-QVariantList TeachingPlanning::assessmentCriteria() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_ASSESSMENT),TAG_ASSESSMENT_CRITERIUM).list();
+XmlModel *TeachingPlanning::assessmentCriteria() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_ASSESSMENT),TAG_ASSESSMENT_CRITERIUM);
 }
 
-QVariantList TeachingPlanning::assessmentInstruments() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_ASSESSMENT),TAG_ASSESSMENT_INSTRUMENT).list();
+XmlModel *TeachingPlanning::assessmentInstruments() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_ASSESSMENT),TAG_ASSESSMENT_INSTRUMENT);
 }
 
-void TeachingPlanning::setAssessmentTasks(const QVariantList &) {
-
-}
-
-void TeachingPlanning::setAssessmentCriteria(const QVariantList &) {
+void TeachingPlanning::setAssessmentTasks(const XmlModel *) {
 
 }
 
-void TeachingPlanning::setAssessmentInstruments(const QVariantList &) {
+void TeachingPlanning::setAssessmentCriteria(const XmlModel *) {
+
+}
+
+void TeachingPlanning::setAssessmentInstruments(const XmlModel *) {
 
 }
 
 
 // Contents: knowledge, habilities, language, values
 
-QVariantList TeachingPlanning::contentsKnowledge() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_CONTENTS),TAG_CONTENTS_KNOWLEDGE).list();
+XmlModel *TeachingPlanning::contentsKnowledge() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_CONTENTS),TAG_CONTENTS_KNOWLEDGE);
 }
 
-QVariantList TeachingPlanning::contentsHabilities() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_CONTENTS),TAG_CONTENTS_HABILITIES).list();
-
-}
-
-QVariantList TeachingPlanning::contentsLanguage() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_CONTENTS),TAG_CONTENTS_LANGUAGE).list();
+XmlModel *TeachingPlanning::contentsHabilities() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_CONTENTS),TAG_CONTENTS_HABILITIES);
 
 }
 
-QVariantList TeachingPlanning::contentsValues() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_CONTENTS),TAG_CONTENTS_VALUES).list();
+XmlModel *TeachingPlanning::contentsLanguage() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_CONTENTS),TAG_CONTENTS_LANGUAGE);
 
 }
 
-void TeachingPlanning::setContentsKnowledge(const QVariantList &) {
+XmlModel *TeachingPlanning::contentsValues() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_CONTENTS),TAG_CONTENTS_VALUES);
 
 }
 
-void TeachingPlanning::setContentsHabilities(const QVariantList &) {
+void TeachingPlanning::setContentsKnowledge(const XmlModel *) {
 
 }
 
-void TeachingPlanning::setContentsLanguage(const QVariantList &) {
+void TeachingPlanning::setContentsHabilities(const XmlModel *) {
 
 }
 
-void TeachingPlanning::setContentsValues(const QVariantList &) {
+void TeachingPlanning::setContentsLanguage(const XmlModel *) {
+
+}
+
+void TeachingPlanning::setContentsValues(const XmlModel *) {
 
 }
 
 // Resources
 
-QVariantList TeachingPlanning::resources() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_RESOURCES),TAG_SINGLE_RESOURCE).list();
+XmlModel *TeachingPlanning::resources() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_RESOURCES),TAG_SINGLE_RESOURCE);
 }
 
-void TeachingPlanning::setResources(const QVariantList &) {
+void TeachingPlanning::setResources(const XmlModel *) {
 
 }
 
 // References
 
-QVariantList TeachingPlanning::references() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_REFERENCES),TAG_SINGLE_REFERENCE).list();
+XmlModel *TeachingPlanning::references() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_REFERENCES),TAG_SINGLE_REFERENCE);
 }
 
-void TeachingPlanning::setReferences(const QVariantList &) {
+void TeachingPlanning::setReferences(const XmlModel *) {
 
 }
 
 // Activities
 
-QVariantList TeachingPlanning::activities() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_ACTIVITIES),TAG_SINGLE_ACTIVITY).list();
+XmlModel *TeachingPlanning::activities() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_ACTIVITIES),TAG_SINGLE_ACTIVITY);
 }
 
-void TeachingPlanning::setActivities(const QVariantList &) {
+void TeachingPlanning::setActivities(const XmlModel *) {
 
 }
 
 // Comments
 
-QVariantList TeachingPlanning::comments() {
-    return XmlModel(this,planningRoot.firstChildElement(TAG_COMMENTS),TAG_SINGLE_COMMENT).list();
+XmlModel *TeachingPlanning::comments() {
+    return (new XmlModel(this))->readList(planningRoot.firstChildElement(TAG_COMMENTS),TAG_SINGLE_COMMENT);
 }
 
-void TeachingPlanning::setComments(const QVariantList &) {
+void TeachingPlanning::setComments(const XmlModel *) {
 
 }
 
 // Private functions
 
 void TeachingPlanning::loadXml() {
+    qDebug() << innerSource;
     QFile xfile(innerSource);
 
     qDebug() << "Carregant XML";
     if (xfile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        setXml(xfile.readAll());
+        QString contents = xfile.readAll();
+        setXml(contents);
     }
     xfile.close();
 }

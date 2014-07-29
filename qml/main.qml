@@ -316,5 +316,22 @@ Window {
     function removeCurrentPage() {
         pageListModel.remove(pagesView.currentIndex);
     }
+
+    /*
+    ListView {
+        anchors.fill: parent
+        model: tmp
+        delegate: Rectangle {
+            width: units.fingerUnit *5
+            height: units.fingerUnit *5
+            color: '#643456'
+            Text {
+                anchors.fill: parent
+                text: display
+            }
+        }
+        Component.onCompleted: console.log(model)
+    }
+    */
 }
 

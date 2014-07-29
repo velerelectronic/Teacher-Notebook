@@ -11,6 +11,7 @@
 
 int main(int argc, char *argv[])
 {
+
     QGuiApplication app(argc, argv);
     app.setOrganizationName("developerjmpc");
     app.setApplicationVersion("1.0");
@@ -21,13 +22,18 @@ int main(int argc, char *argv[])
     }
 
     qmlRegisterType<FileIO, 1>("FileIO", 1, 0, "FileIO");
-    qmlRegisterType<TeachingPlanning>("PersonalTypes", 1, 0, "TeachingPlanning");
     qmlRegisterType<XmlModel>("PersonalTypes", 1, 0, "XmlModel");
+    qmlRegisterType<TeachingPlanning>("PersonalTypes", 1, 0, "TeachingPlanning");
     qmlRegisterType<ImageData>("PersonalTypes", 1, 0, "ImageData");
     qRegisterMetaType<XmlModel>("XmlModel");
     qmlRegisterType<DatabaseBackup>("PersonalTypes", 1, 0, "DatabaseBackup");
     qmlRegisterType<SqlTableModel>("PersonalTypes", 1, 0, "SqlTableModel");
 
+    QStringList list;
+    list << QString("A1") << QString("B2") << QString("B3");
+
+    XmlModel model2;
+    model2.setStringList(list);
 
     QQmlApplicationEngine engine;
 
@@ -41,6 +47,7 @@ int main(int argc, char *argv[])
     SqlTableModel scheduleModel;
     engine.rootContext()->setContextProperty("annotationsModel",&annotationsModel);
     engine.rootContext()->setContextProperty("scheduleModel",&scheduleModel);
+    engine.rootContext()->setContextProperty("tmp",&model2);
 
     engine.load(QUrl(QStringLiteral("qrc:///qml/main.qml")));
 

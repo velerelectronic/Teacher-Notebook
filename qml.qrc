@@ -22,5 +22,7 @@
         <file>qml/Whiteboard.qml</file>
         <file>qml/ProgramacioAula.qml</file>
         <file>qml/ImageMapper.qml</file>
+        <file>qml/PlanningMainSection.qml</file>
+        <file>qml/PlanningSubSection.qml</file>
     </qresource>
 </RCC>
