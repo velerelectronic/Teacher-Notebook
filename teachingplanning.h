@@ -44,6 +44,7 @@ public:
     explicit TeachingPlanning(QObject *parent = 0);
 
     Q_INVOKABLE void loadXml();
+    Q_INVOKABLE bool save();
 
     const QString &source();
     QString xml();
@@ -145,6 +146,33 @@ private:
     QString innerSource;
     QDomDocument document;
     QDomElement planningRoot;
+
+    // Models
+    XmlModel modelBasicData;
+    XmlModel modelIntroduction;
+    XmlModel modelObjectives;
+
+    XmlModel modelCompetenceLing;
+    XmlModel modelCompetenceMat;
+    XmlModel modelCompetenceTic;
+    XmlModel modelCompetenceSoc;
+    XmlModel modelCompetenceCult;
+    XmlModel modelCompetenceLearn;
+    XmlModel modelCompetenceAuto;
+
+    XmlModel modelAssessmentTasks;
+    XmlModel modelAssessmentCriteria;
+    XmlModel modelAssessmentInstruments;
+
+    XmlModel modelContentsKnowledge;
+    XmlModel modelContentsHabilities;
+    XmlModel modelContentsLanguage;
+    XmlModel modelContentsValues;
+
+    XmlModel modelResources;
+    XmlModel modelReferences;
+    XmlModel modelActivities;
+    XmlModel modelComments;
 };
 
 #endif // TEACHINGPLANNING_H

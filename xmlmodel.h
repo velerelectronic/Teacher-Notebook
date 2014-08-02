@@ -17,7 +17,9 @@ public:
     ~XmlModel();
 
     Q_PROPERTY(QString tagName READ tagName NOTIFY tagNameChanged)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
+    int count();
     XmlModel &operator=(XmlModel &);
     void print();
     const QString &tagName();
@@ -26,12 +28,18 @@ public:
     void setRootElement(const QDomElement &);
 
 signals:
+    void countChanged();
     void tagNameChanged(const QString &);
+    void updated();
 
 public slots:
     void setTagName(const QString &tagName);
     XmlModel *readList(const QDomElement &, const QString &tagname);
-    bool toDomElement(const QString &tagName);
+    bool toDomElement();
+
+    // Invokable from QML
+    Q_INVOKABLE bool insertObject(int index,const QString &contents);
+    Q_INVOKABLE bool updateObject(int index,const QString &contents);
 
 private:
     QString innerTagName;

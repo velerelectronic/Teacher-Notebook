@@ -15,7 +15,7 @@ import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import '../common' as Common
 
-Rectangle {
+Item {
     id: textAreaEditor
     property int fontPixelSize: 0
     property alias wrapMode: textArea.wrapMode
@@ -137,6 +137,7 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.top: (isVertical)?parent.verticalCenter:parent.top
         anchors.right: (isVertical)?parent.right:parent.horizontalCenter
+        anchors.margins: units.nailUnit
 
         clip: true
 //        inputMethodHints: Qt.ImhNoPredictiveText

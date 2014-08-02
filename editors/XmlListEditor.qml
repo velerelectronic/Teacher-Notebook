@@ -7,7 +7,7 @@ Rectangle {
     height: llista.height
 
     property alias dataModel: llista.model
-    signal updatedList
+    property bool editable: false
 
     ListView {
         id: llista
@@ -21,14 +21,13 @@ Rectangle {
         delegate: XmlTextEditor {
             width: llista.width
             title: model.display
-            onUpdatedTitle: {
-                console.log('XmlListEditor: updating title');
-                editor.updatedList();
-            }
+            editable: editor.editable
+            onUpdatedTitle: llista.model.updateObject(model.index,newtitle);
         }
 
         footer: Item {
-            width: parent.width
+            visible: editor.editable
+            width: llista.width
             height: units.fingerUnit * 1.5
             Button {
                 anchors.left: parent.left
@@ -36,6 +35,7 @@ Rectangle {
                 anchors.bottom: parent.bottom
                 anchors.margins: units.nailUnit
                 text: qsTr('Afegeix')
+                onClicked: llista.model.insertObject(llista.model.count,qsTr('Nou element'));
             }
         }
     }

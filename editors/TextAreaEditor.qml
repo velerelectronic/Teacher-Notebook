@@ -22,7 +22,7 @@ Common.AbstractEditor {
         anchors.bottom: buttons.top
         anchors.margins: units.nailUnit
 
-        border.color: 'black'
+//        border.color: 'black'
         fontPixelSize: units.readUnit
         toolHeight: units.fingerUnit
         buttonMargins: units.nailUnit

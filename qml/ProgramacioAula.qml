@@ -1,5 +1,7 @@
 import QtQuick 2.2
 import QtWebKit 3.0
+import QtQuick.Controls 1.1
+import QtQuick.Layouts 1.1
 import FileIO 1.0
 import PersonalTypes 1.0
 import 'qrc:///editors' as Editors
@@ -11,19 +13,6 @@ Rectangle {
 
     width: parent.width
     height: parent.height
-
-    /*
-    XmlReader {
-        id: xmlReader
-        source: '/Users/jmpayeras/Desenvolupament/prova.xml'
-
-        onObjectivesChanged: {
-            console.log('Changed objectives ');
-            for (var prop in objectives) {
-                console.log('-> ' + prop + ' -- ' + JSON.stringify(objectives[prop]));
-            }
-        }
-    }*/
 
     TeachingPlanning {
         id: xmlReader
@@ -49,6 +38,7 @@ Rectangle {
             Editors.XmlListEditor {
                 width: parent.width
                 dataModel: xmlReader.basicData
+                editable: editButton.checked
             }
         }
         PlanningMainSection {
@@ -58,6 +48,7 @@ Rectangle {
             Editors.XmlListEditor {
                 anchors.fill: parent
                 dataModel: xmlReader.introduction
+                editable: editButton.checked
             }
         }
         PlanningMainSection {
@@ -67,7 +58,7 @@ Rectangle {
             Editors.XmlListEditor {
                 anchors.fill: parent
                 dataModel: xmlReader.objectives
-                onUpdatedList: console.log('updated list...')
+                editable: editButton.checked
             }
         }
         PlanningMainSection {
@@ -81,6 +72,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceLing
+                    editable: editButton.checked
                 }
             }
             PlanningSubSection {
@@ -90,6 +82,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceMat
+                    editable: editButton.checked
                 }
             }
             PlanningSubSection {
@@ -99,6 +92,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceTic
+                    editable: editButton.checked
                 }
             }
             PlanningSubSection {
@@ -108,6 +102,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceSoc
+                    editable: editButton.checked
                 }
             }
             PlanningSubSection {
@@ -117,6 +112,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceCult
+                    editable: editButton.checked
                 }
             }
             PlanningSubSection {
@@ -126,6 +122,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceLearn
+                    editable: editButton.checked
                 }
             }
             PlanningSubSection {
@@ -135,6 +132,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceAuto
+                    editable: editButton.checked
                 }
             }
         }
@@ -149,6 +147,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.assessmentTasks
+                    editable: editButton.checked
                 }
             }
             PlanningSubSection {
@@ -158,6 +157,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.assessmentCriteria
+                    editable: editButton.checked
                 }
             }
             PlanningSubSection {
@@ -167,6 +167,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.assessmentInstruments
+                    editable: editButton.checked
                 }
             }
         }
@@ -181,6 +182,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.contentsKnowledge
+                    editable: editButton.checked
                 }
             }
             PlanningSubSection {
@@ -190,6 +192,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.contentsHabilities
+                    editable: editButton.checked
                 }
             }
             PlanningSubSection {
@@ -199,6 +202,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.contentsLanguage
+                    editable: editButton.checked
                 }
             }
             PlanningSubSection {
@@ -208,6 +212,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.contentsValues
+                    editable: editButton.checked
                 }
             }
         }
@@ -218,6 +223,7 @@ Rectangle {
             Editors.XmlListEditor {
                 anchors.fill: parent
                 dataModel: xmlReader.resources
+                editable: editButton.checked
             }
         }
         PlanningMainSection {
@@ -227,6 +233,7 @@ Rectangle {
             Editors.XmlListEditor {
                 anchors.fill: parent
                 dataModel: xmlReader.references
+                editable: editButton.checked
             }
         }
         PlanningMainSection {
@@ -236,6 +243,7 @@ Rectangle {
             Editors.XmlListEditor {
                 anchors.fill: parent
                 dataModel: xmlReader.comments
+                editable: editButton.checked
             }
         }
         PlanningMainSection {
@@ -245,17 +253,47 @@ Rectangle {
             Editors.XmlListEditor {
                 anchors.fill: parent
                 dataModel: xmlReader.activities
+                editable: editButton.checked
             }
         }
     }
 
     ListView {
         id: sectionsList
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: buttons.top
         anchors.margins: units.nailUnit
         model: mainSectionsModel
         orientation: ListView.Horizontal
         boundsBehavior: Flickable.StopAtBounds
         snapMode: ListView.SnapToItem
+        clip: true
+    }
+    RowLayout {
+        id: buttons
+        anchors.margins: units.nailUnit
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        height: units.fingerUnit * 2
+        Button {
+            id: editButton
+            Layout.fillHeight: true
+            text: qsTr('Edita')
+            checkable: true
+            checked: false
+        }
+
+        Button {
+            id: saveButton
+            Layout.fillHeight: true
+            text: qsTr('Desa canvis')
+            onClicked: xmlReader.save()
+        }
+        Item {
+            Layout.fillWidth: true
+        }
     }
 }
