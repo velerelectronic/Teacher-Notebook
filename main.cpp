@@ -8,10 +8,10 @@
 #include "teachingplanning.h"
 #include "sqltablemodel.h"
 #include "databasebackup.h"
+#include "standardpaths.h"
 
 int main(int argc, char *argv[])
 {
-
     QGuiApplication app(argc, argv);
     app.setOrganizationName("developerjmpc");
     app.setApplicationVersion("1.0");
@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<XmlModel>("XmlModel");
     qmlRegisterType<DatabaseBackup>("PersonalTypes", 1, 0, "DatabaseBackup");
     qmlRegisterType<SqlTableModel>("PersonalTypes", 1, 0, "SqlTableModel");
+    qmlRegisterType<StandardPaths>("PersonalTypes", 1, 0, "StandardPaths");
 
     QStringList list;
     list << QString("A1") << QString("B2") << QString("B3");
@@ -45,6 +46,7 @@ int main(int argc, char *argv[])
 
     SqlTableModel annotationsModel;
     SqlTableModel scheduleModel;
+
     engine.rootContext()->setContextProperty("annotationsModel",&annotationsModel);
     engine.rootContext()->setContextProperty("scheduleModel",&scheduleModel);
     engine.rootContext()->setContextProperty("tmp",&model2);

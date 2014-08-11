@@ -23,6 +23,7 @@ Rectangle {
             title: model.display
             editable: editor.editable
             onUpdatedTitle: llista.model.updateObject(model.index,newtitle);
+            onEraseContent: llista.model.removeObject(model.index);
         }
 
         footer: Item {

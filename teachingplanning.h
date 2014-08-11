@@ -13,7 +13,14 @@ class TeachingPlanning : public QObject
     Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QString xml READ xml WRITE setXml NOTIFY xmlChanged)
 
-    Q_PROPERTY(XmlModel* basicData READ basicData WRITE setBasicData NOTIFY basicDataChanged)
+    Q_PROPERTY(XmlModel* unitTitle READ unitTitle WRITE setUnitTitle NOTIFY unitTitleChanged)
+    Q_PROPERTY(XmlModel* project READ project WRITE setProject NOTIFY projectChanged)
+    Q_PROPERTY(XmlModel* author READ author WRITE setAuthor NOTIFY authorChanged)
+    Q_PROPERTY(XmlModel* support READ support WRITE setSupport NOTIFY supportChanged)
+    Q_PROPERTY(XmlModel* group READ group WRITE setGroup NOTIFY groupChanged)
+    Q_PROPERTY(XmlModel* areas READ areas WRITE setAreas NOTIFY areasChanged)
+    Q_PROPERTY(XmlModel* keywords READ keywords WRITE setKeywords NOTIFY keywordsChanged)
+    Q_PROPERTY(XmlModel* timing READ timing WRITE setTiming NOTIFY timingChanged)
 
     Q_PROPERTY(XmlModel* introduction READ introduction WRITE setIntroduction NOTIFY introductionChanged)
     Q_PROPERTY(XmlModel* objectives READ objectives WRITE setObjectives NOTIFY objectivesChanged)
@@ -49,7 +56,14 @@ public:
     const QString &source();
     QString xml();
 
-    XmlModel *basicData();
+    XmlModel *unitTitle();
+    XmlModel *project();
+    XmlModel *author();
+    XmlModel *support();
+    XmlModel *group();
+    XmlModel *areas();
+    XmlModel *keywords();
+    XmlModel *timing();
 
     XmlModel *introduction();
     XmlModel *objectives();
@@ -81,39 +95,54 @@ public:
     void setSource(const QString &);
     void setXml(const QString &);
 
-    void setBasicData(const XmlModel *);
+    void setUnitTitle(XmlModel *);
+    void setProject(XmlModel *);
+    void setAuthor(XmlModel *);
+    void setSupport(XmlModel *);
+    void setGroup(XmlModel *);
+    void setAreas(XmlModel *);
+    void setKeywords(XmlModel *);
+    void setTiming(XmlModel *);
 
     void setIntroduction(XmlModel *);
     void setObjectives(XmlModel *);
 
-    void setCompetenceLing(const XmlModel *);
-    void setCompetenceMat(const XmlModel *);
-    void setCompetenceTic(const XmlModel *);
-    void setCompetenceSoc(const XmlModel *);
-    void setCompetenceCult(const XmlModel *);
-    void setCompetenceLearn(const XmlModel *);
-    void setCompetenceAuto(const XmlModel *);
+    void setCompetenceLing(XmlModel *);
+    void setCompetenceMat(XmlModel *);
+    void setCompetenceTic(XmlModel *);
+    void setCompetenceSoc(XmlModel *);
+    void setCompetenceCult(XmlModel *);
+    void setCompetenceLearn(XmlModel *);
+    void setCompetenceAuto(XmlModel *);
 
-    void setAssessmentTasks(const XmlModel *);
-    void setAssessmentCriteria(const XmlModel *);
-    void setAssessmentInstruments(const XmlModel *);
+    void setAssessmentTasks(XmlModel *);
+    void setAssessmentCriteria(XmlModel *);
+    void setAssessmentInstruments(XmlModel *);
 
-    void setContentsKnowledge(const XmlModel *);
-    void setContentsHabilities(const XmlModel *);
-    void setContentsLanguage(const XmlModel *);
-    void setContentsValues(const XmlModel *);
+    void setContentsKnowledge(XmlModel *);
+    void setContentsHabilities(XmlModel *);
+    void setContentsLanguage(XmlModel *);
+    void setContentsValues(XmlModel *);
 
-    void setResources(const XmlModel *);
-    void setReferences(const XmlModel *);
-    void setActivities(const XmlModel *);
-    void setComments(const XmlModel *);
+    void setResources(XmlModel *);
+    void setReferences(XmlModel *);
+    void setActivities(XmlModel *);
+    void setComments(XmlModel *);
 
 signals:
     void sourceChanged();
     void xmlChanged();
     void documentLoaded();
 
-    void basicDataChanged();
+    void unitTitleChanged();
+    void projectChanged();
+    void authorChanged();
+    void supportChanged();
+    void groupChanged();
+    void areasChanged();
+    void keywordsChanged();
+    void timingChanged();
+
     void introductionChanged();
     void objectivesChanged();
 
@@ -148,7 +177,15 @@ private:
     QDomElement planningRoot;
 
     // Models
-    XmlModel modelBasicData;
+    XmlModel modelUnitTitle;
+    XmlModel modelProject;
+    XmlModel modelAuthor;
+    XmlModel modelSupport;
+    XmlModel modelGroup;
+    XmlModel modelAreas;
+    XmlModel modelKeywords;
+    XmlModel modelTiming;
+
     XmlModel modelIntroduction;
     XmlModel modelObjectives;
 

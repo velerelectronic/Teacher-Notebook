@@ -1,11 +1,13 @@
 import QtQuick 2.2
 import QtQuick.Controls 1.1
+import QtQuick.Dialogs 1.1
 
 Rectangle {
     id: editor
     property string title: ''
     property bool editable: false
     signal updatedTitle(string newtitle)
+    signal eraseContent()
 
     states: [
         State {
@@ -63,6 +65,7 @@ Rectangle {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.margins: units.nailUnit
+            onClicked: eraseDialog.open()
         }
         MouseArea {
             enabled: editor.state == 'show'
@@ -95,5 +98,14 @@ Rectangle {
             updatedTitle(textEditor.content);
         }
         onChangesCanceled: editor.state = 'show'
+    }
+
+    MessageDialog {
+        id: eraseDialog
+        standardButtons: StandardButton.Ok | StandardButton.No
+        text: qsTr('Eliminar «' + editor.title + '»')
+        informativeText: qsTr("S'eliminarà «" + editor.title + "». Vols continuar?");
+        onAccepted: eraseContent()
+        onDiscard: eraseDialog.visible = false
     }
 }

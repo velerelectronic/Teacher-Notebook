@@ -1,6 +1,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QVariantList>
+#include <stdio.h>
 
 #include "teachingplanning.h"
 #include "xmlmodel.h"
@@ -85,7 +86,15 @@ void TeachingPlanning::setXml(const QString &xml) {
     emit TeachingPlanning::documentLoaded();
     emit xmlChanged();
 
-    emit basicDataChanged();
+    emit unitTitleChanged();
+    emit projectChanged();
+    emit authorChanged();
+    emit supportChanged();
+    emit groupChanged();
+    emit areasChanged();
+    emit keywordsChanged();
+    emit timingChanged();
+
     emit introductionChanged();
 
     connect(&modelObjectives,SIGNAL(updated()),this,SIGNAL(objectivesChanged()));
@@ -115,26 +124,78 @@ void TeachingPlanning::setXml(const QString &xml) {
 
 // Basic data
 
-XmlModel *TeachingPlanning::basicData() {
-    modelBasicData.setRootElement(planningRoot.firstChildElement(TAG_BASIC_DATA));
-
-    QStringList listBasicData;
-    listBasicData << TAG_BASIC_DATA_UNIT_TITLE << TAG_BASIC_DATA_PROJECT << TAG_BASIC_DATA_AUTHOR << TAG_BASIC_DATA_SUPPORT
-    << TAG_BASIC_DATA_GROUP << TAG_BASIC_DATA_AREAS << TAG_BASIC_DATA_KEYWORDS << TAG_BASIC_DATA_TIMING;
-
-    QStringList result;
-    for (int i=0; i<listBasicData.length(); i++) {
-        modelBasicData.setTagName(listBasicData.at(i));
-        modelBasicData.recalculateList();
-        result << modelBasicData.stringList();
-    }
-    modelBasicData.setStringList(result);
-    return &modelBasicData;
+XmlModel *TeachingPlanning::unitTitle() {
+    return modelUnitTitle.readList(planningRoot.firstChildElement(TAG_BASIC_DATA),TAG_BASIC_DATA_UNIT_TITLE);
 }
 
-void TeachingPlanning::setBasicData(const XmlModel *) {
-
+XmlModel *TeachingPlanning::project() {
+    return modelProject.readList(planningRoot.firstChildElement(TAG_BASIC_DATA),TAG_BASIC_DATA_PROJECT);
 }
+
+XmlModel *TeachingPlanning::author() {
+    return modelAuthor.readList(planningRoot.firstChildElement(TAG_BASIC_DATA),TAG_BASIC_DATA_AUTHOR);
+}
+
+XmlModel *TeachingPlanning::support() {
+    return modelSupport.readList(planningRoot.firstChildElement(TAG_BASIC_DATA),TAG_BASIC_DATA_SUPPORT);
+}
+
+XmlModel *TeachingPlanning::group() {
+    return modelGroup.readList(planningRoot.firstChildElement(TAG_BASIC_DATA),TAG_BASIC_DATA_GROUP);
+}
+
+XmlModel *TeachingPlanning::areas() {
+    return modelAreas.readList(planningRoot.firstChildElement(TAG_BASIC_DATA),TAG_BASIC_DATA_AREAS);
+}
+
+XmlModel *TeachingPlanning::keywords() {
+    return modelKeywords.readList(planningRoot.firstChildElement(TAG_BASIC_DATA),TAG_BASIC_DATA_KEYWORDS);
+}
+
+XmlModel *TeachingPlanning::timing() {
+    return modelTiming.readList(planningRoot.firstChildElement(TAG_BASIC_DATA),TAG_BASIC_DATA_TIMING);
+}
+
+void TeachingPlanning::setUnitTitle(XmlModel *list) {
+    list->toDomElement();
+    unitTitleChanged();
+}
+
+void TeachingPlanning::setProject(XmlModel *list) {
+    list->toDomElement();
+    projectChanged();
+}
+
+void TeachingPlanning::setAuthor(XmlModel *list) {
+    list->toDomElement();
+    authorChanged();
+}
+
+void TeachingPlanning::setSupport(XmlModel *list) {
+    list->toDomElement();
+    supportChanged();
+}
+
+void TeachingPlanning::setGroup(XmlModel *list) {
+    list->toDomElement();
+    groupChanged();
+}
+
+void TeachingPlanning::setAreas(XmlModel *list) {
+    list->toDomElement();
+    areasChanged();
+}
+
+void TeachingPlanning::setKeywords(XmlModel *list) {
+    list->toDomElement();
+    keywordsChanged();
+}
+
+void TeachingPlanning::setTiming(XmlModel *list) {
+    list->toDomElement();
+    timingChanged();
+}
+
 
 // Introduction
 
@@ -143,7 +204,8 @@ XmlModel *TeachingPlanning::introduction() {
 }
 
 void TeachingPlanning::setIntroduction(XmlModel *list) {
-
+    list->toDomElement();
+    introductionChanged();
 }
 
 // Objectives
@@ -153,10 +215,6 @@ XmlModel *TeachingPlanning::objectives() {
 }
 
 void TeachingPlanning::setObjectives(XmlModel *list) {
-    qDebug() << "setting objectives";
-//    model->setRootElement(planningRoot.firstChildElement(TAG_OBJECTIVES));
-//    model->setStringList(&list);
-    list->setRootElement(planningRoot.firstChildElement(TAG_OBJECTIVES));
     list->toDomElement();
     objectivesChanged();
 }
@@ -191,32 +249,39 @@ XmlModel *TeachingPlanning::competenceAuto() {
     return modelCompetenceAuto.readList(planningRoot.firstChildElement(TAG_COMPETENCES),TAG_COMPETENCE_AUTO);
 }
 
-void TeachingPlanning::setCompetenceLing(const XmlModel *) {
-
+void TeachingPlanning::setCompetenceLing(XmlModel *list) {
+    list->toDomElement();
+    competenceLingChanged();
 }
 
-void TeachingPlanning::setCompetenceMat(const XmlModel *) {
-
+void TeachingPlanning::setCompetenceMat(XmlModel *list) {
+    list->toDomElement();
+    competenceMatChanged();
 }
 
-void TeachingPlanning::setCompetenceTic(const XmlModel *) {
-
+void TeachingPlanning::setCompetenceTic(XmlModel *list) {
+    list->toDomElement();
+    competenceTicChanged();
 }
 
-void TeachingPlanning::setCompetenceSoc(const XmlModel *) {
-
+void TeachingPlanning::setCompetenceSoc(XmlModel *list) {
+    list->toDomElement();
+    competenceSocChanged();
 }
 
-void TeachingPlanning::setCompetenceCult(const XmlModel *) {
-
+void TeachingPlanning::setCompetenceCult(XmlModel *list) {
+    list->toDomElement();
+    competenceCultChanged();
 }
 
-void TeachingPlanning::setCompetenceLearn(const XmlModel *) {
-
+void TeachingPlanning::setCompetenceLearn(XmlModel *list) {
+    list->toDomElement();
+    competenceLearnChanged();
 }
 
-void TeachingPlanning::setCompetenceAuto(const XmlModel *) {
-
+void TeachingPlanning::setCompetenceAuto(XmlModel *list) {
+    list->toDomElement();
+    competenceAutoChanged();
 }
 
 
@@ -234,16 +299,19 @@ XmlModel *TeachingPlanning::assessmentInstruments() {
     return modelAssessmentInstruments.readList(planningRoot.firstChildElement(TAG_ASSESSMENT),TAG_ASSESSMENT_INSTRUMENT);
 }
 
-void TeachingPlanning::setAssessmentTasks(const XmlModel *) {
-
+void TeachingPlanning::setAssessmentTasks(XmlModel *list) {
+    list->toDomElement();
+    assessmentTasksChanged();
 }
 
-void TeachingPlanning::setAssessmentCriteria(const XmlModel *) {
-
+void TeachingPlanning::setAssessmentCriteria(XmlModel *list) {
+    list->toDomElement();
+    assessmentCriteriaChanged();
 }
 
-void TeachingPlanning::setAssessmentInstruments(const XmlModel *) {
-
+void TeachingPlanning::setAssessmentInstruments(XmlModel *list) {
+    list->toDomElement();
+    assessmentInstrumentsChanged();
 }
 
 
@@ -268,20 +336,24 @@ XmlModel *TeachingPlanning::contentsValues() {
 
 }
 
-void TeachingPlanning::setContentsKnowledge(const XmlModel *) {
-
+void TeachingPlanning::setContentsKnowledge(XmlModel *list) {
+    list->toDomElement();
+    contentsKnowledgeChanged();
 }
 
-void TeachingPlanning::setContentsHabilities(const XmlModel *) {
-
+void TeachingPlanning::setContentsHabilities(XmlModel *list) {
+    list->toDomElement();
+    contentsHabilitiesChanged();
 }
 
-void TeachingPlanning::setContentsLanguage(const XmlModel *) {
-
+void TeachingPlanning::setContentsLanguage(XmlModel *list) {
+    list->toDomElement();
+    contentsLanguageChanged();
 }
 
-void TeachingPlanning::setContentsValues(const XmlModel *) {
-
+void TeachingPlanning::setContentsValues(XmlModel *list) {
+    list->toDomElement();
+    contentsValuesChanged();
 }
 
 // Resources
@@ -290,8 +362,9 @@ XmlModel *TeachingPlanning::resources() {
     return modelResources.readList(planningRoot.firstChildElement(TAG_RESOURCES),TAG_SINGLE_RESOURCE);
 }
 
-void TeachingPlanning::setResources(const XmlModel *) {
-
+void TeachingPlanning::setResources(XmlModel *list) {
+    list->toDomElement();
+    resourcesChanged();
 }
 
 // References
@@ -300,8 +373,9 @@ XmlModel *TeachingPlanning::references() {
     return modelReferences.readList(planningRoot.firstChildElement(TAG_REFERENCES),TAG_SINGLE_REFERENCE);
 }
 
-void TeachingPlanning::setReferences(const XmlModel *) {
-
+void TeachingPlanning::setReferences(XmlModel *list) {
+    list->toDomElement();
+    referencesChanged();
 }
 
 // Activities
@@ -310,8 +384,9 @@ XmlModel *TeachingPlanning::activities() {
     return modelActivities.readList(planningRoot.firstChildElement(TAG_ACTIVITIES),TAG_SINGLE_ACTIVITY);
 }
 
-void TeachingPlanning::setActivities(const XmlModel *) {
-
+void TeachingPlanning::setActivities(XmlModel *list) {
+    list->toDomElement();
+    activitiesChanged();
 }
 
 // Comments
@@ -320,8 +395,9 @@ XmlModel *TeachingPlanning::comments() {
     return modelComments.readList(planningRoot.firstChildElement(TAG_COMMENTS),TAG_SINGLE_COMMENT);
 }
 
-void TeachingPlanning::setComments(const XmlModel *) {
-
+void TeachingPlanning::setComments(XmlModel *list) {
+    list->toDomElement();
+    commentsChanged();
 }
 
 // Private functions
@@ -339,8 +415,17 @@ void TeachingPlanning::loadXml() {
 }
 
 bool TeachingPlanning::save() {
-    modelBasicData.toDomElement();
     modelIntroduction.toDomElement();
+
+    modelUnitTitle.toDomElement();
+    modelProject.toDomElement();
+    modelAuthor.toDomElement();
+    modelSupport.toDomElement();
+    modelGroup.toDomElement();
+    modelAreas.toDomElement();
+    modelKeywords.toDomElement();
+    modelTiming.toDomElement();
+
     modelObjectives.toDomElement();
 
     modelCompetenceLing.toDomElement();
@@ -365,5 +450,15 @@ bool TeachingPlanning::save() {
     modelActivities.toDomElement();
     modelComments.toDomElement();
 
-    qDebug() << document.toString();
+    QFile xfile(innerSource);
+    bool res = false;
+
+    qDebug() << "Carregant XML";
+    if (xfile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QByteArray text = document.toString().toUtf8();
+        if (xfile.write(text)==qstrlen(text))
+            res = true;
+    }
+    xfile.close();
+    return res;
 }

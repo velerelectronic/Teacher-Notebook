@@ -23,7 +23,7 @@ DatabaseBackup::DatabaseBackup(QObject *parent) :
 
 bool DatabaseBackup::createTable(const QString &table, const QString &fields) {
     QSqlQueryModel model(this);
-    model.setQuery(QSqlQuery("CREATE TABLE IF NOT EXISTS " + table + " " + fields));
+    model.setQuery(QSqlQuery("CREATE TABLE IF NOT EXISTS " + table + " (" + fields + ")"));
 }
 
 bool DatabaseBackup::dropTable(const QString &table) {

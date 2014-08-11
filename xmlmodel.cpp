@@ -74,24 +74,50 @@ void XmlModel::recalculateDomElement() {
     QStringList innerList = stringList();
     QDomDocument document = rootElement.ownerDocument();
 
-    // Remove all child elements
-    qDebug() << innerTagName;
-    QDomElement element = rootElement.firstChildElement(innerTagName);
-    while (!element.isNull()) {
-        qDebug() << !rootElement.removeChild(element).isNull();
-        element = rootElement.firstChildElement(innerTagName);
-    }
+    if (innerTagName.isEmpty()) {
+        // Remove all child elements
+        QDomNode element = rootElement.firstChild();
+        while (!element.isNull()) {
+            if (element.isText()) {
+                rootElement.removeChild(element);
+            }
+            element = rootElement.firstChildElement(innerTagName);
+        }
 
-    qDebug() << rootElement.childNodes().length();
+        QStringList::const_iterator index = innerList.constBegin();
+        while (index != innerList.constEnd()) {
+            rootElement.appendChild(document.createTextNode(*index));
+            ++index;
+        }
+    } else {
+        // Remove all child elements
+        qDebug() << innerTagName;
+        QDomElement element = rootElement.firstChildElement(innerTagName);
+        while (!element.isNull()) {
+            qDebug() << !rootElement.removeChild(element).isNull();
+            element = rootElement.firstChildElement(innerTagName);
+        }
 
-    QStringList::const_iterator index = innerList.constBegin();
-    while (index != innerList.constEnd()) {
-        QDomElement newElement = document.createElement(innerTagName);
-        rootElement.appendChild(newElement).appendChild(document.createTextNode(*index));
-        ++index;
+        qDebug() << rootElement.childNodes().length();
+
+        QStringList::const_iterator index = innerList.constBegin();
+        while (index != innerList.constEnd()) {
+            QDomElement newElement = document.createElement(innerTagName);
+            rootElement.appendChild(newElement).appendChild(document.createTextNode(*index));
+            ++index;
+        }
     }
-    //qDebug() << rootElement.ownerDocument().toString();
     updated();
+}
+
+bool XmlModel::removeObject(int index) {
+    QStringList list = stringList();
+    if ((index >= 0) && (index <= list.size())) {
+        list.removeAt(index);
+        setStringList(list);
+        return true;
+    } else
+        return false;
 }
 
 void XmlModel::setRootElement(const QDomElement &newRoot) {

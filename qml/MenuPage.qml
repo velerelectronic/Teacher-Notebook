@@ -1,6 +1,7 @@
 import QtQuick 2.2
 import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
+import QtQuick.Controls 1.1
 import "qrc:///javascript/Storage.js" as Storage
 import PersonalTypes 1.0
 
@@ -10,6 +11,7 @@ Rectangle {
 
     signal openPage (string page)
     signal openPageArgs (string page, var args)
+    signal savedQuickAnnotation(string contents)
 
     Common.UseUnits { id: units }
     RowLayout {
@@ -20,7 +22,18 @@ Rectangle {
         Flow {
             Layout.preferredWidth: parent.width / 2
             Layout.fillHeight: true
-            spacing: units.nailUnit
+            spacing: units.nailUnit * 2
+
+            QuickAnnotation {
+                width: parent.width
+                onSavedQuickAnnotation: {
+                    if (lastAnnotationsModel.insertObject({title: 'Anotació ràpida',desc: contents})) {
+                        annotationsTotal.select();
+                        annotationWasSaved();
+                        menuPage.savedQuickAnnotation(contents);
+                    }
+                }
+            }
 
             Common.PreviewBox {
                 id: lastAnnotations
@@ -28,6 +41,7 @@ Rectangle {
                 // Layout.preferredHeight: height
 
                 model: SqlTableModel {
+                    id: lastAnnotationsModel
                     tableName: 'annotations'
                     limit: 3
                     Component.onCompleted: {

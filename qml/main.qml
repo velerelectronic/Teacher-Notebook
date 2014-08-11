@@ -27,6 +27,7 @@ Window {
     signal openPage(string page)
 
     property string lastRequestedPage: ''
+    property string currentPageTitle: ''
 
     Common.UseUnits { id: units }
 
@@ -55,7 +56,8 @@ Window {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        pagesListMenu.switchState();
+                        dpanel.toggleSubPanel();
+                        // pagesListMenu.switchState();
                         if (pageListModel.count==0)
                             openMainPage();
                     }
@@ -66,7 +68,7 @@ Window {
                 Layout.fillWidth: true
                 Layout.preferredHeight: parent.height
                 color: "#ffffff"
-                text: pageListModel.get(pagesView.currentIndex)['pageTitle']
+                text: currentPageTitle
                 font.italic: false
                 font.bold: true
                 font.pixelSize: units.readUnit
@@ -76,59 +78,99 @@ Window {
         }
     }
 
-    ListView {
-        id: pagesView
+    Common.DoublePanel {
+        id: dpanel
         anchors.top: header.bottom
-        anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
+        anchors.bottom: parent.bottom
 
-        orientation: ListView.Horizontal
-        boundsBehavior: Flickable.StopAtBounds
-        snapMode: ListView.SnapOneItem
-        model: ListModel { id: pageListModel }
-        delegate: pageDelegate
-        highlightMoveDuration: parent.width / 2
-        highlightFollowsCurrentItem: true
+        property int selectedPage: -1
 
-        Common.BackShadow {
-            anchors.fill: parent
-            state: (pagesListMenu.state == 'show')?'active':'inactive'
-            duration: pagesListMenu.durationEffect
-            onClicked: pagesListMenu.state = 'hidden'
-        }
+        globalMargins: 0
+        itemSubPanel: ListView {
+            id: pageList
 
-        PagesListMenu {
-            id: pagesListMenu
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
+            model: pageListModel
 
-            menuWidth: units.fingerUnit * 5
-            sectionsHeight: units.fingerUnit * 2
-            readUnit: units.readUnit
-            durationEffect: 200
-            model: pagesView.model
+            delegate: Rectangle {
+                height: units.fingerUnit * 2
+                width: pageList.width
+                Text {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    font.pixelSize: units.readUnit
+                    text: (model.pageTitle)?model.pageTitle:''
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignLeft
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        dpanel.selectedPage = index;
+                        dpanel.toggleSubPanel();
+                    }
 
-            onPageSelected: {
-                pagesView.currentIndex = index;
-                pagesListMenu.state = 'hidden';
-            }
-            onPageCloseRequested: {
-                pagesView.currentIndex = index;
-                if (pagesView.currentItem.closingBlocked)
-                    pagesListMenu.state = 'hidden';
-                else
-                    pageListModel.remove(index);
-            }
-        }
-        function sendMessage(page,message) {
-            for (var i=0; i<pageListModel.count; i++) {
-                if (get(i)['page'] == page) {
-                    pagesView.contentItem.children[i].sendMessage(message);
+                    onPressAndHold: {
+                        dpanel.selectedPage = index;
+                        pageListModel.remove(index);
+                        /*
+                        if (pagesView.currentItem.closingBlocked)
+                            dpanel.toggleSubPanel();
+                        else
+                            pageListModel.remove(index);
+                        */
+                    }
                 }
             }
         }
+
+        itemMainPanel: ListView {
+            id: pagesView
+
+//            property string currentPageTitle: pageListModel.get(currentIndex).pageTitle
+/*
+            {
+                var obj = pageListModel.get(pagesView.currentIndex);
+                if (obj)
+                    return obj['pageTitle'];
+                else
+                    return '';
+            }
+            */
+
+            Connections {
+                target: dpanel
+                onSelectedPageChanged: {
+                    pagesView.currentIndex = dpanel.selectedPage;
+                }
+            }
+
+            onCurrentIndexChanged: {
+                currentPageTitle = currentItem.pageTitle;
+            }
+
+            orientation: ListView.Horizontal
+            boundsBehavior: Flickable.StopAtBounds
+            snapMode: ListView.SnapOneItem
+            model: pageListModel
+            delegate: pageDelegate
+            highlightMoveDuration: parent.width / 2
+            highlightFollowsCurrentItem: true
+
+            function sendMessage(page,message) {
+                for (var i=0; i<pageListModel.count; i++) {
+                    if (get(i)['page'] == page) {
+                        pagesView.contentItem.children[i].sendMessage(message);
+                    }
+                }
+            }
+        }
+
+    }
+
+    ListModel {
+        id: pageListModel
     }
 
     Component {
@@ -136,11 +178,15 @@ Window {
 
         Rectangle {
             id: pageRect
-            width: pagesView.width
-            height: pagesView.height
-            //anchors.left: pageList.left
-            //anchors.right: pageList.right
+
+            width: ListView.view.width
+            height: ListView.view.height
+
             color: 'white'
+            ListView.onAdd: {
+                pageListModel.setProperty(model.index,'pageTitle',pageRect.pageTitle);
+                console.log(pageListModel.get(model.index)['pageTitle']);
+            }
 
             property string pageTitle: pageLoader.pageTitle
             property bool closingBlocked: ((pageLoader.item) && (pageLoader.item.changes))?pageLoader.item.changes:false
@@ -159,6 +205,11 @@ Window {
                     // Signals
                     onOpenPage: openSubPage(page,{})
                     onOpenPageArgs: openSubPage(page,args)
+
+                    // Quick annotations
+                    onSavedQuickAnnotation: {
+                        messageBox.publishMessage(qsTr("S'ha desat l'anotacio rapida «" + contents + "»"));
+                    }
 
                     // Annotations
                     onOpenAnnotations: openSubPage('AnnotationsList',{annotationsModel: annotationsModel},'')
@@ -222,9 +273,15 @@ Window {
                             break;
                         case 'backup':
                             openSubPage('DataMan',{document: document});
+                            break;
+                        default:
+                            messageBox.publishMessage(qsTr("No es pot obrir el document «") + document + "»");
                         }
 
                     }
+
+                    // Teaching Planning
+                    onDocumentSaved: messageBox.publishMessage(qsTr('Desat el document «') + document + '»');
 
                     // Backup
                     onSavedBackupToDirectory: messageBox.publishMessage(qsTr("S'ha desat una còpia de seguretat dins ") + directory)
@@ -274,8 +331,8 @@ Window {
     function createTables() {
         //dataBck.dropTable('annotations');
         //dataBck.dropTable('schedule');
-        dataBck.createTable('annotations','(id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, image BLOB, ref INTEGER)');
-        dataBck.createTable('schedule','(id INTEGER PRIMARY KEY, created TEXT, event TEXT, desc TEXT, startDate TEXT, startTime TEXT, endDate TEXT, endTime TEXT, state TEXT, ref INTEGER)');
+        dataBck.createTable('annotations','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, image BLOB, ref INTEGER');
+        dataBck.createTable('schedule','id INTEGER PRIMARY KEY, created TEXT, event TEXT, desc TEXT, startDate TEXT, startTime TEXT, endDate TEXT, endTime TEXT, state TEXT, ref INTEGER');
         annotationsModel.tableName = 'annotations';
         annotationsModel.fieldNames = ['id', 'created' ,'title', 'desc', 'image', 'ref'];
         annotationsModel.setSort(0,Qt.AscendingOrder);
@@ -305,11 +362,10 @@ Window {
         }
 
         if (found) {
-            pagesView.currentIndex = i;
+            dpanel.selectedPage = i;
             pageListModel.setProperty(i,'param',param);
         } else {
             pageListModel.append({page: page, qmlPage: page, parameters: param});
-            pagesView.currentIndex = pageListModel.count-1;
         }
     }
 

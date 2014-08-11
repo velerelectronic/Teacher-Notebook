@@ -1,5 +1,5 @@
 import QtQuick 2.2
-import QtWebKit 3.0
+// import QtWebKit 3.0
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import FileIO 1.0
@@ -10,6 +10,8 @@ Rectangle {
     id: xmlViewer
     property string pageTitle: qsTr('Programació d\'aula');
     property string document
+
+    signal documentSaved(string document)
 
     width: parent.width
     height: parent.height
@@ -32,13 +34,80 @@ Rectangle {
         id: mainSectionsModel
 
         PlanningMainSection {
+            id: basicData
             width: sectionsList.width
             height: sectionsList.height
             title: qsTr('Dades generals')
-            Editors.XmlListEditor {
-                width: parent.width
-                dataModel: xmlReader.basicData
-                editable: editButton.checked
+
+            PlanningSubSection {
+                width: basicData.width
+                title: qsTr('Titol de la unitat')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.unitTitle
+                    editable: editButton.checked
+                }
+            }
+            PlanningSubSection {
+                width: basicData.width
+                title: qsTr('Projecte')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.project
+                    editable: editButton.checked
+                }
+            }
+            PlanningSubSection {
+                width: basicData.width
+                title: qsTr('Suport')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.support
+                    editable: editButton.checked
+                }
+            }
+            PlanningSubSection {
+                width: basicData.width
+                title: qsTr('Grup')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.group
+                    editable: editButton.checked
+                }
+            }
+            PlanningSubSection {
+                width: basicData.width
+                title: qsTr('Àrees')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.areas
+                    editable: editButton.checked
+                }
+            }
+            PlanningSubSection {
+                width: basicData.width
+                title: qsTr('Paraules clau')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.keywords
+                    editable: editButton.checked
+                }
+            }
+            PlanningSubSection {
+                width: basicData.width
+                title: qsTr('Temporització')
+                Editors.XmlListEditor {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    dataModel: xmlReader.timing
+                    editable: editButton.checked
+                }
             }
         }
         PlanningMainSection {
@@ -62,11 +131,12 @@ Rectangle {
             }
         }
         PlanningMainSection {
+            id: competences
             width: sectionsList.width
             height: sectionsList.height
             title: qsTr('Competències bàsiques')
             PlanningSubSection {
-                width: parent.width
+                width: competences.width
                 title: qsTr('Comunicació lingüística i audiovisual')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -76,7 +146,7 @@ Rectangle {
                 }
             }
             PlanningSubSection {
-                width: parent.width
+                width: competences.width
                 title: qsTr('Matemàtica')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -86,7 +156,7 @@ Rectangle {
                 }
             }
             PlanningSubSection {
-                width: parent.width
+                width: competences.width
                 title: qsTr('Tractament de la informació i competència digital')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -96,7 +166,7 @@ Rectangle {
                 }
             }
             PlanningSubSection {
-                width: parent.width
+                width: competences.width
                 title: qsTr('Social i ciutadana')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -106,7 +176,7 @@ Rectangle {
                 }
             }
             PlanningSubSection {
-                width: parent.width
+                width: competences.width
                 title: qsTr('Cultural i artística')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -116,7 +186,7 @@ Rectangle {
                 }
             }
             PlanningSubSection {
-                width: parent.width
+                width: competences.width
                 title: qsTr('Aprendre a aprendre')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -126,7 +196,7 @@ Rectangle {
                 }
             }
             PlanningSubSection {
-                width: parent.width
+                width: competences.width
                 title: qsTr('Autonomia i iniciativa personal')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -277,7 +347,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        height: units.fingerUnit * 2
+        height: units.fingerUnit * 1.5
         Button {
             id: editButton
             Layout.fillHeight: true
@@ -290,7 +360,10 @@ Rectangle {
             id: saveButton
             Layout.fillHeight: true
             text: qsTr('Desa canvis')
-            onClicked: xmlReader.save()
+            onClicked: {
+                if (xmlReader.save())
+                    documentSaved(document);
+            }
         }
         Item {
             Layout.fillWidth: true

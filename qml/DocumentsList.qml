@@ -10,6 +10,7 @@ import QtQuick 2.0
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.1
 import Qt.labs.folderlistmodel 2.1
+import PersonalTypes 1.0
 
 Rectangle {
     width: 300
@@ -131,9 +132,13 @@ Rectangle {
         }
     }
 
+    StandardPaths {
+        id: paths
+    }
+
     FolderListModel {
         id: folderList
-        folder: ''
+        folder: "file://" + paths.documents
         showDirs: true
         showFiles: true
         showDirsFirst: true

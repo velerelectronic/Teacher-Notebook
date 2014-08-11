@@ -39,6 +39,7 @@ public slots:
 
     // Invokable from QML
     Q_INVOKABLE bool insertObject(int index,const QString &contents);
+    Q_INVOKABLE bool removeObject(int index);
     Q_INVOKABLE bool updateObject(int index,const QString &contents);
 
 private:

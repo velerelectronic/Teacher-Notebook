@@ -24,5 +24,6 @@
         <file>qml/ImageMapper.qml</file>
         <file>qml/PlanningMainSection.qml</file>
         <file>qml/PlanningSubSection.qml</file>
+        <file>qml/QuickAnnotation.qml</file>
     </qresource>
 </RCC>
