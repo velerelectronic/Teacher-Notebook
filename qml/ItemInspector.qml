@@ -32,10 +32,46 @@ Common.AbstractEditor {
                 5: 'ImageEditor'
     }
 
+    property alias buttons: buttonsModel
+
     signal saveDataRequested
     signal copyDataRequested
     signal discardDataRequested(bool changes)
     signal closePageRequested()
+
+    VisualItemModel {
+        id: buttonsModel
+        Button {
+            height: units.fingerUnit
+            enabled: itemInspector.changes
+            text: qsTr('Desa')
+            onClicked: {
+                collapseEditors();
+                messageSave.open();
+            }
+        }
+        Button {
+            height: units.fingerUnit
+            text: qsTr('Tanca')
+            onClicked: {
+                collapseEditors();
+                if (itemInspector.changes)
+                    messageDiscard.open();
+                else
+                    closePageRequested();
+            }
+        }
+        Button {
+            height: units.fingerUnit
+            visible: (itemInspector.idEvent != -1)
+            text: qsTr('Duplica')
+            onClicked: {
+                collapseEditors();
+                messageCopy.open();
+            }
+        }
+    }
+
 
     Image {
         id: backgroundImage
@@ -168,38 +204,6 @@ Common.AbstractEditor {
                 ListView.onAdd: {
                     if (fieldNameBox.contentWidth > inspectorGrid.captionsWidth)
                         inspectorGrid.captionsWidth = fieldNameBox.contentWidth + units.fingerUnit;
-                }
-            }
-        }
-        RowLayout {
-            Layout.preferredHeight: childrenRect.height
-            Button {
-                enabled: changes
-                text: qsTr('Desa')
-                Layout.preferredHeight: units.fingerUnit
-                onClicked: {
-                    collapseEditors();
-                    messageSave.open();
-                }
-            }
-            Button {
-                text: qsTr('Tanca')
-                Layout.preferredHeight: units.fingerUnit
-                onClicked: {
-                    collapseEditors();
-                    if (changes)
-                        messageDiscard.open();
-                    else
-                        closePageRequested();
-                }
-            }
-            Button {
-                visible: (itemInspector.idEvent != -1)
-                text: qsTr('Duplica')
-                Layout.preferredHeight: units.fingerUnit
-                onClicked: {
-                    collapseEditors();
-                    messageCopy.open();
                 }
             }
         }

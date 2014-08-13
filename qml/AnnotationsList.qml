@@ -17,7 +17,6 @@ Rectangle {
 
     Common.UseUnits { id: units }
 
-
     ColumnLayout {
         anchors.fill: parent
         RowLayout {

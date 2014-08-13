@@ -14,6 +14,15 @@ Rectangle {
     signal editEvent(int id,string event, string desc,string startDate,string startTime,string endDate,string endTime)
     signal deletedEvents (int num)
 
+    property var buttons: buttonsModel
+
+    VisualItemModel {
+        id: buttonsModel
+        Button {
+            text: qsTr('Nou')
+        }
+    }
+
     Common.UseUnits { id: units }
 
     ColumnLayout {

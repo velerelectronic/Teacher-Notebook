@@ -1,5 +1,5 @@
 import QtQuick 2.2
-import 'qrc:///common' as Common
+import 'qrc:///common' as Core
 
 Rectangle {
     id: doublePanel
@@ -12,7 +12,7 @@ Rectangle {
     property int widthSubPanel: Math.min(6 * units.fingerUnit + 2 * globalMargins,width)
     property int availableWidth: width - widthSubPanel
 
-    Common.UseUnits {
+    Core.UseUnits {
         id: units
     }
 
@@ -60,7 +60,10 @@ Rectangle {
         Loader {
             id: mainPanelLoader
             anchors.fill: parent
-            anchors.margins: globalMargins
+            anchors.leftMargin: globalMargins
+            anchors.rightMargin: globalMargins
+            anchors.topMargin: 0
+            anchors.bottomMargin: 0
         }
 
         Rectangle {
@@ -83,7 +86,10 @@ Rectangle {
         Loader {
             id: subPanelLoader
             anchors.fill: parent
-            anchors.margins: globalMargins
+            anchors.leftMargin: globalMargins
+            anchors.rightMargin: globalMargins
+            anchors.topMargin: 0
+            anchors.bottomMargin: 0
         }
     }
 

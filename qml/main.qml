@@ -65,7 +65,7 @@ Window {
             }
             Text {
                 id: title
-                Layout.fillWidth: true
+                Layout.preferredWidth: contentWidth
                 Layout.preferredHeight: parent.height
                 color: "#ffffff"
                 text: currentPageTitle
@@ -74,6 +74,15 @@ Window {
                 font.pixelSize: units.readUnit
                 verticalAlignment: Text.AlignVCenter
                 font.family: "Tahoma"
+            }
+            ListView {
+                id: buttons
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                orientation: ListView.Horizontal
+
+                LayoutMirroring.enabled: true
+                layoutDirection: ListView.LeftToRight
             }
         }
     }
@@ -87,9 +96,8 @@ Window {
 
         property int selectedPage: -1
 
-        globalMargins: 0
-
         colorSubPanel: '#BCF5A9'
+        globalMargins: 0
 
         itemSubPanel: ListView {
             id: pageList
@@ -221,6 +229,14 @@ Window {
 
                 property string pageTitle: (item && item.pageTitle)?item.pageTitle:''
                 onPageTitleChanged: pageListModel.setProperty(model.index,'pageTitle',pageTitle)
+
+                onLoaded: {
+                    if (typeof(item.buttons) !== 'undefined') {
+                        console.log('model de botons');
+                        buttons.model = item.buttons;
+                    } else
+                        buttons.model = undefined;
+                }
 
                 Connections {
                     target: pageLoader.item

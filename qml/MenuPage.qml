@@ -169,8 +169,8 @@ Rectangle {
             }
             Common.BigButton {
                 width: buttonsList.width
-                title: qsTr('Exemple PA')
-                onClicked: menuPage.openPage('ProgramacioAula')
+                title: qsTr('Feeds')
+                onClicked: menuPage.openPage('FeedWEIB')
             }
             Common.BigButton {
                 width: buttonsList.width

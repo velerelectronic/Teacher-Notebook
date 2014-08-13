@@ -113,6 +113,17 @@ QVariantMap SqlTableModel::getObject(QString key) const {
     return result;
 }
 
+QVariantMap SqlTableModel::getObjectInRow(int row) const {
+    QSqlRecord rec = record(row);
+    QVariantMap result;
+    for (int i=0; i<rec.count(); i++) {
+        result.insert(rec.fieldName(i),rec.value(i));
+    }
+    return result;
+}
+
+
+
 bool SqlTableModel::insertObject(const QVariantMap &object) {
     qDebug() << "Object to insert: " << object;
     QSqlRecord record = buildRecord(object,true);

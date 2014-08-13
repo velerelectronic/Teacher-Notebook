@@ -49,6 +49,7 @@ public:
     Q_INVOKABLE bool setData(const QModelIndex &item,const QVariant &value,int role = Qt::EditRole);
 
     Q_INVOKABLE QVariantMap getObject(QString key) const;
+    Q_INVOKABLE QVariantMap getObjectInRow(int row) const;
     Q_INVOKABLE bool insertObject(const QVariantMap &);
     Q_INVOKABLE bool removeObjectInRow(int);
     Q_INVOKABLE bool removeObjectWithKeyValue(const QVariant &);
