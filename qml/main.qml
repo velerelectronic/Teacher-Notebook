@@ -88,14 +88,29 @@ Window {
         property int selectedPage: -1
 
         globalMargins: 0
+
+        colorSubPanel: '#BCF5A9'
+
         itemSubPanel: ListView {
             id: pageList
 
             model: pageListModel
+            cacheBuffer: Math.max(dpanel.width,dpanel.height) * 3
+
+            Connections {
+                target: pageListModel
+                onCountChanged: {
+                    var size = Math.max(dpanel.width,dpanel.height) * (pageListModel.count+1);
+                    if (pageList.cacheBuffer < size) {
+                        pageList.cacheBuffer = size;
+                    }
+                }
+            }
 
             delegate: Rectangle {
                 height: units.fingerUnit * 2
                 width: pageList.width
+                color: (dpanel.selectedPage == model.index)?'#E3F6CE':'#BCF5A9'
                 Text {
                     anchors.fill: parent
                     anchors.margins: units.nailUnit
@@ -112,8 +127,10 @@ Window {
                     }
 
                     onPressAndHold: {
-                        dpanel.selectedPage = index;
-                        pageListModel.remove(index);
+                        if (index>0) {
+                            dpanel.selectedPage = index;
+                            pageListModel.remove(index);
+                        }
                         /*
                         if (pagesView.currentItem.closingBlocked)
                             dpanel.toggleSubPanel();
@@ -142,10 +159,16 @@ Window {
             Connections {
                 target: dpanel
                 onSelectedPageChanged: {
+                    // pagesView.positionViewAtIndex(dpanel.selectedPage,ListView.Center)
                     pagesView.currentIndex = dpanel.selectedPage;
                 }
             }
 
+            onFlickEnded: {
+                var index = indexAt(contentX,contentY);
+                console.log(index);
+                dpanel.selectedPage = index;
+            }
             onCurrentIndexChanged: {
                 currentPageTitle = currentItem.pageTitle;
             }
@@ -281,6 +304,8 @@ Window {
                     }
 
                     // Teaching Planning
+                    onLoadingDocument: messageBox.publishMessage(qsTr('Carregant el document «' + document + '»'))
+                    onLoadedDocument: messageBox.publishMessage(qsTr("S'ha carregat el document «" + document + "»"))
                     onDocumentSaved: messageBox.publishMessage(qsTr('Desat el document «') + document + '»');
 
                     // Backup
@@ -366,11 +391,12 @@ Window {
             pageListModel.setProperty(i,'param',param);
         } else {
             pageListModel.append({page: page, qmlPage: page, parameters: param});
+            dpanel.selectedPage = pageListModel.count-1;
         }
     }
 
     function removeCurrentPage() {
-        pageListModel.remove(pagesView.currentIndex);
+        pageListModel.remove(dpanel.selectedPage);
     }
 
     /*

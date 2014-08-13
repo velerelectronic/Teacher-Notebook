@@ -118,7 +118,7 @@ Rectangle {
         }
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit
+            Layout.preferredHeight: units.fingerUnit * 1.5
             Item {
                 Layout.fillWidth: true
             }

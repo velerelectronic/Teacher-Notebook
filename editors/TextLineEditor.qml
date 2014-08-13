@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import QtQuick.Controls 1.1
 import 'qrc:///common' as Common
 
 Common.AbstractEditor {
@@ -9,13 +10,13 @@ Common.AbstractEditor {
 
     height: units.fingerUnit + units.nailUnit * 2
 
-    TextInput {
+    TextField {
         id: textline
         anchors.fill: parent
         anchors.margins: units.nailUnit
         clip: true
         font.pixelSize: units.readUnit
-        wrapMode: TextInput.WrapAtWordBoundaryOrAnywhere
+        // wrapMode: TextInput.WrapAtWordBoundaryOrAnywhere
 //        inputMethodHints: Qt.ImhNoPredictiveText
         onTextChanged: editor.setChanges(true)
         onVisibleChanged: {

@@ -12,19 +12,14 @@ Rectangle {
     property string document
 
     signal documentSaved(string document)
+    signal loadingDocument(string document)
+    signal loadedDocument(string document)
 
     width: parent.width
     height: parent.height
 
     TeachingPlanning {
         id: xmlReader
-        source: document
-        // source: '/Users/jmpayeras/Desenvolupament/prova.xml'
-
-        Component.onCompleted: {
-            console.log(document);
-            xmlReader.loadXml();
-        }
 
         onObjectivesChanged: console.log(xmlReader.objectives)
     }
@@ -368,5 +363,12 @@ Rectangle {
         Item {
             Layout.fillWidth: true
         }
+    }
+
+    Component.onCompleted: {
+        loadingDocument(document);
+        xmlReader.source = document;
+        xmlReader.loadXml();
+        loadedDocument(document);
     }
 }
