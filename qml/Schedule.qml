@@ -20,6 +20,7 @@ Rectangle {
         id: buttonsModel
         Button {
             text: qsTr('Nou')
+            onClicked: schedule.newEvent()
         }
     }
 
@@ -37,12 +38,6 @@ Rectangle {
                 anchors.top: parent.top
                 height: childrenRect.height
 
-                Button {
-                    id: buttons
-                    Layout.fillHeight: true
-                    text: qsTr('Nou esdeveniment')
-                    onClicked: schedule.newEvent()
-                }
                 Button {
                     id: editButton
                     Layout.fillHeight: true

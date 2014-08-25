@@ -13,7 +13,7 @@
 import QtQuick 2.2
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
-import QtQuick.Window 2.0
+import QtQuick.Window 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
@@ -25,6 +25,11 @@ Window {
 
     property string lastRequestedPage: ''
     property string currentPageTitle: ''
+
+    onClosing: {
+        close.accepted = false;
+        dpanel.selectedPage = 0;
+    }
 
     Common.UseUnits { id: units }
 
@@ -78,10 +83,25 @@ Window {
                 Layout.fillHeight: true
                 orientation: ListView.Horizontal
 
+                onModelChanged: console.log('Model changed')
+
                 LayoutMirroring.enabled: true
                 layoutDirection: ListView.LeftToRight
             }
+
+            VisualItemModel {
+                id: emptyButtonsList
+                Component.onCompleted: {
+                    console.log('--->' + emptyButtonsList.objectName);
+                }
+            }
         }
+    }
+
+    Binding {
+        target: buttons
+        property: 'model'
+        value: dpanel.getButtonsList(dpanel.selectedPage)
     }
 
     Common.DoublePanel {
@@ -91,7 +111,38 @@ Window {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
 
-        property int selectedPage: -1
+        property int selectedPage: 0
+
+        function setSelectedPage(index) {
+            selectedPage = index;
+            updatePageChange();
+        }
+
+        function getButtonsList(index) {
+            var pageObj = dpanel.getItemMainPanel.getPage(index);
+            if ((pageObj) && (typeof(pageObj.buttons) !== 'undefined')) {
+                console.log('Model buttons' + pageObj.buttons + ' of ' + pageObj.pageTitle);
+                var children = pageObj.buttons.children;
+                for (var i=0; i<children.length; i++) {
+                    console.log(i + '-' + children[i]);
+                }
+                return pageObj.buttons;
+            } else {
+                console.log('No buttons');
+                return undefined;
+            }
+        }
+
+        function updatePageChange() {
+            console.log('Auto changing to PAGE ' + selectedPage);
+            dpanel.getItemMainPanel.showCurrentPage();
+
+            // Title
+            var pageObj = dpanel.getItemMainPanel.getPage(selectedPage);
+            currentPageTitle = (pageObj.pageTitle)?pageObj.pageTitle:'';
+
+            console.log('Finished changing to ' + selectedPage);
+        }
 
         colorSubPanel: '#BCF5A9'
         globalMargins: 0
@@ -100,26 +151,7 @@ Window {
             id: pageList
 
             model: pageListModel
-            cacheBuffer: Math.max(dpanel.width,dpanel.height) * 4
-
-            Connections {
-                target: pageListModel
-                onCountChanged: {
-                    var size = Math.max(dpanel.width,dpanel.height) * (pageListModel.count+1);
-                    if (pageList.cacheBuffer < size) {
-                        pageList.cacheBuffer = size;
-                    }
-                }
-            }
-
-            Connections {
-                target: dpanel
-                onSelectedPageChanged: {
-                    if (pageList.currentIndex != dpanel.selectedPage) {
-                        pageList.currentIndex = dpanel.selectedPage;
-                    }
-                }
-            }
+            currentIndex: dpanel.selectedPage
 
             delegate: Rectangle {
                 height: units.fingerUnit * 2
@@ -136,179 +168,172 @@ Window {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        dpanel.selectedPage = index;
-                        dpanel.toggleSubPanel();
+                        dpanel.setSelectedPage(index);
+                        if (!dpanel.canShowBothPanels())
+                            dpanel.toggleSubPanel();
                     }
 
-                    onPressAndHold: {
-                        if (index>0) {
-                            dpanel.selectedPage = index;
-                            pageListModel.remove(index);
-                        }
-                        /*
-                        if (pagesView.currentItem.closingBlocked)
-                            dpanel.toggleSubPanel();
-                        else
-                            pageListModel.remove(index);
-                        */
-                    }
+                    onPressAndHold: dpanel.getItemMainPanel.destroyPage(index)
                 }
             }
         }
 
         itemMainPanel: PageCollection {
             id: pagesView
+            currentPage: dpanel.selectedPage
 
             function attach(object,signalName,methodName) {
                 if (object[signalName])
                     object[signalName].connect(methodName);
             }
 
-            Connections {
-                target: pageListModel
-                onCountChanged: {
-                    var obj = pageListModel.get(pageListModel.count-1);
-                    var pageObj = pagesView.addPage(obj['page'],obj['parameters']);
-
-                    var pageTitle = (pageObj.pageTitle)?pageObj.pageTitle:pageListModel.count;
-                    console.log(pageTitle);
-                    pageListModel.setProperty(pageListModel.count-1,'pageTitle',pageTitle);
-
-                    // Annotations
-                    pagesView.attach(pageObj,'canceledAnnotation', function(changes) {
-                        if (changes) {
-                            messageBox.publishMessage(qsTr("S'han descartat els canvis en l'anotació"))
-                        }
-                        removeCurrentPage();
-                    });
-                    pagesView.attach(pageObj,'closePageRequested', function() {
-                        removeCurrentPage();
-                    });
-                    pagesView.attach(pageObj,'deletedAnnotations', function(num) {
-                        messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
-                    });
-                    pagesView.attach(pageObj,'editAnnotation', function(id,annotation,desc) {
-                        openSubPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id);
-                    });
-                    pagesView.attach(pageObj,'openAnnotations', function() {
-                        openSubPage('AnnotationsList',{annotationsModel: annotationsModel},'');
-                    });
-                    pagesView.attach(pageObj,'savedAnnotation', function(annotation,desc) {
-                        messageBox.publishMessage('Anotació desada: títol «' + annotation + '», descripció «' + desc + '»');
-                        removeCurrentPage();
-                    });
-
-                    // Document list
-                    pagesView.attach(pageObj,'openDocument', function(document) {
-                        var ext = /^.+\.([^\.]*)$/.exec(document);
-                        var extensio = (ext == null)?'':ext[1];
-                        console.log(extensio);
-
-                        switch(extensio) {
-                        case 'xml':
-                            openSubPage('ProgramacioAula',{document: document});
-                            break;
-                        case 'jpg':
-                        case 'png':
-                        case 'svg':
-                            openSubPage('ImageMapper',{background: document});
-                            break;
-                        case 'backup':
-                            openSubPage('DataMan',{document: document});
-                            break;
-                        default:
-                            messageBox.publishMessage(qsTr("S'obrira el document «") + document + "»");
-                            Qt.openUrlExternally(document);
-                        }
-                    });
-
-                    // Events
-                    pagesView.attach(pageObj,'deletedEvents',function (num) {
-                        messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'));
-                    });
-                    pagesView.attach(pageObj,'editEvent',function (id,event,desc,startDate,startTime,endDate,endTime) {
-                        openSubPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime},id);
-                    });
-                    pagesView.attach(pageObj,'newEvent',function () {
-                        openSubPage('ShowEvent',{},'');
-                    });
-                    pagesView.attach(pageObj,'savedEvent',function (event, desc) {
-                        messageBox.publishMessage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'));
-                        removeCurrentPage();
-                    });
-                    pagesView.attach(pageObj,'canceledEvent',function (changes) {
-                        if (changes) {
-                            messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
-                        }
-                        removeCurrentPage();
-                    });
-
-                    // Page handling
-                    pagesView.attach(pageObj,'openPage', function (page) {
-                        openSubPage(page,{});
-                    });
-                    pagesView.attach(pageObj,'openPageArgs', function (page,args) {
-                        openSubPage(page,args);
-                    });
-
-                    // Quick annotations
-                    pagesView.attach(pageObj,'savedQuickAnnotation', function (contents) {
-                        messageBox.publishMessage(qsTr("S'ha desat l'anotacio rapida «" + contents + "»"));
-                    });
-
-                    // Teaching Planning
-                    pagesView.attach(pageObj,'loadingDocument', function (document) {
-                        messageBox.publishMessage(qsTr('Carregant el document «' + document + '»'));
-                    });
-                    pagesView.attach(pageObj,'loadedDocument', function (document) {
-                        messageBox.publishMessage(qsTr("S'ha carregat el document «" + document + "»"));
-                    });
-                    pagesView.attach(pageObj,'documentSaved', function (document) {
-                        messageBox.publishMessage(qsTr('Desat el document «') + document + '»');
-                    });
-
-                    // Backup
-                    pagesView.attach(pageObj,'savedBackupToDirectory', function (directory) {
-                        messageBox.publishMessage(qsTr("S'ha desat una còpia de seguretat dins ") + directory);
-                    });
-                    pagesView.attach(pageObj,'unsavedBackup', function () {
-                        messageBox.publishMessage(qsTr("No s'ha pogut desar la còpia de seguretat"));
-                    });
-                    pagesView.attach(pageObj,'backupReadFromFile', function (file) {
-                        messageBox.publishMessage(qsTr("S'ha introduït el fitxer ") + file + qsTr(" dins la base de dades"));
-                    });
-                    pagesView.attach(pageObj,'backupNotReadFromFile', function (file) {
-                        messageBox.publishMessage(qsTr("Error en intentar introduir el fitxer ") + file + qsTr(" dins la base de dades"));
-                    });
-
-                    // Altres - revisar
-                    pagesView.attach(pageObj,'openDocumentsList', function () {
-                        openSubPage('DocumentsList',{},'');
-                    });
-                    pagesView.attach(pageObj,'acceptedCloseEditorRequest', function () {
-                        forceOpenSubPage(lastRequestedPage,{});
-                    });
-                    pagesView.attach(pageObj,'refusedCloseEditorRequest', function () {
-                        messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."));
-                    });
+            function destroyPage(index) {
+                console.log('Destroying ' + index);
+                if ((index>0) && (index<pagesView.count)) {
+                    pagesView.removePage(index);
                 }
             }
 
-            Connections {
-                target: dpanel
-                onSelectedPageChanged: {
-                    var pageObj = pagesView.showPage(dpanel.selectedPage);
+            onPageDestroyed: {
+                console.log('Page destroyed');
+                buttons.model = emptyButtonsList;
+                pageListModel.remove(index);
+            }
 
-                    // Title
-                    currentPageTitle = (pageObj.pageTitle)?pageObj.pageTitle:'';
+            onCountChanged: {
+                if (dpanel.selectedPage>=count)
+                    dpanel.setSelectedPage(count-1);
+                else
+                    dpanel.updatePageChange();
+            }
 
-                    // Buttons
-                    if (typeof(pageObj.buttons) !== 'undefined') {
-                        console.log('model de botons');
-                        buttons.model = pageObj.buttons;
-                    } else
-                        buttons.model = undefined;
-                }
+            function createPage(index) {
+                var obj = pageListModel.get(index);
+                var pageObj = pagesView.addPage(obj['page'],obj['parameters']);
+
+                var pageTitle = (pageObj.pageTitle)?pageObj.pageTitle:pageListModel.count;
+                pagesView.showCurrentPage();
+                pageListModel.setProperty(pageListModel.count-1,'pageTitle',pageTitle);
+
+                // Annotations
+                pagesView.attach(pageObj,'canceledAnnotation', function(changes) {
+                    if (changes) {
+                        messageBox.publishMessage(qsTr("S'han descartat els canvis en l'anotació"))
+                    }
+                    removeCurrentPage();
+                });
+                pagesView.attach(pageObj,'closePageRequested', function() {
+                    removeCurrentPage();
+                });
+                pagesView.attach(pageObj,'deletedAnnotations', function(num) {
+                    messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
+                });
+                pagesView.attach(pageObj,'editAnnotation', function(id,annotation,desc) {
+                    openSubPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id);
+                });
+                pagesView.attach(pageObj,'openAnnotations', function() {
+                    openSubPage('AnnotationsList',{annotationsModel: annotationsModel},'');
+                });
+                pagesView.attach(pageObj,'savedAnnotation', function(annotation,desc) {
+                    messageBox.publishMessage('Anotació desada: títol «' + annotation + '», descripció «' + desc + '»');
+                    removeCurrentPage();
+                });
+
+                // Document list
+                pagesView.attach(pageObj,'openDocument', function(document) {
+                    var ext = /^.+\.([^\.]*)$/.exec(document);
+                    var extensio = (ext == null)?'':ext[1];
+                    console.log(extensio);
+
+                    switch(extensio) {
+                    case 'xml':
+                        openSubPage('ProgramacioAula',{document: document});
+                        break;
+                    case 'jpg':
+                    case 'png':
+                    case 'svg':
+                        openSubPage('ImageMapper',{background: document});
+                        break;
+                    case 'backup':
+                        openSubPage('DataMan',{document: document});
+                        break;
+                    default:
+                        messageBox.publishMessage(qsTr("S'obrira el document «") + document + "»");
+                        Qt.openUrlExternally(document);
+                    }
+                });
+
+                // Events
+                pagesView.attach(pageObj,'deletedEvents',function (num) {
+                    messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'));
+                });
+                pagesView.attach(pageObj,'editEvent',function (id,event,desc,startDate,startTime,endDate,endTime) {
+                    openSubPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime},id);
+                });
+                pagesView.attach(pageObj,'newEvent',function () {
+                    openSubPage('ShowEvent',{},'');
+                });
+                pagesView.attach(pageObj,'savedEvent',function (event, desc) {
+                    messageBox.publishMessage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'));
+                    removeCurrentPage();
+                });
+                pagesView.attach(pageObj,'canceledEvent',function (changes) {
+                    if (changes) {
+                        messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
+                    }
+                    removeCurrentPage();
+                });
+
+                // Page handling
+                pagesView.attach(pageObj,'openPage', function (page) {
+                    openSubPage(page,{});
+                });
+                pagesView.attach(pageObj,'openPageArgs', function (page,args) {
+                    openSubPage(page,args);
+                });
+
+                // Quick annotations
+                pagesView.attach(pageObj,'savedQuickAnnotation', function (contents) {
+                    messageBox.publishMessage(qsTr("S'ha desat l'anotacio rapida «" + contents + "»"));
+                });
+
+                // Teaching Planning
+                pagesView.attach(pageObj,'loadingDocument', function (document) {
+                    messageBox.publishMessage(qsTr('Carregant el document «' + document + '»'));
+                });
+                pagesView.attach(pageObj,'loadedDocument', function (document) {
+                    messageBox.publishMessage(qsTr("S'ha carregat el document «" + document + "»"));
+                });
+                pagesView.attach(pageObj,'documentSaved', function (document) {
+                    messageBox.publishMessage(qsTr('Desat el document «') + document + '»');
+                });
+
+                // Backup
+                pagesView.attach(pageObj,'savedBackupToDirectory', function (directory) {
+                    messageBox.publishMessage(qsTr("S'ha desat una còpia de seguretat dins ") + directory);
+                });
+                pagesView.attach(pageObj,'unsavedBackup', function () {
+                    messageBox.publishMessage(qsTr("No s'ha pogut desar la còpia de seguretat"));
+                });
+                pagesView.attach(pageObj,'backupReadFromFile', function (file) {
+                    messageBox.publishMessage(qsTr("S'ha introduït el fitxer ") + file + qsTr(" dins la base de dades"));
+                });
+                pagesView.attach(pageObj,'backupNotReadFromFile', function (file) {
+                    messageBox.publishMessage(qsTr("Error en intentar introduir el fitxer ") + file + qsTr(" dins la base de dades"));
+                });
+
+                // Altres - revisar
+                pagesView.attach(pageObj,'openDocumentsList', function () {
+                    openSubPage('DocumentsList',{},'');
+                });
+                pagesView.attach(pageObj,'acceptedCloseEditorRequest', function () {
+                    forceOpenSubPage(lastRequestedPage,{});
+                });
+                pagesView.attach(pageObj,'refusedCloseEditorRequest', function () {
+                    messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."));
+                });
+
+                console.log('Created page ' + index);
             }
         }
     }
@@ -387,18 +412,20 @@ Window {
         }
 
         if (found) {
-            dpanel.selectedPage = i;
+            dpanel.setSelectedPage(i);
             pageListModel.setProperty(i,'param',param);
         } else {
             pageListModel.append({page: page, qmlPage: page, parameters: param});
-            dpanel.selectedPage = pageListModel.count-1;
+            dpanel.getItemMainPanel.createPage(pageListModel.count-1);
+
+            dpanel.setSelectedPage(pageListModel.count-1);
         }
     }
 
     function removeCurrentPage() {
-        pagesView.removePage(dpanel.selectedPage);
-        pageListModel.remove(dpanel.selectedPage);
-        dpanel.selectedPage = pagesView.currentPage;
+        console.log('Removing ' + dpanel.selectedPage);
+        dpanel.getItemMainPanel.destroyPage(dpanel.selectedPage);
     }
+
 }
 

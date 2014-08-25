@@ -8,6 +8,9 @@ Rectangle {
     property alias itemMainPanel: mainPanelLoader.sourceComponent
     property alias itemSubPanel: subPanelLoader.sourceComponent
 
+    property alias getItemMainPanel: mainPanelLoader.item
+    property alias getItemSubPanel: subPanelLoader.item
+
     property int globalMargins: units.fluentMargins(width, units.nailUnit)
     property int widthSubPanel: Math.min(6 * units.fingerUnit + 2 * globalMargins,width)
     property int availableWidth: width - widthSubPanel

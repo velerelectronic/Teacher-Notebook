@@ -6,6 +6,7 @@ Rectangle {
     id: datePicker
     property var date: new Date()
     property var monthsAb: [qsTr('gen'),qsTr('feb'),qsTr('mar'),qsTr('abr'),qsTr('mai'),qsTr('jun'),qsTr('jul'),qsTr('ago'),qsTr('set'),qsTr('oct'),qsTr('nov'),qsTr('des')]
+    property var daysOfWeek: [qsTr('diumenge'), qsTr('dilluns'), qsTr('dimarts'), qsTr('dimecres'), qsTr('dijous'), qsTr('divendres'), qsTr('dissabte')]
     signal updatedByUser()
 
     width: childrenRect.width
@@ -20,8 +21,16 @@ Rectangle {
         width: childrenRect.width
         height: childrenRect.height
         Row {
-            width: days.width + months.width + year.width
+            width: dayOfWeek.width + days.width + months.width + year.width
             height: childrenRect.height
+
+            Text {
+                id: dayOfWeek
+                width: units.fingerUnit * 3
+                height: units.fingerUnit * 4
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+            }
 
             Common.WheelButton {
                 id: days
@@ -29,7 +38,11 @@ Rectangle {
                 height: units.fingerUnit * 4
                 fromNumber: 1
                 toNumber: 31
-                onCurrentIndexChanged: updatedByUser()
+                onCurrentIndexChanged: {
+                    datePicker.date.setDate(days.currentIndex + days.fromNumber);
+                    updateDayOfWeek();
+                    updatedByUser();
+                }
             }
 
             Common.WheelButton {
@@ -37,7 +50,11 @@ Rectangle {
                 width: units.fingerUnit * 2
                 height: units.fingerUnit * 4
                 model: monthsAb
-                onCurrentIndexChanged: updatedByUser()
+                onCurrentIndexChanged: {
+                    datePicker.date.setMonth(months.currentIndex);
+                    updateDayOfWeek();
+                    updatedByUser();
+                }
             }
 
             Common.WheelButton {
@@ -46,7 +63,11 @@ Rectangle {
                 height: units.fingerUnit * 4
                 fromNumber: 2000
                 toNumber: 2200
-                onCurrentIndexChanged: updatedByUser()
+                onCurrentIndexChanged: {
+                    datePicker.date.setFullYear(year.currentIndex + year.fromNumber);
+                    updateDayOfWeek();
+                    updatedByUser();
+                }
             }
         }
     }
@@ -56,6 +77,11 @@ Rectangle {
         days.moveToNumber(datePicker.date.getDate()-days.fromNumber);
         months.moveToNumber(datePicker.date.getMonth());
         year.moveToNumber(datePicker.date.getFullYear()-year.fromNumber);
+        updateDayOfWeek();
+    }
+
+    function updateDayOfWeek() {
+        dayOfWeek.text = daysOfWeek[datePicker.date.getDay()];
     }
 
     function setDate(newDate) {
@@ -64,9 +90,6 @@ Rectangle {
     }
 
     function getDate() {
-        datePicker.date.setDate(days.currentIndex + days.fromNumber);
-        datePicker.date.setMonth(months.currentIndex);
-        datePicker.date.setFullYear(year.currentIndex + year.fromNumber);
         return datePicker.date;
     }
 }

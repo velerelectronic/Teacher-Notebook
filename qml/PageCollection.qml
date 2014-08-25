@@ -6,38 +6,61 @@ Rectangle {
     color: 'yellow'
 
     // property list pages: []
-    property int count: pageCollection.children.length
+    property int count: children.length
     property int currentPage: -1
+
+    signal pageDestroyed(int index)
+
+    onCurrentPageChanged: showCurrentPage()
+
+    function test() {
+        for (var i=0; i<pageCollection.children.length; i++) {
+            console.log(pageCollection.children[i]);
+        }
+    }
 
     function addPage(page,params) {
         var newPageComponent = Qt.createComponent('qrc:///qml/' + page + '.qml');
-        console.log('Add page');
-        console.log('Ready');
+
         var args = {width: Qt.binding(function() { return pageCollection.width; }), height: Qt.binding(function() { return pageCollection.height; })};
+
         for (var prop in params) {
             args[prop] = params[prop];
         }
 
         var pageObj = newPageComponent.createObject(pageCollection,args);
+
         return pageObj;
     }
 
-    function showPage(index) {
+    function showCurrentPage() {
+        // Hide everything
+
         for (var i=0; i<count; i++) {
             pageCollection.children[i].enabled = false;
             pageCollection.children[i].visible = false;
         }
 
-        var pageObj = pageCollection.children[index];
-        pageObj.enabled = true;
-        pageObj.visible = true;
-        currentPage = index;
-        return pageObj;
+        if ((currentPage>=0) && (currentPage<count)) {
+            var pageObj = pageCollection.children[currentPage];
+            pageObj.enabled = true;
+            pageObj.visible = true;
+        }
+    }
+
+    function getPage(index) {
+        return pageCollection.children[index];
     }
 
     function removePage(index) {
-        pageCollection.children[i].destroy();
-        if (currentPage>=count)
-            currentPage = count-1;
+        console.log('Remove page ' + index + ' out of ' + count);
+        if (index>=count)
+            return;
+        else {
+            console.log('inside page collection: remove ' + pageCollection.children[index].pageTitle);
+            pageCollection.children[index].destroy();
+            delete pageCollection.children[index];
+            pageDestroyed(index);
+        }
     }
 }

@@ -15,23 +15,27 @@ Rectangle {
     signal deletedAnnotations (int num)
     property bool canClose: true
 
+    property var buttons: buttonsModel
+
+    VisualItemModel {
+        id: buttonsModel
+        Button {
+            text: qsTr('Nova')
+            onClicked: {
+                annotations.editAnnotation(-1,(searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'),'');
+//                    editAnnotation.setSource('AnnotationEditor.qml',{title: (searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'), desc: ''})
+//                    editAnnotation.visible = true
+            }
+        }
+    }
+
+
     Common.UseUnits { id: units }
 
     ColumnLayout {
         anchors.fill: parent
         RowLayout {
             Layout.fillWidth: true
-            Button {
-                id: button
-                Layout.preferredHeight: units.fingerUnit
-                anchors.margins: units.nailUnit
-                text: 'Nova'
-                onClicked: {
-                    annotations.editAnnotation(-1,(searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'),'');
-//                    editAnnotation.setSource('AnnotationEditor.qml',{title: (searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'), desc: ''})
-//                    editAnnotation.visible = true
-                }
-            }
             Common.SearchBox {
                 id: searchAnnotations
                 Layout.fillWidth: true
