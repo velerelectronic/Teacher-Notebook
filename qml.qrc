@@ -24,11 +24,11 @@
         <file>qml/PlanningMainSection.qml</file>
         <file>qml/PlanningSubSection.qml</file>
         <file>qml/QuickAnnotation.qml</file>
-        <file>PageStack.qml</file>
         <file>qml/FeedView.qml</file>
         <file>qml/FeedWEIB.qml</file>
         <file>qml/LoadingBox.qml</file>
         <file>qml/CachedModel.qml</file>
         <file>qml/FeedDelegate.qml</file>
+        <file>qml/PageCollection.qml</file>
     </qresource>
 </RCC>

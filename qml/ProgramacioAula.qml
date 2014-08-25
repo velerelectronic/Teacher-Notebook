@@ -10,6 +10,8 @@ Rectangle {
     id: xmlViewer
     property string pageTitle: qsTr('Programació d\'aula');
     property string document
+    property bool becameVisible: false
+    property alias buttons: buttonsModel
 
     signal documentSaved(string document)
     signal loadingDocument(string document)
@@ -20,8 +22,25 @@ Rectangle {
 
     TeachingPlanning {
         id: xmlReader
+    }
 
-        onObjectivesChanged: console.log(xmlReader.objectives)
+    VisualItemModel {
+        id: buttonsModel
+        Button {
+            id: editButton
+            text: qsTr('Edita')
+            checkable: true
+            checked: false
+        }
+
+        Button {
+            id: saveButton
+            text: qsTr('Desa canvis')
+            onClicked: {
+                if (xmlReader.save())
+                    documentSaved(document);
+            }
+        }
     }
 
     VisualItemModel {
@@ -202,11 +221,12 @@ Rectangle {
             }
         }
         PlanningMainSection {
+            id: assessment
             width: sectionsList.width
             height: sectionsList.height
             title: qsTr('Avaluació')
             PlanningSubSection {
-                width: parent.width
+                width: assessment.width
                 title: qsTr('Tasques')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -216,7 +236,7 @@ Rectangle {
                 }
             }
             PlanningSubSection {
-                width: parent.width
+                width: assessment.width
                 title: qsTr('Criteris')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -226,7 +246,7 @@ Rectangle {
                 }
             }
             PlanningSubSection {
-                width: parent.width
+                width: assessment.width
                 title: qsTr('Instruments')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -237,11 +257,12 @@ Rectangle {
             }
         }
         PlanningMainSection {
+            id: contents
             width: sectionsList.width
             height: sectionsList.height
             title: qsTr('Continguts')
             PlanningSubSection {
-                width: parent.width
+                width: contents.width
                 title: qsTr('Coneixements')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -251,7 +272,7 @@ Rectangle {
                 }
             }
             PlanningSubSection {
-                width: parent.width
+                width: contents.width
                 title: qsTr('Habilitats')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -261,7 +282,7 @@ Rectangle {
                 }
             }
             PlanningSubSection {
-                width: parent.width
+                width: contents.width
                 title: qsTr('Llenguatge')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -271,7 +292,7 @@ Rectangle {
                 }
             }
             PlanningSubSection {
-                width: parent.width
+                width: contents.width
                 title: qsTr('Valors')
                 Editors.XmlListEditor {
                     anchors.left: parent.left
@@ -325,44 +346,13 @@ Rectangle {
 
     ListView {
         id: sectionsList
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.bottom: buttons.top
+        anchors.fill: parent
         anchors.margins: units.nailUnit
         model: mainSectionsModel
         orientation: ListView.Horizontal
         boundsBehavior: Flickable.StopAtBounds
         snapMode: ListView.SnapToItem
         clip: true
-    }
-    RowLayout {
-        id: buttons
-        anchors.margins: units.nailUnit
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        height: units.fingerUnit * 1.5
-        Button {
-            id: editButton
-            Layout.fillHeight: true
-            text: qsTr('Edita')
-            checkable: true
-            checked: false
-        }
-
-        Button {
-            id: saveButton
-            Layout.fillHeight: true
-            text: qsTr('Desa canvis')
-            onClicked: {
-                if (xmlReader.save())
-                    documentSaved(document);
-            }
-        }
-        Item {
-            Layout.fillWidth: true
-        }
     }
 
     Component.onCompleted: {

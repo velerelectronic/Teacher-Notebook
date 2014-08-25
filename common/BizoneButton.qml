@@ -11,14 +11,14 @@ Rectangle {
 
     property alias content: label.text
 
-    height: units.fingerUnit * 2
+    height: units.fingerUnit * 4
     width: label.width + units.nailUnit * 2
     border.color: 'black'
 
     Rectangle {
         id: upPlus
         anchors.top: parent.top
-        height: units.nailUnit
+        height: units.fingerUnit
         anchors.left: parent.left
         anchors.right: parent.right
         border.color: 'black'
@@ -53,7 +53,7 @@ Rectangle {
     Rectangle {
         id: downMinus
         anchors.bottom: parent.bottom
-        height: units.nailUnit
+        height: units.fingerUnit
         anchors.left: parent.left
         anchors.right: parent.right
         color: '#cccccc'

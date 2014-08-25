@@ -64,7 +64,7 @@ Rectangle {
                     }
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: menuPage.openPageArgs('ShowAnnotation',{idAnnotation: id})
+                        onClicked: sendSignal('openPageArgs',{page: 'ShowAnnotation', idAnnotation: id})
                     }
                 }
                 caption: qsTr('Darreres anotacions')
@@ -75,8 +75,8 @@ Rectangle {
                 prefixTotal: qsTr('Hi ha')
                 totalCount: annotationsTotal.count
                 suffixTotal: qsTr('anotacions')
-                onCaptionClicked: menuPage.openPage('AnnotationsList')
-                onTotalCountClicked: menuPage.openPage('AnnotationsList')
+                onCaptionClicked: openPage('AnnotationsList')
+                onTotalCountClicked: openPage('AnnotationsList')
             }
             Common.PreviewBox {
                 id: nextEvents

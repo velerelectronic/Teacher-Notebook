@@ -19,5 +19,6 @@
         <file>common/ExtraInfo.qml</file>
         <file>common/Button.qml</file>
         <file>common/DoublePanel.qml</file>
+        <file>common/WheelButton.qml</file>
     </qresource>
 </RCC>

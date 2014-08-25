@@ -18,52 +18,34 @@ Rectangle {
         width: childrenRect.width
         height: childrenRect.height
         Row {
-            width: hour.width + separator.width + minute.width
+            width: hour.width + minute.width
             height: childrenRect.height
-            Common.BizoneButton {
-                // Hours
+
+            Common.WheelButton {
                 id: hour
-                content: '0'
-                onUpClicked: moveTime(1,0)
-                onUpLongClicked: moveTime(12,0)
-                onDownClicked: moveTime(-1,0)
-                onDownLongClicked: moveTime(-12,0)
-            }
-            Text {
-                id: separator
-                height: hour.height
-                width: units.nailUnit
-                verticalAlignment: Text.AlignVCenter
-                font.pixelSize: hour.height / 2
-                text: ':'
+                width: units.fingerUnit * 1.5
+                height: units.fingerUnit * 4
+                fromNumber: 0
+                toNumber: 23
+                onCurrentIndexChanged: updatedByUser()
             }
 
-            Common.BizoneButton {
-                // Minutes
+            Common.WheelButton {
                 id: minute
-                content: '00'
-                onUpClicked: moveTime(0,1)
-                onUpLongClicked: moveTime(0,10)
-                onDownClicked: moveTime(0,-1)
-                onDownLongClicked: moveTime(0,-10)
+                width: units.fingerUnit * 1.5
+                height: units.fingerUnit * 4
+                fromNumber: 0
+                toNumber: 59
+                onCurrentIndexChanged: updatedByUser()
             }
         }
     }
 
-    function moveTime(hours,minutes) {
-        if (hours != 0)
-            time.setHours(time.getHours()+hours);
-        if (minutes != 0)
-            time.setMinutes(time.getMinutes()+minutes);
-        updateDisplay();
-        updatedByUser();
-    }
-
     function updateDisplay() {
         var h = time.getHours()
-        hour.content = ((h<10)?'0':'') + h
+        hour.moveToNumber(h);
         var m = time.getMinutes()
-        minute.content = ((m<10)?'0':'') + m
+        minute.moveToNumber(m);
     }
 
     function setDateTime(newDate) {
@@ -72,6 +54,8 @@ Rectangle {
     }
 
     function getTime() {
+        timePicker.time.setHours(hour.currentIndex);
+        timePicker.time.setMinutes(minute.currentIndex);
         return timePicker.time;
     }
 }

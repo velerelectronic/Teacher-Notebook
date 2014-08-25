@@ -20,66 +20,42 @@ Rectangle {
         width: childrenRect.width
         height: childrenRect.height
         Row {
-            width: days.width + sep1.width + months.width + sep2.width + year.width
+            width: days.width + months.width + year.width
             height: childrenRect.height
-            Common.BizoneButton {
-                // days
+
+            Common.WheelButton {
                 id: days
-                width: units.fingerUnit * 2
-                content: '0'
-                onUpClicked: moveDate(1,0,0)
-                onUpLongClicked: moveDate(7,0,0)
-                onDownClicked: moveDate(-1,0,0)
-                onDownLongClicked: moveDate(-7,0,0)
-            }
-            Text {
-                id: sep1
-                text: '/'
+                width: units.fingerUnit * 1.5
+                height: units.fingerUnit * 4
+                fromNumber: 1
+                toNumber: 31
+                onCurrentIndexChanged: updatedByUser()
             }
 
-            Common.BizoneButton {
-                // Months
+            Common.WheelButton {
                 id: months
                 width: units.fingerUnit * 2
-                content: '00'
-                onUpClicked: moveDate(0,1,0)
-                onUpLongClicked: moveDate(0,6,0)
-                onDownClicked: moveDate(0,-1,0)
-                onDownLongClicked: moveDate(0,-6,0)
+                height: units.fingerUnit * 4
+                model: monthsAb
+                onCurrentIndexChanged: updatedByUser()
             }
-            Text {
-                id: sep2
-                text: '/'
-            }
-            Common.BizoneButton {
-                // Year
+
+            Common.WheelButton {
                 id: year
                 width: units.fingerUnit * 2
-                content: '00'
-                onUpClicked: moveDate(0,0,1)
-                onUpLongClicked: {}
-                onDownClicked: moveDate(0,0,-1)
-                onDownLongClicked: {}
+                height: units.fingerUnit * 4
+                fromNumber: 2000
+                toNumber: 2200
+                onCurrentIndexChanged: updatedByUser()
             }
         }
     }
 
-    function moveDate(days,months,years) {
-        if (days != 0)
-            date.setDate(date.getDate()+days);
-        if (months != 0)
-            date.setMonth(date.getMonth()+months);
-        if (years != 0)
-            date.setFullYear(date.getFullYear()+years);
-        updateDisplay();
-        updatedByUser();
-    }
 
     function updateDisplay() {
-        days.content = datePicker.date.getDate();
-        var m = datePicker.date.getMonth();
-        months.content = datePicker.monthsAb[m];
-        year.content = datePicker.date.getFullYear();
+        days.moveToNumber(datePicker.date.getDate()-days.fromNumber);
+        months.moveToNumber(datePicker.date.getMonth());
+        year.moveToNumber(datePicker.date.getFullYear()-year.fromNumber);
     }
 
     function setDate(newDate) {
@@ -88,6 +64,9 @@ Rectangle {
     }
 
     function getDate() {
+        datePicker.date.setDate(days.currentIndex + days.fromNumber);
+        datePicker.date.setMonth(months.currentIndex);
+        datePicker.date.setFullYear(year.currentIndex + year.fromNumber);
         return datePicker.date;
     }
 }

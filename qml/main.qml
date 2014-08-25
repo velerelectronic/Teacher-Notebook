@@ -23,9 +23,6 @@ Window {
     height: Screen.height
     visible: true
 
-    signal openAnnotations
-    signal openPage(string page)
-
     property string lastRequestedPage: ''
     property string currentPageTitle: ''
 
@@ -103,7 +100,7 @@ Window {
             id: pageList
 
             model: pageListModel
-            cacheBuffer: Math.max(dpanel.width,dpanel.height) * 3
+            cacheBuffer: Math.max(dpanel.width,dpanel.height) * 4
 
             Connections {
                 target: pageListModel
@@ -111,6 +108,15 @@ Window {
                     var size = Math.max(dpanel.width,dpanel.height) * (pageListModel.count+1);
                     if (pageList.cacheBuffer < size) {
                         pageList.cacheBuffer = size;
+                    }
+                }
+            }
+
+            Connections {
+                target: dpanel
+                onSelectedPageChanged: {
+                    if (pageList.currentIndex != dpanel.selectedPage) {
+                        pageList.currentIndex = dpanel.selectedPage;
                     }
                 }
             }
@@ -123,7 +129,7 @@ Window {
                     anchors.fill: parent
                     anchors.margins: units.nailUnit
                     font.pixelSize: units.readUnit
-                    text: (model.pageTitle)?model.pageTitle:''
+                    text: ('pageTitle' in (pageListModel.get(model.index)))?(pageListModel.get(model.index)['pageTitle']):''
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignLeft
                 }
@@ -150,153 +156,50 @@ Window {
             }
         }
 
-        itemMainPanel: ListView {
+        itemMainPanel: PageCollection {
             id: pagesView
 
-//            property string currentPageTitle: pageListModel.get(currentIndex).pageTitle
-/*
-            {
-                var obj = pageListModel.get(pagesView.currentIndex);
-                if (obj)
-                    return obj['pageTitle'];
-                else
-                    return '';
+            function attach(object,signalName,methodName) {
+                if (object[signalName])
+                    object[signalName].connect(methodName);
             }
-            */
 
             Connections {
-                target: dpanel
-                onSelectedPageChanged: {
-                    // pagesView.positionViewAtIndex(dpanel.selectedPage,ListView.Center)
-                    pagesView.currentIndex = dpanel.selectedPage;
-                }
-            }
+                target: pageListModel
+                onCountChanged: {
+                    var obj = pageListModel.get(pageListModel.count-1);
+                    var pageObj = pagesView.addPage(obj['page'],obj['parameters']);
 
-            onFlickEnded: {
-                var index = indexAt(contentX,contentY);
-                console.log(index);
-                dpanel.selectedPage = index;
-            }
-            onCurrentIndexChanged: {
-                currentPageTitle = currentItem.pageTitle;
-            }
-
-            orientation: ListView.Horizontal
-            boundsBehavior: Flickable.StopAtBounds
-            snapMode: ListView.SnapOneItem
-            model: pageListModel
-            delegate: pageDelegate
-            highlightMoveDuration: parent.width / 2
-            highlightFollowsCurrentItem: true
-
-            function sendMessage(page,message) {
-                for (var i=0; i<pageListModel.count; i++) {
-                    if (get(i)['page'] == page) {
-                        pagesView.contentItem.children[i].sendMessage(message);
-                    }
-                }
-            }
-        }
-
-    }
-
-    ListModel {
-        id: pageListModel
-    }
-
-    Component {
-        id: pageDelegate
-
-        Rectangle {
-            id: pageRect
-
-            width: ListView.view.width
-            height: ListView.view.height
-
-            color: 'white'
-            ListView.onAdd: {
-                pageListModel.setProperty(model.index,'pageTitle',pageRect.pageTitle);
-                console.log(pageListModel.get(model.index)['pageTitle']);
-            }
-
-            property string pageTitle: pageLoader.pageTitle
-            property bool closingBlocked: ((pageLoader.item) && (pageLoader.item.changes))?pageLoader.item.changes:false
-            clip: true
-
-            Loader {
-                id: pageLoader
-                anchors.fill: parent
-
-                property string pageTitle: (item && item.pageTitle)?item.pageTitle:''
-                onPageTitleChanged: pageListModel.setProperty(model.index,'pageTitle',pageTitle)
-
-                onLoaded: {
-                    if (typeof(item.buttons) !== 'undefined') {
-                        console.log('model de botons');
-                        buttons.model = item.buttons;
-                    } else
-                        buttons.model = undefined;
-                }
-
-                Connections {
-                    target: pageLoader.item
-                    ignoreUnknownSignals: true
-                    // Signals
-                    onOpenPage: openSubPage(page,{})
-                    onOpenPageArgs: openSubPage(page,args)
-
-                    // Quick annotations
-                    onSavedQuickAnnotation: {
-                        messageBox.publishMessage(qsTr("S'ha desat l'anotacio rapida «" + contents + "»"));
-                    }
+                    var pageTitle = (pageObj.pageTitle)?pageObj.pageTitle:pageListModel.count;
+                    console.log(pageTitle);
+                    pageListModel.setProperty(pageListModel.count-1,'pageTitle',pageTitle);
 
                     // Annotations
-                    onOpenAnnotations: openSubPage('AnnotationsList',{annotationsModel: annotationsModel},'')
-                    onEditAnnotation: openSubPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id)
-                    onDeletedAnnotations: {
-                        messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
-                    }
-                    onSavedAnnotation: {
-                        messageBox.publishMessage('Anotació desada: títol «' + annotation + '», descripció «' + desc + '»')
-                        removeCurrentPage();
-                    }
-                    onClosePageRequested: removeCurrentPage()
-                    onCanceledAnnotation: {
+                    pagesView.attach(pageObj,'canceledAnnotation', function(changes) {
                         if (changes) {
                             messageBox.publishMessage(qsTr("S'han descartat els canvis en l'anotació"))
                         }
                         removeCurrentPage();
-                    }
-
-                    onOpenDocumentsList: openSubPage('DocumentsList',{},'')
-
-                    // Events
-                    onNewEvent: openSubPage('ShowEvent',{},'')
-                    onEditEvent: {
-                        openSubPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime},id);
-                    }
-                    onDeletedEvents: {
-                        messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'))
-                    }
-                    onSavedEvent: {
-                        messageBox.publishMessage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'))
+                    });
+                    pagesView.attach(pageObj,'closePageRequested', function() {
                         removeCurrentPage();
-                    }
-                    onCanceledEvent: {
-                        if (changes) {
-                            messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
-                        }
+                    });
+                    pagesView.attach(pageObj,'deletedAnnotations', function(num) {
+                        messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
+                    });
+                    pagesView.attach(pageObj,'editAnnotation', function(id,annotation,desc) {
+                        openSubPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id);
+                    });
+                    pagesView.attach(pageObj,'openAnnotations', function() {
+                        openSubPage('AnnotationsList',{annotationsModel: annotationsModel},'');
+                    });
+                    pagesView.attach(pageObj,'savedAnnotation', function(annotation,desc) {
+                        messageBox.publishMessage('Anotació desada: títol «' + annotation + '», descripció «' + desc + '»');
                         removeCurrentPage();
-                    }
-
-                    // Editors
-                    onAcceptedCloseEditorRequest: {
-                        forceOpenSubPage(lastRequestedPage,{})
-                    }
-                    onRefusedCloseEditorRequest: messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
+                    });
 
                     // Document list
-                    onOpenDocument: {
+                    pagesView.attach(pageObj,'openDocument', function(document) {
                         var ext = /^.+\.([^\.]*)$/.exec(document);
                         var extensio = (ext == null)?'':ext[1];
                         console.log(extensio);
@@ -314,25 +217,104 @@ Window {
                             openSubPage('DataMan',{document: document});
                             break;
                         default:
-                            messageBox.publishMessage(qsTr("No es pot obrir el document «") + document + "»");
+                            messageBox.publishMessage(qsTr("S'obrira el document «") + document + "»");
+                            Qt.openUrlExternally(document);
                         }
+                    });
 
-                    }
+                    // Events
+                    pagesView.attach(pageObj,'deletedEvents',function (num) {
+                        messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'));
+                    });
+                    pagesView.attach(pageObj,'editEvent',function (id,event,desc,startDate,startTime,endDate,endTime) {
+                        openSubPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime},id);
+                    });
+                    pagesView.attach(pageObj,'newEvent',function () {
+                        openSubPage('ShowEvent',{},'');
+                    });
+                    pagesView.attach(pageObj,'savedEvent',function (event, desc) {
+                        messageBox.publishMessage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'));
+                        removeCurrentPage();
+                    });
+                    pagesView.attach(pageObj,'canceledEvent',function (changes) {
+                        if (changes) {
+                            messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
+                        }
+                        removeCurrentPage();
+                    });
+
+                    // Page handling
+                    pagesView.attach(pageObj,'openPage', function (page) {
+                        openSubPage(page,{});
+                    });
+                    pagesView.attach(pageObj,'openPageArgs', function (page,args) {
+                        openSubPage(page,args);
+                    });
+
+                    // Quick annotations
+                    pagesView.attach(pageObj,'savedQuickAnnotation', function (contents) {
+                        messageBox.publishMessage(qsTr("S'ha desat l'anotacio rapida «" + contents + "»"));
+                    });
 
                     // Teaching Planning
-                    onLoadingDocument: messageBox.publishMessage(qsTr('Carregant el document «' + document + '»'))
-                    onLoadedDocument: messageBox.publishMessage(qsTr("S'ha carregat el document «" + document + "»"))
-                    onDocumentSaved: messageBox.publishMessage(qsTr('Desat el document «') + document + '»');
+                    pagesView.attach(pageObj,'loadingDocument', function (document) {
+                        messageBox.publishMessage(qsTr('Carregant el document «' + document + '»'));
+                    });
+                    pagesView.attach(pageObj,'loadedDocument', function (document) {
+                        messageBox.publishMessage(qsTr("S'ha carregat el document «" + document + "»"));
+                    });
+                    pagesView.attach(pageObj,'documentSaved', function (document) {
+                        messageBox.publishMessage(qsTr('Desat el document «') + document + '»');
+                    });
 
                     // Backup
-                    onSavedBackupToDirectory: messageBox.publishMessage(qsTr("S'ha desat una còpia de seguretat dins ") + directory)
-                    onUnsavedBackup: messageBox.publishMessage(qsTr("No s'ha pogut desar la còpia de seguretat"))
-                    onBackupReadFromFile: messageBox.publishMessage(qsTr("S'ha introduït el fitxer ") + file + qsTr(" dins la base de dades"))
-                    onBackupNotReadFromFile: messageBox.publishMessage(qsTr("Error en intentar introduir el fitxer ") + file + qsTr(" dins la base de dades"))
+                    pagesView.attach(pageObj,'savedBackupToDirectory', function (directory) {
+                        messageBox.publishMessage(qsTr("S'ha desat una còpia de seguretat dins ") + directory);
+                    });
+                    pagesView.attach(pageObj,'unsavedBackup', function () {
+                        messageBox.publishMessage(qsTr("No s'ha pogut desar la còpia de seguretat"));
+                    });
+                    pagesView.attach(pageObj,'backupReadFromFile', function (file) {
+                        messageBox.publishMessage(qsTr("S'ha introduït el fitxer ") + file + qsTr(" dins la base de dades"));
+                    });
+                    pagesView.attach(pageObj,'backupNotReadFromFile', function (file) {
+                        messageBox.publishMessage(qsTr("Error en intentar introduir el fitxer ") + file + qsTr(" dins la base de dades"));
+                    });
+
+                    // Altres - revisar
+                    pagesView.attach(pageObj,'openDocumentsList', function () {
+                        openSubPage('DocumentsList',{},'');
+                    });
+                    pagesView.attach(pageObj,'acceptedCloseEditorRequest', function () {
+                        forceOpenSubPage(lastRequestedPage,{});
+                    });
+                    pagesView.attach(pageObj,'refusedCloseEditorRequest', function () {
+                        messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."));
+                    });
                 }
             }
-            Component.onCompleted: pageLoader.setSource(model.page + '.qml',model.parameters)
+
+            Connections {
+                target: dpanel
+                onSelectedPageChanged: {
+                    var pageObj = pagesView.showPage(dpanel.selectedPage);
+
+                    // Title
+                    currentPageTitle = (pageObj.pageTitle)?pageObj.pageTitle:'';
+
+                    // Buttons
+                    if (typeof(pageObj.buttons) !== 'undefined') {
+                        console.log('model de botons');
+                        buttons.model = pageObj.buttons;
+                    } else
+                        buttons.model = undefined;
+                }
+            }
         }
+    }
+
+    ListModel {
+        id: pageListModel
     }
 
     Common.MessageBox {
@@ -391,6 +373,8 @@ Window {
     }
 
     function openSubPage (page, param) {
+        console.log('Trying to open');
+
         var i=0;
         var found = false;
         while ((!found) && (i<pageListModel.count)) {
@@ -412,24 +396,9 @@ Window {
     }
 
     function removeCurrentPage() {
+        pagesView.removePage(dpanel.selectedPage);
         pageListModel.remove(dpanel.selectedPage);
+        dpanel.selectedPage = pagesView.currentPage;
     }
-
-    /*
-    ListView {
-        anchors.fill: parent
-        model: tmp
-        delegate: Rectangle {
-            width: units.fingerUnit *5
-            height: units.fingerUnit *5
-            color: '#643456'
-            Text {
-                anchors.fill: parent
-                text: display
-            }
-        }
-        Component.onCompleted: console.log(model)
-    }
-    */
 }
 
