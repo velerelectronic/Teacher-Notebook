@@ -24,6 +24,7 @@ Item {
     property alias text: textArea.text
     property bool selection: false
     property bool isVertical: width<height
+    property bool edit: true
 
     Flow {
         id: toolbar
@@ -139,6 +140,7 @@ Item {
         anchors.right: (isVertical)?parent.right:parent.horizontalCenter
         anchors.margins: units.nailUnit
 
+        readOnly: !textAreaEditor.edit
         clip: true
 //        inputMethodHints: Qt.ImhNoPredictiveText
         font.pixelSize: fontPixelSize

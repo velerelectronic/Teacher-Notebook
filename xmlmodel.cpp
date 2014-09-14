@@ -32,6 +32,31 @@ bool XmlModel::insertObject(int index, const QString &contents) {
         return false;
 }
 
+bool XmlModel::moveToNext(int index) {
+    QStringList list = stringList();
+    if ((index>=0) && (index<list.length()-1)) {
+        QString obj1 = list[index];
+        QString obj2 = list[index+1];
+        updateObject(index,obj2);
+        updateObject(index+1,obj1);
+        return true;
+    } else
+        return false;
+}
+
+bool XmlModel::moveToPrevious(int index) {
+    QStringList list = stringList();
+    if ((index>=1) && (index<list.length())) {
+        QString obj1 = list[index-1];
+        QString obj2 = list[index];
+        updateObject(index-1,obj2);
+        updateObject(index,obj1);
+        return true;
+    } else
+        return false;
+
+}
+
 XmlModel &XmlModel::operator=(XmlModel &other) {
 // Not sure about this fragment
     // this->QStringListModel::operator=(other);

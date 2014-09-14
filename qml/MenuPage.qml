@@ -13,186 +13,188 @@ Rectangle {
     signal openPageArgs (string page, var args)
     signal savedQuickAnnotation(string contents)
 
+    property real buttonWidth: buttonsGrid.cellWidth - 2 * units.nailUnit
+    property real buttonHeight: buttonsGrid.cellHeight - 2 * units.nailUnit
+
     Common.UseUnits { id: units }
-    RowLayout {
-        anchors.fill: parent
-        anchors.margins: units.nailUnit
-        spacing: units.nailUnit
 
-        Flow {
-            Layout.preferredWidth: parent.width / 2
-            Layout.fillHeight: true
-            spacing: units.nailUnit * 2
+    VisualItemModel {
+        id: widgetsModel
 
-            QuickAnnotation {
+        QuickAnnotation {
+            width: buttonWidth
+            height: buttonHeight
+            onSavedQuickAnnotation: {
+                if (lastAnnotationsModel.insertObject({title: 'Anotació ràpida',desc: contents})) {
+                    annotationsTotal.select();
+                    annotationWasSaved();
+                    menuPage.savedQuickAnnotation(contents);
+                }
+            }
+        }
+
+        Common.PreviewBox {
+            id: lastAnnotations
+            width: buttonWidth
+            height: buttonHeight
+
+            model: SqlTableModel {
+                id: lastAnnotationsModel
+                tableName: 'annotations'
+                limit: 3
+                Component.onCompleted: {
+                    setSort(0,Qt.DescendingOrder);
+                    select();
+                }
+            }
+            delegate: Item {
                 width: parent.width
-                onSavedQuickAnnotation: {
-                    if (lastAnnotationsModel.insertObject({title: 'Anotació ràpida',desc: contents})) {
-                        annotationsTotal.select();
-                        annotationWasSaved();
-                        menuPage.savedQuickAnnotation(contents);
-                    }
+                height: units.fingerUnit
+                Text {
+                    id: textAnnot
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    elide: Text.ElideRight
+                    maximumLineCount: 1
+                    font.pixelSize: units.readUnit
+                    verticalAlignment: Text.AlignVCenter
+                    text: '– ' + title + ' ' + desc
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: sendSignal('openPageArgs',{page: 'ShowAnnotation', idAnnotation: id})
+                }
+            }
+            caption: qsTr('Darreres anotacions')
+            captionBackgroundColor: '#F3F781'
+            color: '#F7F8E0'
+            totalBackgroundColor: '#F2F5A9'
+            maxItems: 3
+            prefixTotal: qsTr('Hi ha')
+            totalCount: annotationsTotal.count
+            suffixTotal: qsTr('anotacions')
+            onCaptionClicked: openPage('AnnotationsList')
+            onTotalCountClicked: openPage('AnnotationsList')
+        }
+        Common.PreviewBox {
+            id: nextEvents
+            width: buttonWidth
+            height: buttonHeight
+
+            model: SqlTableModel {
+                tableName: 'schedule'
+                limit: 3
+                filters: ["ifnull(state,'') != 'done'"]
+                Component.onCompleted: {
+                    setSort(6,Qt.AscendingOrder); // Order by end date
+                    select();
                 }
             }
 
-            Common.PreviewBox {
-                id: lastAnnotations
+            delegate: Item {
                 width: parent.width
-                // Layout.preferredHeight: height
+                height: units.fingerUnit
+                RowLayout {
+                    id: textEvents
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
 
-                model: SqlTableModel {
-                    id: lastAnnotationsModel
-                    tableName: 'annotations'
-                    limit: 3
-                    Component.onCompleted: {
-                        setSort(0,Qt.DescendingOrder);
-                        select();
-                    }
-                }
-                delegate: Item {
-                    width: parent.width
-                    height: units.fingerUnit
                     Text {
-                        id: textAnnot
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
+                        Layout.fillHeight: true
+                        text: model.endDate
+                        font.bold: true
+                        font.pixelSize: units.readUnit
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
                         elide: Text.ElideRight
                         maximumLineCount: 1
                         font.pixelSize: units.readUnit
                         verticalAlignment: Text.AlignVCenter
-                        text: '– ' + title + ' ' + desc
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: sendSignal('openPageArgs',{page: 'ShowAnnotation', idAnnotation: id})
+                        text: model.event
                     }
                 }
-                caption: qsTr('Darreres anotacions')
-                captionBackgroundColor: '#F3F781'
-                color: '#F7F8E0'
-                totalBackgroundColor: '#F2F5A9'
-                maxItems: 3
-                prefixTotal: qsTr('Hi ha')
-                totalCount: annotationsTotal.count
-                suffixTotal: qsTr('anotacions')
-                onCaptionClicked: openPage('AnnotationsList')
-                onTotalCountClicked: openPage('AnnotationsList')
-            }
-            Common.PreviewBox {
-                id: nextEvents
-                width: parent.width
-                // Layout.preferredHeight: height
-
-                model: SqlTableModel {
-                    tableName: 'schedule'
-                    limit: 3
-                    filters: ["ifnull(state,'') != 'done'"]
-                    Component.onCompleted: {
-                        setSort(6,Qt.AscendingOrder); // Order by end date
-                        select();
-                    }
+                MouseArea {
+                    anchors.fill: textEvents
+                    onClicked: openPageArgs('ShowEvent',{idEvent: id})
                 }
-
-                delegate: Item {
-                    width: parent.width
-                    height: units.fingerUnit
-                    RowLayout {
-                        id: textEvents
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
-
-                        Text {
-                            Layout.fillHeight: true
-                            text: model.endDate
-                            font.bold: true
-                            font.pixelSize: units.readUnit
-                            verticalAlignment: Text.AlignVCenter
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            elide: Text.ElideRight
-                            maximumLineCount: 1
-                            font.pixelSize: units.readUnit
-                            verticalAlignment: Text.AlignVCenter
-                            text: model.event
-                        }
-                    }
-                    MouseArea {
-                        anchors.fill: textEvents
-                        onClicked: openPageArgs('ShowEvent',{idEvent: id})
-                    }
-                }
-                caption: qsTr("Pròxims terminis")
-                captionBackgroundColor: '#F7BE81'
-                color: '#F8ECE0'
-                totalBackgroundColor: '#F5D0A9'
-                maxItems: 3
-                prefixTotal: qsTr('Hi ha')
-                totalCount: scheduleTotal.count
-                suffixTotal: qsTr('esdeveniments')
-                onCaptionClicked: menuPage.openPage('Schedule')
-                onTotalCountClicked: menuPage.openPage('Schedule')
             }
-            Item {
-                Layout.fillHeight: true
-            }
+            caption: qsTr("Pròxims terminis")
+            captionBackgroundColor: '#F7BE81'
+            color: '#F8ECE0'
+            totalBackgroundColor: '#F5D0A9'
+            maxItems: 3
+            prefixTotal: qsTr('Hi ha')
+            totalCount: scheduleTotal.count
+            suffixTotal: qsTr('esdeveniments')
+            onCaptionClicked: menuPage.openPage('Schedule')
+            onTotalCountClicked: menuPage.openPage('Schedule')
         }
 
-        VisualItemModel {
-            id: buttonsModel
-            Common.BigButton {
-                width: buttonsList.width
-                title: qsTr('Anotacions')
-                onClicked: menuPage.openPage('AnnotationsList')
-            }
-            Common.BigButton {
-                width: buttonsList.width
-                title: qsTr('Agenda')
-                onClicked: menuPage.openPage('Schedule')
-            }
-            Common.BigButton {
-                width: buttonsList.width
-                title: qsTr('Pissarra')
-                onClicked: menuPage.openPage('Whiteboard')
-            }
-            Common.BigButton {
-                width: buttonsList.width
-                title: qsTr('Documents')
-                onClicked: menuPage.openPage('DocumentsList')
-            }
-            Common.BigButton {
-                width: buttonsList.width
-                title: qsTr('! Recerca de coneixement')
-                onClicked: menuPage.openPage('Researcher')
-            }
-            Common.BigButton {
-                width: buttonsList.width
-                title: qsTr('Feeds')
-                onClicked: menuPage.openPage('FeedWEIB')
-            }
-            Common.BigButton {
-                width: buttonsList.width
-                title: qsTr('Rellotge')
-                onClicked: menuPage.openPage('TimeController')
-            }
-            Common.BigButton {
-                width: buttonsList.width
-                title: qsTr('Gestor de dades')
-                onClicked: menuPage.openPage('DataMan')
-            }
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
+            title: qsTr('Anotacions')
+            onClicked: menuPage.openPage('AnnotationsList')
+        }
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
+            title: qsTr('Agenda')
+            onClicked: menuPage.openPage('Schedule')
+        }
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
+            title: qsTr('Pissarra')
+            onClicked: menuPage.openPage('Whiteboard')
+        }
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
+            title: qsTr('Documents')
+            onClicked: menuPage.openPage('DocumentsList')
+        }
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
+            title: qsTr('! Recerca de coneixement')
+            onClicked: menuPage.openPage('Researcher')
+        }
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
+            title: qsTr('Feeds')
+            onClicked: menuPage.openPage('FeedWEIB')
+        }
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
+            title: qsTr('Rellotge')
+            onClicked: menuPage.openPage('TimeController')
+        }
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
+            title: qsTr('Gestor de dades')
+            onClicked: menuPage.openPage('DataMan')
         }
 
-        ListView {
-            id: buttonsList
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            anchors.margins: units.nailUnit
-            clip: true
-            spacing: units.nailUnit
-            model: buttonsModel
-        }
+    }
+
+    GridView {
+        id: buttonsGrid
+
+        anchors.fill: parent
+        anchors.margins: units.nailUnit
+
+        cellWidth: width / 3
+        cellHeight: units.fingerUnit * 6
+
+        model: widgetsModel
     }
 
     SqlTableModel {

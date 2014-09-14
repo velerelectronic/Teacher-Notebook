@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf8"?>
+<svg viewBox="-144 -144 288 288" xmlns="http://www.w3.org/2000/svg">
+<title>“No &lt;blank>” X overlay</title>
+<path d="m-143,0a143,143 0 1,1 286,0 143,143 0 0,1 -286,0m128-112a113,113 0 0,0 -97,97h97zm-97,127a113,113 0 0,0 97,97v-97zm127,97a113,113 0 0,0 97-97h-97zm97-127a113,113 0 0,0 -97-97v97z" fill="#f00" transform="rotate(45)"/>
+</svg>

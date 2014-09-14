@@ -8,12 +8,20 @@
   * http://pixabay.com/es/pila-papeles-de-pila-notas-cuadro-156015/
   * http://pixabay.com/es/port%C3%A1til-oficina-por-escrito-151261/
 
+  * Add: http://pixabay.com/es/plus-signo-verde-mark-icono-24844/
+  * Save: http://pixabay.com/es/disquete-icono-disco-s%C3%ADmbolo-bot%C3%B3n-35952/
+  * Close: http://pixabay.com/es/se%C3%B1al-de-tr%C3%A1fico-roadsign-no-147409/
+  * Duplicate: http://pixabay.com/es/clon-duplicado-flecha-documentos-153447/
+  * Edit: http://pixabay.com/es/editar-l%C3%A1piz-la-escuela-escribir-153612/
+  * Edit: http://pixabay.com/es/l%C3%A1piz-pluma-naranja-rojo-190586/
+  * Details: http://pixabay.com/es/info-informaci%C3%B3n-ayuda-icono-apoyo-147927/
 */
 
 import QtQuick 2.2
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import QtQuick.Window 2.1
+import QtQuick.Dialogs 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
@@ -28,7 +36,7 @@ Window {
 
     onClosing: {
         close.accepted = false;
-        dpanel.selectedPage = 0;
+        dpanel.setSelectedPage(0);
     }
 
     Common.UseUnits { id: units }
@@ -87,21 +95,40 @@ Window {
 
                 LayoutMirroring.enabled: true
                 layoutDirection: ListView.LeftToRight
+
+                spacing: units.nailUnit
+                delegate: Rectangle {
+                    id: button
+                    height: buttons.height
+                    width: height
+                    color: (checked)?'white':'transparent'
+                    opacity: (button.enabled)?1.0:0.2
+
+                    property bool enabled: (model.enabled)?model.enabled:true
+                    property bool checkable: (model.checkable)?model.checkable:false
+                    property bool checked: false
+
+                    Image {
+                        anchors.fill: parent
+                        source: 'qrc:///icons/' + model.image + '.svg'
+                        fillMode: Image.PreserveAspectFit
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            if (checkable)
+                                checked = !checked;
+                            dpanel.invokeMethod(model.method);
+                        }
+                    }
+                }
+
             }
 
-            VisualItemModel {
+            ListModel {
                 id: emptyButtonsList
-                Component.onCompleted: {
-                    console.log('--->' + emptyButtonsList.objectName);
-                }
             }
         }
-    }
-
-    Binding {
-        target: buttons
-        property: 'model'
-        value: dpanel.getButtonsList(dpanel.selectedPage)
     }
 
     Common.DoublePanel {
@@ -114,6 +141,7 @@ Window {
         property int selectedPage: 0
 
         function setSelectedPage(index) {
+            console.log('Index: ' + index);
             selectedPage = index;
             updatePageChange();
         }
@@ -122,10 +150,12 @@ Window {
             var pageObj = dpanel.getItemMainPanel.getPage(index);
             if ((pageObj) && (typeof(pageObj.buttons) !== 'undefined')) {
                 console.log('Model buttons' + pageObj.buttons + ' of ' + pageObj.pageTitle);
+/*
                 var children = pageObj.buttons.children;
                 for (var i=0; i<children.length; i++) {
                     console.log(i + '-' + children[i]);
                 }
+                */
                 return pageObj.buttons;
             } else {
                 console.log('No buttons');
@@ -136,12 +166,17 @@ Window {
         function updatePageChange() {
             console.log('Auto changing to PAGE ' + selectedPage);
             dpanel.getItemMainPanel.showCurrentPage();
+            buttons.model = dpanel.getButtonsList(dpanel.selectedPage);
 
             // Title
             var pageObj = dpanel.getItemMainPanel.getPage(selectedPage);
             currentPageTitle = (pageObj.pageTitle)?pageObj.pageTitle:'';
 
             console.log('Finished changing to ' + selectedPage);
+        }
+
+        function invokeMethod(method) {
+            getItemMainPanel.getCurrentPage()[method]();
         }
 
         colorSubPanel: '#BCF5A9'
@@ -161,14 +196,14 @@ Window {
                     anchors.fill: parent
                     anchors.margins: units.nailUnit
                     font.pixelSize: units.readUnit
-                    text: ('pageTitle' in (pageListModel.get(model.index)))?(pageListModel.get(model.index)['pageTitle']):''
+                    text: (model.pageTitle)?model.pageTitle:'' // ('pageTitle' in (pageListModel.get(model.index)))?(pageListModel.get(model.index)['pageTitle']):''
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignLeft
                 }
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        dpanel.setSelectedPage(index);
+                        dpanel.setSelectedPage(model.index);
                         if (!dpanel.canShowBothPanels())
                             dpanel.toggleSubPanel();
                     }
@@ -189,14 +224,13 @@ Window {
 
             function destroyPage(index) {
                 console.log('Destroying ' + index);
+                buttons.model = emptyButtonsList;
                 if ((index>0) && (index<pagesView.count)) {
                     pagesView.removePage(index);
                 }
             }
 
             onPageDestroyed: {
-                console.log('Page destroyed');
-                buttons.model = emptyButtonsList;
                 pageListModel.remove(index);
             }
 
@@ -214,6 +248,7 @@ Window {
                 var pageTitle = (pageObj.pageTitle)?pageObj.pageTitle:pageListModel.count;
                 pagesView.showCurrentPage();
                 pageListModel.setProperty(pageListModel.count-1,'pageTitle',pageTitle);
+                buttons.model = dpanel.getButtonsList(dpanel.selectedPage);
 
                 // Annotations
                 pagesView.attach(pageObj,'canceledAnnotation', function(changes) {
@@ -240,27 +275,17 @@ Window {
                 });
 
                 // Document list
-                pagesView.attach(pageObj,'openDocument', function(document) {
-                    var ext = /^.+\.([^\.]*)$/.exec(document);
-                    var extensio = (ext == null)?'':ext[1];
-                    console.log(extensio);
-
-                    switch(extensio) {
-                    case 'xml':
-                        openSubPage('ProgramacioAula',{document: document});
-                        break;
-                    case 'jpg':
-                    case 'png':
-                    case 'svg':
-                        openSubPage('ImageMapper',{background: document});
-                        break;
-                    case 'backup':
-                        openSubPage('DataMan',{document: document});
-                        break;
-                    default:
-                        messageBox.publishMessage(qsTr("S'obrira el document «") + document + "»");
-                        Qt.openUrlExternally(document);
-                    }
+                pagesView.attach(pageObj,'createdFile', function(file) {
+                    messageBox.publishMessage('Creat el fitxer «' + file + '»');
+                });
+                pagesView.attach(pageObj,'notCreatedFile', function(file) {
+                    messageBox.publishMessage('El fitxer «' + file + '» ja existeix');
+                });
+                pagesView.attach(pageObj,'openDocument', function(page,document) {
+                    openSubPage(page, {document: document});
+                });
+                pagesView.attach(pageObj,'openingDocumentExternally', function(document) {
+                    messageBox.publishMessage(qsTr("Obrint el document «") + document + "»");
                 });
 
                 // Events
@@ -305,6 +330,16 @@ Window {
                     messageBox.publishMessage(qsTr("S'ha carregat el document «" + document + "»"));
                 });
                 pagesView.attach(pageObj,'documentSaved', function (document) {
+                    messageBox.publishMessage(qsTr('Desat el document «') + document + '»');
+                });
+                pagesView.attach(pageObj, 'documentDiscarded', function(document,changes) {
+                    if (changes)
+                        messageBox.publishMessage(qsTr("S'han descartat els canvis fets al document «") + document + '»');
+                    removeCurrentPage();
+                });
+
+                // Text viewer
+                pagesView.attach(pageObj,'savedDocument', function (document) {
                     messageBox.publishMessage(qsTr('Desat el document «') + document + '»');
                 });
 

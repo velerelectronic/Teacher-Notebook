@@ -11,6 +11,21 @@ FileIO::FileIO(QObject *parent) :
 
 }
 
+bool FileIO::create() {
+    if (mSource.isEmpty()) {
+        return false;
+    }
+
+    QFile file(mSource);
+    if (file.open(QIODevice::ReadOnly)) {
+        file.close();
+        return false;
+    }
+    file.open(QIODevice::WriteOnly);
+    file.close();
+    return true;
+}
+
 QString FileIO::source() {
     return mSource;
 }

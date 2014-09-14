@@ -42,6 +42,9 @@ public slots:
     Q_INVOKABLE bool removeObject(int index);
     Q_INVOKABLE bool updateObject(int index,const QString &contents);
 
+    Q_INVOKABLE bool moveToPrevious(int index);
+    Q_INVOKABLE bool moveToNext(int index);
+
 private:
     QString innerTagName;
     QDomElement rootElement;

@@ -13,7 +13,8 @@ SOURCES += main.cpp \
     imagedata.cpp \
     sqltablemodel.cpp \
     databasebackup.cpp \
-    standardpaths.cpp
+    standardpaths.cpp \
+    XmlGrid/xmlgrid.cpp
 
 RESOURCES += qml.qrc \
     icons.qrc \
@@ -35,7 +36,8 @@ HEADERS += \
     imagedata.h \
     sqltablemodel.h \
     databasebackup.h \
-    standardpaths.h
+    standardpaths.h \
+    XmlGrid/xmlgrid.h
 
 OTHER_FILES += \
     android/AndroidManifest.xml

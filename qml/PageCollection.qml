@@ -22,15 +22,22 @@ Rectangle {
     function addPage(page,params) {
         var newPageComponent = Qt.createComponent('qrc:///qml/' + page + '.qml');
 
-        var args = {width: Qt.binding(function() { return pageCollection.width; }), height: Qt.binding(function() { return pageCollection.height; })};
+        if (newPageComponent.status == Component.Ready) {
+            var args = {width: Qt.binding(function() { return pageCollection.width; }), height: Qt.binding(function() { return pageCollection.height; })};
 
-        for (var prop in params) {
-            args[prop] = params[prop];
+            for (var prop in params) {
+                args[prop] = params[prop];
+            }
+
+            var pageObj = newPageComponent.createObject(pageCollection,args);
+
+            return pageObj;
+        } else {
+            if (newPageComponent.status == Component.Error) {
+                console.log('Error in page ' + page + ' ' + newPageComponent.errorString());
+                return null;
+            }
         }
-
-        var pageObj = newPageComponent.createObject(pageCollection,args);
-
-        return pageObj;
     }
 
     function showCurrentPage() {
@@ -50,6 +57,10 @@ Rectangle {
 
     function getPage(index) {
         return pageCollection.children[index];
+    }
+
+    function getCurrentPage() {
+        return getPage(currentPage);
     }
 
     function removePage(index) {

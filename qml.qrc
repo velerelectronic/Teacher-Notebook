@@ -30,5 +30,7 @@
         <file>qml/CachedModel.qml</file>
         <file>qml/FeedDelegate.qml</file>
         <file>qml/PageCollection.qml</file>
+        <file>qml/TextViewer.qml</file>
+        <file>qml/MultipleGrid.qml</file>
     </qresource>
 </RCC>

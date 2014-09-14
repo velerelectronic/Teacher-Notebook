@@ -17,6 +17,19 @@ Rectangle {
 
     property var buttons: buttonsModel
 
+    ListModel {
+        id: buttonsModel
+        ListElement {
+            method: 'newAnnotation'
+            image: 'plus-24844'
+        }
+    }
+
+    function newAnnotation() {
+        annotations.editAnnotation(-1,(searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'),'');
+    }
+
+    /*
     VisualItemModel {
         id: buttonsModel
         Button {
@@ -28,7 +41,7 @@ Rectangle {
             }
         }
     }
-
+*/
 
     Common.UseUnits { id: units }
 

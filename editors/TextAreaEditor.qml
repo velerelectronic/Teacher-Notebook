@@ -9,6 +9,7 @@ Common.AbstractEditor {
 
     signal changesAccepted
     signal changesCanceled
+    property bool edit: true
 
     Common.UseUnits { id: units }
 
@@ -21,6 +22,8 @@ Common.AbstractEditor {
         anchors.top: parent.top
         anchors.bottom: buttons.top
         anchors.margins: units.nailUnit
+
+        edit: editor.edit
 
 //        border.color: 'black'
         fontPixelSize: units.readUnit

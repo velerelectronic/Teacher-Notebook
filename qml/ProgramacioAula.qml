@@ -3,44 +3,66 @@ import QtQuick 2.2
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import FileIO 1.0
+import QtQuick.Dialogs 1.1
 import PersonalTypes 1.0
 import 'qrc:///editors' as Editors
 
-Rectangle {
+import 'qrc:///common' as Common
+
+Common.AbstractEditor {
     id: xmlViewer
     property string pageTitle: qsTr('Programació d\'aula');
     property string document
     property bool becameVisible: false
     property alias buttons: buttonsModel
 
-    signal documentSaved(string document)
     signal loadingDocument(string document)
     signal loadedDocument(string document)
+    signal documentSaved(string document)
+    signal documentDiscarded(string document,bool changes)
+
+    // From iteminspector
+    signal copyDataRequested
+
+    property bool editMode: false
 
     width: parent.width
     height: parent.height
+
+    color: 'white'
 
     TeachingPlanning {
         id: xmlReader
     }
 
-    VisualItemModel {
+    ListModel {
         id: buttonsModel
-        Button {
-            id: editButton
-            text: qsTr('Edita')
-            checkable: true
-            checked: false
-        }
 
-        Button {
-            id: saveButton
-            text: qsTr('Desa canvis')
-            onClicked: {
-                if (xmlReader.save())
-                    documentSaved(document);
-            }
+        Component.onCompleted: {
+            buttonsModel.append({method: 'saveChanges', image: 'floppy-35952', enabled: xmlViewer.changes});
+            buttonsModel.append({method: 'toggleEditMode', image: 'edit-153612', checkable: true});
+            buttonsModel.append({method: 'duplicateItem', image: 'clone-153447'});
+            buttonsModel.append({method: 'discardChanges', image: 'road-sign-147409', enabled: xmlViewer.changes});
         }
+    }
+
+    function toggleEditMode() {
+        editMode = !editMode;
+    }
+
+    function saveChanges() {
+        messageSave.open();
+    }
+
+    function duplicateItem() {
+        messageCopy.open();
+    }
+
+    function discardChanges() {
+        if (xmlViewer.changes)
+            messageDiscard.open();
+        else
+            xmlViewer.documentDiscarded(document,xmlViewer.changes);
     }
 
     VisualItemModel {
@@ -60,7 +82,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.unitTitle
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -70,7 +93,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.project
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -80,7 +104,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.support
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -90,7 +115,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.group
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -100,7 +126,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.areas
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -110,7 +137,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.keywords
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -120,7 +148,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.timing
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
         }
@@ -129,9 +158,11 @@ Rectangle {
             height: sectionsList.height
             title: qsTr('Introducció')
             Editors.XmlListEditor {
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
                 dataModel: xmlReader.introduction
-                editable: editButton.checked
+                editable: editMode
+                onNewChanges: xmlViewer.setChanges(true)
             }
         }
         PlanningMainSection {
@@ -139,9 +170,11 @@ Rectangle {
             height: sectionsList.height
             title: qsTr('Objectius')
             Editors.XmlListEditor {
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
                 dataModel: xmlReader.objectives
-                editable: editButton.checked
+                editable: editMode
+                onNewChanges: xmlViewer.setChanges(true)
             }
         }
         PlanningMainSection {
@@ -156,7 +189,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceLing
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -166,7 +200,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceMat
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -176,7 +211,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceTic
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -186,7 +222,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceSoc
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -196,7 +233,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceCult
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -206,7 +244,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceLearn
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -216,7 +255,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.competenceAuto
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
         }
@@ -232,7 +272,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.assessmentTasks
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -242,7 +283,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.assessmentCriteria
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -252,7 +294,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.assessmentInstruments
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
         }
@@ -268,7 +311,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.contentsKnowledge
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -278,7 +322,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.contentsHabilities
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -288,7 +333,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.contentsLanguage
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
             PlanningSubSection {
@@ -298,7 +344,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     dataModel: xmlReader.contentsValues
-                    editable: editButton.checked
+                    editable: editMode
+                    onNewChanges: xmlViewer.setChanges(true)
                 }
             }
         }
@@ -307,9 +354,11 @@ Rectangle {
             height: sectionsList.height
             title: qsTr('Recursos')
             Editors.XmlListEditor {
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
                 dataModel: xmlReader.resources
-                editable: editButton.checked
+                editable: editMode
+                onNewChanges: xmlViewer.setChanges(true)
             }
         }
         PlanningMainSection {
@@ -317,9 +366,11 @@ Rectangle {
             height: sectionsList.height
             title: qsTr('Referències')
             Editors.XmlListEditor {
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
                 dataModel: xmlReader.references
-                editable: editButton.checked
+                editable: editMode
+                onNewChanges: xmlViewer.setChanges(true)
             }
         }
         PlanningMainSection {
@@ -327,9 +378,11 @@ Rectangle {
             height: sectionsList.height
             title: qsTr('Comentaris')
             Editors.XmlListEditor {
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
                 dataModel: xmlReader.comments
-                editable: editButton.checked
+                editable: editMode
+                onNewChanges: xmlViewer.setChanges(true)
             }
         }
         PlanningMainSection {
@@ -337,22 +390,87 @@ Rectangle {
             height: sectionsList.height
             title: qsTr('Sessions')
             Editors.XmlListEditor {
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
+//                expand: true
                 dataModel: xmlReader.activities
-                editable: editButton.checked
+                editable: editMode
+                onNewChanges: xmlViewer.setChanges(true)
             }
         }
     }
 
     ListView {
+        id: sectionNamesList
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: units.nailUnit
+        height: units.fingerUnit
+        orientation: ListView.Horizontal
+        spacing: units.nailUnit
+        model: [
+            qsTr('Dades generals'),
+            qsTr('Introducció'),
+            qsTr('Objectius'),
+            qsTr('Competències bàsiques'),
+            qsTr('Avaluació'),
+            qsTr('Continguts'),
+            qsTr('Recursos'),
+            qsTr('Referències'),
+            qsTr('Comentaris'),
+            qsTr('Sessions')
+        ]
+        delegate: Button {
+            text: modelData
+            onClicked: sectionsList.currentIndex = model.index
+        }
+    }
+
+    ListView {
         id: sectionsList
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: sectionNamesList.bottom
+        anchors.bottom: parent.bottom
         anchors.margins: units.nailUnit
         model: mainSectionsModel
         orientation: ListView.Horizontal
         boundsBehavior: Flickable.StopAtBounds
-        snapMode: ListView.SnapToItem
+        snapMode: ListView.SnapOneItem
+        highlightMoveDuration: 500
         clip: true
+    }
+
+    MessageDialog {
+        id: messageSave
+        title: qsTr('Desar canvis');
+        text: qsTr('Es desaran els canvis. Vols continuar?')
+        standardButtons: StandardButton.Ok | StandardButton.Cancel
+        onAccepted: {
+            if (xmlReader.save()) {
+                documentSaved(document);
+                xmlViewer.setChanges(false);
+            }
+        }
+    }
+    MessageDialog {
+        id: messageDiscard
+        title: qsTr('Descartar canvis');
+        text: qsTr('Es descartaran els canvis. N\'estàs segur?')
+        standardButtons: StandardButton.Ok | StandardButton.Cancel
+        onAccepted: {
+            var changes = xmlViewer.changes;
+            xmlViewer.setChanges(false);
+            xmlViewer.documentDiscarded(document,changes);
+        }
+    }
+    MessageDialog {
+        id: messageCopy
+        title: qsTr('Duplicar');
+        text: qsTr('Es duplicaran totes les dades a un nou element. Vols continuar?')
+        standardButtons: StandardButton.Ok | StandardButton.Cancel
+        onAccepted: xmlViewer.copyDataRequested();
     }
 
     Component.onCompleted: {

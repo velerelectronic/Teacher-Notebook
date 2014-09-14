@@ -53,6 +53,8 @@ public:
     Q_INVOKABLE void loadXml();
     Q_INVOKABLE bool save();
 
+    // Getters
+
     const QString &source();
     QString xml();
 

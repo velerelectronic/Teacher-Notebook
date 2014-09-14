@@ -16,12 +16,16 @@ Rectangle {
 
     property var buttons: buttonsModel
 
-    VisualItemModel {
+    ListModel {
         id: buttonsModel
-        Button {
-            text: qsTr('Nou')
-            onClicked: schedule.newEvent()
+        ListElement {
+            method: 'createEvent'
+            image: 'plus-24844'
         }
+    }
+
+    function createEvent() {
+        schedule.newEvent();
     }
 
     Common.UseUnits { id: units }

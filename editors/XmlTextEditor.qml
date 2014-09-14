@@ -1,13 +1,17 @@
 import QtQuick 2.2
 import QtQuick.Controls 1.1
 import QtQuick.Dialogs 1.1
+import QtQuick.Layouts 1.1
+import 'qrc:///common' as Common
 
-Rectangle {
+Common.AbstractEditor {
     id: editor
     property string title: ''
     property bool editable: false
     signal updatedTitle(string newtitle)
     signal eraseContent()
+    signal moveToPrevious()
+    signal moveToNext()
 
     states: [
         State {
@@ -48,7 +52,7 @@ Rectangle {
         Text {
             id: mainText
             anchors.left: parent.left
-            anchors.right: (editor.editable)?deleteButton.left:parent.right
+            anchors.right: (editor.editable)?buttons.left:parent.right
             anchors.top: parent.top
             height: Math.max(contentHeight,units.fingerUnit * 1.5)
 
@@ -57,22 +61,37 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         }
-        Button {
-            id: deleteButton
-            visible: editor.editable
-            text: qsTr('Elimina')
+        RowLayout {
+            id: buttons
             anchors.top: parent.top
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.margins: units.nailUnit
-            onClicked: eraseDialog.open()
+
+            visible: editor.editable
+            Button {
+                Layout.fillHeight: true
+                text: qsTr('Amunt')
+                onClicked: moveToPrevious()
+            }
+            Button {
+                Layout.fillHeight: true
+                text: qsTr('Avall')
+                onClicked: moveToNext()
+            }
+            Button {
+                Layout.fillHeight: true
+                text: qsTr('Elimina')
+                onClicked: eraseDialog.open()
+            }
         }
+
         MouseArea {
             enabled: editor.state == 'show'
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.left: parent.left
-            anchors.right: (deleteButton.visible)?deleteButton.left:parent.right
+            anchors.right: (buttons.visible)?buttons.left:parent.right
             onClicked: {
                 if (editor.editable) {
                     editor.state = 'edit';
@@ -96,6 +115,7 @@ Rectangle {
 //            title = textEditor.content;
             editor.state = 'show';
             updatedTitle(textEditor.content);
+            editor.setChanges(true);
         }
         onChangesCanceled: editor.state = 'show'
     }

@@ -39,39 +39,41 @@ Common.AbstractEditor {
     signal discardDataRequested(bool changes)
     signal closePageRequested()
 
-    VisualItemModel {
+    ListModel {
         id: buttonsModel
-        Button {
-            height: units.fingerUnit
-            enabled: itemInspector.changes
-            text: qsTr('Desa')
-            onClicked: {
-                collapseEditors();
-                messageSave.open();
-            }
+        ListElement {
+            image: 'floppy-35952'
+            method: 'saveItem'
         }
-        Button {
-            height: units.fingerUnit
-            text: qsTr('Tanca')
-            onClicked: {
-                collapseEditors();
-                if (itemInspector.changes)
-                    messageDiscard.open();
-                else
-                    closePageRequested();
-            }
+
+        ListElement {
+            image: 'road-sign-147409'
+            method: 'closeItem'
         }
-        Button {
-            height: units.fingerUnit
-            visible: (itemInspector.idEvent != -1)
-            text: qsTr('Duplica')
-            onClicked: {
-                collapseEditors();
-                messageCopy.open();
-            }
+
+        ListElement {
+            image: 'clone-153447'
+            method: 'duplicateItem'
         }
     }
 
+    function saveItem() {
+        collapseEditors();
+        messageSave.open();
+    }
+
+    function closeItem() {
+        collapseEditors();
+        if (itemInspector.changes)
+            messageDiscard.open();
+        else
+            closePageRequested();
+    }
+
+    function duplicateItem() {
+        collapseEditors();
+        messageCopy.open();
+    }
 
     Image {
         id: backgroundImage
