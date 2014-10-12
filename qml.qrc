@@ -32,5 +32,7 @@
         <file>qml/PageCollection.qml</file>
         <file>qml/TextViewer.qml</file>
         <file>qml/MultipleGrid.qml</file>
+        <file>qml/AssessmentGrid.qml</file>
+        <file>qml/AssessmentGeneralEditor.qml</file>
     </qresource>
 </RCC>

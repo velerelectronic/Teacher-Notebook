@@ -9,7 +9,8 @@ import PersonalTypes 1.0
 Rectangle {
     color: 'yellow'
     property string pageTitle: qsTr('Mapa d\'imatge')
-    property string background: ''
+    property string document: ''
+    property string background: document
 
     Common.UseUnits {
         id: units
@@ -47,6 +48,10 @@ Rectangle {
                     }
                 }
             }
+            Button {
+                text: qsTr('Obre')
+                onClicked: Qt.openUrlExternally(folderList.get(editArea.currentIndex,'fileURL'))
+            }
 
             Button {
                 id: smoothnessButton
@@ -71,36 +76,24 @@ Rectangle {
             clip: true
             highlightFollowsCurrentItem: true
 
-            property real perfectScale: 1
-            property real imagesScale: 1
-            property real imagesHeight: (editArea.height-2*units.nailUnit) * imagesScale
-            property real imagesWidth: (editArea.width-2*units.nailUnit) * imagesScale
+//            property real perfectScale: 1
+//            property real imagesScale: 1
+//            property real imagesHeight: (editArea.height-2*units.nailUnit) * imagesScale
+//            property real imagesWidth: (editArea.width-2*units.nailUnit) * imagesScale
             property bool isVertical: orientation == ListView.Vertical
-            property int openedImageIndex: -1
-            property bool allImagesLoaded: false
+//            property int openedImageIndex: -1
+//            property bool allImagesLoaded: false
 
-            property int delegatesCount: contentItem.children.length
-
-            onMovementStarted: {
-                for (var i=0; i<delegatesCount; i++) {
-                    var item = contentItem.children[i];
-                    if (item.objectName == 'imageDelegate') {
-                        item.activate();
-                    }
-                }
-            }
+//            property int delegatesCount: contentItem.children.length
 
             model: folderList
             delegate: imageDelegate
-            onOpenedImageIndexChanged: {
-                positionViewAtIndex(openedImageIndex,ListView.Top);
-            }
         }
     }
 
     FolderListModel {
         id: folderList
-        folder: background.substring(0, background.lastIndexOf("/") + 1)
+        folder: document.substring(0, document.lastIndexOf("/") + 1)
         nameFilters: upperAndLower(["jpg","jpeg","png","gif","svg"])
         showDirs: false
         showFiles: true
@@ -114,21 +107,6 @@ Rectangle {
             }
             return res;
         }
-
-        function getImageIndex() {
-            for (var i=0; i<folderList.count; i++) {
-                if (folderList.get(i,'fileURL') == background) {
-                    console.log('Ara ' + i);
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        onCountChanged: {
-            editArea.openedImageIndex = folderList.getImageIndex();
-            editArea.allImagesLoaded = true;
-        }
     }
 
     Component {
@@ -137,15 +115,10 @@ Rectangle {
         Rectangle {
             id: mainItem
             objectName: 'imageDelegate'
-            width: editArea.imagesWidth + units.nailUnit
-            height: editArea.imagesHeight + units.nailUnit
+            width: editArea.width
+            height: editArea.height
             color: 'white'
             border.color: 'black'
-
-            function activate() {
-                if (image.source == '')
-                    image.source = Qt.binding(function() { return model.fileURL; });
-            }
 
 //            property bool imageIsVisible: editArea.allImagesLoaded != -1 && getVisibilityOfImage(mainItem.x,mainItem.x+mainItem.width,editArea.contentX,editArea.contentX+editArea.width)
 
@@ -163,9 +136,7 @@ Rectangle {
                 id: image
                 anchors.fill: parent
                 anchors.margins: units.nailUnit
-                source: ''
-                sourceSize.width: editArea.imagesWidth
-                sourceSize.height: editArea.imagesHeight
+                source: model.fileURL
 
                 smooth: smoothnessButton.checked
                 fillMode: Image.PreserveAspectFit

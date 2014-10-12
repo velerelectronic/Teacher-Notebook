@@ -161,6 +161,13 @@ Rectangle {
         Common.BigButton {
             width: buttonWidth
             height: buttonHeight
+            title: qsTr('Avaluació')
+            onClicked: menuPage.openPage('AssessmentGrid')
+        }
+
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
             title: qsTr('! Recerca de coneixement')
             onClicked: menuPage.openPage('Researcher')
         }
@@ -182,7 +189,6 @@ Rectangle {
             title: qsTr('Gestor de dades')
             onClicked: menuPage.openPage('DataMan')
         }
-
     }
 
     GridView {

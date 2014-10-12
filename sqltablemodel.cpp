@@ -215,6 +215,28 @@ bool SqlTableModel::select() {
     }
 }
 
+QStringList SqlTableModel::selectDistinct(QString field,QString order,QString filter,bool ascending) {
+/*
+    QSqlQueryModel::setQuery("SELECT DISTINCT " + field + " FROM " + this->innerTableName + " ORDER BY " + order + " DESC ");
+    qDebug() << "SDIST";
+    qDebug() << this->query().lastQuery();
+    countChanged();
+    return !query().lastError().isValid();
+*/
+
+    QStringList vector;
+    QSqlQuery query("SELECT DISTINCT " + field + " FROM " + this->innerTableName + ((filter != "")?(" WHERE " + filter):"") + " ORDER BY " + order + ((ascending)?" ASC":" DESC "));
+    qDebug() << query.executedQuery();
+    qDebug() << query.size();
+    bool iter = query.first();
+    while (iter) {
+        qDebug() << query.record();
+        vector.append(query.record().value(0).toString());
+        iter = query.next();
+    }
+    return vector;
+}
+
 void SqlTableModel::selectObject(int row,bool activate) {
     qDebug() << "Selecting object in " << row << " " << activate;
     if (activate)

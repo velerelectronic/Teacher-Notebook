@@ -92,4 +92,11 @@ Rectangle {
     function getDate() {
         return datePicker.date;
     }
+
+    function dateString() {
+        var d = datePicker.date;
+        var month = d.getMonth()+1;
+        var day = d.getDate();
+        return d.getFullYear() + '/' + ((month<10)?'0':'') + month + '/' + ((day<10)?'0':'') + day;
+    }
 }

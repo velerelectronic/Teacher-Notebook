@@ -357,6 +357,16 @@ Window {
                     messageBox.publishMessage(qsTr("Error en intentar introduir el fitxer ") + file + qsTr(" dins la base de dades"));
                 });
 
+                // Assessment Grid
+                pagesView.attach(pageObj, 'openTabularEditor', function() {
+                    openSubPage('AssessmentGeneralEditor',{});
+                });
+                pagesView.attach(pageObj, 'savedGridValues', function(number) {
+                    messageBox.publishMessage(qsTr("S'han desat " + number + " valors a la graella d'avaluació"));
+                });
+                pagesView.attach(pageObj, 'closeGridEditor', function() {
+                    removeCurrentPage();
+                });
                 // Altres - revisar
                 pagesView.attach(pageObj,'openDocumentsList', function () {
                     openSubPage('DocumentsList',{},'');

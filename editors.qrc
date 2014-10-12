@@ -9,5 +9,7 @@
         <file>editors/XmlTextEditor.qml</file>
         <file>editors/XmlListEditor.qml</file>
         <file>editors/ImageEditor.qml</file>
+        <file>editors/TableCell.qml</file>
+        <file>editors/FieldEditor.qml</file>
     </qresource>
 </RCC>

@@ -85,6 +85,44 @@ Rectangle {
                     menu: Menu {
                         title: qsTr('Ordenació')
                         MenuItem {
+                            text: qsTr('Calendari')
+                            onTriggered: {
+                                eventCalendar.visible = !eventCalendar.visible;
+                                eventModel.clear();
+                                if (eventCalendar.visible) {
+                                    var previousFilter = scheduleModel.filters;
+                                    var date = new Date();
+                                    // Adjust day
+                                    date.setDate(date.getDate() - date.getDay() + 1);
+
+                                    for (var i=7*5; i>0; i--) {
+                                        var month = date.getMonth()+1;
+                                        month = ((month<10)?'0':'') + month;
+                                        var day = date.getDate();
+                                        day = ((day<10)?'0':'') + day;
+
+                                        var dateString = date.getFullYear() + '-' + month + '-' + day;
+                                        var dateFilter = "startDate='" + dateString + "' OR endDate='" + dateString + "'";
+                                        scheduleModel.filters = previousFilter;
+                                        scheduleModel.filters.push(dateFilter);
+                                        scheduleModel.select();
+                                        var events = [];
+                                        if (scheduleModel.count>0) {
+                                            console.log('hi ha esdeveniment');
+                                            for (var j=0; j<scheduleModel.count; j++)
+                                                events.push(scheduleModel.getObjectInRow(j)['event']);
+                                        }
+                                        console.log(events);
+
+                                        eventModel.append({day: dateString, events: JSON.stringify(events)});
+                                        date.setDate(date.getDate()+1);
+                                    }
+                                    scheduleModel.filters = previousFilter;
+                                }
+                            }
+                        }
+                        MenuSeparator {}
+                        MenuItem {
                             text: qsTr('Per data inici')
                             onTriggered: eventList.order = 1;
                         }
@@ -115,115 +153,185 @@ Rectangle {
             onDeleteItems: deletedEvents(scheduleModel.removeSelectedObjects())
         }
 
-        ListView {
-            id: eventList
+        Item {
             Layout.preferredWidth: parent.width
             Layout.fillHeight: true
-            property int order: 0
-            property int stateType: NotebookEvent.StateNotDone
-            clip: true
 
-            onOrderChanged: {
-                switch(eventList.order) {
-                case 1:
-                    scheduleModel.setSort(4,Qt.AscendingOrder);
-                    break;
-                case 2:
-                    scheduleModel.setSort(6,Qt.AscendingOrder);
-                    break;
-                case 3:
-                    scheduleModel.setSort(4,Qt.DescendingOrder);
-                    break;
-                case 4:
-                    scheduleModel.setSort(6,Qt.DescendingOrder);
-                    break;
-                }
-                scheduleModel.select();
-            }
+            ListView {
+                id: eventList
+                anchors.fill: parent
 
-            onStateTypeChanged: {
-                var filter;
-                switch(eventList.stateType) {
-                case NotebookEvent.StateNotDone:
-                    filter = ["ifnull(state,'') != 'done'"];
-                    break;
-                case NotebookEvent.StateDone:
-                    filter = ["state = 'done'"];
-                    break;
-                case NotebookEvent.StateAll:
-                default:
-                    filter = [];
-                }
+                property int order: 0
+                property int stateType: NotebookEvent.StateNotDone
+                clip: true
 
-                scheduleModel.filters = filter;
-                scheduleModel.select();
-            }
-
-            model: scheduleModel
-            delegate: ScheduleItem {
-                id: oneScheduleItem
-                anchors.left: parent.left
-                anchors.right: parent.right
-                state: {
-                    if (model.selected)
-                        return 'selected'
-                    else {
-                        if ((model.state) && (model.state=='done')) {
-                            return 'done'
-                        } else {
-                            return 'basic'
-                        }
+                onOrderChanged: {
+                    switch(eventList.order) {
+                    case 1:
+                        scheduleModel.setSort(4,Qt.AscendingOrder);
+                        break;
+                    case 2:
+                        scheduleModel.setSort(6,Qt.AscendingOrder);
+                        break;
+                    case 3:
+                        scheduleModel.setSort(4,Qt.DescendingOrder);
+                        break;
+                    case 4:
+                        scheduleModel.setSort(6,Qt.DescendingOrder);
+                        break;
                     }
+                    scheduleModel.select();
                 }
-                event: Storage.convertNull(model.event)
-                desc: Storage.convertNull(model.desc)
-                startDate: Storage.convertNull(model.startDate)
-                startTime: Storage.convertNull(model.startTime)
-                endDate: Storage.convertNull(model.endDate)
-                endTime: Storage.convertNull(model.endTime)
-                stateEvent: Storage.convertNull(model.state)
 
-                onScheduleItemSelected: {
-                    if (editBox.state == 'show') {
-                        scheduleModel.selectObject(model.index,!scheduleModel.isSelectedObject(model.index));
-                    } else {
-                        switch(oneScheduleItem.state) {
-                        case 'basic':
-                            oneScheduleItem.state = 'expanded';
-                            break;
-                        case 'expanded':
-                            oneScheduleItem.state = 'basic';
-                            break;
-                        default:
-                            break;
-                        }
+                onStateTypeChanged: {
+                    var filter;
+                    switch(eventList.stateType) {
+                    case NotebookEvent.StateNotDone:
+                        filter = ["ifnull(state,'') != 'done'"];
+                        break;
+                    case NotebookEvent.StateDone:
+                        filter = ["state = 'done'"];
+                        break;
+                    case NotebookEvent.StateAll:
+                    default:
+                        filter = [];
                     }
-                }
-                onScheduleItemLongSelected: {
-                    schedule.editEvent(id,event,desc,startDate,startTime,endDate,endTime);
-                }
-            }
-            snapMode: ListView.SnapToItem
 
-            section.property: ((order==1)||(order==3))?"startDate":"endDate"
-            section.criteria: ViewSection.FullString
-            section.labelPositioning: ViewSection.InlineLabels
-            section.delegate: Component {
-                Rectangle {
+                    scheduleModel.filters = filter;
+                    scheduleModel.select();
+                }
+
+                model: scheduleModel
+                delegate: ScheduleItem {
+                    id: oneScheduleItem
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    color: 'white'
-                    height: units.fingerUnit
-                    Text {
-                        anchors.fill: parent
-                        font.bold: true
-                        font.pixelSize: units.readUnit
-                        verticalAlignment: Text.AlignBottom
-                        text: ((eventList.order==1)||(eventList.order==3)?qsTr('A partir de'):qsTr('Fins a')) + ' ' + (section!=''?(new Date()).fromYYYYMMDDFormat(section).toLongDate():qsTr('no especificat'))
+                    state: {
+                        if (model.selected)
+                            return 'selected'
+                        else {
+                            if ((model.state) && (model.state=='done')) {
+                                return 'done'
+                            } else {
+                                return 'basic'
+                            }
+                        }
+                    }
+                    event: Storage.convertNull(model.event)
+                    desc: Storage.convertNull(model.desc)
+                    startDate: Storage.convertNull(model.startDate)
+                    startTime: Storage.convertNull(model.startTime)
+                    endDate: Storage.convertNull(model.endDate)
+                    endTime: Storage.convertNull(model.endTime)
+                    stateEvent: Storage.convertNull(model.state)
+
+                    onScheduleItemSelected: {
+                        if (editBox.state == 'show') {
+                            scheduleModel.selectObject(model.index,!scheduleModel.isSelectedObject(model.index));
+                        } else {
+                            switch(oneScheduleItem.state) {
+                            case 'basic':
+                                oneScheduleItem.state = 'expanded';
+                                break;
+                            case 'expanded':
+                                oneScheduleItem.state = 'basic';
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    onScheduleItemLongSelected: {
+                        schedule.editEvent(id,event,desc,startDate,startTime,endDate,endTime);
+                    }
+                }
+                snapMode: ListView.SnapToItem
+
+                section.property: ((order==1)||(order==3))?"startDate":"endDate"
+                section.criteria: ViewSection.FullString
+                section.labelPositioning: ViewSection.InlineLabels
+                section.delegate: Component {
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        color: 'white'
+                        height: units.fingerUnit
+                        Text {
+                            anchors.fill: parent
+                            font.bold: true
+                            font.pixelSize: units.readUnit
+                            verticalAlignment: Text.AlignBottom
+                            text: ((eventList.order==1)||(eventList.order==3)?qsTr('A partir de'):qsTr('Fins a')) + ' ' + (section!=''?(new Date()).fromYYYYMMDDFormat(section).toLongDate():qsTr('no especificat'))
+                        }
                     }
                 }
             }
+
+            GridView {
+                id: eventCalendar
+                anchors.fill: parent
+                visible: false
+                interactive: true
+                clip: true
+
+                cellHeight: width / 7
+                cellWidth: cellHeight
+                model: ListModel {
+                    id: eventModel
+                    onCountChanged: console.log(count);
+                }
+
+                delegate: Rectangle {
+                    id: singleDayRectangle
+                    width: eventCalendar.cellWidth
+                    height: eventCalendar.cellHeight
+                    border.color: 'black'
+                    color: 'white'
+                    Text {
+                        id: dayText
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        height: contentHeight
+                        anchors.margins: units.nailUnit
+                        color: 'black'
+                        font.bold: true
+                        font.pixelSize: units.readUnit
+                        text: model.day
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    }
+                    ListView {
+                        id: eventsOfDay
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: dayText.bottom
+                        anchors.bottom: parent.bottom
+                        model: JSON.parse(events)
+                        clip: true
+                        boundsBehavior: ListView.StopAtBounds
+
+                        delegate: Rectangle {
+                            width: eventsOfDay.width
+                            height: units.fingerUnit
+                            radius: units.fingerUnit / 2
+                            border.color: 'black'
+                            color: '#99FF99'
+
+                            Text {
+                                anchors.fill: parent
+                                anchors.margins: units.nailUnit
+                                anchors.leftMargin: units.fingerUnit / 2
+                                anchors.rightMargin: units.fingerUnit / 2
+                                text: modelData
+                                font.pixelSize: units.readUnit
+                            }
+                        }
+                    }
+                }
+            }
+
         }
+
     }
 
     Component.onCompleted: {
