@@ -15,6 +15,7 @@ Main features
 -------------
 * Schedule to organize tasks
 * Annotations list
+* Assessment grids
 * Teaching Plannings in XML format (read-only)
 * Paint on a blackboard
 * Backup data
