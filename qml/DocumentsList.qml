@@ -23,7 +23,7 @@ Rectangle {
     property string goBack: ''
     property var buttons: buttonsModel
 
-    signal openDocument(string page,string directory)
+    signal openDocument(string page,string document)
     signal openingDocumentExternally(string document)
     signal createdFile(string file)
     signal notCreatedFile(string file)

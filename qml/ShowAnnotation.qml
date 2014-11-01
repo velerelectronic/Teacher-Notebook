@@ -9,8 +9,8 @@ ItemInspector {
     id: annotationEditor
     pageTitle: qsTr("Editor d'anotacions")
 
-    signal savedAnnotation(string id,string annotation, string desc)
     signal canceledAnnotation(bool changes)
+    signal closePage(string message)
 
     property int idAnnotation: -1
     property string annotation: ''
@@ -25,8 +25,7 @@ ItemInspector {
 
     onSaveDataRequested: {
         prepareDataAndSave(idAnnotation);
-        annotationEditor.setChanges(false);
-        annotationEditor.savedAnnotation(idAnnotation,annotation,desc);
+        closePage('Anotació desada: títol «' + annotation + '», descripció «' + desc + '»');
     }
 
     onCopyDataRequested: {
@@ -36,7 +35,11 @@ ItemInspector {
     }
 
     onDiscardDataRequested: {
-        annotationEditor.canceledAnnotation(changes);
+        if (changes) {
+            annotationEditor.closePage(qsTr("S'han descartat els canvis en l'anotació"));
+        } else {
+            closePage('');
+        }
     }
 
     function prepareDataAndSave(idCode) {
@@ -61,5 +64,9 @@ ItemInspector {
         idxAnnotation = addSection(qsTr('Anotació'),annotation,'yellow',editorType['TextLine']);
         idxDesc = addSection(qsTr('Descripció'),desc,'yellow',editorType['TextArea']);
         idxImage = addSection(qsTr('Imatge'),image,'yellow',editorType['Image']);
+    }
+
+    function requestClose() {
+        closeItem();
     }
 }

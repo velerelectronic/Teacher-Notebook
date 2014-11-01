@@ -8,7 +8,7 @@ import 'qrc:///editors' as Editors
 
 import PersonalTypes 1.0
 
-Rectangle {
+Common.AbstractEditor {
     id: editItem
     color: 'white'
 
@@ -17,6 +17,9 @@ Rectangle {
 
     signal savedGridValues(int number)
     signal closeGridEditor
+    signal closePage(string message)
+
+    property bool canClose: !changes
 
     SqlTableModel {
         id: gridModel
@@ -78,9 +81,11 @@ Rectangle {
 
                         Editors.DatePicker {
                             id: datePicker
+                            onDateChanged: editItem.setChanges(true)
                         }
                         Editors.TimePicker {
                             id: timePicker
+                            onTimeChanged: editItem.setChanges(true)
                         }
                         Button {
                             text: qsTr('Ara')
@@ -98,6 +103,7 @@ Rectangle {
                         Layout.alignment: Qt.AlignTop
                         Layout.fillWidth: true
                         Layout.preferredHeight: height
+                        onTextChanged: editItem.setChanges(true)
                     }
                     Text {
                         id: variableText
@@ -110,6 +116,7 @@ Rectangle {
                         Layout.alignment: Qt.AlignTop
                         Layout.fillWidth: true
                         Layout.preferredHeight: height
+                        onTextChanged: editItem.setChanges(true)
                     }
                 }
                 RowLayout {
@@ -211,6 +218,7 @@ Rectangle {
                                 Layout.alignment: Qt.AlignTop
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: height
+                                onTextChanged: editItem.setChanges(true)
                             }
                         }
 
@@ -247,6 +255,7 @@ Rectangle {
                         }
                     }
                 }
+                editItem.setChanges(false);
                 return number;
             }
 
@@ -283,6 +292,7 @@ Rectangle {
                 Layout.preferredHeight: height
                 model: individualModel
                 field: 'individual'
+                onTextChanged: editItem.setChanges(true)
             }
             Text {
                 id: valueText
@@ -297,6 +307,7 @@ Rectangle {
                 Layout.preferredHeight: height
                 model: valueModel
                 field: 'value'
+                onTextChanged: editItem.setChanges(true)
             }
             Text {
                 id: commentText
@@ -309,6 +320,7 @@ Rectangle {
                 Layout.alignment: Qt.AlignTop
                 Layout.fillWidth: true
                 Layout.preferredHeight: height
+                onTextChanged: editItem.setChanges(true)
             }
 
             function fillValues() {
@@ -348,6 +360,17 @@ Rectangle {
         onAccepted: savedGridValues(individualsEditor.item.saveGridValues())
     }
 
+    MessageDialog {
+        id: discardDialog
+        title: qsTr('Descartar canvis')
+        text: qsTr("Els canvis que heu realitzat es perdran.\nVols continuar?")
+        standardButtons: StandardButton.Yes | StandardButton.No
+        onYes: {
+            editItem.setChanges(true);
+            closePage(qsTr('Els canvis han estat descartats'));
+        }
+    }
+
     function fillNowMoment() {
         var nowDate = new Date();
         datePicker.setDate(nowDate);
@@ -364,6 +387,10 @@ Rectangle {
     }
 
     function closeGeneralEditor() {
-        closeGridEditor();
+        if (changes) {
+            discardDialog.open();
+        } else {
+            closePage('');
+        }
     }
 }

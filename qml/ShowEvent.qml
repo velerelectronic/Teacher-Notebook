@@ -106,4 +106,9 @@ ItemInspector {
         newEvent.setChanges(false);
         newEvent.savedEvent(newEvent.event,newEvent.desc,newEvent.startDate,newEvent.startTime,newEvent.endDate,newEvent.endTime);
     }
+
+    function requestClose() {
+        closeItem();
+    }
+
 }
