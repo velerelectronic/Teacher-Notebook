@@ -165,7 +165,7 @@ Window {
 
         function updatePageChange() {
             console.log('Auto changing to PAGE ' + selectedPage);
-            dpanel.getItemMainPanel.showCurrentPage();
+//            dpanel.getItemMainPanel.showCurrentPage();
             buttons.model = dpanel.getButtonsList(dpanel.selectedPage);
 
             // Title
@@ -214,171 +214,171 @@ Window {
         }
 
         itemMainPanel: PageCollection {
-            id: pagesView
-            currentPage: dpanel.selectedPage
+                id: pagesView
+                currentPage: dpanel.selectedPage
 
-            function attach(object,signalName,methodName) {
-                if (object[signalName])
-                    object[signalName].connect(methodName);
-            }
-
-            function destroyPage(index) {
-                console.log('Destroying ' + index);
-                buttons.model = emptyButtonsList;
-                if ((index>0) && (index<pagesView.count)) {
-                    pagesView.removePage(index);
+                function attach(object,signalName,methodName) {
+                    if (object[signalName])
+                        object[signalName].connect(methodName);
                 }
-            }
 
-            onPageDestroyed: {
-                pageListModel.remove(index);
-            }
-
-            onCountChanged: {
-                if (dpanel.selectedPage>=count)
-                    dpanel.setSelectedPage(count-1);
-                else
-                    dpanel.updatePageChange();
-            }
-
-            function createPage(index) {
-                var obj = pageListModel.get(index);
-                var pageObj = pagesView.addPage(obj['page'],obj['parameters']);
-
-                var pageTitle = (pageObj.pageTitle)?pageObj.pageTitle:pageListModel.count;
-                pagesView.showCurrentPage();
-                pageListModel.setProperty(pageListModel.count-1,'pageTitle',pageTitle);
-                buttons.model = dpanel.getButtonsList(dpanel.selectedPage);
-
-                // Annotations
-                pagesView.attach(pageObj,'canceledAnnotation', function(changes) {
-                    if (changes) {
-                        messageBox.publishMessage(qsTr("S'han descartat els canvis en l'anotació"))
+                function destroyPage(index) {
+                    console.log('Destroying ' + index);
+                    buttons.model = emptyButtonsList;
+                    if ((index>0) && (index<pagesView.count)) {
+                        pagesView.removePage(index);
                     }
-                    removeCurrentPage();
-                });
-                pagesView.attach(pageObj,'closePageRequested', function() {
-                    removeCurrentPage();
-                });
-                pagesView.attach(pageObj,'deletedAnnotations', function(num) {
-                    messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
-                });
-                pagesView.attach(pageObj,'editAnnotation', function(id,annotation,desc) {
-                    openSubPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id);
-                });
-                pagesView.attach(pageObj,'openAnnotations', function() {
-                    openSubPage('AnnotationsList',{annotationsModel: annotationsModel},'');
-                });
-                pagesView.attach(pageObj,'savedAnnotation', function(annotation,desc) {
-                    messageBox.publishMessage('Anotació desada: títol «' + annotation + '», descripció «' + desc + '»');
-                    removeCurrentPage();
-                });
+                }
 
-                // Document list
-                pagesView.attach(pageObj,'createdFile', function(file) {
-                    messageBox.publishMessage('Creat el fitxer «' + file + '»');
-                });
-                pagesView.attach(pageObj,'notCreatedFile', function(file) {
-                    messageBox.publishMessage('El fitxer «' + file + '» ja existeix');
-                });
-                pagesView.attach(pageObj,'openDocument', function(page,document) {
-                    openSubPage(page, {document: document});
-                });
-                pagesView.attach(pageObj,'openingDocumentExternally', function(document) {
-                    messageBox.publishMessage(qsTr("Obrint el document «") + document + "»");
-                });
+                onPageDestroyed: {
+                    pageListModel.remove(index);
+                }
 
-                // Events
-                pagesView.attach(pageObj,'deletedEvents',function (num) {
-                    messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'));
-                });
-                pagesView.attach(pageObj,'editEvent',function (id,event,desc,startDate,startTime,endDate,endTime) {
-                    openSubPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime},id);
-                });
-                pagesView.attach(pageObj,'newEvent',function () {
-                    openSubPage('ShowEvent',{},'');
-                });
-                pagesView.attach(pageObj,'savedEvent',function (event, desc) {
-                    messageBox.publishMessage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'));
-                    removeCurrentPage();
-                });
-                pagesView.attach(pageObj,'canceledEvent',function (changes) {
-                    if (changes) {
-                        messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
-                    }
-                    removeCurrentPage();
-                });
+                onCountChanged: {
+                    if (dpanel.selectedPage>=count)
+                        dpanel.setSelectedPage(count-1);
+                    else
+                        dpanel.updatePageChange();
+                }
 
-                // Page handling
-                pagesView.attach(pageObj,'openPage', function (page) {
-                    openSubPage(page,{});
-                });
-                pagesView.attach(pageObj,'openPageArgs', function (page,args) {
-                    openSubPage(page,args);
-                });
+                function createPage(index) {
+                    var obj = pageListModel.get(index);
+                    var pageObj = pagesView.addPage(obj['page'],obj['parameters']);
 
-                // Quick annotations
-                pagesView.attach(pageObj,'savedQuickAnnotation', function (contents) {
-                    messageBox.publishMessage(qsTr("S'ha desat l'anotacio rapida «" + contents + "»"));
-                });
+                    var pageTitle = (pageObj.pageTitle)?pageObj.pageTitle:pageListModel.count;
+                    pagesView.showCurrentPage();
+                    pageListModel.setProperty(pageListModel.count-1,'pageTitle',pageTitle);
+                    buttons.model = dpanel.getButtonsList(dpanel.selectedPage);
 
-                // Teaching Planning
-                pagesView.attach(pageObj,'loadingDocument', function (document) {
-                    messageBox.publishMessage(qsTr('Carregant el document «' + document + '»'));
-                });
-                pagesView.attach(pageObj,'loadedDocument', function (document) {
-                    messageBox.publishMessage(qsTr("S'ha carregat el document «" + document + "»"));
-                });
-                pagesView.attach(pageObj,'documentSaved', function (document) {
-                    messageBox.publishMessage(qsTr('Desat el document «') + document + '»');
-                });
-                pagesView.attach(pageObj, 'documentDiscarded', function(document,changes) {
-                    if (changes)
-                        messageBox.publishMessage(qsTr("S'han descartat els canvis fets al document «") + document + '»');
-                    removeCurrentPage();
-                });
+                    // Annotations
+                    pagesView.attach(pageObj,'canceledAnnotation', function(changes) {
+                        if (changes) {
+                            messageBox.publishMessage(qsTr("S'han descartat els canvis en l'anotació"))
+                        }
+                        removeCurrentPage();
+                    });
+                    pagesView.attach(pageObj,'closePageRequested', function() {
+                        removeCurrentPage();
+                    });
+                    pagesView.attach(pageObj,'deletedAnnotations', function(num) {
+                        messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'));
+                    });
+                    pagesView.attach(pageObj,'editAnnotation', function(id,annotation,desc) {
+                        openSubPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id);
+                    });
+                    pagesView.attach(pageObj,'openAnnotations', function() {
+                        openSubPage('AnnotationsList',{annotationsModel: annotationsModel},'');
+                    });
+                    pagesView.attach(pageObj,'savedAnnotation', function(annotation,desc) {
+                        messageBox.publishMessage('Anotació desada: títol «' + annotation + '», descripció «' + desc + '»');
+                        removeCurrentPage();
+                    });
 
-                // Text viewer
-                pagesView.attach(pageObj,'savedDocument', function (document) {
-                    messageBox.publishMessage(qsTr('Desat el document «') + document + '»');
-                });
+                    // Document list
+                    pagesView.attach(pageObj,'createdFile', function(file) {
+                        messageBox.publishMessage('Creat el fitxer «' + file + '»');
+                    });
+                    pagesView.attach(pageObj,'notCreatedFile', function(file) {
+                        messageBox.publishMessage('El fitxer «' + file + '» ja existeix');
+                    });
+                    pagesView.attach(pageObj,'openDocument', function(page,document) {
+                        openSubPage(page, {document: document});
+                    });
+                    pagesView.attach(pageObj,'openingDocumentExternally', function(document) {
+                        messageBox.publishMessage(qsTr("Obrint el document «") + document + "»");
+                    });
 
-                // Backup
-                pagesView.attach(pageObj,'savedBackupToDirectory', function (directory) {
-                    messageBox.publishMessage(qsTr("S'ha desat una còpia de seguretat dins ") + directory);
-                });
-                pagesView.attach(pageObj,'unsavedBackup', function () {
-                    messageBox.publishMessage(qsTr("No s'ha pogut desar la còpia de seguretat"));
-                });
-                pagesView.attach(pageObj,'backupReadFromFile', function (file) {
-                    messageBox.publishMessage(qsTr("S'ha introduït el fitxer ") + file + qsTr(" dins la base de dades"));
-                });
-                pagesView.attach(pageObj,'backupNotReadFromFile', function (file) {
-                    messageBox.publishMessage(qsTr("Error en intentar introduir el fitxer ") + file + qsTr(" dins la base de dades"));
-                });
+                    // Events
+                    pagesView.attach(pageObj,'deletedEvents',function (num) {
+                        messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'));
+                    });
+                    pagesView.attach(pageObj,'editEvent',function (id,event,desc,startDate,startTime,endDate,endTime) {
+                        openSubPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime},id);
+                    });
+                    pagesView.attach(pageObj,'newEvent',function () {
+                        openSubPage('ShowEvent',{},'');
+                    });
+                    pagesView.attach(pageObj,'savedEvent',function (event, desc) {
+                        messageBox.publishMessage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'));
+                        removeCurrentPage();
+                    });
+                    pagesView.attach(pageObj,'canceledEvent',function (changes) {
+                        if (changes) {
+                            messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
+                        }
+                        removeCurrentPage();
+                    });
 
-                // Assessment Grid
-                pagesView.attach(pageObj, 'openTabularEditor', function() {
-                    openSubPage('AssessmentGeneralEditor',{});
-                });
-                pagesView.attach(pageObj, 'savedGridValues', function(number) {
-                    messageBox.publishMessage(qsTr("S'han desat " + number + " valors a la graella d'avaluació"));
-                });
-                pagesView.attach(pageObj, 'closeGridEditor', function() {
-                    removeCurrentPage();
-                });
-                // Altres - revisar
-                pagesView.attach(pageObj,'openDocumentsList', function () {
-                    openSubPage('DocumentsList',{},'');
-                });
-                pagesView.attach(pageObj,'acceptedCloseEditorRequest', function () {
-                    forceOpenSubPage(lastRequestedPage,{});
-                });
-                pagesView.attach(pageObj,'refusedCloseEditorRequest', function () {
-                    messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."));
-                });
+                    // Page handling
+                    pagesView.attach(pageObj,'openPage', function (page) {
+                        openSubPage(page,{});
+                    });
+                    pagesView.attach(pageObj,'openPageArgs', function (page,args) {
+                        openSubPage(page,args);
+                    });
 
-                console.log('Created page ' + index);
+                    // Quick annotations
+                    pagesView.attach(pageObj,'savedQuickAnnotation', function (contents) {
+                        messageBox.publishMessage(qsTr("S'ha desat l'anotacio rapida «" + contents + "»"));
+                    });
+
+                    // Teaching Planning
+                    pagesView.attach(pageObj,'loadingDocument', function (document) {
+                        messageBox.publishMessage(qsTr('Carregant el document «' + document + '»'));
+                    });
+                    pagesView.attach(pageObj,'loadedDocument', function (document) {
+                        messageBox.publishMessage(qsTr("S'ha carregat el document «" + document + "»"));
+                    });
+                    pagesView.attach(pageObj,'documentSaved', function (document) {
+                        messageBox.publishMessage(qsTr('Desat el document «') + document + '»');
+                    });
+                    pagesView.attach(pageObj, 'documentDiscarded', function(document,changes) {
+                        if (changes)
+                            messageBox.publishMessage(qsTr("S'han descartat els canvis fets al document «") + document + '»');
+                        removeCurrentPage();
+                    });
+
+                    // Text viewer
+                    pagesView.attach(pageObj,'savedDocument', function (document) {
+                        messageBox.publishMessage(qsTr('Desat el document «') + document + '»');
+                    });
+
+                    // Backup
+                    pagesView.attach(pageObj,'savedBackupToDirectory', function (directory) {
+                        messageBox.publishMessage(qsTr("S'ha desat una còpia de seguretat dins ") + directory);
+                    });
+                    pagesView.attach(pageObj,'unsavedBackup', function () {
+                        messageBox.publishMessage(qsTr("No s'ha pogut desar la còpia de seguretat"));
+                    });
+                    pagesView.attach(pageObj,'backupReadFromFile', function (file) {
+                        messageBox.publishMessage(qsTr("S'ha introduït el fitxer ") + file + qsTr(" dins la base de dades"));
+                    });
+                    pagesView.attach(pageObj,'backupNotReadFromFile', function (file) {
+                        messageBox.publishMessage(qsTr("Error en intentar introduir el fitxer ") + file + qsTr(" dins la base de dades"));
+                    });
+
+                    // Assessment Grid
+                    pagesView.attach(pageObj, 'openTabularEditor', function() {
+                        openSubPage('AssessmentGeneralEditor',{});
+                    });
+                    pagesView.attach(pageObj, 'savedGridValues', function(number) {
+                        messageBox.publishMessage(qsTr("S'han desat " + number + " valors a la graella d'avaluació"));
+                    });
+                    pagesView.attach(pageObj, 'closeGridEditor', function() {
+                        removeCurrentPage();
+                    });
+                    // Altres - revisar
+                    pagesView.attach(pageObj,'openDocumentsList', function () {
+                        openSubPage('DocumentsList',{},'');
+                    });
+                    pagesView.attach(pageObj,'acceptedCloseEditorRequest', function () {
+                        forceOpenSubPage(lastRequestedPage,{});
+                    });
+                    pagesView.attach(pageObj,'refusedCloseEditorRequest', function () {
+                        messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."));
+                    });
+
+                    console.log('Created page ' + index);
             }
         }
     }

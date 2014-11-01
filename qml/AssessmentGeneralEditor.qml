@@ -241,8 +241,10 @@ Rectangle {
                     var item = individualsGrid.contentItem.children[i];
                     if (item.objectName == 'individualItem') {
                         var moment = datePicker.dateString() + ' ' + timePicker.timeString();
-                        if (gridModel.insertObject({created: now.toISOString(),moment: moment, group: groupEditor.text,individual: item.individualName,variable: variableEditor.text,value: item.individualValue,comment: item.individualComment}))
-                            number++;
+                        if (item.individualValue != '') {
+                            if (gridModel.insertObject({created: now.toISOString(),moment: moment, group: groupEditor.text,individual: item.individualName,variable: variableEditor.text,value: item.individualValue,comment: item.individualComment}))
+                                number++;
+                        }
                     }
                 }
                 return number;

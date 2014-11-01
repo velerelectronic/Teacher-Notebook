@@ -2,6 +2,7 @@ import QtQuick 2.2
 // import QtWebKit 3.0
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
+import Qt.labs.folderlistmodel 2.1
 import FileIO 1.0
 import QtQuick.Dialogs 1.1
 import PersonalTypes 1.0
@@ -13,6 +14,17 @@ Common.AbstractEditor {
     id: xmlViewer
     property string pageTitle: qsTr('Programació d\'aula');
     property string document
+
+    Common.UseUnits { id: units }
+
+    onDocumentChanged: {
+        sessionsListModel.folder = document.substring(0,document.lastIndexOf('/'));
+        console.log('DOC');
+        console.log(document.substring(0,document.lastIndexOf('/')));
+        console.log('folder ' + sessionsListModel.folder);
+        console.log(document);
+    }
+
     property bool becameVisible: false
     property alias buttons: buttonsModel
 
@@ -45,6 +57,7 @@ Common.AbstractEditor {
             buttonsModel.append({method: 'discardChanges', image: 'road-sign-147409', enabled: xmlViewer.changes});
         }
     }
+
 
     function toggleEditMode() {
         editMode = !editMode;
@@ -389,15 +402,137 @@ Common.AbstractEditor {
             width: sectionsList.width
             height: sectionsList.height
             title: qsTr('Sessions')
+
+            ListView {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: contentItem.height
+
+                FolderListModel {
+                    id: sessionsListModel
+                    showDirs: true
+                    showFiles: false
+                    showDirsFirst: true
+                    onCountChanged: {
+                        console.log('FOLDERLISTMODEL ' + count);
+                    }
+                }
+                model: sessionsListModel
+
+                interactive: false
+                delegate: Rectangle {
+                    id: singleSession
+                    width: sectionsList.width
+                    height: sessionText.height + subsessionList.height + units.nailUnit * 2
+                    border.color: 'black'
+
+                    property string directory: ''
+                    Text {
+                        id: sessionText
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.margins: units.nailUnit
+                        height: contentHeight
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+                        text: model.fileName
+                        Component.onCompleted: sessionActivitiesModel.folder = model.fileURL
+                    }
+                    GridView {
+                        id: subsessionList
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: sessionText.bottom
+                        height: contentItem.height
+                        anchors.margins: units.nailUnit
+                        interactive: false
+
+                        property real minimumColumnSpace: units.fingerUnit * 6
+                        property real numberOfColums: Math.round(width / minimumColumnSpace)
+                        property real extraSpace: (width - numberOfColums * minimumColumnSpace) / numberOfColums
+
+                        cellWidth: minimumColumnSpace + extraSpace
+                        cellHeight: cellWidth
+
+                        model: sessionActivitiesModel
+
+                        FolderListModel {
+                            id: sessionActivitiesModel
+                            folder: singleSession.directory
+                            showDirs: true
+                            showFiles: true
+                        }
+                        delegate: Item {
+                            id: activity
+                            property string resourceFileURL: model.fileURL
+
+                            height: subsessionList.cellHeight
+                            width: subsessionList.cellWidth
+                            Rectangle {
+                                border.color: 'black'
+                                anchors.fill: parent
+                                anchors.margins: units.nailUnit
+
+                                Text {
+                                    anchors.fill: parent
+                                    anchors.margins: units.nailUnit
+                                    font.pixelSize: units.readUnit
+                                    text: model.fileName
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        var current = subsessionList.currentIndex;
+                                        subsessionList.currentIndex = model.index;
+                                        if (current == model.index) {
+                                            imageViewer.state = 'show';
+                                            imageViewer.object = activity;
+                                            imageViewer.source = model.fileURL;
+//                                            Qt.openUrlExternally(model.fileURL);
+                                        }
+                                    }
+
+                                    onPressAndHold: {
+                                        Qt.openUrlExternally(model.fileURL)
+                                    }
+                                }
+                            }
+                            function gotoPrevious() {
+                                if (subsessionList.currentIndex>0) {
+                                    subsessionList.currentIndex = subsessionList.currentIndex - 1;
+                                    imageViewer.source = sessionActivitiesModel.get(subsessionList.currentIndex,'fileURL');
+                                }
+                            }
+
+                            function gotoNext() {
+                                if (subsessionList.currentIndex<sessionActivitiesModel.count-1) {
+                                    subsessionList.currentIndex += 1;
+                                    imageViewer.source = sessionActivitiesModel.get(subsessionList.currentIndex,'fileURL');
+                                }
+                            }
+                        }
+                        highlight: Rectangle {
+                            radius: units.nailUnit
+                            color: 'yellow'
+                        }
+                    }
+                }
+            }
+
+/*
             Editors.XmlListEditor {
                 anchors.left: parent.left
                 anchors.right: parent.right
-//                expand: true
                 dataModel: xmlReader.activities
                 editable: editMode
                 onNewChanges: xmlViewer.setChanges(true)
             }
+        */
         }
+
     }
 
     ListView {
@@ -442,6 +577,39 @@ Common.AbstractEditor {
         clip: true
     }
 
+    Common.ImageViewer {
+        id: imageViewer
+        anchors.fill: parent
+        states: [
+            State {
+                name: 'show'
+                PropertyChanges {
+                    target: imageViewer
+                    visible: true
+                }
+            },
+            State {
+                name: 'hide'
+                PropertyChanges {
+                    target: imageViewer
+                    visible: false
+                }
+            }
+        ]
+        state: 'hide'
+        onCloseViewer: imageViewer.state = 'hide'
+
+        property var object: undefined
+
+        onGotoPrevious: {
+            object.gotoPrevious();
+        }
+
+        onGotoNext: {
+            object.gotoNext();
+        }
+    }
+
     MessageDialog {
         id: messageSave
         title: qsTr('Desar canvis');
@@ -476,7 +644,7 @@ Common.AbstractEditor {
     Component.onCompleted: {
         loadingDocument(document);
         xmlReader.source = document;
-        xmlReader.loadXml();
+//        xmlReader.loadXml();
         loadedDocument(document);
     }
 }

@@ -45,8 +45,8 @@ Rectangle {
         id: gridModel
         tableName: 'assessmentGrid'
         fieldNames: ['id','created','moment','group','individual','variable','value','comment']
-
-        Component.onCompleted: select()
+        limit: 200
+        filters: []
 
         function setAllFilters() {
             var newFilters = [];
@@ -224,7 +224,7 @@ Rectangle {
                 Editors.TableCell {
                     width: assessmentRow.commonWidth
                     height: parent.height
-                    text: model.moment
+                    text: model.id + '-' + model.moment
                 }
 
                 Editors.TableCell {
@@ -331,11 +331,13 @@ Rectangle {
     }
 
     Component.onCompleted: {
+        updateGrid();
         prepareFilter('\"group\"', groupFilterMenu, groupCommonAction);
         prepareFilter('individual', individualFilterMenu, individualCommonAction);
         prepareFilter('variable', variableFilterMenu, variableCommonAction);
         prepareFilter('value', valueFilterMenu, valueCommonAction);
         prepareFilter('comment', commentFilterMenu, commentCommonAction);
+        gridModel.limit = undefined;
     }
 
     function prepareFilter(field,menu,action) {

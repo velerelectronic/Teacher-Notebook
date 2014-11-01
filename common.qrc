@@ -20,5 +20,6 @@
         <file>common/Button.qml</file>
         <file>common/DoublePanel.qml</file>
         <file>common/WheelButton.qml</file>
+        <file>common/ImageViewer.qml</file>
     </qresource>
 </RCC>
