@@ -55,7 +55,6 @@ Rectangle {
                 Layout.preferredHeight: units.fingerUnit
                 anchors.margins: units.nailUnit
                 onPerformSearch: {
-                    console.log('Perform search');
                     annotationsModel.searchString = text;
                 }
             }

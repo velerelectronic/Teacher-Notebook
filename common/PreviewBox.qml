@@ -21,6 +21,7 @@ Rectangle {
     property alias model: list.model
 
     signal totalCountClicked()
+    signal plusClicked()
     signal captionClicked()
 
     Common.UseUnits { id: units }
@@ -41,45 +42,71 @@ Rectangle {
             id: listHeader
             width: list.width
             border.width: 0
-            height: textHeader.height + units.nailUnit * 2
+            height: Math.max(textHeader.contentHeight, units.fingerUnit) + units.nailUnit * 2
             color: previewBox.captionBackgroundColor
 
             Text {
                 id: textHeader
                 anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
+                anchors.right: plusIcon.left
+                anchors.verticalCenter: parent.verticalCenter
                 anchors.margins: units.nailUnit
                 font.bold: true
                 font.pixelSize: units.readUnit
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 text: previewBox.caption
+                verticalAlignment: Text.verticalCenter
                 MouseArea {
                     anchors.fill: parent
                     onClicked: previewBox.captionClicked()
                 }
             }
-        }
-
-        footer: Rectangle {
-            id: listFooter
-            width: list.width
-            height: textFooter.height + units.nailUnit * 2
-            border.width: 0
-            color: previewBox.totalBackgroundColor
-
-            Text {
-                id: textFooter
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
+            Image {
+                id: plusIcon
+                source: 'qrc:///icons/plus-24844.svg'
                 anchors.margins: units.nailUnit
-                font.pixelSize: units.readUnit
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                text: previewBox.prefixTotal + ' ' + totalCount + ' ' + previewBox.suffixTotal
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.right: parent.right
+                height: units.fingerUnit
+                width: units.fingerUnit
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: previewBox.totalCountClicked()
+                    onClicked: plusClicked()
+                }
+            }
+        }
+
+        footer: (totalCount>-1)?previewFooter:emptyComponent
+
+        Component {
+            id: emptyComponent
+            Item {
+                width: 0
+                height: 0
+            }
+        }
+
+        Component {
+            id: previewFooter
+            Rectangle {
+                width: list.width
+                height: textFooter.height + units.nailUnit * 2
+                border.width: 0
+                color: previewBox.totalBackgroundColor
+
+                Text {
+                    id: textFooter
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: units.nailUnit
+                    font.pixelSize: units.readUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    text: (totalCount>-1)?(previewBox.prefixTotal + ' ' + totalCount + ' ' + previewBox.suffixTotal):previewBox.prefixTotal
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: previewBox.totalCountClicked()
+                    }
                 }
             }
         }

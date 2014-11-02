@@ -9,8 +9,9 @@ ItemInspector {
     id: annotationEditor
     pageTitle: qsTr("Editor d'anotacions")
 
-    signal canceledAnnotation(bool changes)
     signal closePage(string message)
+    signal savedAnnotation(int id,string annotation,string desc)
+    signal duplicatedAnnotation(string annotation,string desc)
 
     property int idAnnotation: -1
     property string annotation: ''
@@ -25,13 +26,14 @@ ItemInspector {
 
     onSaveDataRequested: {
         prepareDataAndSave(idAnnotation);
-        closePage('Anotació desada: títol «' + annotation + '», descripció «' + desc + '»');
+        savedAnnotation(idAnnotation,annotation,desc);
+        closePage('');
     }
 
     onCopyDataRequested: {
         prepareDataAndSave(-1);
         annotationEditor.setChanges(false);
-        annotationEditor.savedAnnotation(-1,annotation,desc);
+        duplicatedAnnotation(annotation,desc);
     }
 
     onDiscardDataRequested: {
@@ -41,6 +43,8 @@ ItemInspector {
             closePage('');
         }
     }
+
+    onClosePageRequested: closePage('')
 
     function prepareDataAndSave(idCode) {
         annotation = getContent(idxAnnotation);

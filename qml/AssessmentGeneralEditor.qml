@@ -15,11 +15,7 @@ Common.AbstractEditor {
     property string pageTitle: qsTr("Editor de la graella")
     property var buttons: buttonsModel
 
-    signal savedGridValues(int number)
-    signal closeGridEditor
     signal closePage(string message)
-
-    property bool canClose: !changes
 
     SqlTableModel {
         id: gridModel
@@ -30,7 +26,7 @@ Common.AbstractEditor {
     ListModel {
         id: buttonsModel
         ListElement {
-            method: 'closeGeneralEditor'
+            method: 'requestClose'
             image: 'road-sign-147409'
         }
         ListElement {
@@ -81,11 +77,11 @@ Common.AbstractEditor {
 
                         Editors.DatePicker {
                             id: datePicker
-                            onDateChanged: editItem.setChanges(true)
+                            onUpdatedByUser: editItem.setChanges(true)
                         }
                         Editors.TimePicker {
                             id: timePicker
-                            onTimeChanged: editItem.setChanges(true)
+                            onUpdatedByUser: editItem.setChanges(true)
                         }
                         Button {
                             text: qsTr('Ara')
@@ -211,6 +207,7 @@ Common.AbstractEditor {
                                 Layout.alignment: Qt.AlignTop
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: height
+                                onTextChanged: editItem.setChanges(true)
                                 Component.onCompleted: singleIndividual.fillIndividualValues()
                             }
                             TextField {
@@ -307,7 +304,10 @@ Common.AbstractEditor {
                 Layout.preferredHeight: height
                 model: valueModel
                 field: 'value'
-                onTextChanged: editItem.setChanges(true)
+                onTextChanged: {
+                    console.log('Changed values');
+                    editItem.setChanges(true);
+                }
             }
             Text {
                 id: commentText
@@ -357,7 +357,9 @@ Common.AbstractEditor {
         title: qsTr('Desar els valors')
         text: qsTr("Es desaran els valors a la graella d'avaluació.\nVols continuar?")
         standardButtons: StandardButton.Ok | StandardButton.Cancel
-        onAccepted: savedGridValues(individualsEditor.item.saveGridValues())
+        onAccepted: {
+            closePage(qsTr("S'han desat " + individualsEditor.item.saveGridValues() + " valors a la graella d'avaluació"));
+        }
     }
 
     MessageDialog {
@@ -386,7 +388,7 @@ Common.AbstractEditor {
         saveDialog.open();
     }
 
-    function closeGeneralEditor() {
+    function requestClose() {
         if (changes) {
             discardDialog.open();
         } else {

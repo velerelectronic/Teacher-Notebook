@@ -12,7 +12,9 @@ Rectangle {
     property alias getItemSubPanel: subPanelLoader.item
 
     property int globalMargins: units.fluentMargins(width, units.nailUnit)
-    property int widthSubPanel: Math.min(6 * units.fingerUnit + 2 * globalMargins,width)
+
+    property int expectedWidth: 6 * units.fingerUnit
+    property int widthSubPanel: Math.min(expectedWidth + 2 * globalMargins,width)
     property int availableWidth: width - widthSubPanel
 
     Core.UseUnits {

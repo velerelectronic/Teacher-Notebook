@@ -15,6 +15,7 @@
   * Edit: http://pixabay.com/es/editar-l%C3%A1piz-la-escuela-escribir-153612/
   * Edit: http://pixabay.com/es/l%C3%A1piz-pluma-naranja-rojo-190586/
   * Details: http://pixabay.com/es/info-informaci%C3%B3n-ayuda-icono-apoyo-147927/
+  * Back: http://pixabay.com/es/flecha-verde-brillante-izquierda-145769/
 */
 
 import QtQuick 2.2
@@ -31,12 +32,11 @@ Window {
     height: Screen.height
     visible: true
 
-    property string lastRequestedPage: ''
     property string currentPageTitle: ''
 
     onClosing: {
         close.accepted = false;
-        dpanel.setSelectedPage(0);
+        dpanel.getItemMainPanel.closeCurrentPage();
     }
 
     Common.UseUnits { id: units }
@@ -61,7 +61,7 @@ Window {
                 Layout.preferredWidth: units.fingerUnit
                 Layout.preferredHeight: units.fingerUnit
 
-                source: 'qrc:///images/small-41255_150.png'
+                source: (dpanel.getItemMainPanel.depth==1)?'qrc:///images/small-41255_150.png':'qrc:///icons/arrow-145769.svg'
                 fillMode: Image.PreserveAspectFit
                 MouseArea {
                     anchors.fill: parent
@@ -79,14 +79,16 @@ Window {
                 font.pixelSize: units.readUnit
                 verticalAlignment: Text.AlignVCenter
                 font.family: "Tahoma"
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: dpanel.toggleSubPanel()
+                }
             }
             ListView {
                 id: buttons
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 orientation: ListView.Horizontal
-
-                onModelChanged: console.log('Model changed')
 
                 LayoutMirroring.enabled: true
                 layoutDirection: ListView.LeftToRight
@@ -133,20 +135,11 @@ Window {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
 
-        property int selectedPage: 0
-
-        function setSelectedPage(index) {
-            console.log('Index: ' + index);
-            selectedPage = index;
-            updatePageChange();
-        }
-
         function getButtonsList() {
             var pageObj = dpanel.getItemMainPanel.currentItem;
             if ((pageObj) && (typeof(pageObj.buttons) !== 'undefined')) {
                 return pageObj.buttons;
             } else {
-                console.log('No buttons');
                 return undefined;
             }
         }
@@ -157,7 +150,6 @@ Window {
             // Title
             var pageObj = dpanel.getItemMainPanel.currentItem;
             currentPageTitle = (pageObj.pageTitle)?pageObj.pageTitle:'';
-            console.log("CURRENT " + currentPageTitle);
         }
 
         function invokeMethod(method) {
@@ -165,32 +157,207 @@ Window {
         }
 
         colorSubPanel: '#BCF5A9'
-        globalMargins: 0
+        expectedWidth: 8 * units.fingerUnit
+        globalMargins: units.nailUnit
+
+        SqlTableModel {
+            id: nextEventsModel
+            tableName: 'schedule'
+            limit: 3
+            filters: ["ifnull(state,'') != 'done'"]
+            Component.onCompleted: {
+                setSort(1,Qt.DescendingOrder); // Order by last inclusion
+                select();
+            }
+        }
+        SqlTableModel {
+            id: lastAnnotationsModel
+            tableName: 'annotations'
+            limit: 3
+            Component.onCompleted: {
+                setSort(0,Qt.DescendingOrder);
+                select();
+            }
+        }
 
         itemSubPanel: ListView {
             id: pageList
 
-            delegate: Rectangle {
-                height: units.fingerUnit * 2
-                width: pageList.width
-                color: (dpanel.selectedPage == model.index)?'#E3F6CE':'#BCF5A9'
-                Text {
-                    anchors.fill: parent
-                    anchors.margins: units.nailUnit
-                    font.pixelSize: units.readUnit
-                    text: (model.pageTitle)?model.pageTitle:'' // ('pageTitle' in (pageListModel.get(model.index)))?(pageListModel.get(model.index)['pageTitle']):''
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignLeft
+            spacing: units.fingerUnit
+            model: VisualItemModel {
+                Item {
+                    width: pageList.width
+                    height: childrenRect.height + units.nailUnit
+                    Text {
+                        id: allPageTitles
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.margins: units.nailUnit
+                        height: contentHeight
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        textFormat: Text.PlainText
+                        Connections {
+                            target: dpanel.getItemMainPanel
+                            onCurrentItemChanged: {
+                                var levels = dpanel.getItemMainPanel.depth;
+                                if (levels>1) {
+                                    allPageTitles.text = qsTr('Pàgines');
+                                    for (var i=1; i<levels; i++) {
+                                        var page = dpanel.getItemMainPanel.get(i,true);
+                                        allPageTitles.text += ' > ';
+                                        allPageTitles.text += (typeof (page.pageTitle) != 'undefined')?page.pageTitle:'Pàgina';
+                                    }
+                                } else {
+                                    allPageTitles.text = '';
+                                }
+                            }
+                        }
+                    }
                 }
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        dpanel.setSelectedPage(model.index);
-                        if (!dpanel.canShowBothPanels())
-                            dpanel.toggleSubPanel();
+
+                QuickAnnotation {
+                    width: pageList.width
+                    height: width
+                    onSavedQuickAnnotation: {
+                        if (lastAnnotationsModel.insertObject({title: 'Anotació ràpida',desc: contents})) {
+                            annotationWasSaved();
+                            messageBox.publishMessage(qsTr("S'ha desat l'anotacio rapida «" + contents + "»"));
+                        }
+                    }
+                }
+
+                Common.PreviewBox {
+                    id: lastAnnotations
+                    width: pageList.width
+                    // height: buttonHeight
+
+                    model: lastAnnotationsModel
+                    delegate: Item {
+                        width: parent.width
+                        height: units.fingerUnit
+                        Text {
+                            id: textAnnot
+                            anchors.fill: parent
+                            anchors.margins: units.nailUnit
+                            elide: Text.ElideRight
+                            maximumLineCount: 1
+                            font.pixelSize: units.readUnit
+                            verticalAlignment: Text.AlignVCenter
+                            text: '– ' + title + ' ' + desc
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: dpanel.getItemMainPanel.openNewPage('ShowAnnotation', {idAnnotation: id})
+                        }
+                    }
+                    caption: qsTr('Darreres anotacions')
+                    captionBackgroundColor: '#F3F781'
+                    color: '#F7F8E0'
+                    totalBackgroundColor: '#F2F5A9'
+                    maxItems: 3
+                    totalCount: -1
+                    onPlusClicked: dpanel.getItemMainPanel.openNewPage('ShowAnnotation',{idAnnotation: -1})
+                    onCaptionClicked: dpanel.getItemMainPanel.openNewPage('AnnotationsList')
+                }
+
+                Common.PreviewBox {
+                    id: nextEvents
+                    width: pageList.width
+//                    height: buttonHeight
+
+                    model: nextEventsModel
+
+                    delegate: Item {
+                        width: parent.width
+                        height: units.fingerUnit
+                        RowLayout {
+                            id: textEvents
+                            anchors.fill: parent
+                            anchors.margins: units.nailUnit
+
+                            Text {
+                                Layout.fillHeight: true
+                                text: model.endDate
+                                font.bold: true
+                                font.pixelSize: units.readUnit
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
+                            Text {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                elide: Text.ElideRight
+                                maximumLineCount: 1
+                                font.pixelSize: units.readUnit
+                                verticalAlignment: Text.AlignVCenter
+                                text: model.event
+                            }
+                        }
+                        MouseArea {
+                            anchors.fill: textEvents
+                            onClicked: dpanel.getItemMainPanel.openNewPage('ShowEvent',{idEvent: model.id})
+                        }
+                    }
+                    caption: qsTr("Últims esdeveniments")
+                    captionBackgroundColor: '#F7BE81'
+                    color: '#F8ECE0'
+                    maxItems: 3
+                    totalCount: -1
+                    onPlusClicked: dpanel.getItemMainPanel.openNewPage('ShowEvent',{idEvent: -1})
+                    onCaptionClicked: dpanel.getItemMainPanel.openNewPage('Schedule')
+                }
+
+                Common.PreviewBox {
+                    id: directories
+                    width: pageList.width
+                    caption: qsTr('Directoris')
+                    color: '#EEEEEE'
+                    totalCount: -1
+                    model: ListModel {
+                        id: directoriesModel
+                    }
+                    delegate: Item {
+                        height: units.fingerUnit
+                        width: directories.width
+                        Text {
+                            anchors.fill: parent
+                            anchors.margins: units.nailUnit
+                            text: model.title
+                            verticalAlignment: Text.verticalAlignment
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                dpanel.getItemMainPanel.openNewPage('DocumentsList',{initialDirectory: model.directory});
+                            }
+                        }
                     }
 
-                    onPressAndHold: dpanel.getItemMainPanel.destroyPage(index)
+                    onCaptionClicked: dpanel.getItemMainPanel.openNewPage('DocumentsList')
+
+                    StandardPaths {
+                        id: paths
+                    }
+
+                    Component.onCompleted: {
+                        directoriesModel.append({title: qsTr('Esquirol'), directory: 'file:///sdcard/Esquirol'});
+                        directoriesModel.append({title: qsTr('Home'), directory: paths.home});
+                        directoriesModel.append({title: qsTr('Documents'), directory: paths.documents});
+                        directoriesModel.append({title: qsTr('Pel·lícules'), directory: paths.movies});
+                        directoriesModel.append({title: qsTr('Imatges'), directory: paths.pictures});
+                        directoriesModel.append({title: qsTr('Descàrregues'), directory: paths.downloads});
+                        directoriesModel.append({title: qsTr('Escriptori'), directory: paths.desktop});
+                    }
+                }
+
+                Common.BigButton {
+                    width: pageList.width
+                    height: units.fingerUnit
+                    title: qsTr('Pissarra')
+                    onClicked: dpanel.getItemMainPanel.openNewPage('Whiteboard')
                 }
             }
         }
@@ -198,7 +365,7 @@ Window {
         itemMainPanel: StackView {
             id: pagesView
 
-            initialItem: Rectangle { color: 'white' }
+            initialItem: Qt.resolvedUrl('MenuPage.qml')
 
             Connections {
                 target: pagesView.currentItem
@@ -215,6 +382,14 @@ Window {
 
                 // Annotations
                 onDeletedAnnotations: messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'))
+                onSavedAnnotation: {
+                    messageBox.publishMessage(qsTr('Anotació desada: títol «') + annotation + '», descripció «' + desc + '»');
+                    lastAnnotationsModel.select();
+                }
+                onDuplicatedAnnotation: {
+                    messageBox.publishMessage(qsTr("S'ha creat un duplicat"));
+                    lastAnnotationsModel.select();
+                }
                 onEditAnnotation: openNewPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id)
                 onOpenAnnotations: openSubPage('AnnotationsList',{annotationsModel: annotationsModel},'')
 
@@ -227,16 +402,11 @@ Window {
                 // Events
                 onDeletedEvents: messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'))
                 onEditEvent: openNewPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime},id)
-                onNewEvent: openSubPage('ShowEvent',{},'')
+                onNewEvent: openNewPage('ShowEvent',{},'')
                 onSavedEvent: {
-                    messageBox.publishMessage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'));
-                    pagesView.closeCurrentPage();
-                }
-                onCanceledEvent: {
-                    if (changes) {
-                        messageBox.publishMessage(qsTr("S'han descartat els canvis a l'esdeveniment"))
-                    }
-                    pagesView.closeCurrentPage();
+                    messageBox.publishMessage(qsTr("S'ha desat l'esdeveniment"));
+                    scheduleModel.select();
+                    nextEventsModel.select();
                 }
 
                 // Quick annotations
@@ -266,21 +436,10 @@ Window {
 
                 // Assessment Grid
                 onOpenTabularEditor: openNewPage('AssessmentGeneralEditor',{})
-                onSavedGridValues: {
-                    pagesView.closeCurrentPage();
-                    messageBox.publishMessage(qsTr("S'han desat " + number + " valors a la graella d'avaluació"));
-                    dpanel.getItemMainPanel.currentItem.updateGrid();
-                }
-                onCloseGridEditor: pagesView.closeCurrentPage()
 
                 // Altres - revisar
                 onOpenDocumentsList: openNewPage('DocumentsList',{},'')
                 onRefusedCloseEditorRequest: messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
-            }
-
-            function attach(object,signalName,methodName) {
-                if (object[signalName])
-                    object[signalName].connect(methodName);
             }
 
             function closeCurrentPage() {
@@ -290,10 +449,10 @@ Window {
 
             function requestClosePage() {
                 var item = pagesView.currentItem;
-                if (typeof item.requestClose != 'undefined') {
+                if (typeof item.requestClose == 'function') {
                     item.requestClose();
                 } else {
-                    messageBox.publishMessage(qsTr("No es pot tancar la pagina perque s'han realitzat canvis."))
+                    closeCurrentPage();
                 }
             }
 
@@ -302,8 +461,6 @@ Window {
                 dpanel.updatePageChange();
 
                 var pageObj = dpanel.getItemMainPanel.currentItem;
-
-
             }
         }
     }
@@ -334,8 +491,9 @@ Window {
         scheduleModel.tableName = 'schedule';
         scheduleModel.fieldNames = ['created','id','event','desc','startDate','startTime','endDate','endTime','state'];
         scheduleModel.setSort(5,Qt.AscendingOrder);
+        scheduleModel.select();
 
-        mainApp.openMainPage();
+        dpanel.updatePageChange()
     }
 
     DatabaseBackup {

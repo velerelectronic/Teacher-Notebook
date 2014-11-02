@@ -23,6 +23,8 @@ Rectangle {
     property string goBack: ''
     property var buttons: buttonsModel
 
+    property url initialDirectory: ''
+
     signal openDocument(string page,string document)
     signal openingDocumentExternally(string document)
     signal createdFile(string file)
@@ -192,7 +194,6 @@ Rectangle {
                         if (fileIsDir)
                             folderList.folder = model.fileURL;
                         else {
-                            console.log("open document " + fileURL);
                             processDocument(fileURL);
                         }
                     }
@@ -207,17 +208,21 @@ Rectangle {
 
     FolderListModel {
         id: folderList
-        folder: "file://" + paths.documents
+        folder: ("file://" + paths.documents)
         showDirs: true
         showFiles: true
         showDirsFirst: true
+
+        Component.onCompleted: {
+            folderList.folder = 'file:///' + (initialDirectory != '')?initialDirectory:paths.documents;
+        }
     }
 
     MessageDialog {
         id: messageOpen
         property string document: ''
         title: qsTr('Obrir document');
-        text: qsTr("S'obrira el document «" + messageOpen.document + "» amb un programa extern. Vols continuar?")
+        text: qsTr("S'obrirà el document «" + messageOpen.document + "» amb un programa extern. Vols continuar?")
         standardButtons: StandardButton.Ok | StandardButton.Cancel
         onAccepted: {
             openingDocumentExternally(document);

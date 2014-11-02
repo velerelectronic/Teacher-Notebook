@@ -16,7 +16,6 @@ Item {
     signal unsavedBackup()
     signal backupReadFromFile(string file)
     signal backupNotReadFromFile(string file)
-    signal closeBackup
 
     Common.UseUnits {
         id: units
@@ -125,15 +124,6 @@ Item {
             }
 
         }
-
-        Button {
-            text: qsTr('Torna')
-            Layout.preferredHeight:  units.fingerUnit
-            Layout.fillWidth: true
-            onClicked: backup.closeBackup()
-        }
-
-
     }
     FolderListModel {
         id: folderList

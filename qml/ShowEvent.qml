@@ -12,6 +12,7 @@ ItemInspector {
 
     pageTitle: qsTr('Edita esdeveniment')
 
+    signal closePage(string message)
     signal savedEvent(string event, string desc,date startDate,date startTime,date endDate,date endTime)
     signal canceledEvent(bool changes)
 
@@ -34,6 +35,7 @@ ItemInspector {
 
     onSaveDataRequested: {
         prepareDataAndSave(newEvent.idEvent);
+        closePage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'));
     }
 
     onCopyDataRequested: {
@@ -41,9 +43,14 @@ ItemInspector {
     }
 
     onDiscardDataRequested: {
-        // Ask for confirmation
-        canceledEvent(changes);
+        if (changes) {
+            closePage(qsTr("S'han descartat els canvis a l'esdeveniment"));
+        } else {
+            closePage('');
+        }
     }
+
+    onClosePageRequested: closePage('')
 
     Component.onCompleted: {
         if (newEvent.idEvent != -1) {
@@ -89,15 +96,7 @@ ItemInspector {
             state: newEvent.stateEvent
         }
 
-        console.log("Updating event");
-        console.log(object.state);
-
         if (idCode == -1) {
-            console.log("Inserting object");
-            for (var prop in object) {
-                console.log(prop + " --> " + object[prop]);
-            }
-
             scheduleModel.insertObject(object);
         } else {
             object['id'] = idCode;
@@ -110,5 +109,4 @@ ItemInspector {
     function requestClose() {
         closeItem();
     }
-
 }

@@ -14,10 +14,14 @@ class StandardPaths : public QObject
     Q_PROPERTY(QString movies READ movies)
     Q_PROPERTY(QString music READ music)
     Q_PROPERTY(QString pictures READ pictures)
+    Q_PROPERTY(QString applications READ applications)
+    Q_PROPERTY(QString dataLocation READ dataLocation)
+    Q_PROPERTY(QString genericDataLocation READ genericDataLocation)
 
 public:
     explicit StandardPaths(QObject *parent = 0);
 
+    QString applications();
     QString desktop();
     QString documents();
     QString downloads();
@@ -25,6 +29,8 @@ public:
     QString movies();
     QString music();
     QString pictures();
+    QString dataLocation();
+    QString genericDataLocation();
 
 signals:
     void documentsChanged();

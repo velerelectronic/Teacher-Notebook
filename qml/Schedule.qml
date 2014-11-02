@@ -108,11 +108,9 @@ Rectangle {
                                         scheduleModel.select();
                                         var events = [];
                                         if (scheduleModel.count>0) {
-                                            console.log('hi ha esdeveniment');
                                             for (var j=0; j<scheduleModel.count; j++)
                                                 events.push(scheduleModel.getObjectInRow(j)['event']);
                                         }
-                                        console.log(events);
 
                                         eventModel.append({day: dateString, events: JSON.stringify(events)});
                                         date.setDate(date.getDate()+1);
@@ -278,7 +276,6 @@ Rectangle {
                 cellWidth: cellHeight
                 model: ListModel {
                     id: eventModel
-                    onCountChanged: console.log(count);
                 }
 
                 delegate: Rectangle {
