@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>showdown/showdown.js</file>
+        <file>showdown/wrapper.js</file>
+    </qresource>
+</RCC>

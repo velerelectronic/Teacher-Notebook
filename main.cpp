@@ -9,6 +9,7 @@
 #include "sqltablemodel.h"
 #include "databasebackup.h"
 #include "standardpaths.h"
+#include "MarkDownParser/markdownparser.h"
 
 int main(int argc, char *argv[])
 {
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<DatabaseBackup>("PersonalTypes", 1, 0, "DatabaseBackup");
     qmlRegisterType<SqlTableModel>("PersonalTypes", 1, 0, "SqlTableModel");
     qmlRegisterType<StandardPaths>("PersonalTypes", 1, 0, "StandardPaths");
+    qmlRegisterType<MarkDownParser>("PersonalTypes", 1, 0, "MarkDownParser");
 
     QStringList list;
     list << QString("A1") << QString("B2") << QString("B3");

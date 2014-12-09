@@ -243,21 +243,34 @@ Rectangle {
         case 'xml':
             openDocument('ProgramacioAula',document);
             break;
+
         case 'jpg':
         case 'jpeg':
         case 'png':
         case 'svg':
             openDocument('ImageMapper',document);
             break;
+
+        case 'json':
+            openDocument('JsonViewer',document);
+            break;
+
         case 'backup':
             openDocument('DataMan',document);
             break;
+
         case 'txt':
             openDocument('TextViewer', document);
             break;
+
         case 'gxml':
             openDocument('MultipleGrid', document);
             break;
+
+        case 'md':
+            openDocument('MarkDownViewer', document);
+            break;
+
         default:
             messageOpen.document = document;
             messageOpen.open();

@@ -2,7 +2,7 @@
 
   CC0:
   * Table edit: http://pixabay.com/es/ventana-tabla-cuadrados-inform%C3%A1tica-27140/
-
+  * List: http://pixabay.com/es/lista-numeradas-primera-segundo-153185/
   */
 
 
@@ -28,6 +28,7 @@ Rectangle {
     property string commentFilter: ''
 
     signal openTabularEditor()
+    signal openAssessmentList()
 
     Common.UseUnits { id: units }
 
@@ -266,6 +267,10 @@ Rectangle {
             method: 'newAssessmentEditor'
             image: 'plus-24844'
         }
+        ListElement {
+            method: 'openList'
+            image: 'list-153185'
+        }
     }
 
     Action {
@@ -354,5 +359,9 @@ Rectangle {
 
     function updateGrid() {
         gridModel.select();
+    }
+
+    function openList() {
+        openAssessmentList();
     }
 }

@@ -16,6 +16,8 @@
   * Edit: http://pixabay.com/es/l%C3%A1piz-pluma-naranja-rojo-190586/
   * Details: http://pixabay.com/es/info-informaci%C3%B3n-ayuda-icono-apoyo-147927/
   * Back: http://pixabay.com/es/flecha-verde-brillante-izquierda-145769/
+  * Export: http://pixabay.com/en/box-open-taking-out-container-24557/
+  * Select: http://pixabay.com/en/screen-capture-screenshot-app-23236/
 */
 
 import QtQuick 2.2
@@ -28,9 +30,15 @@ import 'qrc:///common' as Common
 
 Window {
     id: mainApp
-    width: Screen.width
-    height: Screen.height
+
+    x: 0
+    y: 0
+
+    onXChanged: console.log('X changed to ' + mainApp.x)
+    width: Screen.desktopAvailableWidth
+    height: Screen.desktopAvailableHeight
     visible: true
+
 
     property string currentPageTitle: ''
 
@@ -79,10 +87,6 @@ Window {
                 font.pixelSize: units.readUnit
                 verticalAlignment: Text.AlignVCenter
                 font.family: "Tahoma"
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: dpanel.toggleSubPanel()
-                }
             }
             ListView {
                 id: buttons
@@ -185,6 +189,11 @@ Window {
 
             spacing: units.fingerUnit
             model: VisualItemModel {
+                Common.TimeViewer {
+                    width: pageList.width
+                    color: '#DDFFDD'
+                }
+
                 Item {
                     width: pageList.width
                     height: childrenRect.height + units.nailUnit
@@ -249,7 +258,7 @@ Window {
                         }
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: dpanel.getItemMainPanel.openNewPage('ShowAnnotation', {idAnnotation: id})
+                            onClicked: pageList.openNewMainPage('ShowAnnotation', {idAnnotation: id})
                         }
                     }
                     caption: qsTr('Darreres anotacions')
@@ -258,8 +267,8 @@ Window {
                     totalBackgroundColor: '#F2F5A9'
                     maxItems: 3
                     totalCount: -1
-                    onPlusClicked: dpanel.getItemMainPanel.openNewPage('ShowAnnotation',{idAnnotation: -1})
-                    onCaptionClicked: dpanel.getItemMainPanel.openNewPage('AnnotationsList')
+                    onPlusClicked: pageList.openNewMainPage('ShowAnnotation',{idAnnotation: -1})
+                    onCaptionClicked: pageList.openNewMainPage('AnnotationsList')
                 }
 
                 Common.PreviewBox {
@@ -297,7 +306,7 @@ Window {
                         }
                         MouseArea {
                             anchors.fill: textEvents
-                            onClicked: dpanel.getItemMainPanel.openNewPage('ShowEvent',{idEvent: model.id})
+                            onClicked: pageList.openNewMainPage('ShowEvent',{idEvent: model.id})
                         }
                     }
                     caption: qsTr("Últims esdeveniments")
@@ -305,8 +314,8 @@ Window {
                     color: '#F8ECE0'
                     maxItems: 3
                     totalCount: -1
-                    onPlusClicked: dpanel.getItemMainPanel.openNewPage('ShowEvent',{idEvent: -1})
-                    onCaptionClicked: dpanel.getItemMainPanel.openNewPage('Schedule')
+                    onPlusClicked: pageList.openNewMainPage('ShowEvent',{idEvent: -1})
+                    onCaptionClicked: pageList.openNewMainPage('Schedule')
                 }
 
                 Common.PreviewBox {
@@ -331,18 +340,19 @@ Window {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                dpanel.getItemMainPanel.openNewPage('DocumentsList',{initialDirectory: model.directory});
+                                pageList.openNewMainPage('DocumentsList',{initialDirectory: model.directory});
                             }
                         }
                     }
 
-                    onCaptionClicked: dpanel.getItemMainPanel.openNewPage('DocumentsList')
+                    onCaptionClicked: pageList.openNewMainPage('DocumentsList')
 
                     StandardPaths {
                         id: paths
                     }
 
                     Component.onCompleted: {
+                        directoriesModel.append({title: qsTr('Curs 14-15'), directory: 'file:///sdcard/Esquirol/Curs-14-15'})
                         directoriesModel.append({title: qsTr('Esquirol'), directory: 'file:///sdcard/Esquirol'});
                         directoriesModel.append({title: qsTr('Home'), directory: paths.home});
                         directoriesModel.append({title: qsTr('Documents'), directory: paths.documents});
@@ -356,9 +366,21 @@ Window {
                 Common.BigButton {
                     width: pageList.width
                     height: units.fingerUnit
-                    title: qsTr('Pissarra')
-                    onClicked: dpanel.getItemMainPanel.openNewPage('Whiteboard')
+                    title: qsTr('MarkDown')
+                    onClicked: pageList.openNewMainPage('MarkDownViewer')
                 }
+
+                Common.BigButton {
+                    width: pageList.width
+                    height: units.fingerUnit
+                    title: qsTr('Pissarra')
+                    onClicked: pageList.openNewMainPage('Whiteboard')
+                }
+            }
+
+            function openNewMainPage(page, args) {
+                dpanel.getItemMainPanel.openNewPage(page,args);
+                dpanel.toggleSubPanel();
             }
         }
 
@@ -425,6 +447,9 @@ Window {
                 // Text viewer
                 onSavedDocument: messageBox.publishMessage(qsTr('Desat el document «') + document + '»')
 
+                // MarkDown viewer
+                onOpenLink: openNewPage('MarkDownViewer', {document: link});
+
                 // Backup
                 onSavedBackupToDirectory: {
                     var directory = document;
@@ -436,6 +461,8 @@ Window {
 
                 // Assessment Grid
                 onOpenTabularEditor: openNewPage('AssessmentGeneralEditor',{})
+                onOpenAssessmentList: openNewPage('AssessmentList', {})
+                onExportedContents: messageBox.publishMessage("S'han exportat les dades i s'ha desat una copia al porta-retalls.")
 
                 // Altres - revisar
                 onOpenDocumentsList: openNewPage('DocumentsList',{},'')

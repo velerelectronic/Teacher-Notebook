@@ -21,5 +21,6 @@
         <file>common/DoublePanel.qml</file>
         <file>common/WheelButton.qml</file>
         <file>common/ImageViewer.qml</file>
+        <file>common/TimeViewer.qml</file>
     </qresource>
 </RCC>

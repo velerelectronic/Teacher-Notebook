@@ -17,15 +17,19 @@ Rectangle {
     property int widthSubPanel: Math.min(expectedWidth + 2 * globalMargins,width)
     property int availableWidth: width - widthSubPanel
 
+    property alias positionSubPanel: subPanel.x
+
     Core.UseUnits {
         id: units
     }
 
     state: 'normal'
 
+
     function canShowBothPanels() {
         return availableWidth>2*widthSubPanel;
     }
+
 
     states: [
         State {
@@ -33,6 +37,7 @@ Rectangle {
             AnchorChanges {
                 target: subPanel
                 anchors.left: parent.left
+
                 anchors.right: undefined
             }
             PropertyChanges {
@@ -69,6 +74,7 @@ Rectangle {
             anchors.rightMargin: globalMargins
             anchors.topMargin: 0
             anchors.bottomMargin: 0
+//            z: 1
         }
 
         Rectangle {
@@ -96,6 +102,50 @@ Rectangle {
             anchors.topMargin: 0
             anchors.bottomMargin: 0
         }
+    }
+
+    MouseArea {
+        property bool showMenu: false
+        property real firstX
+        property real firstY
+
+        anchors {
+            top: parent.top
+            left: parent.left
+            bottom: parent.bottom
+        }
+        width: widthSubPanel
+//        z: 2
+
+        enabled: true // canShowBothPanels()
+        propagateComposedEvents: false
+
+        onPressed: {
+            if (mouseX<units.nailUnit) {
+                showMenu = true;
+                firstX = mouseX;
+                firstY = mouseY;
+                console.log(mouseX + "-" + mouseY);
+            } else {
+                mouse.accepted = false;
+            }
+        }
+
+        onMouseXChanged: {
+            console.log("" + (mouseX-firstX) + "--" + units.fingerUnit);
+            if (showMenu) {
+                if (mouseX-firstX>units.fingerUnit) {
+                    positionSubPanel = mouseX - widthSubPanel;
+                }
+            }
+        }
+        onReleased: {
+            if (showMenu) {
+                showMenu = false;
+                toggleSubPanel();
+            }
+        }
+
     }
 
     transitions: Transition {

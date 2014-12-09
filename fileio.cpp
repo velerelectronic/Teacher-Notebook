@@ -52,7 +52,7 @@ QString FileIO::read()
         QTextStream t( &file );
         do {
             line = t.readLine();
-            fileContent += line;
+            fileContent += line + '\n';
          } while (!line.isNull());
 
         file.close();
@@ -61,6 +61,26 @@ QString FileIO::read()
         return QString();
     }
     return fileContent;
+}
+
+bool FileIO::append(const QString &data) {
+    if (mSource.isEmpty()) {
+        qDebug() << "Empty";
+        return false;
+    }
+
+    QFile file(mSource);
+    if (!file.open(QFile::WriteOnly | QFile::Append)) {
+        qDebug() << "No file";
+        return false;
+    }
+
+    QTextStream out(&file);
+    out << data;
+
+    file.close();
+
+    return true;
 }
 
 bool FileIO::write(const QString& data)

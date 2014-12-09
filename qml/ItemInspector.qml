@@ -26,7 +26,7 @@ Common.AbstractEditor {
     }
     property var editComponent: {
                 1: 'TextLineEditor',
-                2: 'TextAreaEditor',
+                2: 'TextAreaEditor2',
                 3: 'DateTimeEditor',
                 4: 'StateEditor',
                 5: 'ImageEditor'
@@ -293,6 +293,7 @@ Common.AbstractEditor {
     }
 
     function collapseEditors() {
+        Qt.inputMethod.hide();
         for (var i=0; i<inspectorGrid.contentItem.children.length; i++) {
             var widget = inspectorGrid.contentItem.children[i];
             if (widget.state == 'editMode')

@@ -34,5 +34,8 @@
         <file>qml/MultipleGrid.qml</file>
         <file>qml/AssessmentGrid.qml</file>
         <file>qml/AssessmentGeneralEditor.qml</file>
+        <file>qml/AssessmentList.qml</file>
+        <file>qml/JsonViewer.qml</file>
+        <file>qml/MarkDownViewer.qml</file>
     </qresource>
 </RCC>
