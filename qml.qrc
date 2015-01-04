@@ -37,5 +37,7 @@
         <file>qml/AssessmentList.qml</file>
         <file>qml/JsonViewer.qml</file>
         <file>qml/MarkDownViewer.qml</file>
+        <file>qml/WorkSpace.qml</file>
+        <file>qml/Calendar.qml</file>
     </qresource>
 </RCC>

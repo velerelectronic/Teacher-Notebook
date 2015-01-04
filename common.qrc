@@ -22,5 +22,6 @@
         <file>common/WheelButton.qml</file>
         <file>common/ImageViewer.qml</file>
         <file>common/TimeViewer.qml</file>
+        <file>common/MultiWidgetsArea.qml</file>
     </qresource>
 </RCC>

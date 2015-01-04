@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient>
+<stop offset="0"/>
+<stop offset="1" stop-color="#fff"/>
+</linearGradient>
+</defs>
+<path d="m9.37778,12.85418h37.56749a2,2 0 0,1 2,2v30.72955a2,2 0 0,1 -2,2h-37.56749a2,2 0 0,1 -2-2v-30.72955a2,2 0 0,1 2-2" fill="#b3b3b3" fill-rule="evenodd" transform="matrix(1.090460,.000000,.000000,1.261608,-.401956,-4.492066)"/>
+<path d="m9.53713,25.01194h40.66776" fill="none" stroke="#7f7f7f" stroke-width="1.25" transform="matrix(1.090460,.000000,.000000,1.090460,-1.971746,-3.216017)"/>
+<path d="m8.81735,44.23021h41.92739" fill="none" stroke="#7f7f7f" stroke-width="1.25" transform="matrix(1.090460,.000000,.000000,1.090460,-1.971746,-3.216017)"/>
+<path d="m9.53713,34.62108h40.66776" fill="none" stroke="#7f7f7f" stroke-width="1.25" transform="matrix(1.090460,.000000,.000000,1.090460,-1.971746,-3.216017)"/>
+<path d="m19.04239,15.55337v38.50841" fill="none" stroke="#7f7f7f" stroke-width="1.25" transform="matrix(1.090460,.000000,.000000,1.090460,-1.971746,-3.216017)"/>
+<path d="m29.44738,15.55337v38.50841" fill="none" stroke="#7f7f7f" stroke-width="1.25" transform="matrix(1.090460,.000000,.000000,1.090460,-1.971746,-3.216017)"/>
+<path d="m39.85237,15.55337v38.50841" fill="none" stroke="#7f7f7f" stroke-width="1.25" transform="matrix(1.090460,.000000,.000000,1.090460,-1.971746,-3.216017)"/>
+<path d="m9.82414,11.72488h40.96585a2.18092,2.18092 0 0,1 2.18092,2.18092v39.45326a2.18092,2.18092 0 0,1 -2.18092,2.18092h-40.96585a2.18092,2.18092 0 0,1 -2.18092-2.18092v-39.45326a2.18092,2.18092 0 0,1 2.18092-2.18092" fill="none" stroke="#7f7f7f" stroke-linejoin="round" stroke-width="1.875"/>
+<path d="m4.51924,5.65635h47.46452a2,2 0 0,1 2,2v7.51653a2,2 0 0,1 -2,2h-47.46452a2,2 0 0,1 -2-2v-7.51653a2,2 0 0,1 2-2" fill="#4c4c4c" fill-rule="evenodd" stroke="#333" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.82782" transform="matrix(1.019374,.000000,.000000,.766729,1.410097,.381128)"/>
+<path d="m42.49847,76.66856a28.62921,21.50372 0 1,0 -57.25842,0 28.62921,21.50372 0 1,0 57.25842,0z" fill="none" stroke="#333" stroke-width="7.91034" transform="matrix(.445866,9.180013e-2,-.394891,.268725,50.58031,2.606069)"/>
+</svg>

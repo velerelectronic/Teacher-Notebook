@@ -48,3 +48,9 @@ Date.prototype.toLongDate = function() {
     var months = ['gener','febrer','març','abril','maig','juny','juliol','agost','setembre','octubre','novembre','desembre'];
     return (weekdays[this.getDay()] + ' ' + this.getDate() + ' de ' + months[this.getMonth()] + ' de ' + this.getFullYear());
 }
+
+Date.prototype.toShortReadableDate = function() {
+    var weekdays = ['dg','dl','dt','dc','dj','dv','ds'];
+    var months = ['gen', 'feb', 'març', 'abr','maig','jun','jul','ago','set','oct','nov','des'];
+    return (weekdays[this.getDay()] + ' ' + this.getDate() + ' ' + months[this.getMonth()] + ' ' + this.getFullYear());
+}

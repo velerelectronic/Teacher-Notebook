@@ -137,6 +137,13 @@ Rectangle {
         Common.BigButton {
             width: buttonWidth
             height: buttonHeight
+            title: qsTr('Espai de treball')
+            onClicked: menuPage.openPage('WorkSpace')
+        }
+
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
             title: qsTr('Anotacions')
             onClicked: menuPage.openPage('AnnotationsList')
         }
@@ -188,6 +195,12 @@ Rectangle {
             height: buttonHeight
             title: qsTr('Gestor de dades')
             onClicked: menuPage.openPage('DataMan')
+        }
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
+            title: qsTr('Calendari')
+            onClicked: menuPage.openPage('Calendar')
         }
     }
 

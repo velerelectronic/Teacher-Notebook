@@ -15,6 +15,8 @@ Common.AbstractEditor {
     property string pageTitle: qsTr("Editor de la graella")
     property var buttons: buttonsModel
 
+    property alias group: groupEditor.text
+
     signal closePage(string message)
 
     SqlTableModel {

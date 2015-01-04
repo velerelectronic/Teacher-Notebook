@@ -16,6 +16,7 @@ Rectangle {
     property string markDownText: ''
 
     signal openLink(string link)
+    signal emitSignal(string name, var param)
 
     Common.UseUnits { id: units }
 
@@ -101,6 +102,7 @@ Rectangle {
                     console.log(linkURI);
                     if (ext == 'md') {
                         openLink(linkURI);
+                        emitSignal('openMarkDown',{document: linkURI});
                     } else {
                         Qt.openUrlExternally(encodeURI(linkURI));
                     }

@@ -18,6 +18,8 @@
   * Back: http://pixabay.com/es/flecha-verde-brillante-izquierda-145769/
   * Export: http://pixabay.com/en/box-open-taking-out-container-24557/
   * Select: http://pixabay.com/en/screen-capture-screenshot-app-23236/
+
+  * Today: http://pixabay.com/es/calendario-fechas-mes-hoy-en-d%C3%ADa-27560/
 */
 
 import QtQuick 2.2
@@ -237,6 +239,13 @@ Window {
                     }
                 }
 
+                Common.BigButton {
+                    width: pageList.width
+                    height: units.fingerUnit
+                    title: qsTr('Espai de treball')
+                    onClicked: pageList.openNewMainPage('WorkSpace')
+                }
+
                 Common.PreviewBox {
                     id: lastAnnotations
                     width: pageList.width
@@ -395,7 +404,7 @@ Window {
 
                 // Page handling
                 onOpenPage: openNewPage(page,{})
-                onOpenPageArgs: openSubPage(page,args)
+                onOpenPageArgs: openNewPage(page,args)
                 onClosePage: {
                     pagesView.closeCurrentPage();
                     if (message != '')
@@ -542,9 +551,6 @@ Window {
 
     function openMainPage() {
         dpanel.getItemMainPanel.openNewPage('MenuPage',{});
-    }
-
-    function openSubPage (page, param) {
     }
 
 }

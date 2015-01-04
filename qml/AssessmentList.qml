@@ -5,11 +5,14 @@ import 'qrc:///common' as Common
 
 Rectangle {
     width: 100
-    height: 62
+//    height: 62
 
     property string pageTitle: qsTr("Llista d'avaluació");
     property var buttons: buttonsModel
     signal exportedContents()
+    signal emitSignal(string name, var param)
+
+    property string selectedGroup: ''
 
     Common.UseUnits { id: units }
 
@@ -83,6 +86,7 @@ Rectangle {
                             onClicked: {
                                 groupList.currentIndex = model.index;
                                 individualsList.fillIndividuals(model.modelData);
+                                selectedGroup = model.modelData;
                             }
                         }
                     }
@@ -276,6 +280,10 @@ Rectangle {
         exportedContents();
 
         Qt.openUrlExternally("mailto:?subject=" + encodeURIComponent("[TeacherNotebook] Avaluacio") + "&body=" + encodeURIComponent(html));
+    }
+
+    function newAssessmentEditor() {
+        emitSignal('openTabularEditor',{group: selectedGroup});
     }
 
     TextEdit {
