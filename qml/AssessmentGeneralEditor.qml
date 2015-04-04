@@ -16,6 +16,8 @@ Common.AbstractEditor {
     property var buttons: buttonsModel
 
     property alias group: groupEditor.text
+    property string individual: ''
+    property string variable: ''
 
     signal closePage(string message)
 
@@ -114,6 +116,7 @@ Common.AbstractEditor {
                         Layout.alignment: Qt.AlignTop
                         Layout.fillWidth: true
                         Layout.preferredHeight: height
+                        text: editItem.variable
                         onTextChanged: editItem.setChanges(true)
                     }
                 }
@@ -135,11 +138,12 @@ Common.AbstractEditor {
                         checkable: true
                         exclusiveGroup: individualEditorType
                         text: qsTr("Taula d'individus")
-                        checked: true
+                        checked: (editItem.individual == '')?true:false
                         objectName: 'tableEditor'
                     }
                     Button {
                         checkable: true
+                        checked: (editItem.individual != '')?true:false
                         exclusiveGroup: individualEditorType
                         text: qsTr('Afegir un sol individu')
                     }
@@ -291,6 +295,7 @@ Common.AbstractEditor {
                 Layout.preferredHeight: height
                 model: individualModel
                 field: 'individual'
+                text: editItem.individual
                 onTextChanged: editItem.setChanges(true)
             }
             Text {

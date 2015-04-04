@@ -39,5 +39,21 @@
         <file>qml/MarkDownViewer.qml</file>
         <file>qml/WorkSpace.qml</file>
         <file>qml/Calendar.qml</file>
+        <file>qml/GanttDiagram.qml</file>
+        <file>qml/Planning2.qml</file>
+        <file>qml/PlanningCollector.qml</file>
+        <file>qml/AssessmentByCategories.qml</file>
+        <file>qml/AssessmentSystem.qml</file>
+        <file>qml/TasksSystem.qml</file>
+        <file>qml/Rubric.qml</file>
+        <file>qml/RubricsList.qml</file>
+        <file>qml/RubricCriteriumEditor.qml</file>
+        <file>qml/RubricLevelEditor.qml</file>
+        <file>qml/RubricDetailsEditor.qml</file>
+        <file>qml/RubricDescriptorEditor.qml</file>
+        <file>qml/Projects.qml</file>
+        <file>qml/ProjectEditor.qml</file>
+        <file>qml/RubricAssessmentEditor.qml</file>
+        <file>qml/RubricGroupAssessment.qml</file>
     </qresource>
 </RCC>

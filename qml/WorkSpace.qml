@@ -6,31 +6,32 @@ Common.MultiWidgetsArea {
     signal openPageArgs(string page, var args)
 
     Component.onCompleted: {
-        addWidget('Calendar',{});
+        addWidget('TasksSystem',{});
+        addWidget('AssessmentSystem',{});
         addWidget('MarkDownViewer',{document: 'file:///sdcard/Esquirol/Curs-14-15/mapa curs.md'});
-        addWidget('AssessmentList',{});
     }
 
     onEmitSignal: {
         switch(name) {
-        case 'createEvent':
-            openPageArgs('ShowEvent', param);
-            break;
-        case 'editEvent':
-            openPageArgs('ShowEvent', param);
-            break;
         case 'openTabularEditor':
             openPageArgs('AssessmentGeneralEditor', param);
-            console.log('PArametres' + param);
+            console.log('Parametres' + param);
             for (var prop in param) {
                 console.log(prop + '->' + param[prop]);
             }
             console.log(param['group']);
             break;
+        case 'categorizedAssessment':
+            openPageArgs('AssessmentByCategories', param);
+            break;
         case 'openMarkDown':
             openPageArgs('MarkDownViewer', param);
             break;
+        case 'processDocument':
+            openPageArgs('Planning2', param);
+            break;
         default:
+            openPageArgs(name,param);
             break;
         }
     }

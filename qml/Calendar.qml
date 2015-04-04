@@ -9,275 +9,407 @@ Rectangle {
 
     Common.UseUnits { id: units }
 
+    states: [
+        State {
+            name: 'CalendarOnly'
+            AnchorChanges {
+                target: view
+                anchors.bottom: view.parent.bottom
+            }
+        },
+        State {
+            name: 'CalendarAndEvents'
+            AnchorChanges {
+                target: view
+                anchors.bottom: view.parent.verticalCenter
+            }
+        }
+    ]
+    state: 'CalendarOnly'
+
+    transitions: [
+        Transition {
+            AnchorAnimation {
+                targets: view
+                easing.type: Easing.InOutQuad
+            }
+        }
+
+
+    ]
+
     property var startDate: new Date()
     property var shortMonthNames: ['gen', 'feb', 'març', 'abr', 'maig', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'des']
 
     property string pageTitle: qsTr('Calendari')
 
     signal newEvent
-    signal emitSignal(string name, var param)
     signal editEvent(int id,string event, string desc,string startDate,string startTime,string endDate,string endTime)
-
-    property var buttons: buttonsModel
 
     function createEvent() {
         calendarView.newEvent();
-        emitSignal('createEvent',{});
     }
 
     function gotoToday() {
-        view.weeksOffset = 0;
         view.currentIndex = 0;
     }
 
-    ListModel {
-        id: buttonsModel
-        ListElement {
-            method: 'createEvent'
-            image: 'plus-24844'
-        }
-        ListElement {
-            method: 'gotoToday'
-            image: 'calendar-27560'
-        }
+    function hideEventsList() {
+        view.currentIndex = -1;
     }
 
-
     ListModel {
-        id: weeksModel
+        id: daysModel
         Component.onCompleted: {
-            weeksModel.append({week: 0});
-            weeksModel.append({week: 1});
-            weeksModel.append({week: 2});
-            weeksModel.append({week: 3});
-            weeksModel.append({week: 4});
-            weeksModel.append({week: 5});
+            var today = new Date();
+            today.setDate(today.getDate()-today.getDay()+1);
+            for (var i=0; i<7; i++) {
+                daysModel.append({day: today.getDate(), month: today.getMonth(), year: today.getFullYear()});
+                today.setDate(today.getDate() + 1);
+            }
         }
     }
 
-    property int weeksHeight: height / weeksModel.count
-
-    PathView {
+    GridView {
         id: view
-        anchors.fill: parent
-        model: weeksModel
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: parent.top
+            bottom: parent.bottom
+        }
+        model: daysModel
+        cellHeight: Math.floor(width / 7)
+        cellWidth: cellHeight
         clip: true
 
-        delegate: Row {
-            id: singleWeek
-            width: parent.width
-            height: weeksHeight
-            property var weekNumber: model.week
+        currentIndex: -1
 
-            Rectangle {
-                id: leftHandle
-                color: 'gray'
-                height: parent.height
-                width: 0 // units.fingerUnit
+        property bool canPrependWeek: true
+
+        highlightFollowsCurrentItem: true
+        highlight: Rectangle {
+            color: 'yellow'
+        }
+        highlightRangeMode: GridView.ApplyRange
+        preferredHighlightBegin: 0
+        preferredHighlightEnd: view.height
+
+        onMovingVerticallyChanged: {
+            if (movingVertically) {
+                if ((contentY<0) && (canPrependWeek)) {
+                    canPrependWeek = false;
+                    var date = setDateFromModel(model.get(0));
+                    for (var i=0; i<7; i++) {
+                        date.setDate(date.getDate()-1);
+                        daysModel.insert(0,{day: date.getDate(), month: date.getMonth(), year: date.getFullYear()});
+                    }
+                }
+            } else {
+                canPrependWeek = true;
             }
-
-            Repeater {
-                model: 7
-                delegate: Rectangle {
-                    id: singleDay
-                    property int day: 0
-                    property int month: 0
-                    property int year: 0
-                    border.color: 'black'
-                    width: (calendarView.width - leftHandle.width - rightHandle.width) / 7
-                    height: parent.height
-
-                    RowLayout {
-                        id: dateText
-                        anchors {
-                            left: parent.left
-                            right: parent.right
-                            top: parent.top
-                            margins: units.nailUnit / 2
-                        }
-                        height: parent.height / 3 - 2 * anchors.margins
-
-                        Text {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: units.fingerUnit
-                            horizontalAlignment: Text.AlignLeft
-                            font.pixelSize: units.readUnit
-                            fontSizeMode: Text.Fit
-                            font.bold: true
-                            text: day
-                        }
-                        Item {
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                            ColumnLayout {
-                                anchors.fill: parent
-                                spacing: 0
-                                Text {
-                                    Layout.fillHeight: true
-                                    Layout.fillWidth: true
-                                    horizontalAlignment: Text.AlignRight
-                                    verticalAlignment: Text.AlignVCenter
-                                    font.pixelSize: units.readUnit
-                                    fontSizeMode: Text.Fit
-                                    font.capitalization: Font.SmallCaps
-                                    text: shortMonthNames[month]
-                                }
-                                Text {
-                                    Layout.fillHeight: true
-                                    horizontalAlignment: Text.AlignRight
-                                    verticalAlignment: Text.AlignVCenter
-                                    Layout.fillWidth: true
-                                    font.pixelSize: units.readUnit
-                                    fontSizeMode: Text.Fit
-                                    text: year
-                                }
-                            }
-                        }
-                    }
-
-                    Connections {
-                        target: view
-                        onWeeksOffsetChanged: {
-                            if ((view.currentIndex == singleWeek.weekNumber) || ((view.currentIndex-1 + weeksModel.count) % weeksModel.count == singleWeek.weekNumber)) {
-                                singleDay.updateAllContents();
-                            }
-                        }
-                    }
-
-                    ListView {
-                        id: eventsList
-                        anchors {
-                            top: dateText.bottom
-                            left: parent.left
-                            right: parent.right
-                            bottom: parent.bottom
-                            margins: units.nailUnit / 2
-                        }
-
-                        model: eventsOfDayModel
-                        clip: true
-                        boundsBehavior: ListView.StopAtBounds
-
-                        delegate: Rectangle {
-                            width: eventsList.width
-                            height: Math.max(units.fingerUnit, eventText.contentHeight + eventText.anchors.margins * 2)
-                            border.color: 'black'
-                            color: (model.state == 'done')?'#99FF99':'#F5D0A9'
-
-                            Text {
-                                id: eventText
-                                anchors.fill: parent
-                                anchors.margins: units.nailUnit / 2
-                                text: model.event
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.smallReadUnit
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                propagateComposedEvents: true
-                                onClicked: {
-                                    calendarView.editEvent(model.id,model.event,model.desc,model.startDate,model.startTime,model.endDate,model.endTime);
-                                    calendarView.emitSignal('editEvent',{id: model.id,event: model.event,desc: model.desc,startDate: model.startDate,startTime: model.startTime,endDate: model.endDate,endTime: model.endTime});
-                                }
-                            }
-                        }
-                        footer: Item {
-                            width: eventsList.width
-                            height: units.fingerUnit
-                            Text {
-                                anchors.centerIn: parent
-                                font.pixelSize: units.readUnit
-                                color: 'gray'
-                                text: qsTr('Afegeix...')
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    var month = singleDay.month+1;
-                                    month = ((month<10)?'0':'') + month;
-                                    var day = singleDay.day;
-                                    day = ((day<10)?'0':'') + day;
-                                    var dateString = singleDay.year + '-' + month + '-' + day;
-
-                                    calendarView.editEvent(-1,'','',dateString,'',dateString,'');
-                                    calendarView.emitSignal('editEvent',{id: -1, startDate: dateString,endDate: dateString});
-                                }
-                            }
-                        }
-
-                        SqlTableModel {
-                            id: eventsOfDayModel
-                            tableName: 'schedule'
-                            filters: []
-                            Component.onCompleted: {
-                                setSort(1,Qt.DescendingOrder); // Order by last inclusion
-                            }
-                        }
-                    }
-
-
-                    function updateAllContents() {
-                        // Date
-                        var thisDate = new Date();
-                        thisDate.setDate(thisDate.getDate() - thisDate.getDay() + 1 + (view.weeksOffset + singleWeek.weekNumber - view.currentIndex + ((view.currentIndex<=singleWeek.weekNumber)?0:weeksModel.count)) * 7 + modelData);
-                        singleDay.day = thisDate.getDate();
-                        singleDay.month = thisDate.getMonth();
-                        singleDay.year = thisDate.getFullYear();
-                        // textDay.text = thisDate.toShortReadableDate();
-
-                        // Events
-                        var previousFilter = scheduleModel.filters;
-
-                        var month = singleDay.month+1;
-                        month = ((month<10)?'0':'') + month;
-                        var day = singleDay.day;
-                        day = ((day<10)?'0':'') + day;
-
-                        var dateString = singleDay.year + '-' + month + '-' + day;
-                        var dateFilter = "startDate='" + dateString + "' OR endDate='" + dateString + "'";
-                        eventsOfDayModel.filters = previousFilter;
-                        eventsOfDayModel.filters.push(dateFilter);
-                        eventsOfDayModel.select();
-                        // scheduleModel.filters = previousFilter;
-                    }
-
-                    Component.onCompleted: singleDay.updateAllContents()
+        }
+        onAtYEndChanged: {
+            if (atYEnd) {
+                var date = setDateFromModel(model.get(model.count-1));
+                for (var i=0; i<7; i++) {
+                    date.setDate(date.getDate()+1);
+                    daysModel.append({day: date.getDate(), month: date.getMonth(), year: date.getFullYear()});
                 }
             }
-            Rectangle {
-                id: rightHandle
-                color: 'gray'
-                height: parent.height
-                width: units.fingerUnit
-            }
         }
-        path: Path {
-            startX: parent.width / 2
-            startY: weeksHeight / 2
-            PathLine {
-                relativeX: 0
-                relativeY: calendarView.height
-            }
-        }
-        property int lastIndex: 0
-        property int weeksOffset: 0
 
         onCurrentIndexChanged: {
-            switch(currentIndex) {
-            case lastIndex+1:
-            case lastIndex-weeksModel.count+1:
-                weeksOffset += 1;
-                break;
-            case lastIndex-1:
-            case lastIndex+weeksModel.count-1:
-                weeksOffset -= 1;
-                break;
-            default:
-                console.log('Error?');
+            if (currentIndex > -1) {
+                calendarView.state = 'CalendarAndEvents';
+                var dateItem = daysModel.get(currentIndex);
+                eventsArea.updateAllContents(dateItem.day, dateItem.month, dateItem.year);
+            } else {
+                calendarView.state = 'CalendarOnly';
             }
-            lastIndex = currentIndex;
         }
+
+        function setDateFromModel(dateItem) {
+            var date = new Date();
+            date.setDate(dateItem.day);
+            date.setMonth(dateItem.month);
+            date.setFullYear(dateItem.year);
+            return date;
+        }
+
+        delegate: Rectangle {
+            id: singleDay
+            border.color: 'black'
+            color: 'transparent'
+            width: view.cellWidth
+            height: view.cellHeight
+
+            RowLayout {
+                id: dateText
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: parent.top
+                    margins: units.nailUnit / 2
+                }
+                height: parent.height / 2 - 2 * anchors.margins
+
+                Text {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: units.fingerUnit
+                    horizontalAlignment: Text.AlignLeft
+                    font.pixelSize: units.glanceUnit
+                    fontSizeMode: Text.Fit
+                    font.bold: true
+                    text: model.day
+                }
+                Item {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    ColumnLayout {
+                        anchors.fill: parent
+                        spacing: 0
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignRight
+                            verticalAlignment: Text.AlignVCenter
+                            font.pixelSize: units.readUnit
+                            fontSizeMode: Text.Fit
+                            font.capitalization: Font.SmallCaps
+                            text: shortMonthNames[model.month]
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            horizontalAlignment: Text.AlignRight
+                            verticalAlignment: Text.AlignVCenter
+                            Layout.fillWidth: true
+                            font.pixelSize: units.readUnit
+                            fontSizeMode: Text.Fit
+                            text: model.year
+                        }
+                    }
+                }
+            }
+            Text {
+                id: totalEvents
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.bottom
+                    top: dateText.bottom
+                }
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.WrapAnywhere
+                color: '#FFBF00'
+            }
+
+            SqlTableModel {
+                id: eventsOfDayModel
+                tableName: 'schedule'
+                filters: []
+                Component.onCompleted: {
+                    setSort(1,Qt.DescendingOrder); // Order by last inclusion
+                    var previousFilter = scheduleModel.filters;
+
+                    var monthStr = model.month+1;
+                    monthStr = ((monthStr<10)?'0':'') + monthStr;
+
+                    var dayStr = ((day<10)?'0':'') + model.day;
+
+                    var dateString = model.year + '-' + monthStr + '-' + dayStr;
+                    var dateFilter = "startDate='" + dateString + "' OR endDate='" + dateString + "'";
+                    eventsOfDayModel.filters = previousFilter;
+                    eventsOfDayModel.filters.push(dateFilter);
+                    eventsOfDayModel.select();
+                    // scheduleModel.filters = previousFilter;
+
+                    var c = eventsOfDayModel.count;
+                    if (c>0) {
+                        var res = "";
+                        for (var i=0; i<c; i++) {
+                            res += " *";
+                        }
+                        totalEvents.text = res;
+                    }
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    view.currentIndex = model.index;
+                }
+            }
+        }
+
     }
+
+    Rectangle {
+        id: eventsArea
+        property int day
+        property int month
+        property int year
+
+        color: 'white'
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: view.bottom
+            bottom: parent.bottom
+            margins: units.nailUnit
+        }
+
+        ColumnLayout {
+            anchors.fill: parent
+            clip: true
+
+            Text {
+                id: eventsAreaTitle
+                Layout.fillWidth: true
+                Layout.preferredHeight: contentHeight
+                font.pixelSize: units.readUnit
+                font.bold: true
+                text: {
+                    var date = new Date();
+                    date.setDate(eventsArea.day);
+                    date.setMonth(eventsArea.month);
+                    date.setFullYear(eventsArea.year);
+                    return qsTr('Esdeveniments de ') + date.toLongDate();
+                }
+            }
+
+            ListView {
+                id: eventsList
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                model: events
+                clip: true
+                boundsBehavior: ListView.StopAtBounds
+
+
+                delegate: Rectangle {
+                    width: eventsList.width
+                    height: units.fingerUnit
+                    border.color: 'black'
+
+                    RowLayout {
+                        anchors.fill: parent
+                        Text {
+                            id: textFrom
+                            property real calculatedWidth: 0
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: calculatedWidth
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                        }
+
+                        Text {
+                            id: eventText
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: parent.width / 2
+                            text: (model.event + ' ' + model.desc).replace("\n", " ").replace("\r", " ")
+                            color: (model.state == 'done')?'gray':'black'
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                            font.pixelSize: units.readUnit
+                        }
+
+                        Text {
+                            id: textUntil
+                            property real calculatedWidth: 0
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: calculatedWidth
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                        }
+
+                        Component.onCompleted: {
+                            if (eventsArea.convertToDateString(eventsArea.day,eventsArea.month,eventsArea.year) == model.startDate) {
+                                textUntil.calculatedWidth = textUntil.parent.width / 2;
+                                textUntil.text = qsTr("Fins a ") + model.endDate
+                            } else {
+                                textFrom.calculatedWidth = textFrom.parent.width / 2;
+                                textFrom.text = qsTr("Des de ") + model.startDate
+                            }
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        propagateComposedEvents: true
+                        onClicked: {
+                            calendarView.editEvent(model.id,model.event,model.desc,model.startDate,model.startTime,model.endDate,model.endTime);
+                            console.log("Model.id: " + model.id);
+                        }
+                    }
+                }
+                footer: Item {
+                    width: eventsList.width
+                    height: units.fingerUnit
+                    Text {
+                        anchors.centerIn: parent
+                        font.pixelSize: units.readUnit
+                        color: 'gray'
+                        text: qsTr('Afegeix...')
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            var month = eventsArea.month+1;
+                            month = ((month<10)?'0':'') + month;
+                            var day = eventsArea.day;
+                            day = ((day<10)?'0':'') + day;
+                            var dateString = eventsArea.year + '-' + month + '-' + day;
+
+                            calendarView.editEvent(-1,'','',dateString,'',dateString,'');
+                        }
+                    }
+                }
+
+                SqlTableModel {
+                    id: events
+                    tableName: 'schedule'
+                    filters: []
+                    Component.onCompleted: {
+                        setSort(1,Qt.DescendingOrder); // Order by last inclusion
+                    }
+                }
+
+            }
+
+        }
+
+        function convertToDateString(day, month, year) {
+            var monthStr = month+1;
+            monthStr = ((monthStr<10)?'0':'') + monthStr;
+
+            var dayStr = ((day<10)?'0':'') + day;
+
+            return year + '-' + monthStr + '-' + dayStr;
+        }
+
+        function updateAllContents(day,month,year) {
+            eventsArea.day = day;
+            eventsArea.month = month;
+            eventsArea.year = year;
+
+            // Events
+            var previousFilter = scheduleModel.filters;
+
+            var dateString = convertToDateString(day,month,year);
+            var dateFilter = "startDate='" + dateString + "' OR endDate='" + dateString + "'";
+            events.filters = previousFilter;
+            events.filters.push(dateFilter);
+            events.select();
+            // scheduleModel.filters = previousFilter;
+        }
+
+    }
+
+
 }
 

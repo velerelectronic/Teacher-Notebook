@@ -26,6 +26,7 @@ Rectangle {
     property url initialDirectory: ''
 
     signal openDocument(string page,string document)
+    signal openTBook(string document)
     signal openingDocumentExternally(string document)
     signal createdFile(string file)
     signal notCreatedFile(string file)
@@ -189,11 +190,20 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
+                    function hasExtension(name,ext) {
+                        return (name.length - name.lastIndexOf(ext) === ext.length);
+                    }
+
                     onClicked: {
                         // Different actions whether it is a file or a folder
-                        if (fileIsDir)
-                            folderList.folder = model.fileURL;
-                        else {
+                        if (fileIsDir) {
+                            if (hasExtension(model.fileURL.toString(),'.tbook')) {
+                                console.log('tbook');
+                                openTBook(fileURL);
+                            } else {
+                                folderList.folder = model.fileURL;
+                            }
+                        } else {
                             processDocument(fileURL);
                         }
                     }

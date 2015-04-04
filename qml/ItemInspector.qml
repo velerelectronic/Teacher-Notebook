@@ -11,25 +11,31 @@ Common.AbstractEditor {
     property alias pageBackground: backgroundImage.source
     property alias model: inspectorGrid.model
     property var editorType: {
+                'None': 0,
                 'TextLine': 1,
                 'TextArea': 2,
                 'DateTime': 3,
                 'State': 4,
-                'Image': 5
+                'Image': 5,
+                'List': 6
     }
     property var showComponent: {
+                0: showText,
                 1: showText,
                 2: showText,
                 3: showDateTime,
                 4: showState,
-                5: showImage
+                5: showImage,
+                6: showList
     }
     property var editComponent: {
+                0: '',
                 1: 'TextLineEditor',
                 2: 'TextAreaEditor2',
                 3: 'DateTimeEditor',
                 4: 'StateEditor',
-                5: 'ImageEditor'
+                5: 'ImageEditor',
+                6: 'ListEditor'
     }
 
     property alias buttons: buttonsModel
@@ -95,7 +101,6 @@ Common.AbstractEditor {
 
             property int captionsWidth: units.fingerUnit
 
-            clip: true
             model: ListModel {
                 id: attributesModel
                 dynamicRoles: true
@@ -165,11 +170,14 @@ Common.AbstractEditor {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (variableViewer.state=='viewMode') {
-                                    itemInspector.collapseEditors();
-                                    variableViewer.state = 'editMode';
-                                } else
-                                    variableViewer.state = 'viewMode';
+                                console.log(model.editorType);
+                                if (model.editorType !== itemInspector.editorType['None']) {
+                                    if (variableViewer.state=='viewMode') {
+                                        itemInspector.collapseEditors();
+                                        variableViewer.state = 'editMode';
+                                    } else
+                                        variableViewer.state = 'viewMode';
+                                }
                             }
                         }
                     }
@@ -178,6 +186,7 @@ Common.AbstractEditor {
                         asynchronous: false
 //                        Layout.fillWidth: true
 //                        Layout.preferredHeight: height
+                        clip: true
                         Connections {
                             target: editorLoader.item
                             ignoreUnknownSignals: true
@@ -187,9 +196,12 @@ Common.AbstractEditor {
                 }
                 onStateChanged: {
                     if (variableViewer.state == 'editMode') {
-                        var newcontent = model.content;
-                        editorLoader.setSource('qrc:///editors/' + editComponent[model.editorType] + '.qml', {content: newcontent, width: viewerBox.width});
-                        editorLoader.focus = true;
+                        if (model.editorType !== 'None') {
+                            var newcontent = model.content;
+
+                            editorLoader.setSource('qrc:///editors/' + editComponent[model.editorType] + '.qml', {content: newcontent, width: viewerBox.width});
+                            editorLoader.focus = true;
+                        }
                     } else {
                         // Then state is viewMode
                         if (editorLoader.item && editorLoader.item.content) {
@@ -256,6 +268,29 @@ Common.AbstractEditor {
         }
     }
 
+    Component {
+        id: showList
+        Text {
+            id: mainText
+            property var content
+            property int requiredHeight: contentHeight
+            onContentChanged: {
+                if (content.valued) {
+                    text = content.reference;
+                } else {
+                    if (content.reference<0) {
+                        text = '---';
+                    } else {
+                        var newcontent = content.model.getObject(content.reference)[content.nameAttribute];
+                        if (typeof newcontent === 'string')
+                            text = newcontent;
+                        else
+                            text = '';
+                    }
+                }
+            }
+        }
+    }
 
     MessageDialog {
         id: messageSave

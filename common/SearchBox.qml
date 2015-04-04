@@ -6,7 +6,7 @@ Rectangle {
     property alias text: searchText.text
 
     width: 300
-    height: 40
+    height: units.fingerUnit
     radius: height / 2
     border.color: 'black'
     clip: true
@@ -18,7 +18,7 @@ Rectangle {
         anchors.rightMargin: searchBox.radius
         anchors.verticalCenter: parent.verticalCenter
         text: ''
-        font.pointSize: 20
+        font.pixelSize: units.readUnit
         inputMethodHints: Qt.ImhNoPredictiveText
         onTextChanged: {
             waitTimer.restart();

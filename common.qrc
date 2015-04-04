@@ -23,5 +23,8 @@
         <file>common/ImageViewer.qml</file>
         <file>common/TimeViewer.qml</file>
         <file>common/MultiWidgetsArea.qml</file>
+        <file>common/SuperposedBox.qml</file>
+        <file>common/TabbedView.qml</file>
+        <file>common/FixedHeadingsTableView.qml</file>
     </qresource>
 </RCC>

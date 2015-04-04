@@ -20,6 +20,15 @@
   * Select: http://pixabay.com/en/screen-capture-screenshot-app-23236/
 
   * Today: http://pixabay.com/es/calendario-fechas-mes-hoy-en-d%C3%ADa-27560/
+  * Quit: http://pixabay.com/es/eliminar-celular-cuadro-quitar-27201/
+
+  * GanttDiagram: http://pixabay.com/es/por-ciento-40-bar-progreso-metro-40844/
+  * Calendar: http://pixabay.com/es/calendario-mensual-oficina-23684/
+  * Maximize: http://pixabay.com/es/windows-de-microsoft-maximizar-zoom-23242/
+  * Minimize: http://pixabay.com/es/men%C3%BA-rojo-brillante-ventana-abajo-145772/
+  * Multiple windows: http://pixabay.com/es/ventanas-equipo-escritorio-97883/
+
+  * Categories: http://pixabay.com/es/jerarqu%C3%ADa-niveles-de-arreglos-35795/
 */
 
 import QtQuick 2.2
@@ -36,7 +45,6 @@ Window {
     x: 0
     y: 0
 
-    onXChanged: console.log('X changed to ' + mainApp.x)
     width: Screen.desktopAvailableWidth
     height: Screen.desktopAvailableHeight
     visible: true
@@ -324,7 +332,7 @@ Window {
                     maxItems: 3
                     totalCount: -1
                     onPlusClicked: pageList.openNewMainPage('ShowEvent',{idEvent: -1})
-                    onCaptionClicked: pageList.openNewMainPage('Schedule')
+                    onCaptionClicked: pageList.openNewMainPage('TasksSystem')
                 }
 
                 Common.PreviewBox {
@@ -402,6 +410,9 @@ Window {
                 target: pagesView.currentItem
                 ignoreUnknownSignals: true
 
+                // State changes
+                onStateChanged: buttons.model = dpanel.getButtonsList()
+
                 // Page handling
                 onOpenPage: openNewPage(page,{})
                 onOpenPageArgs: openNewPage(page,args)
@@ -428,12 +439,13 @@ Window {
                 onCreatedFile: messageBox.publishMessage('Creat el fitxer «' + file + '»')
                 onNotCreatedFile: messageBox.publishMessage('El fitxer «' + file + '» ja existeix')
                 onOpenDocument: openNewPage(page, {document: document})
+                onOpenTBook: openNewPage('Planning2', {document: document})
                 onOpeningDocumentExternally: messageBox.publishMessage(qsTr("Obrint el document «") + document + "»")
 
                 // Events
                 onDeletedEvents: messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'))
-                onEditEvent: openNewPage('ShowEvent',{idEvent: id, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime},id)
-                onNewEvent: openNewPage('ShowEvent',{},'')
+                onEditEvent: openNewPage('ShowEvent',{idEvent: idEvent, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime,project: project, projectsModel: projectsModel})
+                onNewEvent: openNewPage('ShowEvent', {projectsModel: projectsModel})
                 onSavedEvent: {
                     messageBox.publishMessage(qsTr("S'ha desat l'esdeveniment"));
                     scheduleModel.select();
@@ -476,6 +488,28 @@ Window {
                 // Altres - revisar
                 onOpenDocumentsList: openNewPage('DocumentsList',{},'')
                 onRefusedCloseEditorRequest: messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
+
+                // Rubrics
+                onOpenRubricDetails: openNewPage('RubricDetailsEditor',{rubric: rubric, rubricsModel: rubricsModel})
+                onOpenRubricEditor: openNewPage('Rubric',{rubric: id, rubricsModel: rubricsModel, state: 'edit'}, '')
+                onOpenRubricGroupAssessment: openNewPage('RubricGroupAssessment', {idAssessment: assessment, rubric: rubric, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel});
+                onOpenRubricAssessmentDetails: openNewPage('RubricAssessmentEditor', {idAssessment: assessment, rubricsAssessmentModel: rubricsAssessmentModel})
+                onEditCriterium: openNewPage('RubricCriteriumEditor',{idCriterium: idCriterium, rubric: rubric, title: title, desc: desc, ord: ord, weight: weight, criteriaModel: model});
+                onEditLevel: openNewPage('RubricLevelEditor',{idLevel: idLevel, rubric: rubric, title: title, desc: desc, score: score, levelsModel: model});
+                onEditRubricDetails: openNewPage('RubricDetailsEditor',{idRubric: idRubric, rubricsModel: model})
+                onEditDescriptor: openNewPage('RubricDescriptorEditor',{idDescriptor: idDescriptor, criterium: criterium, level: level, definition: definition, descriptorsModel: model});
+
+                onSavedCriterium: pagesView.closeCurrentPage()
+                onSavedLevel: pagesView.closeCurrentPage()
+                onSavedRubricDetails: pagesView.closeCurrentPage()
+                onSavedDescriptor: pagesView.closeCurrentPage()
+                onSavedRubricAssessment: {
+                    messageBox.publishMessage(qsTr("S'ha desat l'avaluació de rúbrica"));
+                    pagesView.closeCurrentPage();
+                }
+
+                // Projects
+                onNewProjectRequest: openNewPage('ProjectEditor',{projectsModel: model});
             }
 
             function closeCurrentPage() {
@@ -525,7 +559,7 @@ Window {
         annotationsModel.select();
 
         scheduleModel.tableName = 'schedule';
-        scheduleModel.fieldNames = ['created','id','event','desc','startDate','startTime','endDate','endTime','state'];
+        scheduleModel.fieldNames = ['created','id','event','desc','startDate','startTime','endDate','endTime','state','ref'];
         scheduleModel.setSort(5,Qt.AscendingOrder);
         scheduleModel.select();
 
@@ -539,8 +573,26 @@ Window {
     function createTables() {
         //dataBck.dropTable('annotations');
         //dataBck.dropTable('schedule');
+        //dataBck.dropTable('rubrics_criteria');
         dataBck.createTable('annotations','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, image BLOB, ref INTEGER');
         dataBck.createTable('schedule','id INTEGER PRIMARY KEY, created TEXT, event TEXT, desc TEXT, startDate TEXT, startTime TEXT, endDate TEXT, endTime TEXT, state TEXT, ref INTEGER');
+
+        dataBck.createTable('rubrics', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT');
+        dataBck.createTable('rubrics_labels','id INTEGER PRIMARY KEY, label TEXT');
+        dataBck.createTable('rubrics_criteria','id INTEGER PRIMARY KEY, title TEXT, desc TEXT, rubric INTEGER, ord INTEGER, weight INTEGER');
+        dataBck.createTable('rubrics_levels','id INTEGER PRIMARY KEY,title TEXT, desc TEXT, rubric INTEGER, score INTEGER');
+        dataBck.createTable('rubrics_descriptors','id INTEGER PRIMARY KEY, criterium INTEGER, level INTEGER, definition TEXT');
+
+        //dataBck.dropTable('rubrics_assessment');
+        dataBck.createTable('rubrics_assessment','id INTEGER PRIMARY KEY, title TEXT, desc TEXT, rubric INTEGER, "group" TEXT, event INTEGER');
+        dataBck.createTable('rubrics_scores','id INTEGER PRIMARY KEY, assessment INTEGER, criterium INTEGER, level INTEGER, moment TEXT, individual TEXT, comment TEXT');
+
+        dataBck.createTable('projects','id INTEGER PRIMARY KEY, name TEXT, desc TEXT');
+
+        // Assessment
+        // dataBck.dropTable('assessmentGrid');
+        dataBck.createTable('assessmentGrid','id INTEGER PRIMARY KEY, created TEXT, moment TEXT, "group" TEXT, individual TEXT, variable TEXT, value TEXT, comment TEXT');
+
         annotationsModel.tableName = 'annotations';
         annotationsModel.fieldNames = ['id', 'created' ,'title', 'desc', 'image', 'ref'];
         annotationsModel.setSort(0,Qt.AscendingOrder);

@@ -30,5 +30,11 @@
         <file>icons/box-24557.svg</file>
         <file>icons/screen-capture-23236.svg</file>
         <file>icons/calendar-27560.svg</file>
+        <file>icons/delete-27201.svg</file>
+        <file>icons/percent-40844.svg</file>
+        <file>icons/calendar-23684.svg</file>
+        <file>icons/microsoft-windows-23242.svg</file>
+        <file>icons/menu-145772.svg</file>
+        <file>icons/hierarchy-35795.svg</file>
     </qresource>
 </RCC>

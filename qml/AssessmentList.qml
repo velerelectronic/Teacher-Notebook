@@ -8,25 +8,9 @@ Rectangle {
 //    height: 62
 
     property string pageTitle: qsTr("Llista d'avaluació");
-    property var buttons: buttonsModel
-    signal exportedContents()
-    signal emitSignal(string name, var param)
-
-    property string selectedGroup: ''
+    property string groupName: ''
 
     Common.UseUnits { id: units }
-
-    ListModel {
-        id: buttonsModel
-        ListElement {
-            method: 'newAssessmentEditor'
-            image: 'plus-24844'
-        }
-        ListElement {
-            method: 'exportList'
-            image: 'box-24557'
-        }
-    }
 
     SqlTableModel {
         id: gridModel
@@ -37,12 +21,6 @@ Rectangle {
     }
 
     SqlTableModel {
-        id: groupsModel
-        tableName: 'assessmentGrid'
-        fieldNames: gridModel.fieldNames
-    }
-
-    SqlTableModel {
         id: individualsModel
         tableName: 'assessmentGrid'
         fieldNames: gridModel.fieldNames
@@ -50,52 +28,6 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        Item {
-            Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit
-            RowLayout {
-                anchors.fill: parent
-                Text {
-                    text: qsTr('Selecciona grup: ')
-                    font.pixelSize: units.readUnit
-                }
-                ListView {
-                    id: groupList
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    orientation: ListView.Horizontal
-                    clip: true
-
-                    spacing: units.nailUnit
-                    delegate: Rectangle {
-                        radius: units.fingerUnit / 2
-                        height: units.fingerUnit
-                        width: groupName.contentWidth + radius * 2
-                        color: 'yellow'
-                        Text {
-                            id: groupName
-                            anchors.fill: parent
-                            anchors.margins: parent.radius
-                            font.pixelSize: units.readUnit
-                            verticalAlignment: Text.AlignVCenter
-                            width: contentWidth
-                            text: model.modelData
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                groupList.currentIndex = model.index;
-                                individualsList.fillIndividuals(model.modelData);
-                                selectedGroup = model.modelData;
-                            }
-                        }
-                    }
-                    highlight: Rectangle {
-                        color: 'green'
-                    }
-                }
-            }
-        }
 
         ListView {
             id: individualsList
@@ -103,7 +35,6 @@ Rectangle {
             Layout.fillWidth: true
             spacing: units.nailUnit
             clip: true
-            property string groupName: ''
 
             delegate: Rectangle {
                 border.color: 'black'
@@ -210,7 +141,7 @@ Rectangle {
                         }
 
                         function fillValues(individual) {
-                            valuesModel.filters = ['\"group\"=\'' + individualsList.groupName + '\'','individual=\''+ individual + '\''];
+                            valuesModel.filters = ['\"group\"=\'' + groupName + '\'','individual=\''+ individual + '\''];
                             console.log('----');
                             console.log(individual);
                             console.log(valuesModel.filters);
@@ -225,82 +156,14 @@ Rectangle {
                 }
             }
 
-            function fillIndividuals(group) {
-                groupName = group;
-                var individuals = individualsModel.selectDistinct('individual', 'id', '\"group\"=\"' + group + '\"', false);
+            function fillIndividuals() {
+                var individuals = individualsModel.selectDistinct('individual', 'id', '\"group\"=\"' + groupName + '\"', false);
                 individualsList.model = individuals;
             }
         }
     }
 
-    function exportList() {
-        var html = "<html>\n";
-        html += "<head><meta charset=\"UTF-8\"></head>\n";
-        html += "<body>";
-
-        html += "<h1>Llista d'avaluacio</h1>";
-        html += "<p>Data: " + (new Date()).toISOString() + "</p>";
-        for (var i=0; i<groupList.model.length; i++) {
-            html += "<h2>Grup: ";
-            var group = groupList.model[i];
-            html += group;
-            html += "</h2>\n";
-            var individuals = individualsModel.selectDistinct('individual', 'id', '\"group\"=\"' + group + '\"', false);
-            for (var j=0; j<individuals.length; j++) {
-                var individual = individuals[j];
-                html += "<h3>Alumne: " + individual + "</h3>\n";
-                html += "<table style=\"border: solid 1pt black\"><tr><th>#</th><th>Id</th><th>Moment</th><th>Variable</th><th>Valor</th><th>Comentari</th></tr>\n";
-
-                // Get values from each individual
-                exportValuesModel.filters = ['\"group\"=\'' + group + '\'','individual=\''+ individual + '\''];
-                exportValuesModel.setSort(2,Qt.DescendingOrder);
-                exportValuesModel.select();
-                for (var k=0; k<exportValuesModel.count; k++) {
-                    html += "<tr>";
-                    html += "<td>" + (k+1) + "</td>";
-                    var obj = exportValuesModel.getObjectInRow(k);
-                    html += "<td>" + obj['id'] + "</td>";
-                    html += "<td>" + obj['moment'] + "</td>";
-                    html += "<td>" + obj['variable'] + "</td>";
-                    html += "<td>" + obj['value'] + "</td>";
-                    html += "<td>" + obj['comment'] + "</td>";
-                    html += "</tr>\n";
-                }
-
-                html += "</table>\n";
-
-            }
-        }
-
-        html += "</body></html>";
-        console.log(html);
-        clipboard.text = html;
-        clipboard.selectAll();
-        clipboard.copy();
-        exportedContents();
-
-        Qt.openUrlExternally("mailto:?subject=" + encodeURIComponent("[TeacherNotebook] Avaluacio") + "&body=" + encodeURIComponent(html));
-    }
-
-    function newAssessmentEditor() {
-        emitSignal('openTabularEditor',{group: selectedGroup});
-    }
-
-    TextEdit {
-        id: clipboard
-        width: 0
-        height: 0
-        visible: false
-    }
-
-    SqlTableModel {
-        id: exportValuesModel
-        tableName: 'assessmentGrid'
-        fieldNames: gridModel.fieldNames
-    }
-
-    Component.onCompleted: {
-        var groups = gridModel.selectDistinct('\"group\"', 'id', '', false);
-        groupList.model = groups;
+    onGroupNameChanged: {
+        individualsList.fillIndividuals();
     }
 }

@@ -27,7 +27,7 @@ Common.AbstractEditor {
     property bool selection: false
     property bool isVertical: width<height
     property bool edit: true
-    property var buttons: buttonsModel
+//    property var buttons: buttonsModel
 
     property alias content: textArea.text
 

@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
+import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
 Rectangle {
@@ -58,16 +59,29 @@ Rectangle {
         }
     ]
 
-    property alias event: eventTitle.text
+    property string event: ''
     property alias desc: eventDesc.text
     property alias startDate: startDate.text
     property alias startTime: startTime.text
     property alias endDate: endDate.text
     property alias endTime: endTime.text
     property var stateEvent: ''
+    property int project: -1
+    property string projectName: ''
+    property SqlTableModel projectsModel
+
+    Component.onCompleted: {
+        if (project>=0) {
+            var obj = projectsModel.getObject(project);
+            if ('name' in obj)
+                projectName = obj['name'];
+            else
+                projectName = qsTr('-- No existeix --');
+        }
+    }
 
     signal scheduleItemSelected (string event,string desc,string startDate,string startTime,string endDate,string endTime)
-    signal scheduleItemLongSelected (string event,string desc,string startDate,string startTime,string endDate,string endTime)
+    signal scheduleItemLongSelected (string event,string desc,string startDate,string startTime,string endDate,string endTime, int project, var projectsModel)
 
     border.color: 'black'
 
@@ -145,6 +159,7 @@ Rectangle {
                     Layout.preferredWidth: parent.width
                     Layout.preferredHeight: paintedHeight
                     font.bold: true
+                    text: scheduleItem.event + ' - ' + scheduleItem.projectName
                     textFormat: Text.PlainText
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 }
@@ -162,7 +177,7 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         onClicked: scheduleItem.scheduleItemSelected(scheduleItem.event,scheduleItem.desc,scheduleItem.startDate,scheduleItem.startTime,scheduleItem.endDate,scheduleItem.endTime)
-        onPressAndHold: scheduleItem.scheduleItemLongSelected(scheduleItem.event,scheduleItem.desc,scheduleItem.startDate,scheduleItem.startTime,scheduleItem.endDate,scheduleItem.endTime)
+        onPressAndHold: scheduleItem.scheduleItemLongSelected(scheduleItem.event,scheduleItem.desc,scheduleItem.startDate,scheduleItem.startTime,scheduleItem.endDate,scheduleItem.endTime,project,projectsModel)
     }
 
     Common.ExtraInfo {

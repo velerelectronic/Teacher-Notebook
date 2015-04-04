@@ -10,10 +10,12 @@ import 'qrc:///editors' as Editors
 Rectangle {
     id: mdViewer
     property string pageTitle: qsTr('MarkDown')
-    property var buttons: buttonsModel
+    property var buttons: buttonsModelShow
 
     property string document: ''
     property string markDownText: ''
+
+    property var pageList: []
 
     signal openLink(string link)
     signal emitSignal(string name, var param)
@@ -26,6 +28,7 @@ Rectangle {
             PropertyChanges {
                 target: mdViewer
                 editorHeight: 0
+                buttons: buttonsModelShow
             }
             PropertyChanges {
                 target: editorLoader
@@ -37,6 +40,7 @@ Rectangle {
             PropertyChanges {
                 target: mdViewer
                 editorHeight: mdViewer.height / 2
+                buttons: buttonsModelEdit
             }
             PropertyChanges {
                 target: editorLoader
@@ -53,17 +57,40 @@ Rectangle {
                 target: editorLoader
                 sourceComponent: appendComponent
             }
+        },
+        State {
+            name: 'showContentsOnly'
+            PropertyChanges {
+                target: mdViewer
+                height: mdFlickable.contentHeight + 2 * units.nailUnit
+            }
+            PropertyChanges {
+                target: mdFlickable
+                interactive: false
+            }
         }
-
     ]
     property int editorHeight: 0
+    state: 'show'
+    onStateChanged: {
+        switch(state) {
+        case 'show':
+            buttons = buttonsModelShow;
+            break;
+        case 'edit':
+        case 'append':
+            buttons = buttonsModelEdit;
+            break;
+        }
+    }
 
     ColumnLayout {
         anchors.fill: parent
-
+        spacing: units.nailUnit
         Text {
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.max(units.fingerUnit,contentHeight)
+            Layout.preferredHeight: (mdViewer.state != 'showContentsOnly')?Math.max(units.fingerUnit,contentHeight):0
+            clip: true
             font.pixelSize: units.readUnit
             font.bold: true
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -100,10 +127,17 @@ Rectangle {
                     var linkURI = Qt.resolvedUrl(baseUrl + '/' + link);
                     console.log(baseUrl);
                     console.log(linkURI);
-                    if (ext == 'md') {
-                        openLink(linkURI);
-                        emitSignal('openMarkDown',{document: linkURI});
-                    } else {
+                    switch(ext) {
+                    case 'md':
+                        mdViewer.pageList.push(document);
+                        document = linkURI;
+                        // openLink(linkURI);
+                        // emitSignal('openMarkDown',{document: linkURI});
+                        break;
+                    case 'tbook':
+                        emitSignal('processDocument',{document: linkURI});
+                        break;
+                    default:
                         Qt.openUrlExternally(encodeURI(linkURI));
                     }
                 }
@@ -150,7 +184,7 @@ Rectangle {
     onDocumentChanged: reloadMarkDown()
 
     ListModel {
-        id: buttonsModel
+        id: buttonsModelShow
         ListElement {
             method: 'editMarkDown'
             image: 'edit-153612'
@@ -167,8 +201,22 @@ Rectangle {
         }
 
         ListElement {
+            method: 'goBack'
+            image: 'arrow-145769'
+        }
+    }
+
+    ListModel {
+        id: buttonsModelEdit
+
+        ListElement {
             method: 'saveContents'
             image: 'floppy-35952'
+        }
+
+        ListElement {
+            method: 'closeEditor'
+            image: 'road-sign-147409'
         }
     }
 
@@ -181,10 +229,21 @@ Rectangle {
     }
 
     function reloadMarkDown() {
-        mdViewer.state = 'show';
+        // mdViewer.state = 'show';
         mdFile.source = document;
         markDownText = mdFile.read();
         refreshHtml();
+    }
+
+    function goBack() {
+        var page = pageList.pop();
+        console.log(page);
+        if ((typeof page) !== 'undefined')
+            document = page;
+    }
+
+    function closeEditor() {
+        mdViewer.state = 'show';
     }
 
     function refreshHtml() {

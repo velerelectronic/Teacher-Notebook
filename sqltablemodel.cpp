@@ -226,11 +226,8 @@ QStringList SqlTableModel::selectDistinct(QString field,QString order,QString fi
 
     QStringList vector;
     QSqlQuery query("SELECT DISTINCT " + field + " FROM " + this->innerTableName + ((filter != "")?(" WHERE " + filter):"") + " ORDER BY " + order + ((ascending)?" ASC":" DESC "));
-    qDebug() << query.executedQuery();
-    qDebug() << query.size();
     bool iter = query.first();
     while (iter) {
-        qDebug() << query.record();
         vector.append(query.record().value(0).toString());
         iter = query.next();
     }
@@ -296,6 +293,7 @@ void SqlTableModel::setInnerFilters() {
     }
 
     QSqlTableModel::setFilter(fieldFilter);
+    qDebug() << tableName() + "Filter " + fieldFilter;
 }
 
 void SqlTableModel::setLimit(int limit) {
@@ -345,6 +343,7 @@ bool SqlTableModel::updateObject(const QVariantMap &object) {
     if (row>-1) {
         QSqlRecord record = buildRecord(object,false);
         result = updateRowInTable(row,record);
+        qDebug() << lastError();
         selectRow(row);
         select();
     }

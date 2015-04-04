@@ -1,3 +1,10 @@
+Date.prototype.differenceInDays = function(date2) {
+    var oneDay = 24 * 60 * 60 * 1000;
+    var date1ms = this.getTime();
+    var date2ms = date2.getTime();
+    return Math.floor((date2ms-date1ms)/oneDay);
+}
+
 Date.prototype.toDateSpecificFormat = function() {
     return this.getDate() + '/' + (this.getMonth()+1) + '/' + this.getFullYear();
 }

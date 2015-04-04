@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.1
+import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import "qrc:///javascript/Storage.js" as Storage
 // import "qrc:///javascript/FormatDates.js" as FormatDates
@@ -24,12 +25,16 @@ ItemInspector {
     property string endDate: ''
     property string endTime: ''
     property string stateEvent: ''
+    property int project: -1
+
+    property SqlTableModel projectsModel
 
     property int idxEvent
     property int idxState
     property int idxDesc
     property int idxStart
     property int idxEnd
+    property int idxProject
 
     Common.UseUnits { id: units }
 
@@ -62,6 +67,7 @@ ItemInspector {
             newEvent.endDate = details.endDate;
             newEvent.endTime = details.endTime;
             newEvent.stateEvent = details.state;
+            newEvent.project = (details.ref !== '')?parseInt(details.ref):-1;
         }
 
         idxEvent = addSection(qsTr('Esdeveniment'), newEvent.event,'yellow',editorType['TextLine']);
@@ -69,6 +75,7 @@ ItemInspector {
         idxDesc = addSection(qsTr('Descripció'), newEvent.desc,'yellow',editorType['TextArea']);
         idxStart = addSection(qsTr('Inici'),{date: newEvent.startDate, time: newEvent.startTime},'green',editorType['DateTime']);
         idxEnd = addSection(qsTr('Final'),{date: newEvent.endDate, time: newEvent.endTime},'green',editorType['DateTime']);
+        idxProject = addSection(qsTr('Projecte'), {reference: newEvent.project, model: projectsModel, nameAttribute: 'name'}, 'white', editorType['List']);
 
         // Reinit changes
         newEvent.setChanges(false);
@@ -84,6 +91,7 @@ ItemInspector {
         var end = getContent(idxEnd);
         newEvent.endDate = end['date'];
         newEvent.endTime = end['time'];
+        newEvent.project = getContent(idxProject).reference;
 
         var object = {
             created: Storage.currentTime(),
@@ -93,14 +101,17 @@ ItemInspector {
             startTime: newEvent.startTime,
             endDate: newEvent.endDate,
             endTime: newEvent.endTime,
-            state: newEvent.stateEvent
+            state: newEvent.stateEvent,
+            ref: newEvent.project
         }
+
+        console.log('Object ref ' + object.ref);
 
         if (idCode == -1) {
             scheduleModel.insertObject(object);
         } else {
             object['id'] = idCode;
-            scheduleModel.updateObject(object);
+            console.log('updating ' + scheduleModel.updateObject(object));
         }
         newEvent.setChanges(false);
         newEvent.savedEvent(newEvent.event,newEvent.desc,newEvent.startDate,newEvent.startTime,newEvent.endDate,newEvent.endTime);

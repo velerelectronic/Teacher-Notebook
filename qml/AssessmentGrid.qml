@@ -32,16 +32,6 @@ Rectangle {
 
     Common.UseUnits { id: units }
 
-    DatabaseBackup {
-        id: dataBck
-
-        Component.onCompleted: {
-//            dataBck.dropTable('assessmentGrid');
-            dataBck.createTable('assessmentGrid','id INTEGER PRIMARY KEY, created TEXT, moment TEXT, "group" TEXT, individual TEXT, variable TEXT, value TEXT, comment TEXT');
-            console.log('Taula creada');
-        }
-    }
-
     SqlTableModel {
         id: gridModel
         tableName: 'assessmentGrid'

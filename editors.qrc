@@ -12,5 +12,6 @@
         <file>editors/TableCell.qml</file>
         <file>editors/FieldEditor.qml</file>
         <file>editors/TextAreaEditor2.qml</file>
+        <file>editors/ListEditor.qml</file>
     </qresource>
 </RCC>

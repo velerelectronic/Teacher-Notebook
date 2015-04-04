@@ -137,8 +137,22 @@ Rectangle {
         Common.BigButton {
             width: buttonWidth
             height: buttonHeight
+            title: qsTr('Rúbrica')
+            onClicked: menuPage.openPage('RubricsList')
+        }
+
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
             title: qsTr('Espai de treball')
             onClicked: menuPage.openPage('WorkSpace')
+        }
+
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
+            title: qsTr('Projectes')
+            onClicked: menuPage.openPage('Projects')
         }
 
         Common.BigButton {
@@ -147,11 +161,12 @@ Rectangle {
             title: qsTr('Anotacions')
             onClicked: menuPage.openPage('AnnotationsList')
         }
+
         Common.BigButton {
             width: buttonWidth
             height: buttonHeight
-            title: qsTr('Agenda')
-            onClicked: menuPage.openPage('Schedule')
+            title: qsTr('Tasques i esdeveniments')
+            onClicked: menuPage.openPage('TasksSystem')
         }
         Common.BigButton {
             width: buttonWidth
@@ -169,7 +184,7 @@ Rectangle {
             width: buttonWidth
             height: buttonHeight
             title: qsTr('Avaluació')
-            onClicked: menuPage.openPage('AssessmentGrid')
+            onClicked: menuPage.openPage('AssessmentSystem')
         }
 
         Common.BigButton {
