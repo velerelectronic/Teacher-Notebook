@@ -14,8 +14,13 @@ GridLayout {
     property alias crossHeadingItem: crossItem.children
     property alias horizontalHeadingModel: horizontalHeading.model
     property alias horizontalHeadingDelegate: horizontalHeading.delegate
+    property alias horizontalHeadingHighlight: horizontalHeading.highlight
     property alias verticalHeadingModel: verticalHeading.model
     property alias verticalHeadingDelegate: verticalHeading.delegate
+    property alias verticalHeadingHighlight: verticalHeading.highlight
+
+    property alias currentHorizontalIndex: horizontalHeading.currentIndex
+    property alias currentVerticalIndex: verticalHeading.currentIndex
 
     property alias mainTabularItem: tableItem.children
     property alias mainTabularItemHeight: tableItem.height
@@ -36,7 +41,7 @@ GridLayout {
 
         onContentXChanged: {
             if (movingHorizontally) {
-                tableItem.contentX = contentX;
+                tableItemFlickable.contentX = contentX;
             }
         }
     }
@@ -50,7 +55,7 @@ GridLayout {
 
         onContentYChanged: {
             if (movingVertically) {
-                tableItem.contentY = contentY;
+                tableItemFlickable.contentY = contentY;
             }
         }
 
@@ -89,5 +94,19 @@ GridLayout {
                 verticalHeading.contentY = contentY;
             }
         }
+    }
+
+    function changeCurrentHorizontalIndex(index) {
+        if (horizontalHeading.currentIndex !== index)
+            horizontalHeading.currentIndex = index;
+        else
+            horizontalHeading.currentIndex = -1;
+    }
+
+    function changeCurrentVerticalIndex(index) {
+        if (verticalHeading.currentIndex !== index)
+            verticalHeading.currentIndex = index;
+        else
+            verticalHeading.currentIndex = -1;
     }
 }

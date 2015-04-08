@@ -55,5 +55,6 @@
         <file>qml/ProjectEditor.qml</file>
         <file>qml/RubricAssessmentEditor.qml</file>
         <file>qml/RubricGroupAssessment.qml</file>
+        <file>qml/RubricAssessmentScore.qml</file>
     </qresource>
 </RCC>

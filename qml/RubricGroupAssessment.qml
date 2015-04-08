@@ -27,9 +27,7 @@ Rectangle {
     property int contentsWidth: units.fingerUnit * 7
 
     signal editRubricDetails(int idRubric, string title, string desc, var model)
-    signal editCriterium(int idCriterium, int rubric, string title, string desc, int ord, int weight, var model)
-    signal editLevel(int idLevel, int rubric, string title, string desc, int score, var model)
-    signal editDescriptor(int idDescriptor, int criterium, int level, string definition, var model)
+    signal editRubricAssessmentScore(int assessment, int criterium, string individual, var scoresModel)
 
     Common.UseUnits { id: units }
 
@@ -48,28 +46,31 @@ Rectangle {
         }
     }
 
-    GridLayout {
+    ColumnLayout {
         anchors.fill: parent
-        columns: 2
-        rows: 2
 
-        Text {
+        RowLayout {
+            Layout.fillWidth: true
             Layout.preferredHeight: units.fingerUnit
-            Layout.preferredWidth: sectionsWidth
-            text: qsTr('Grups')
-        }
 
-        Rectangle {
-            Layout.preferredHeight: units.fingerUnit
-            Layout.fillWidth: sectionsWidth
-            color: 'white'
             Text {
-                anchors {
-                    fill: parent
-                    margins: units.nailUnit
+                Layout.preferredHeight: units.fingerUnit
+                Layout.preferredWidth: sectionsWidth
+                text: qsTr('Grups')
+            }
+
+            Rectangle {
+                Layout.preferredHeight: units.fingerUnit
+                Layout.fillWidth: true
+                color: 'white'
+                Text {
+                    anchors {
+                        fill: parent
+                        margins: units.nailUnit
+                    }
+                    font.pixelSize: units.readUnit
+                    text: rubricRectangle.group
                 }
-                font.pixelSize: units.readUnit
-                text: rubricRectangle.group
             }
         }
 
@@ -85,8 +86,8 @@ Rectangle {
                 id: title
                 anchors.fill: parent
 
-                border.color: 'yellow'
-                color: '#C893B1'
+                border.color: 'black'
+                color: 'pink'
 
                 ColumnLayout {
                     anchors.fill: parent
@@ -121,6 +122,7 @@ Rectangle {
                 height: sectionsHeight
                 width: contentsWidth
                 border.color: 'black'
+                color: 'transparent'
                 Text {
                     anchors {
                         fill: parent
@@ -137,9 +139,13 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: rubricRectangle.editLevel(model.id,model.rubric,model.title,model.desc,model.score,rubricsLevels)
-                    onPressAndHold: rubricRectangle.deleteLevelRequest(model.id,model.title,model.desc)
+                    onClicked: fixedHeadingsTable.changeCurrentHorizontalIndex(model.index)
                 }
+            }
+            horizontalHeadingHighlight: Rectangle {
+                height: sectionsHeight
+                width: contentsWidth
+                color: 'yellow'
             }
 
             verticalHeadingModel: rubricsCriteria
@@ -147,6 +153,7 @@ Rectangle {
                 height: contentsHeight
                 width: sectionsWidth
                 border.color: 'black'
+                color: 'transparent'
                 RowLayout {
                     anchors.fill: parent
                     anchors.margins: units.nailUnit
@@ -167,9 +174,13 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: rubricRectangle.editCriterium(model.id,model.rubric,model.title,model.desc,model.ord,model.weight,rubricsCriteria)
-                    onPressAndHold: rubricRectangle.deleteCriteriaRequest(model.id,model.title,model.desc)
+                    onClicked: fixedHeadingsTable.changeCurrentVerticalIndex(model.index)
                 }
+            }
+            verticalHeadingHighlight: Rectangle {
+                height: sectionsHeight
+                width: contentsWidth
+                color: 'yellow'
             }
 
             mainTabularItem: ListView {
@@ -180,16 +191,25 @@ Rectangle {
 
                 model: rubricsCriteria
 
+                highlight: Rectangle {
+                    height: contentsHeight
+                    width: descriptorsList.width
+                    color: 'pink'
+                }
+                onCurrentIndexChanged: { console.log('New current index ' + currentIndex)}
+
                 delegate: Rectangle {
-                    id: wholeLevel
+                    id: wholeCriteria
                     height: contentsHeight
                     width: descriptorsList.width
 
                     border.color: 'black'
-                    color: 'white'
+                    color: 'transparent'
 
                     property int levelId: model.id
                     property string title: model.title
+                    property int verticalIndex: model.index
+                    property int criterium: model.id
 
                     ListView {
                         id: rubricsList
@@ -198,12 +218,18 @@ Rectangle {
                         model: individualsModel // rubricsCriteria
                         orientation: ListView.Horizontal
                         interactive: false
+                        highlight: Rectangle {
+                            height: contentsHeight
+                            width: contentsWidth
+                            color: 'green'
+                        }
+
                         delegate: Rectangle {
-                            id: criteriumAndLevelCell
                             height: contentsHeight
                             width: contentsWidth
                             border.color: 'black'
                             color: 'transparent'
+                            //color: (model.index === fixedHeadingsTable.currentHorizontalIndex)?((wholeCriteria.verticalIndex === fixedHeadingsTable.currentVerticalIndex)?'#ffffaa':'yellow'):'transparent'
                             clip: true
 
                             property int criteriumId: model.id
@@ -212,45 +238,44 @@ Rectangle {
                             property string definition: ''
 
                             SqlTableModel {
-                                id: rubricsDescriptors
-                                tableName: 'rubrics_descriptors'
-                                filters: ['criterium=\"' +  criteriumAndLevelCell.criteriumId + '\"','level=\"' + wholeLevel.levelId + '\"']
-
-                                Component.onCompleted: {
-                                    rubricsDescriptors.select();
-                                    console.log("Cell desciptors count " + rubricsDescriptors.count);
-                                    var result = rubricsDescriptors.getObjectInRow(0);
-                                    if (typeof result !== 'null') {
-                                        console.log(result['id']);
-                                        criteriumAndLevelCell.descriptorId = (result['id'])?result['id']:-1;
-                                        criteriumAndLevelCell.definition = result['definition'];
-                                    }
-                                }
+                                id: rubricIndividualScoresModel
+                                tableName: 'rubrics_scores'
+                                fieldNames: ['id', 'assessment', 'criterium', 'level', 'moment', 'individual', 'comment']
+                                filters: [
+                                    'criterium=\"' +  wholeCriteria.criterium + '\"',
+                                    'assessment=\"' + idAssessment + '\"',
+                                    'individual=\"' + model.individual + '\"'
+                                ]
+                                onCountChanged: console.log('scores count ' + count)
+                                Component.onCompleted: select()
                             }
 
-                            Text {
-                                id: cellText
+                            ListView {
+                                id: valuesList
                                 anchors.fill: parent
-                                anchors.margins: units.nailUnit
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                text: criteriumAndLevelCell.definition
+                                model: rubricIndividualScoresModel
+                                delegate: Text {
+                                    id: cellText
+                                    width: valuesList.width
+                                    height: valuesList.height
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                    font.pixelSize: units.readUnit
+                                    text: model.level + ' ' + model.comment
+                                }
+                            }
+                            Text {
+                                visible: rubricIndividualScoresModel.count === 0
+                                anchors.fill: parent
+                                verticalAlignment: Text.AlignVCenter
+                                horizontalAlignment: Text.AlignHCenter
+                                text: qsTr('No definit')
                             }
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
-                                    if (rubricRectangle.state == 'assessment') {
-                                        rubricsList.currentIndex = model.index;
-                                    } else {
-                                        console.log('Edit DESCRIPTOR ' + criteriumAndLevelCell.descriptorId + " CRITERIUM " + criteriumAndLevelCell.criteriumId + " LEVEL " + wholeLevel.levelId);
-                                        rubricRectangle.editDescriptor(criteriumAndLevelCell.descriptorId,criteriumAndLevelCell.criteriumId,wholeLevel.levelId,criteriumAndLevelCell.definition,rubricsDescriptors);
-                                    }
+                                    editRubricAssessmentScore(idAssessment,wholeCriteria.criterium,model.individual,rubricIndividualScoresModel);
                                 }
                             }
-
-                        }
-                        highlight: Rectangle {
-                            color: 'yellow'
                         }
                         highlightMoveDuration: 500
                         Component.onCompleted: currentIndex = -1
@@ -385,7 +410,7 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        var filter = ['rubric=\"' + rubricRectangle.rubric + '\"'];
+        var filter = ["rubric=\'" + rubricRectangle.rubric + "\'"];
         rubricsCriteria.filters = filter;
         rubricsCriteria.setSort(4, Qt.AscendingOrder);
         rubricsCriteria.select();
@@ -408,7 +433,6 @@ Rectangle {
             console.log('prop ' + prop + '-' + objAssessment[prop]);
         }
 
-        console.log('GROUP: ' + group)
     }
 }
 
