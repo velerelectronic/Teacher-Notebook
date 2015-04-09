@@ -501,7 +501,7 @@ Window {
                 onEditLevel: openNewPage('RubricLevelEditor',{idLevel: idLevel, rubric: rubric, title: title, desc: desc, score: score, levelsModel: model})
                 onEditRubricDetails: openNewPage('RubricDetailsEditor',{idRubric: idRubric, rubricsModel: model})
                 onEditDescriptor: openNewPage('RubricDescriptorEditor',{idDescriptor: idDescriptor, criterium: criterium, level: level, definition: definition, descriptorsModel: model})
-                onEditRubricAssessmentScore: openNewPage('RubricAssessmentScore', {assessment: assessment, criterium: criterium, individual: individual, scoresModel: scoresModel})
+                onEditRubricAssessmentDescriptor: openNewPage('RubricAssessmentDescriptor', {assessment: assessment, criterium: criterium, individual: individual, scoresSaveModel: scoresSaveModel, scoresModel: scoresModel, levelDescriptorsModel: levelDescriptorsModel})
 
                 onSavedCriterium: pagesView.closeCurrentPage()
                 onSavedLevel: pagesView.closeCurrentPage()
@@ -589,9 +589,15 @@ Window {
 
         //dataBck.dropTable('rubrics_assessment');
         dataBck.createTable('rubrics_assessment','id INTEGER PRIMARY KEY, title TEXT, desc TEXT, rubric INTEGER, "group" TEXT, event INTEGER');
-        dataBck.createTable('rubrics_scores','id INTEGER PRIMARY KEY, assessment INTEGER, criterium INTEGER, level INTEGER, moment TEXT, individual TEXT, comment TEXT');
+        dataBck.createTable('rubrics_scores','id INTEGER PRIMARY KEY, assessment INTEGER, descriptor INTEGER, moment TEXT, individual TEXT, comment TEXT');
 
         dataBck.createTable('projects','id INTEGER PRIMARY KEY, name TEXT, desc TEXT');
+
+        // Views
+        dataBck.dropView('rubrics_levels_descriptors');
+        dataBck.dropView('rubrics_assessment_grid');
+        dataBck.createView('rubrics_levels_descriptors',"SELECT rubrics_descriptors.id AS id, rubrics_descriptors.criterium AS criterium, rubrics_criteria.title AS criteriumTitle, rubrics_criteria.desc AS criteriumDesc, rubrics_descriptors.level AS level, rubrics_descriptors.definition AS definition, rubrics_levels.title AS title, rubrics_levels.desc AS desc, rubrics_levels.score AS score FROM rubrics_levels, rubrics_criteria LEFT JOIN rubrics_descriptors ON rubrics_levels.id=rubrics_descriptors.level WHERE rubrics_criteria.id=rubrics_descriptors.criterium");
+        dataBck.createView('rubrics_descriptors_scores',"SELECT rubrics_scores.assessment AS assessment, rubrics_scores.individual AS individual, rubrics_scores.descriptor AS descriptor, rubrics_scores.moment AS moment, rubrics_scores.comment AS comment, rubrics_descriptors.criterium AS criterium, rubrics_criteria.title AS criteriumTitle, rubrics_criteria.desc AS criteriumDesc, rubrics_descriptors.level AS level, rubrics_descriptors.definition AS definition FROM rubrics_descriptors LEFT JOIN  rubrics_scores ON rubrics_scores.descriptor=rubrics_descriptors.id LEFT JOIN rubrics_criteria ON rubrics_criteria.id=rubrics_descriptors.criterium")
 
         // Assessment
         // dataBck.dropTable('assessmentGrid');

@@ -23,26 +23,31 @@ Common.AbstractEditor {
         spacing: units.nailUnit
 
         model: content.model
-        delegate: Rectangle {
+        delegate: Item {
             width: units.fingerUnit * 5
             height: list.height
-            color: 'yellow'
-            Text {
+            Rectangle {
                 anchors.fill: parent
                 anchors.margins: units.nailUnit
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                text: model[content.nameAttribute]
-            }
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    list.currentIndex = model.index;
-                    if (content.valued) {
-                        content.reference = model[content.nameAttribute];
-                    } else {
-                        content.reference = model['id'];
+                color: 'white'
+                Text {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    text: model[content.nameAttribute]
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        list.currentIndex = model.index;
+                        if (content.valued) {
+                            content.reference = model[content.nameAttribute];
+                        } else {
+                            content.reference = model['id'];
+                            console.log("REF " + content.reference);
+                        }
+                        changesAccepted();
                     }
-                    changesAccepted();
                 }
             }
         }
@@ -51,5 +56,6 @@ Common.AbstractEditor {
             width: units.fingerUnit
             height: list.height
         }
+        highlightMoveDuration: 250
     }
 }

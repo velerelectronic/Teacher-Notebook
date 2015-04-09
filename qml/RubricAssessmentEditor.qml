@@ -41,7 +41,6 @@ ItemInspector {
 
         idxTitle = addSection(qsTr('Títol'), rubricAssessmentEditor.title,'yellow',editorType['TextLine']);
         idxDesc = addSection(qsTr('Descripció'), rubricAssessmentEditor.desc,'yellow',editorType['TextArea']);
-        console.log('RRU: ' + rubric);
         idxRubric = addSection(qsTr('Rúbrica'), {reference: rubricAssessmentEditor.rubric, model: rubricsModel, nameAttribute: 'title'}, 'white', editorType['List']);
         idxGroup = addSection(qsTr('Grup'), {reference: rubricAssessmentEditor.group, valued: true, model: groupsModel, nameAttribute: 'group'}, 'white', editorType['List']);
         idxEvent = addSection(qsTr('Esdeveniment'), {reference: rubricAssessmentEditor.event, model: eventsModel, nameAttribute: 'event'}, 'white', editorType['List']);

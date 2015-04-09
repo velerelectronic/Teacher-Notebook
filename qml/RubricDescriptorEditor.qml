@@ -12,6 +12,8 @@ ItemInspector {
     property int level
     property string definition: ''
 
+    onIdDescriptorChanged: console.log('CEITER: ' + idDescriptor)
+
     property SqlTableModel descriptorsModel
 
     signal savedDescriptor
@@ -34,14 +36,14 @@ ItemInspector {
             definition: rubricDescriptorItem.definition
         }
 
-        for (var prop in object) {
-            console.log(prop + '-' + object[prop]);
-        }
-
-        if (idDescriptor == -1) {
+        if (idDescriptor < 0) {
             descriptorsModel.insertObject(object);
         } else {
             object['id'] = idDescriptor;
+            for (var pro in object) {
+                console.log(pro + '---' + object[pro]);
+            }
+
             if (descriptorsModel.updateObject(object)) {
                 console.log('DONE');
             } else

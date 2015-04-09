@@ -167,21 +167,20 @@ Rectangle {
             model: rubricsCriteria // rubricsLevels
 
             delegate: Rectangle {
-                id: wholeLevel
+                id: wholeCriteria
                 height: contentsHeight
                 width: descriptorsList.width
 
                 border.color: 'black'
                 color: 'white'
 
-                property int levelId: model.id
-                property string title: model.title
+                property int criterium: model.id
 
                 ListView {
                     id: rubricsList
                     anchors.fill: parent
 
-                    model: rubricsLevels // rubricsCriteria
+                    model: rubricsLevels
                     orientation: ListView.Horizontal
                     interactive: false
                     delegate: Rectangle {
@@ -192,15 +191,14 @@ Rectangle {
                         color: 'transparent'
                         clip: true
 
-                        property int criteriumId: model.id
-                        property string title: model.title
-                        property int descriptorId: -1
+                        property int level: model.id
                         property string definition: ''
+                        property int descriptor: -1
 
                         SqlTableModel {
                             id: rubricsDescriptors
                             tableName: 'rubrics_descriptors'
-                            filters: ['criterium=\"' +  criteriumAndLevelCell.criteriumId + '\"','level=\"' + wholeLevel.levelId + '\"']
+                            filters: ['criterium=\"' + wholeCriteria.criterium + '\"','level=\"' + criteriumAndLevelCell.level + '\"']
 
                             Component.onCompleted: {
                                 rubricsDescriptors.select();
@@ -208,7 +206,7 @@ Rectangle {
                                 var result = rubricsDescriptors.getObjectInRow(0);
                                 if (typeof result !== 'null') {
                                     console.log(result['id']);
-                                    criteriumAndLevelCell.descriptorId = (result['id'])?result['id']:-1;
+                                    criteriumAndLevelCell.descriptor = ('id' in result)?parseInt(result['id']):-1;
                                     criteriumAndLevelCell.definition = result['definition'];
                                 }
                             }
@@ -225,8 +223,7 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                console.log('Edit DESCRIPTOR ' + criteriumAndLevelCell.descriptorId + " CRITERIUM " + criteriumAndLevelCell.criteriumId + " LEVEL " + wholeLevel.levelId);
-                                rubricRectangle.editDescriptor(criteriumAndLevelCell.descriptorId,criteriumAndLevelCell.criteriumId,wholeLevel.levelId,criteriumAndLevelCell.definition,rubricsDescriptors);
+                                rubricRectangle.editDescriptor(criteriumAndLevelCell.descriptor,wholeCriteria.criterium,criteriumAndLevelCell.level,criteriumAndLevelCell.definition,rubricsDescriptors);
                             }
                         }
 

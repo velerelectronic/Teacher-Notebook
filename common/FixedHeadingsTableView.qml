@@ -25,6 +25,7 @@ GridLayout {
     property alias mainTabularItem: tableItem.children
     property alias mainTabularItemHeight: tableItem.height
     property alias mainTabularItemWidth: tableItem.width
+    property int highlightMoveDuration: 250
 
     Item {
         id: crossItem
@@ -44,6 +45,13 @@ GridLayout {
                 tableItemFlickable.contentX = contentX;
             }
         }
+        highlightMoveDuration: mainGrid.highlightMoveDuration
+
+        Rectangle {
+            color: 'white'
+            anchors.fill: horizontalHeading.contentItem
+            z: -100
+        }
     }
 
     ListView {
@@ -58,7 +66,13 @@ GridLayout {
                 tableItemFlickable.contentY = contentY;
             }
         }
+        highlightMoveDuration: mainGrid.highlightMoveDuration
 
+        Rectangle {
+            color: 'white'
+            anchors.fill: verticalHeading.contentItem
+            z: -100
+        }
     }
     Flickable {
         id: tableItemFlickable
@@ -69,8 +83,9 @@ GridLayout {
         contentWidth: horizontalHeading.contentItem.width
         interactive: true
 
-        Item {
+        Rectangle {
             id: tableItem
+            color: 'white'
             height: tableItemFlickable.contentHeight
             width: tableItemFlickable.contentWidth
         }

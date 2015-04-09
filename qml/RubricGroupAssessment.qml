@@ -27,7 +27,7 @@ Rectangle {
     property int contentsWidth: units.fingerUnit * 7
 
     signal editRubricDetails(int idRubric, string title, string desc, var model)
-    signal editRubricAssessmentScore(int assessment, int criterium, string individual, var scoresModel)
+    signal editRubricAssessmentDescriptor(int assessment, int criterium, string individual, int descriptor, var scoresSaveModel, var scoresModel, var levelDescriptorsModel)
 
     Common.UseUnits { id: units }
 
@@ -35,15 +35,6 @@ Rectangle {
 
     ListModel {
         id: buttonsModel
-
-        ListElement {
-            method: 'newCriterium'
-            image: 'plus-24844'
-        }
-        ListElement {
-            method: 'newLevel'
-            image: 'plus-24844'
-        }
     }
 
     ColumnLayout {
@@ -82,6 +73,7 @@ Rectangle {
             headingsSpacing: units.nailUnit
             verticalHeadingWidth: sectionsWidth
             horizontalHeadingHeight: sectionsHeight
+
             crossHeadingItem: Rectangle {
                 id: title
                 anchors.fill: parent
@@ -184,7 +176,7 @@ Rectangle {
             }
 
             mainTabularItem: ListView {
-                id: descriptorsList
+                id: criteriaList
                 anchors.fill: parent
                 orientation: ListView.Vertical
                 interactive: false
@@ -193,74 +185,103 @@ Rectangle {
 
                 highlight: Rectangle {
                     height: contentsHeight
-                    width: descriptorsList.width
-                    color: 'pink'
+                    width: criteriaList.width
+                    color: '#E3F6CE'
                 }
-                onCurrentIndexChanged: { console.log('New current index ' + currentIndex)}
 
                 delegate: Rectangle {
                     id: wholeCriteria
                     height: contentsHeight
-                    width: descriptorsList.width
+                    width: criteriaList.width
 
                     border.color: 'black'
                     color: 'transparent'
 
-                    property int levelId: model.id
                     property string title: model.title
                     property int verticalIndex: model.index
                     property int criterium: model.id
+                    property bool isCurrentItem: ListView.isCurrentItem
+
+                    SqlTableModel {
+                        id: levelDescriptorsModel
+                        tableName: 'rubrics_levels_descriptors'
+                        fieldNames: ['id', 'criterium', 'criteriumTitle', 'criteriumDesc', 'level', 'definition', 'title', 'desc', 'score']
+                        filters: ["criterium='" + wholeCriteria.criterium + "'"]
+                        Component.onCompleted: {
+                            //setSort(3, Qt.AscendingOrder);
+                            select();
+                        }
+                    }
 
                     ListView {
-                        id: rubricsList
+                        id: individualsList
                         anchors.fill: parent
+                        clip: true
 
-                        model: individualsModel // rubricsCriteria
+                        model: individualsModel
                         orientation: ListView.Horizontal
                         interactive: false
                         highlight: Rectangle {
                             height: contentsHeight
                             width: contentsWidth
-                            color: 'green'
+                            color: '#E3F6CE'
                         }
 
                         delegate: Rectangle {
+                            // The scores for a single individual
+
                             height: contentsHeight
                             width: contentsWidth
                             border.color: 'black'
-                            color: 'transparent'
+                            color: ((ListView.isCurrentItem) && (wholeCriteria.isCurrentItem))?'#BEF781':'transparent'
                             //color: (model.index === fixedHeadingsTable.currentHorizontalIndex)?((wholeCriteria.verticalIndex === fixedHeadingsTable.currentVerticalIndex)?'#ffffaa':'yellow'):'transparent'
-                            clip: true
 
-                            property int criteriumId: model.id
-                            property string title: model.title
-                            property int descriptorId: -1
-                            property string definition: ''
+                            // property int criteriumId: model.id
+                            // property int descriptorId: -1
+                            // property string definition: ''
 
                             SqlTableModel {
                                 id: rubricIndividualScoresModel
-                                tableName: 'rubrics_scores'
-                                fieldNames: ['id', 'assessment', 'criterium', 'level', 'moment', 'individual', 'comment']
+                                tableName: 'rubrics_descriptors_scores'
+                                fieldNames: ['assessment', 'individual', 'descriptor', 'moment', 'comment', 'criterium', 'criteriumTitle', 'criteriumDesc', 'level', 'definition']
                                 filters: [
-                                    'criterium=\"' +  wholeCriteria.criterium + '\"',
-                                    'assessment=\"' + idAssessment + '\"',
-                                    'individual=\"' + model.individual + '\"'
+                                    "criterium='" +  wholeCriteria.criterium + "'",
+                                    "assessment='" + idAssessment + "'",
+                                    "individual='" + model.individual + "'"
                                 ]
-                                onCountChanged: console.log('scores count ' + count)
-                                Component.onCompleted: select()
+                                Component.onCompleted: {
+                                    setSort(3, Qt.DescendingOrder);
+                                    select();
+                                    console.log('Recompte ' + count);
+                                }
+                            }
+                            SqlTableModel {
+                                id: rubricIndividualScoresSaveModel
+                                tableName: 'rubrics_scores'
+                                fieldNames: ['id', 'assessment', 'descriptor', 'moment', 'individual', 'comment']
                             }
 
                             ListView {
                                 id: valuesList
                                 anchors.fill: parent
                                 model: rubricIndividualScoresModel
-                                delegate: Text {
-                                    id: cellText
+                                interactive: false
+                                delegate: Item {
+                                    id: individualScoreItem
                                     width: valuesList.width
                                     height: valuesList.height
-                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                    font.pixelSize: units.readUnit
-                                    text: model.level + ' ' + model.comment
+
+                                    Text {
+                                        anchors {
+                                            fill: parent
+                                            margins: units.nailUnit
+                                        }
+
+                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                        font.pixelSize: units.readUnit
+
+                                        text: model.definition + ' ' + model.comment + ((rubricIndividualScoresModel.count>1)?(' (' + rubricIndividualScoresModel.count + ')'):'')
+                                    }
                                 }
                             }
                             Text {
@@ -272,45 +293,41 @@ Rectangle {
                             }
                             MouseArea {
                                 anchors.fill: parent
+                                preventStealing: false
+                                propagateComposedEvents: true
                                 onClicked: {
-                                    editRubricAssessmentScore(idAssessment,wholeCriteria.criterium,model.individual,rubricIndividualScoresModel);
+                                    console.log('CRITERI ' + wholeCriteria.criterium);
+                                    editRubricAssessmentDescriptor(idAssessment, wholeCriteria.criterium, model.individual, model.descriptor, rubricIndividualScoresSaveModel, rubricIndividualScoresModel, levelDescriptorsModel);
+                                }
+                                onPressAndHold: {
+                                    enabled = false;
+                                    valuesList.interactive = true;
                                 }
                             }
                         }
-                        highlightMoveDuration: 500
-                        Component.onCompleted: currentIndex = -1
+                        highlightMoveDuration: 250
+                    }
+                    Connections {
+                        target: fixedHeadingsTable
+                        onCurrentHorizontalIndexChanged: { individualsList.currentIndex = fixedHeadingsTable.currentHorizontalIndex }
                     }
                 }
+
+                Connections {
+                    target: fixedHeadingsTable
+                    onCurrentVerticalIndexChanged: { criteriaList.currentIndex = fixedHeadingsTable.currentVerticalIndex }
+                }
+                highlightMoveDuration: 250
             }
 
         }
 
     }
 
-/*
-    SqlTableModel {
-        id: rubricsModel
-        tableName: 'rubrics'
-        fieldNames: ['id', 'title', 'desc']
-    }
-*/
-
     SqlTableModel {
         id: rubricsCriteria
         tableName: 'rubrics_criteria'
         fieldNames: ['id', 'title', 'desc', 'rubric', 'ord', 'weight']
-    }
-
-    SqlTableModel {
-        id: rubricsLevels
-        tableName: 'rubrics_levels'
-        fieldNames: ['id', 'title', 'desc', 'rubric', 'score']
-    }
-
-    SqlTableModel {
-        id: allRubricsDescriptors
-        tableName: 'rubrics_descriptors'
-        fieldNames: []
     }
 
     SqlTableModel {
@@ -322,102 +339,12 @@ Rectangle {
 
     onGroupChanged: individualsModel.select()
 
-    Component {
-        id: addNewElement
-        Rectangle {
-            border.color: 'black'
-            Text {
-                anchors.fill: parent
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                font.pixelSize: units.readUnit
-                text: '+'
-            }
-        }
-    }
-
-    function newCriterium() {
-        rubricsCriteria.insertObject({title: qsTr('Nou criteri'), desc: '', rubric: rubricRectangle.rubric, weight: 1});
-    }
-
-    function newLevel() {
-        rubricsLevels.insertObject({title: qsTr('Nou nivell'), desc: '', rubric: rubricRectangle.rubric});
-    }
-
-    function deleteLevelRequest(idLevel,title,desc) {
-        deleteLevelsDialog.levelId = idLevel;
-        deleteLevelsDialog.levelTitle = title;
-        deleteLevelsDialog.levelDesc = desc;
-
-        allRubricsDescriptors.filters = ['level=\"' + idLevel + '\"'];
-        allRubricsDescriptors.select();
-
-        deleteLevelsDialog.open();
-    }
-
-    function deleteCriteriaRequest(idCriterium,title,desc) {
-        deleteCriteriaDialog.criteriumId = idCriterium;
-        deleteCriteriaDialog.criteriumTitle = title;
-        deleteCriteriaDialog.criteriumDesc = desc;
-
-        allRubricsDescriptors.filters = ['criterium=\"' +  idCriterium + '\"'];
-        allRubricsDescriptors.select();
-
-        deleteCriteriaDialog.open();
-    }
-
-    MessageDialog {
-        id: deleteLevelsDialog
-        property string levelTitle: ''
-        property string levelDesc: ''
-        property int rubricId: -1
-        property int levelId: -1
-
-        title: qsTr('Elimina nivell')
-        text: qsTr("S'esborrarà el nivell «") + levelTitle + qsTr('» i els ') + allRubricsDescriptors.count + qsTr(' descriptors que du associats. Vols continuar?')
-        standardButtons: StandardButton.Ok | StandardButton.Cancel
-
-        onAccepted: {
-            for (var i=0; i<allRubricsDescriptors.count; i++) {
-                allRubricsDescriptors.removeObjectInRow(i);
-            }
-
-            rubricsLevels.removeObjectWithKeyValue(levelId);
-            rubricsLevels.select();
-        }
-    }
-
-    MessageDialog {
-        id: deleteCriteriaDialog
-        property string criteriumTitle: ''
-        property string criteriumDesc: ''
-        property int rubricId: -1
-        property int criteriumId: -1
-
-        title: qsTr('Elimina criteri')
-        text: qsTr("S'esborrarà el criteri «") + criteriumTitle + qsTr('» i els ') + allRubricsDescriptors.count + qsTr(' descriptors que du associats. Vols continuar?')
-        standardButtons: StandardButton.Ok | StandardButton.Cancel
-
-        onAccepted: {
-            for (var i=0; i<allRubricsDescriptors.count; i++) {
-                allRubricsDescriptors.removeObjectInRow(i);
-            }
-
-            rubricsCriteria.removeObjectWithKeyValue(criteriumId);
-            rubricsCriteria.select();
-        }
-
-    }
-
     Component.onCompleted: {
         var filter = ["rubric=\'" + rubricRectangle.rubric + "\'"];
         rubricsCriteria.filters = filter;
         rubricsCriteria.setSort(4, Qt.AscendingOrder);
         rubricsCriteria.select();
 
-        rubricsLevels.filters = filter;
-        rubricsLevels.setSort(4, Qt.AscendingOrder);
-        rubricsLevels.select();
         rubricsModel.select();
 
         var obj = rubricsModel.getObject(rubricRectangle.rubric);
@@ -428,11 +355,7 @@ Rectangle {
 
         var objAssessment = rubricsAssessmentModel.getObject(rubricRectangle.idAssessment);
         if ('group' in objAssessment)
-            group = objAssessment['group']
-        for (var prop in objAssessment) {
-            console.log('prop ' + prop + '-' + objAssessment[prop]);
-        }
-
+            group = objAssessment['group'];
     }
 }
 

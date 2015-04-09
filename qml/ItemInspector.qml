@@ -170,7 +170,6 @@ Common.AbstractEditor {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                console.log(model.editorType);
                                 if (model.editorType !== itemInspector.editorType['None']) {
                                     if (variableViewer.state=='viewMode') {
                                         itemInspector.collapseEditors();
@@ -281,7 +280,7 @@ Common.AbstractEditor {
                     if (content.reference<0) {
                         text = '---';
                     } else {
-                        var newcontent = content.model.getObject(content.reference)[content.nameAttribute];
+                        var newcontent = content.model.getObject('id',content.reference)[content.nameAttribute];
                         if (typeof newcontent === 'string')
                             text = newcontent;
                         else

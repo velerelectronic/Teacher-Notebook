@@ -108,6 +108,32 @@ QVariantMap SqlTableModel::getObject(QString key) const {
         for (int i=0; i<searchRecord.count(); i++) {
             result.insert(searchRecord.fieldName(i),searchRecord.value(i));
         }
+    } else {
+        qDebug() << "Not found";
+    }
+
+    return result;
+}
+
+QVariantMap SqlTableModel::getObject(QString primaryField, QString key) const {
+    QSqlRecord searchRecord;
+    bool found = false;
+    int row=0;
+    while ((!found) && (row<rowCount())) {
+        searchRecord = this->record(row);
+        if (searchRecord.value(primaryField)==key)
+            found = true;
+        else
+            row++;
+    }
+
+    QVariantMap result;
+    if (found) {
+        for (int i=0; i<searchRecord.count(); i++) {
+            result.insert(searchRecord.fieldName(i),searchRecord.value(i));
+        }
+    } else {
+        qDebug() << "Not found";
     }
 
     return result;
