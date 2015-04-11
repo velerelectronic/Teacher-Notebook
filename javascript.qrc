@@ -4,5 +4,6 @@
         <file>javascript/EvernoteLib.js</file>
         <file>javascript/Storage.js</file>
         <file>javascript/NotebookEvent.js</file>
+        <file>javascript/Debug.js</file>
     </qresource>
 </RCC>

@@ -137,7 +137,7 @@ Rectangle {
         Common.BigButton {
             width: buttonWidth
             height: buttonHeight
-            title: qsTr('Rúbrica')
+            title: qsTr('Rúbriques')
             onClicked: menuPage.openPage('RubricsList')
         }
 

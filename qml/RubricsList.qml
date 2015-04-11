@@ -16,6 +16,9 @@ Rectangle {
     signal openRubricDetails(int rubric, var rubricsModel)
     signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
     signal openRubricAssessmentDetails(int assessment, int rubric, string group, var rubricsModel, var rubricsAssessmentModel)
+    signal editGroupIndividual(int individual, var groupsIndividualsModel)
+
+    property bool newIndividual: false
 
     Common.UseUnits { id: units }
 
@@ -23,7 +26,7 @@ Rectangle {
         id: buttonsModel
 
         ListElement {
-            method: 'newRubric'
+            method: 'newButton'
             image: 'plus-24844'
         }
     }
@@ -34,8 +37,9 @@ Rectangle {
         anchors.fill: parent
 
         Component.onCompleted: {
-            tabbedView.widgets.append({title: 'Avaluacions', component: rubricsAssessmentComponent});
-            tabbedView.widgets.append({title: 'Definicions', component: rubricsListComponent});
+            tabbedView.widgets.append({title: qsTr('Avaluacions'), component: rubricsAssessmentComponent});
+            tabbedView.widgets.append({title: qsTr('Definicions'), component: rubricsListComponent});
+            tabbedView.widgets.append({title: qsTr('Grups'), component: rubricsGroupsComponent});
         }
     }
 
@@ -152,6 +156,24 @@ Rectangle {
 
     }
 
+    Component {
+        id: rubricsGroupsComponent
+
+        GroupsIndividuals {
+            id: groupsIndividuals
+            onEditGroupIndividual: rubricsListArea.editGroupIndividual(individual, groupsIndividualsModel)
+
+            Connections {
+                target: rubricsListArea
+                onNewIndividualChanged: {
+                    if (newIndividual == true) {
+                        newIndividual = false;
+                        groupsIndividuals.addIndividual();
+                    }
+                }
+            }
+        }
+    }
 
     SqlTableModel {
         id: rubricsModel
@@ -165,8 +187,17 @@ Rectangle {
         fieldNames: ['id', 'rubric', 'group', 'startValidity', 'endValidity']
     }
 
-    function newRubric() {
-        openRubricDetails(-1, rubricsModel);
+    function newButton() {
+        switch(tabbedView.selectedIndex) {
+        case 0:
+            break;
+        case 1:
+            openRubricDetails(-1, rubricsModel);
+            break;
+        case 2:
+            newIndividual = true;
+            break;
+        }
     }
 
     Component.onCompleted: {

@@ -5,6 +5,7 @@ import QtQuick.Dialogs 1.2
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
+import 'qrc:///javascript/Debug.js' as Debug
 
 Rectangle {
     id: rubricRectangle
@@ -27,7 +28,7 @@ Rectangle {
     property int contentsWidth: units.fingerUnit * 7
 
     signal editRubricDetails(int idRubric, string title, string desc, var model)
-    signal editRubricAssessmentDescriptor(int assessment, int criterium, string individual, int descriptor, var scoresSaveModel, var scoresModel, var levelDescriptorsModel)
+    signal editRubricAssessmentDescriptor(int assessment, int criterium, int individual, int descriptor, var scoresSaveModel, var scoresModel, var levelDescriptorsModel)
 
     Common.UseUnits { id: units }
 
@@ -126,7 +127,7 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter
                     font.pixelSize: units.readUnit
                     font.bold: true
-                    text: model.individual
+                    text: model.name + " " + model.surname
                 }
 
                 MouseArea {
@@ -243,11 +244,11 @@ Rectangle {
                             SqlTableModel {
                                 id: rubricIndividualScoresModel
                                 tableName: 'rubrics_descriptors_scores'
-                                fieldNames: ['assessment', 'individual', 'descriptor', 'moment', 'comment', 'criterium', 'criteriumTitle', 'criteriumDesc', 'level', 'definition']
+                                fieldNames: ['assessment', 'individual', 'descriptor', 'moment', 'comment', 'criterium', 'criteriumTitle', 'criteriumDesc', 'weight', 'score', 'level', 'definition']
                                 filters: [
                                     "criterium='" +  wholeCriteria.criterium + "'",
                                     "assessment='" + idAssessment + "'",
-                                    "individual='" + model.individual + "'"
+                                    "individual='" + model.id + "'"
                                 ]
                                 Component.onCompleted: {
                                     setSort(3, Qt.DescendingOrder);
@@ -280,7 +281,7 @@ Rectangle {
                                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                         font.pixelSize: units.readUnit
 
-                                        text: model.definition + ' ' + model.comment + ((rubricIndividualScoresModel.count>1)?(' (' + rubricIndividualScoresModel.count + ')'):'')
+                                        text: model.score + " " + model.definition + ' ' + model.comment + ((rubricIndividualScoresModel.count>1)?(' (' + rubricIndividualScoresModel.count + ')'):'')
                                     }
                                 }
                             }
@@ -296,8 +297,7 @@ Rectangle {
                                 preventStealing: false
                                 propagateComposedEvents: true
                                 onClicked: {
-                                    console.log('CRITERI ' + wholeCriteria.criterium);
-                                    editRubricAssessmentDescriptor(idAssessment, wholeCriteria.criterium, model.individual, model.descriptor, rubricIndividualScoresSaveModel, rubricIndividualScoresModel, levelDescriptorsModel);
+                                    editRubricAssessmentDescriptor(idAssessment, wholeCriteria.criterium, model.id, model.descriptor, rubricIndividualScoresSaveModel, rubricIndividualScoresModel, levelDescriptorsModel);
                                 }
                                 onPressAndHold: {
                                     enabled = false;
@@ -318,10 +318,68 @@ Rectangle {
                     onCurrentVerticalIndexChanged: { criteriaList.currentIndex = fixedHeadingsTable.currentVerticalIndex }
                 }
                 highlightMoveDuration: 250
+
+                footer: Rectangle {
+                    width: criteriaList.width
+                    height: sectionsHeight
+                    color: 'pink'
+
+                    Row {
+                        id: footerRow
+                        anchors.fill: parent
+
+                        Repeater {
+                            model: totalPointsModel
+
+                            Rectangle {
+                                height: footerRow.height
+                                width: contentsWidth
+                                border.color: 'black'
+                                color: '#F5DA81'
+                                Text {
+                                    anchors.fill: parent
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                    verticalAlignment: Text.AlignVCenter
+                                    horizontalAlignment: Text.AlignHCenter
+                                    font.pixelSize: units.readUnit
+                                    text: model.name + " " + model.surname + ": " + model.points
+                                }
+                            }
+                        }
+                        SqlTableModel {
+                            id: totalPointsModel
+                            tableName: 'rubrics_total_scores'
+                            //fieldNames: ['assessment', 'individual', 'total']
+                            fieldNames: ['assessment', 'individual', 'weight', 'score', 'points']
+                            filters: ["assessment='" + idAssessment + "'"]
+                            Component.onCompleted: {
+                                setSort(1,Qt.AscendingOrder);
+                                select();
+                                console.log('TOTAL' + count);
+                                Debug.printSqlModel(totalPointsModel);
+                            }
+                        }
+                    }
+
+                }
             }
 
+            verticalHeadingFooter: Rectangle {
+                width: sectionsWidth
+                height: sectionsHeight
+                color: 'yellow'
+                Text {
+                    anchors {
+                        fill: parent
+                        margins: units.nailUnit
+                    }
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignRight
+                    font.pixelSize: units.readUnit
+                    text: qsTr('Total punts')
+                }
+            }
         }
-
     }
 
     SqlTableModel {
@@ -332,12 +390,15 @@ Rectangle {
 
     SqlTableModel {
         id: individualsModel
-        tableName: 'assessmentGrid'
-        fieldNames: ['id', 'created', 'moment', "group", 'individual', 'variable', 'value', 'comment']
+        tableName: 'individuals_list'
+        fieldNames: ['id', 'group', 'name', 'surname']
         filters: ['\"group\"=\'' + rubricRectangle.group + '\'']
     }
 
-    onGroupChanged: individualsModel.select()
+    onGroupChanged: {
+        individualsModel.setSort(0, Qt.AscendingOrder);
+        individualsModel.select();
+    }
 
     Component.onCompleted: {
         var filter = ["rubric=\'" + rubricRectangle.rubric + "\'"];
@@ -356,6 +417,7 @@ Rectangle {
         var objAssessment = rubricsAssessmentModel.getObject(rubricRectangle.idAssessment);
         if ('group' in objAssessment)
             group = objAssessment['group'];
+
     }
 }
 

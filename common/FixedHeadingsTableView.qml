@@ -18,6 +18,7 @@ GridLayout {
     property alias verticalHeadingModel: verticalHeading.model
     property alias verticalHeadingDelegate: verticalHeading.delegate
     property alias verticalHeadingHighlight: verticalHeading.highlight
+    property alias verticalHeadingFooter: verticalHeading.footer
 
     property alias currentHorizontalIndex: horizontalHeading.currentIndex
     property alias currentVerticalIndex: verticalHeading.currentIndex
@@ -88,14 +89,6 @@ GridLayout {
             color: 'white'
             height: tableItemFlickable.contentHeight
             width: tableItemFlickable.contentWidth
-        }
-
-        onContentHeightChanged: {
-            console.log('content height ' + contentHeight)
-        }
-
-        onContentWidthChanged: {
-            console.log('content width ' + contentWidth)
         }
 
         onContentXChanged: {

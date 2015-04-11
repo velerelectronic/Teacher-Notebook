@@ -10,6 +10,7 @@ Item {
     property int tabsWidth: units.fingerUnit * 3
     property int tabsSpacing: units.nailUnit
     property alias widgets: widgetsModel // «title» and «component»
+    property alias selectedIndex: titlesList.currentIndex
 
     Common.UseUnits {
         id: units

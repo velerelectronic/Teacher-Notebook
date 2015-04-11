@@ -125,14 +125,12 @@ Rectangle {
                 showMenu = true;
                 firstX = mouseX;
                 firstY = mouseY;
-                console.log(mouseX + "-" + mouseY);
             } else {
                 mouse.accepted = false;
             }
         }
 
         onMouseXChanged: {
-            console.log("" + (mouseX-firstX) + "--" + units.fingerUnit);
             if (showMenu) {
                 if (mouseX-firstX>units.fingerUnit) {
                     positionSubPanel = mouseX - widthSubPanel;

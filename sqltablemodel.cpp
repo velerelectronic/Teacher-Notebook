@@ -148,7 +148,9 @@ QVariantMap SqlTableModel::getObjectInRow(int row) const {
     return result;
 }
 
-
+QString &SqlTableModel::groupBy() {
+    return innerGroupBy;
+}
 
 bool SqlTableModel::insertObject(const QVariantMap &object) {
     qDebug() << "Object to insert: " << object;
@@ -234,10 +236,17 @@ bool SqlTableModel::select() {
         countChanged();
         return res;
     } else {
-        QSqlQueryModel::setQuery(selectStatement() + " LIMIT " + QString::number(innerLimit));
-        countChanged();
-        qDebug() << query().lastError();
-        return !query().lastError().isValid();
+        if (innerGroupBy != "") {
+            QSqlQueryModel::setQuery(selectStatement() + " GROUP BY " + innerGroupBy);
+            countChanged();
+            qDebug() << query().lastError();
+            return !query().lastError().isValid();
+        } else {
+            QSqlQueryModel::setQuery(selectStatement() + " LIMIT " + QString::number(innerLimit));
+            countChanged();
+            qDebug() << query().lastError();
+            return !query().lastError().isValid();
+        }
     }
 }
 
@@ -320,6 +329,11 @@ void SqlTableModel::setInnerFilters() {
 
     QSqlTableModel::setFilter(fieldFilter);
     qDebug() << tableName() + "Filter " + fieldFilter;
+}
+
+void SqlTableModel::setGroupBy(const QString &group) {
+    innerGroupBy = group;
+    groupByChanged();
 }
 
 void SqlTableModel::setLimit(int limit) {

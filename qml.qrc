@@ -56,5 +56,8 @@
         <file>qml/RubricAssessmentEditor.qml</file>
         <file>qml/RubricGroupAssessment.qml</file>
         <file>qml/RubricAssessmentDescriptor.qml</file>
+        <file>qml/BasicDatabase.qml</file>
+        <file>qml/GroupsIndividuals.qml</file>
+        <file>qml/GroupIndividualEditor.qml</file>
     </qresource>
 </RCC>

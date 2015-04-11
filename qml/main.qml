@@ -493,7 +493,6 @@ Window {
                 onOpenRubricDetails: openNewPage('RubricDetailsEditor',{rubric: rubric, rubricsModel: rubricsModel})
                 onOpenRubricEditor: openNewPage('Rubric',{rubric: id, rubricsModel: rubricsModel, state: 'edit'}, '')
                 onOpenRubricGroupAssessment: {
-                    console.log('RUBRICA: ' + rubric);
                     openNewPage('RubricGroupAssessment', {idAssessment: assessment, rubric: rubric, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel})
                 }
                 onOpenRubricAssessmentDetails: openNewPage('RubricAssessmentEditor', {idAssessment: assessment, group: group, rubric: rubric, rubricsAssessmentModel: rubricsAssessmentModel})
@@ -502,6 +501,18 @@ Window {
                 onEditRubricDetails: openNewPage('RubricDetailsEditor',{idRubric: idRubric, rubricsModel: model})
                 onEditDescriptor: openNewPage('RubricDescriptorEditor',{idDescriptor: idDescriptor, criterium: criterium, level: level, definition: definition, descriptorsModel: model})
                 onEditRubricAssessmentDescriptor: openNewPage('RubricAssessmentDescriptor', {assessment: assessment, criterium: criterium, individual: individual, scoresSaveModel: scoresSaveModel, scoresModel: scoresModel, levelDescriptorsModel: levelDescriptorsModel})
+
+                onEditGroupIndividual: openNewPage('GroupIndividualEditor', {individual: individual, groupsIndividualsModel: groupsIndividualsModel})
+
+                onSavedAssessmentDescriptor: {
+                    messageBox.publishMessage(qsTr("S'han desat les dades del descriptor"));
+                    pagesView.closeCurrentPage();
+                }
+
+                onSavedGroupIndividual: {
+                    messageBox.publishMessage(qsTr("S'han desat els canvis a l'individu"));
+                    pagesView.closeCurrentPage();
+                }
 
                 onSavedCriterium: pagesView.closeCurrentPage()
                 onSavedLevel: pagesView.closeCurrentPage()
@@ -555,64 +566,18 @@ Window {
     }
 
 
-    Component.onCompleted: {
-        createTables();
-
-        annotationsModel.tableName = 'annotations';
-        annotationsModel.fieldNames =  ['created','id','title','desc','image'];
-        annotationsModel.select();
-
-        scheduleModel.tableName = 'schedule';
-        scheduleModel.fieldNames = ['created','id','event','desc','startDate','startTime','endDate','endTime','state','ref'];
-        scheduleModel.setSort(5,Qt.AscendingOrder);
-        scheduleModel.select();
-
-        dpanel.updatePageChange()
-    }
-
-    DatabaseBackup {
-        id: dataBck
-    }
-
-    function createTables() {
-        //dataBck.dropTable('annotations');
-        //dataBck.dropTable('schedule');
-        //dataBck.dropTable('rubrics_criteria');
-        dataBck.createTable('annotations','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, image BLOB, ref INTEGER');
-        dataBck.createTable('schedule','id INTEGER PRIMARY KEY, created TEXT, event TEXT, desc TEXT, startDate TEXT, startTime TEXT, endDate TEXT, endTime TEXT, state TEXT, ref INTEGER');
-
-        dataBck.createTable('rubrics', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT');
-        dataBck.createTable('rubrics_labels','id INTEGER PRIMARY KEY, label TEXT');
-        dataBck.createTable('rubrics_criteria','id INTEGER PRIMARY KEY, title TEXT, desc TEXT, rubric INTEGER, ord INTEGER, weight INTEGER');
-        dataBck.createTable('rubrics_levels','id INTEGER PRIMARY KEY,title TEXT, desc TEXT, rubric INTEGER, score INTEGER');
-        dataBck.createTable('rubrics_descriptors','id INTEGER PRIMARY KEY, criterium INTEGER, level INTEGER, definition TEXT');
-
-        //dataBck.dropTable('rubrics_assessment');
-        dataBck.createTable('rubrics_assessment','id INTEGER PRIMARY KEY, title TEXT, desc TEXT, rubric INTEGER, "group" TEXT, event INTEGER');
-        dataBck.createTable('rubrics_scores','id INTEGER PRIMARY KEY, assessment INTEGER, descriptor INTEGER, moment TEXT, individual TEXT, comment TEXT');
-
-        dataBck.createTable('projects','id INTEGER PRIMARY KEY, name TEXT, desc TEXT');
-
-        // Views
-        dataBck.dropView('rubrics_levels_descriptors');
-        dataBck.dropView('rubrics_assessment_grid');
-        dataBck.createView('rubrics_levels_descriptors',"SELECT rubrics_descriptors.id AS id, rubrics_descriptors.criterium AS criterium, rubrics_criteria.title AS criteriumTitle, rubrics_criteria.desc AS criteriumDesc, rubrics_descriptors.level AS level, rubrics_descriptors.definition AS definition, rubrics_levels.title AS title, rubrics_levels.desc AS desc, rubrics_levels.score AS score FROM rubrics_levels, rubrics_criteria LEFT JOIN rubrics_descriptors ON rubrics_levels.id=rubrics_descriptors.level WHERE rubrics_criteria.id=rubrics_descriptors.criterium");
-        dataBck.createView('rubrics_descriptors_scores',"SELECT rubrics_scores.assessment AS assessment, rubrics_scores.individual AS individual, rubrics_scores.descriptor AS descriptor, rubrics_scores.moment AS moment, rubrics_scores.comment AS comment, rubrics_descriptors.criterium AS criterium, rubrics_criteria.title AS criteriumTitle, rubrics_criteria.desc AS criteriumDesc, rubrics_descriptors.level AS level, rubrics_descriptors.definition AS definition FROM rubrics_descriptors LEFT JOIN  rubrics_scores ON rubrics_scores.descriptor=rubrics_descriptors.id LEFT JOIN rubrics_criteria ON rubrics_criteria.id=rubrics_descriptors.criterium")
-
-        // Assessment
-        // dataBck.dropTable('assessmentGrid');
-        dataBck.createTable('assessmentGrid','id INTEGER PRIMARY KEY, created TEXT, moment TEXT, "group" TEXT, individual TEXT, variable TEXT, value TEXT, comment TEXT');
-
-        annotationsModel.tableName = 'annotations';
-        annotationsModel.fieldNames = ['id', 'created' ,'title', 'desc', 'image', 'ref'];
-        annotationsModel.setSort(0,Qt.AscendingOrder);
-        scheduleModel.tableName = 'schedule';
-        scheduleModel.fieldNames = ['id', 'created', 'event', 'desc', 'startDate', 'startTime', 'endDate', 'endTime', 'state', 'ref'];
-        scheduleModel.setSort(4,Qt.AscendingOrder);
+    BasicDatabase {
+        id: basicDatabase
     }
 
     function openMainPage() {
         dpanel.getItemMainPanel.openNewPage('MenuPage',{});
+    }
+
+    Component.onCompleted: {
+        basicDatabase.initEverything();
+
+        dpanel.updatePageChange()
     }
 
 }

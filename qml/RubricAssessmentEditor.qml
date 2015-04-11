@@ -82,8 +82,8 @@ ItemInspector {
 
     SqlTableModel {
         id: groupsModel
-        tableName: 'assessmentGrid'
-        fieldNames: ['id', 'created', 'moment', "group", 'individual', 'variable', 'value', 'comment']
+        tableName: 'individuals_list'
+        fieldNames: ['id', 'group', 'name', 'surname']
     }
 
     SqlTableModel {

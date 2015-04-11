@@ -9,7 +9,7 @@ ItemInspector {
     pageTitle: qsTr('Edita descriptor avaluat')
 
     property int assessment: -1
-    property string individual: ''
+    property int individual: -1
     property int descriptor: -1
     property int criterium: -1
     property string comment: ''
@@ -48,7 +48,7 @@ ItemInspector {
             descriptor: descriptor,
             comment: comment,
             assessment: assessment,
-            individual: individual,
+            individual: parseInt(individual),
             moment: Storage.currentTime()
         }
 
