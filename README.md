@@ -17,6 +17,18 @@ Main features
 * Annotations list
 * Assessment grids
 * Teaching Plannings in XML format (read-only)
+* Groups of people
+  * Create groups
+  * Add people
+  * Edit personal data
+  * Delete individuals
+* Rubrics
+  * Define the criteria, the levels and the descriptors of a rubric
+  * Edit these parameters
+* Assessment with a rubric
+  * Assign a group and an event
+  * Assess each individual in a group.
+  * Calculate the total points for each person in a group.
 * Paint on a blackboard
 * Backup data
 * Basic directory explorer
