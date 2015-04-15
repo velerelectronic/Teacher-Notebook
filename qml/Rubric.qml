@@ -203,8 +203,8 @@ Rectangle {
                             Component.onCompleted: {
                                 rubricsDescriptors.select();
                                 console.log("Cell desciptors count " + rubricsDescriptors.count);
-                                var result = rubricsDescriptors.getObjectInRow(0);
-                                if (typeof result !== 'null') {
+                                if (rubricsDescriptors.count > 0) {
+                                    var result = rubricsDescriptors.getObjectInRow(0);
                                     console.log(result['id']);
                                     criteriumAndLevelCell.descriptor = ('id' in result)?parseInt(result['id']):-1;
                                     criteriumAndLevelCell.definition = result['definition'];

@@ -6,6 +6,7 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 import 'qrc:///javascript/Debug.js' as Debug
+import "qrc:///javascript/Storage.js" as Storage
 
 Rectangle {
     id: rubricRectangle
@@ -201,6 +202,7 @@ Rectangle {
                     property string title: model.title
                     property int verticalIndex: model.index
                     property int criterium: model.id
+                    property int criteriumIndex: model.index
                     property bool isCurrentItem: ListView.isCurrentItem
 
                     SqlTableModel {
@@ -209,7 +211,7 @@ Rectangle {
                         fieldNames: ['id', 'criterium', 'criteriumTitle', 'criteriumDesc', 'level', 'definition', 'title', 'desc', 'score']
                         filters: ["criterium='" + wholeCriteria.criterium + "'"]
                         Component.onCompleted: {
-                            //setSort(3, Qt.AscendingOrder);
+                            setSort(8, Qt.DescendingOrder);
                             select();
                         }
                     }
@@ -293,15 +295,47 @@ Rectangle {
                                 text: qsTr('No definit')
                             }
                             MouseArea {
+                                property bool selectedCell: (model.index === fixedHeadingsTable.currentHorizontalIndex) || (wholeCriteria.criteriumIndex == fixedHeadingsTable.currentVerticalIndex)
                                 anchors.fill: parent
                                 preventStealing: false
                                 propagateComposedEvents: true
                                 onClicked: {
-                                    editRubricAssessmentDescriptor(idAssessment, wholeCriteria.criterium, model.id, model.descriptor, rubricIndividualScoresSaveModel, rubricIndividualScoresModel, levelDescriptorsModel);
+                                    var levels = [];
+                                    for (var i=0; i<levelDescriptorsModel.count; i++) {
+                                        levels.push(levelDescriptorsModel.getObjectInRow(i)['id']);
+                                    }
+
+                                    if (selectedCell) {
+                                        var newObj = {
+                                            assessment: idAssessment,
+                                            individual: model.id,
+                                            moment: Storage.currentTime()
+                                        }
+                                        var newDescriptor;
+
+                                        if (rubricIndividualScoresModel.count>0) {
+                                            var obj = rubricIndividualScoresModel.getObjectInRow(0);
+                                            newObj['comment'] = obj['comment'] + '*';
+                                            var descriptorIndex = levels.indexOf(obj['descriptor']);
+                                            newDescriptor = levels[(descriptorIndex + 1) % levels.length];
+
+                                        } else {
+                                            newDescriptor = levels[0];
+                                        }
+                                        newObj['descriptor'] = newDescriptor;
+                                        rubricIndividualScoresSaveModel.insertObject(newObj);
+                                        rubricIndividualScoresModel.select();
+                                    } else {
+                                        editRubricAssessmentDescriptor(idAssessment, wholeCriteria.criterium, model.id, model.descriptor, rubricIndividualScoresSaveModel, rubricIndividualScoresModel, levelDescriptorsModel);
+                                    }
                                 }
                                 onPressAndHold: {
-                                    enabled = false;
-                                    valuesList.interactive = true;
+                                    if (selectedCell) {
+                                        editRubricAssessmentDescriptor(idAssessment, wholeCriteria.criterium, model.id, model.descriptor, rubricIndividualScoresSaveModel, rubricIndividualScoresModel, levelDescriptorsModel);
+                                    } else {
+                                        enabled = false;
+                                        valuesList.interactive = true;
+                                    }
                                 }
                             }
                         }

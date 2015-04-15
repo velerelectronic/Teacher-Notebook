@@ -231,13 +231,15 @@ bool SqlTableModel::select() {
     deselectAllObjects();
     qDebug() << "Se seleccionara" << selectStatement();
 
-    if (innerLimit==0) {
+    if ((innerLimit==0) && (innerGroupBy=="")) {
         bool res = QSqlRelationalTableModel::select();
         countChanged();
         return res;
     } else {
         if (innerGroupBy != "") {
+            qDebug() << selectStatement() + " GROUP BY " + innerGroupBy;
             QSqlQueryModel::setQuery(selectStatement() + " GROUP BY " + innerGroupBy);
+            qDebug() << selectStatement();
             countChanged();
             qDebug() << query().lastError();
             return !query().lastError().isValid();
@@ -248,6 +250,13 @@ bool SqlTableModel::select() {
             return !query().lastError().isValid();
         }
     }
+}
+
+bool SqlTableModel::selectUnique(QString field) {
+    QSqlQueryModel::setQuery("SELECT " + field + " FROM " + innerTableName + " GROUP BY " + field);
+    qDebug() << query().executedQuery();
+    countChanged();
+    return !query().lastError().isValid();
 }
 
 QStringList SqlTableModel::selectDistinct(QString field,QString order,QString filter,bool ascending) {
@@ -261,8 +270,10 @@ QStringList SqlTableModel::selectDistinct(QString field,QString order,QString fi
 
     QStringList vector;
     QSqlQuery query("SELECT DISTINCT " + field + " FROM " + this->innerTableName + ((filter != "")?(" WHERE " + filter):"") + " ORDER BY " + order + ((ascending)?" ASC":" DESC "));
+    qDebug() << query.executedQuery();
     bool iter = query.first();
     while (iter) {
+        qDebug() << ".";
         vector.append(query.record().value(0).toString());
         iter = query.next();
     }

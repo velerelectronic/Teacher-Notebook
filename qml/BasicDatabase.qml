@@ -24,15 +24,22 @@ DatabaseBackup {
         dataBck.createTable('annotations','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, image BLOB, ref INTEGER');
         dataBck.createTable('schedule','id INTEGER PRIMARY KEY, created TEXT, event TEXT, desc TEXT, startDate TEXT, startTime TEXT, endDate TEXT, endTime TEXT, state TEXT, ref INTEGER');
 
+        //dataBck.dropTable('rubrics');
+        //dataBck.dropTable('rubrics_labels');
+        //dataBck.dropTable('rubrics_criteria');
+        //dataBck.dropTable('rubrics_levels');
+        //dataBck.dropTable('rubrics_descriptors');
+        //dataBck.dropTable('rubrics_assessment');
+        //dataBck.dropTable('rubrics_scores');
+
+
         dataBck.createTable('rubrics', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT');
         dataBck.createTable('rubrics_labels','id INTEGER PRIMARY KEY, label TEXT');
         dataBck.createTable('rubrics_criteria','id INTEGER PRIMARY KEY, title TEXT, desc TEXT, rubric INTEGER, ord INTEGER, weight INTEGER');
         dataBck.createTable('rubrics_levels','id INTEGER PRIMARY KEY,title TEXT, desc TEXT, rubric INTEGER, score INTEGER');
         dataBck.createTable('rubrics_descriptors','id INTEGER PRIMARY KEY, criterium INTEGER, level INTEGER, definition TEXT');
 
-        //dataBck.dropTable('rubrics_assessment');
         dataBck.createTable('rubrics_assessment','id INTEGER PRIMARY KEY, title TEXT, desc TEXT, rubric INTEGER, "group" TEXT, event INTEGER');
-        //dataBck.dropTable('rubrics_scores');
         dataBck.createTable('rubrics_scores','id INTEGER PRIMARY KEY, assessment INTEGER, descriptor INTEGER, moment TEXT, individual INTEGER, comment TEXT');
 
         dataBck.createTable('projects','id INTEGER PRIMARY KEY, name TEXT, desc TEXT');
@@ -40,8 +47,6 @@ DatabaseBackup {
         dataBck.createTable('individuals_list', 'id INTEGER PRIMARY KEY, "group" TEXT NOT NULL, name TEXT, surname TEXT, faceImage BLOB');
 
         // Views
-        dataBck.dropView('rubrics_levels_descriptors');
-        dataBck.dropView('rubrics_assessment_grid');
         dataBck.createView('rubrics_levels_descriptors',"SELECT rubrics_descriptors.id AS id, rubrics_descriptors.criterium AS criterium, rubrics_criteria.title AS criteriumTitle, rubrics_criteria.desc AS criteriumDesc, rubrics_descriptors.level AS level, rubrics_descriptors.definition AS definition, rubrics_levels.title AS title, rubrics_levels.desc AS desc, rubrics_levels.score AS score FROM rubrics_levels, rubrics_criteria LEFT JOIN rubrics_descriptors ON rubrics_levels.id=rubrics_descriptors.level WHERE rubrics_criteria.id=rubrics_descriptors.criterium");
         dataBck.createView('rubrics_descriptors_scores',
             "SELECT rubrics_scores.assessment       AS assessment,
@@ -80,6 +85,7 @@ DatabaseBackup {
         // Assessment
         // dataBck.dropTable('assessmentGrid');
         dataBck.createTable('assessmentGrid','id INTEGER PRIMARY KEY, created TEXT, moment TEXT, "group" TEXT, individual TEXT, variable TEXT, value TEXT, comment TEXT');
+        dataBck.createView('individuals_groups','SELECT "group" FROM individuals_list GROUP BY "group"');
 
         annotationsModel.tableName = 'annotations';
         annotationsModel.fieldNames = ['id', 'created' ,'title', 'desc', 'image', 'ref'];

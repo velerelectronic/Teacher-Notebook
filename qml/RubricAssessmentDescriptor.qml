@@ -21,6 +21,7 @@ ItemInspector {
     signal savedAssessmentDescriptor
 
     property int idxDescriptor
+    property int idxPreviousValues
     property int idxComment
 
     Component.onCompleted: {
@@ -36,6 +37,7 @@ ItemInspector {
         addSection(qsTr('Criteri'), desc, 'white', editorType['None']);
 
         idxDescriptor = addSection(qsTr('Puntuació'), {reference: descriptor, model: levelDescriptorsModel, nameAttribute: 'definition'},'white',editorType['List']);
+        idxPreviousValues = addSection(qsTr('Anteriors'), {}, editorType['Object']);
         idxComment = addSection(qsTr('Comentari'), comment,'yellow',editorType['TextArea']);
     }
 
@@ -53,6 +55,7 @@ ItemInspector {
         }
 
         scoresSaveModel.insertObject(object);
+        scoresModel.select();
         setChanges(false);
         savedAssessmentDescriptor();
     }

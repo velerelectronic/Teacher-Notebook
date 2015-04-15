@@ -82,8 +82,10 @@ ItemInspector {
 
     SqlTableModel {
         id: groupsModel
-        tableName: 'individuals_list'
-        fieldNames: ['id', 'group', 'name', 'surname']
+        tableName: 'individuals_groups'
+        fieldNames: ['group']
+        // fieldNames: ['id', 'group', 'name', 'surname']
+        //groupBy: '"group"'
     }
 
     SqlTableModel {

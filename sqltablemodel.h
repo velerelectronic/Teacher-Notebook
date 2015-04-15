@@ -59,6 +59,7 @@ public:
     Q_INVOKABLE bool removeObjectWithKeyValue(const QVariant &);
     Q_INVOKABLE bool select();
     Q_INVOKABLE QStringList selectDistinct(QString field,QString order,QString filter,bool ascending);
+    Q_INVOKABLE bool selectUnique(QString);
 
 //    Q_INVOKABLE bool setQuery(const QString query);
     Q_INVOKABLE bool updateObject(const QVariantMap &);
