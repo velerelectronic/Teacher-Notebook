@@ -17,7 +17,8 @@ Common.AbstractEditor {
                 'DateTime': 3,
                 'State': 4,
                 'Image': 5,
-                'List': 6
+                'List': 6,
+                'Object': 7
     }
     property var showComponent: {
                 0: showText,
@@ -26,7 +27,8 @@ Common.AbstractEditor {
                 3: showDateTime,
                 4: showState,
                 5: showImage,
-                6: showList
+                6: showList,
+                7: showObject
     }
     property var editComponent: {
                 0: '',
@@ -35,7 +37,8 @@ Common.AbstractEditor {
                 3: 'DateTimeEditor',
                 4: 'StateEditor',
                 5: 'ImageEditor',
-                6: 'ListEditor'
+                6: 'ListEditor',
+                7: ''
     }
 
     property alias buttons: buttonsModel
@@ -98,6 +101,7 @@ Common.AbstractEditor {
             id: inspectorGrid
             Layout.fillWidth: true
             Layout.fillHeight: true
+            clip: true
 
             property int captionsWidth: units.fingerUnit
 
@@ -287,6 +291,21 @@ Common.AbstractEditor {
                             text = '';
                     }
                 }
+            }
+        }
+    }
+
+    Component {
+        id: showObject
+        Loader {
+            property var content
+
+            onContentChanged: {
+                console.log(content);
+                sourceComponent = content;
+            }
+            onLoaded: {
+                height = item.requiredHeight;
             }
         }
     }

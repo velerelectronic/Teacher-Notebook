@@ -24,6 +24,8 @@ ItemInspector {
     property int idxPreviousValues
     property int idxComment
 
+    Common.UseUnits { id: units }
+
     Component.onCompleted: {
         addSection(qsTr('Avaluació'), assessment,'yellow',editorType['None']);
         addSection(qsTr('Individu'), individual,'yellow', editorType['None']);
@@ -37,8 +39,49 @@ ItemInspector {
         addSection(qsTr('Criteri'), desc, 'white', editorType['None']);
 
         idxDescriptor = addSection(qsTr('Puntuació'), {reference: descriptor, model: levelDescriptorsModel, nameAttribute: 'definition'},'white',editorType['List']);
-        idxPreviousValues = addSection(qsTr('Anteriors'), {}, editorType['Object']);
+        idxPreviousValues = addSection(qsTr('Anteriors'), previousValues, 'white', editorType['Object']);
         idxComment = addSection(qsTr('Comentari'), comment,'yellow',editorType['TextArea']);
+    }
+
+    Component {
+        id: previousValues
+        ListView {
+            id: list
+            property int requiredHeight: contentItem.height
+            model: scoresModel
+            delegate: Rectangle {
+                border.color: 'black'
+                height: units.fingerUnit * 2
+                width: list.width
+                RowLayout {
+                    anchors.fill: parent
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: parent.width / 4
+                        clip: true
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        font.pixelSize: units.readUnit
+                        text: model.moment
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: parent.width / 4
+                        clip: true
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        font.pixelSize: units.readUnit
+                        text: model.definition
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        clip: true
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        font.pixelSize: units.readUnit
+                        text: model.comment
+                    }
+                }
+            }
+        }
     }
 
     onSaveDataRequested: {

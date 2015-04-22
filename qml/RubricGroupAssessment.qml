@@ -332,9 +332,6 @@ Rectangle {
                                 onPressAndHold: {
                                     if (selectedCell) {
                                         editRubricAssessmentDescriptor(idAssessment, wholeCriteria.criterium, model.id, model.descriptor, rubricIndividualScoresSaveModel, rubricIndividualScoresModel, levelDescriptorsModel);
-                                    } else {
-                                        enabled = false;
-                                        valuesList.interactive = true;
                                     }
                                 }
                             }
