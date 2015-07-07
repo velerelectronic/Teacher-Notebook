@@ -1,9 +1,10 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
+import QtQml.Models 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
-ItemInspector {
+CollectionInspector {
     id: rubricCriteriumItem
     pageTitle: qsTr('Edita criteri de rúbrica')
 
@@ -17,52 +18,73 @@ ItemInspector {
 
     signal savedCriterium
 
-    property int idxRubric
-    property int idxTitle
-    property int idxDesc
-    property int idxOrd
-    property int idxWeight
+    model: ObjectModel {
+        EditFakeItemInspector {
+            id: rubricComponent
+            width: rubricCriteriumItem.width
+            caption: qsTr('Rúbrica')
+        }
+        EditTextItemInspector {
+            id: titleComponent
+            width: rubricCriteriumItem.width
+            caption: qsTr('Títol')
+        }
+        EditTextAreaInspector {
+            id: descComponent
+            width: rubricCriteriumItem.width
+            caption: qsTr('Descripció')
+        }
+        EditTextItemInspector {
+            id: orderComponent
+            width: rubricCriteriumItem.width
+            caption: qsTr('Ordre')
+        }
+        EditTextItemInspector {
+            id: weightComponent
+            width: rubricCriteriumItem.width
+            caption: qsTr('Pes')
+        }
+    }
 
     Component.onCompleted: {
-        addSection(qsTr('Criteri'), rubricCriteriumItem.idCriterium,'yellow',editorType['None']);
-        idxRubric = addSection(qsTr('Rúbrica'), rubricCriteriumItem.rubric,'yellow',editorType['None']);
-        idxTitle = addSection(qsTr('Títol'), rubricCriteriumItem.title,'yellow',editorType['TextLine']);
-        idxDesc = addSection(qsTr('Descripció'), rubricCriteriumItem.desc,'yellow',editorType['TextArea']);
-        idxOrd = addSection(qsTr('Ordre'), rubricCriteriumItem.ord, 'green',editorType['TextLine']);
-        idxWeight = addSection(qsTr('Pes'), rubricCriteriumItem.weight, 'green',editorType['TextLine']);
+        rubricsModel.select();
+        var rubricObj = rubricsModel.getObject(rubricCriteriumItem.rubric);
+        rubricComponent.originalContent = rubricObj['title'] + ((rubricObj['desc'] !== '')?'\n' + rubricObj['desc']:'');
+        if (idCriterium !== -1) {
+            var obj = criteriaModel.getObject(idCriterium);
+            titleComponent.originalContent = obj['title'];
+            descComponent.originalContent = obj['desc'];
+            orderComponent.originalContent = obj['ord'];
+            weightComponent.originalContent = obj['weight'];
+        }
     }
 
     onSaveDataRequested: {
-        rubricCriteriumItem.title = getContent(idxTitle);
-        rubricCriteriumItem.desc = getContent(idxDesc);
-        rubricCriteriumItem.ord = getContent(idxOrd);
-        rubricCriteriumItem.weight = getContent(idxWeight);
-
-        console.log(idCriterium + '-' + rubric + '--' + ord);
         var object = {
             rubric: rubricCriteriumItem.rubric,
-            title: rubricCriteriumItem.title,
-            desc: rubricCriteriumItem.desc,
-            ord: rubricCriteriumItem.ord,
-            weight: rubricCriteriumItem.weight
+            title: titleComponent.editedContent,
+            desc: descComponent.editedContent,
+            ord: orderComponent.editedContent,
+            weight: weightComponent.editedContent
         }
 
         if (idCriterium == -1) {
             criteriaModel.insertObject(object);
         } else {
-            console.log('updating ');
-
             object['id'] = idCriterium;
             if (criteriaModel.updateObject(object))
                 console.log('DONE');
             else
                 console.log('NOT Done');
-            for (var prop in object) {
-                console.log(prop + '-' + object[prop]);
-            }
         }
         rubricCriteriumItem.setChanges(false);
         rubricCriteriumItem.savedCriterium();
+    }
+
+    SqlTableModel {
+        id: rubricsModel
+        tableName: 'rubrics'
+        fieldNames: ['id','title','desc']
     }
 
     onCopyDataRequested: {}

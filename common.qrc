@@ -26,5 +26,9 @@
         <file>common/SuperposedBox.qml</file>
         <file>common/TabbedView.qml</file>
         <file>common/FixedHeadingsTableView.qml</file>
+        <file>common/SidePanel.qml</file>
+        <file>common/SidePanel2.qml</file>
+        <file>common/CollapsiblePanel.qml</file>
+        <file>common/SuperposedButton.qml</file>
     </qresource>
 </RCC>

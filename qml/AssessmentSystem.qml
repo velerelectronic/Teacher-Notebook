@@ -18,23 +18,12 @@ Rectangle {
 
     ListModel {
         id: buttonsModel
-        ListElement {
-            method: 'newAssessmentEditor'
-            image: 'plus-24844'
-        }
-        ListElement {
-            method: 'listAssessment'
-            image: 'list-153185'
-        }
 
-        ListElement {
-            method: 'categorizedAssessment'
-            image: 'hierarchy-35795'
-        }
-
-        ListElement {
-            method: 'exportList'
-            image: 'box-24557'
+        Component.onCompleted: {
+            append({method: 'newAssessmentEditor', image: 'plus-24844', title: qsTr('Afegeix avaluació')});
+            append({method: 'listAssessment', image: 'list-153185', title: qsTr('Mode llista')});
+            append({method: 'categorizedAssessment', image: 'hierarchy-35795', title: qsTr('Mode categories')});
+            append({method: 'exportList', image: 'box-24557', title: qsTr('Exporta la llista com a HTML')});
         }
     }
 

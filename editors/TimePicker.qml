@@ -9,7 +9,6 @@ Rectangle {
 
     width: childrenRect.width
     height: childrenRect.height
-    anchors.margins: units.nailUnit
 
     Common.UseUnits { id: units }
     Rectangle {
@@ -18,8 +17,9 @@ Rectangle {
         width: childrenRect.width
         height: childrenRect.height
         Row {
-            width: hour.width + minute.width + seconds.width
+            width: hour.width + minute.width + spacing // + seconds.width
             height: childrenRect.height
+            spacing: units.nailUnit
 
             Common.WheelButton {
                 id: hour
@@ -27,8 +27,9 @@ Rectangle {
                 height: units.fingerUnit * 4
                 fromNumber: 0
                 toNumber: 23
-                onCurrentIndexChanged: {
-                    time.setHours(currentIndex);
+                onHighlightedValueChanged: {
+                    time.setHours(getCurrentValue());
+                    console.log("Current " + getCurrentValue());
                     updatedByUser();
                 }
             }
@@ -39,12 +40,13 @@ Rectangle {
                 height: units.fingerUnit * 4
                 fromNumber: 0
                 toNumber: 59
-                onCurrentIndexChanged: {
-                    time.setMinutes(currentIndex);
+                onHighlightedValueChanged: {
+                    time.setMinutes(getCurrentValue());
                     updatedByUser();
                 }
             }
 
+            /*
             Common.WheelButton {
                 id: seconds
                 width: units.fingerUnit * 1.5
@@ -56,6 +58,7 @@ Rectangle {
                     updatedByUser();
                 }
             }
+            */
         }
     }
 
@@ -64,8 +67,8 @@ Rectangle {
         hour.moveToNumber(h);
         var m = time.getMinutes()
         minute.moveToNumber(m);
-        var s = time.getSeconds();
-        seconds.moveToNumber(s);
+        //var s = time.getSeconds();
+        //seconds.moveToNumber(s);
     }
 
     function setDateTime(newDate) {
@@ -74,8 +77,6 @@ Rectangle {
     }
 
     function getTime() {
-        timePicker.time.setHours(hour.currentIndex);
-        timePicker.time.setMinutes(minute.currentIndex);
         return timePicker.time;
     }
 
@@ -83,7 +84,7 @@ Rectangle {
         var d = timePicker.time;
         var hours = d.getHours();
         var minutes = d.getMinutes();
-        var seconds = d.getSeconds();
-        return ((hours<10)?'0':'') + hours +  ':' + ((minutes<10)?'0':'') + minutes + ':' + ((seconds<10)?'0':'') + seconds;
+        // var seconds = d.getSeconds();
+        return ((hours<10)?'0':'') + hours +  ':' + ((minutes<10)?'0':'') + minutes; // + ':' + ((seconds<10)?'0':'') + seconds;
     }
 }

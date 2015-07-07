@@ -1,6 +1,7 @@
 #ifndef STANDARDPATHS_H
 #define STANDARDPATHS_H
 
+#include <QObject>
 #include <QStandardPaths>
 
 class StandardPaths : public QObject

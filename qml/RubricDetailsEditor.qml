@@ -1,9 +1,10 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
+import QtQml.Models 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
-ItemInspector {
+CollectionInspector {
     id: rubricDetailsItem
     pageTitle: qsTr('Edita detalls de rúbrica')
 
@@ -14,35 +15,32 @@ ItemInspector {
 
     signal savedRubricDetails
 
-    property int idxTitle
-    property int idxDesc
+    model: ObjectModel {
+        EditTextItemInspector {
+            id: rubricTitle
+            width: rubricDetailsItem.width
+            caption: qsTr('Títol')
+        }
+        EditTextAreaInspector {
+            id: rubricDesc
+            width: rubricDetailsItem.width
+            caption: qsTr('Descripció')
+        }
+    }
 
     Component.onCompleted: {
-        console.log(idRubric);
-        var obj = rubricsModel.getObject(idRubric);
-        for (var prop in obj) {
-            console.log(prop + '--' + obj[prop]);
+        if (idRubric !== -1) {
+            var obj = rubricsModel.getObject(idRubric);
+
+            rubricTitle.originalContent = ('title' in obj)?obj['title']:obj['desc'];
+            rubricDesc.originalContent = ('desc' in obj)?obj['desc']:'';
         }
-
-        if ('title' in obj)
-            title = obj['title'];
-        if ('desc' in obj)
-            desc = obj['desc'];
-
-        addSection(qsTr('Rúbrica'), rubricDetailsItem.idRubric,'yellow',editorType['None']);
-
-        idxTitle = addSection(qsTr('Títol'), rubricDetailsItem.title,'yellow',editorType['TextLine']);
-        idxDesc = addSection(qsTr('Descripció'), rubricDetailsItem.desc,'yellow',editorType['TextArea']);
     }
 
     onSaveDataRequested: {
-        rubricDetailsItem.title = getContent(idxTitle);
-        rubricDetailsItem.desc = getContent(idxDesc);
-
-        console.log('DESANT')
         var object = {
-            title: rubricDetailsItem.title,
-            desc: rubricDetailsItem.desc
+            title: rubricTitle.editedContent,
+            desc: rubricDesc.editedContent
         }
 
         if (idRubric == -1) {

@@ -47,65 +47,109 @@ Rectangle {
         id: rubricsAssessmentComponent
 
         Item {
-            ColumnLayout {
-                anchors.fill: parent
-                Button {
-                    Layout.preferredHeight: units.fingerUnit
-                    Layout.fillWidth: true
-                    text: qsTr('Nova avaluació')
-                    onClicked: openRubricGroupAssessment(-1,-1,rubricsModel,rubricsAssessmentModel)
-                }
-                ListView {
-                    id: rubricsAssessmentList
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
+            id: rubricsAssessmentItem
 
-                    clip: true
-                    model: rubricsAssessmentModel
-                    delegate: Rectangle {
-                        width: rubricsAssessmentList.width
-                        height: units.fingerUnit * 2
-                        border.color: 'black'
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: openRubricGroupAssessment(model.id, model.rubric, rubricsModel, rubricsAssessmentModel)
+            RowLayout {
+                id: layout
+                property real titleWidth: width / 3
+                property real descWidth: titleWidth
+
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                    margins: units.nailUnit
+                }
+                height: units.fingerUnit * 2
+
+                Text {
+                    Layout.preferredHeight: layout.titleWidth
+                    Layout.fillHeight: true
+                    font.pixelSize: units.readUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    font.bold: true
+                    text: qsTr('Títol')
+                }
+                Text {
+                    Layout.preferredWidth: layout.descWidth
+                    Layout.fillHeight: true
+                    font.pixelSize: units.readUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    font.bold: true
+                    text: qsTr('Descripció')
+                }
+                Text {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    font.pixelSize: units.readUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    font.bold: true
+                    text: qsTr('Grup')
+                }
+            }
+            ListView {
+                id: rubricsAssessmentList
+                anchors {
+                    top: layout.bottom
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.bottom
+                }
+
+                clip: true
+                model: rubricsAssessmentModel
+                delegate: Rectangle {
+                    width: rubricsAssessmentList.width
+                    height: units.fingerUnit * 2
+                    border.color: 'black'
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: openRubricGroupAssessment(model.id, model.rubric, rubricsModel, rubricsAssessmentModel)
+                    }
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+                        Text {
+                            Layout.preferredWidth: layout.titleWidth
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: model.title
                         }
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.margins: units.nailUnit
-                            Text {
-                                Layout.preferredWidth: parent.width / 3
-                                Layout.fillHeight: true
-                                font.pixelSize: units.readUnit
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                text: model.title
-                            }
-                            Text {
-                                Layout.preferredWidth: parent.width / 3
-                                Layout.fillHeight: true
-                                font.pixelSize: units.readUnit
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                text: model.desc
-                            }
-                            Text {
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                font.pixelSize: units.readUnit
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                text: model.group
-                            }
-                            Button {
-                                Layout.fillHeight: true
-                                // Layout.preferredWidth: height
-                                text: qsTr('Detalls')
-                                onClicked: openRubricAssessmentDetails(model.id, model.rubric, model.group, rubricsModel, rubricsAssessmentModel)
-                            }
+                        Text {
+                            Layout.preferredWidth: layout.descWidth
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: model.desc
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: model.group
+                        }
+                        Button {
+                            Layout.fillHeight: true
+                            // Layout.preferredWidth: height
+                            text: qsTr('Detalls')
+                            onClicked: openRubricAssessmentDetails(model.id, model.rubric, model.group, rubricsModel, rubricsAssessmentModel)
                         }
                     }
                 }
+                Common.SuperposedButton {
+                    anchors.bottom: parent.bottom
+                    anchors.right: parent.right
+                    size: units.fingerUnit * 2
+                    fontSize: units.glanceUnit
+                    label: qsTr('+')
+                    margins: units.nailUnit
+                    onClicked: openRubricAssessmentDetails(-1, -1, -1, rubricsModel, rubricsAssessmentModel)
+                }
             }
-
         }
+
     }
 
     Component {
@@ -151,6 +195,16 @@ Rectangle {
                         onClicked: openRubricAssessmentDetails(-1, model.id, '', rubricsModel, rubricsAssessmentModel)
                     }
                 }
+            }
+
+            Common.SuperposedButton {
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
+                size: units.fingerUnit * 2
+                fontSize: units.glanceUnit
+                label: qsTr('+')
+                margins: units.nailUnit
+                onClicked: openRubricDetails(-1, rubricsModel)
             }
         }
 

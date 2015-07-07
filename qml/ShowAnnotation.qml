@@ -1,11 +1,12 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
+import QtQml.Models 2.1
 import 'qrc:///common' as Common
 import "qrc:///javascript/Storage.js" as Storage
 import PersonalTypes 1.0
 
-ItemInspector {
+CollectionInspector {
     id: annotationEditor
     pageTitle: qsTr("Editor d'anotacions")
 
@@ -17,10 +18,6 @@ ItemInspector {
     property string annotation: ''
     property string desc: ''
     property string image: ''
-
-    property int idxAnnotation
-    property int idxDesc
-    property int idxImage
 
     Common.UseUnits { id: units }
 
@@ -47,27 +44,47 @@ ItemInspector {
     onClosePageRequested: closePage('')
 
     function prepareDataAndSave(idCode) {
-        annotation = getContent(idxAnnotation);
-        desc = getContent(idxDesc);
-        image = getContent(idxImage);
+        var obj = {
+            title: titleComponent.editedContent,
+            desc: descComponent.editedContent,
+            image: imageComponent.editedContent
+        };
+
         if (idCode == -1) {
-            annotationsModel.insertObject({created: Storage.currentTime(), title: annotation, desc: desc, image: image});
+            annotationsModel['created'] = Storage.currentTime();
+            annotationsModel.insertObject(obj);
         } else {
-            annotationsModel.updateObject({id: idCode, title: annotation, desc: desc, image: image});
+            obj['id'] = idCode;
+            annotationsModel.updateObject(obj);
+        }
+    }
+
+    model: ObjectModel {
+        EditTextItemInspector {
+            id: titleComponent
+            width: annotationEditor.width
+            caption: qsTr('Títol')
+        }
+        EditTextAreaInspector {
+            id: descComponent
+            width: annotationEditor.width
+            caption: qsTr('Descripció')
+        }
+        EditTextItemInspector {
+            id: imageComponent
+            width: annotationEditor.width
+            caption: qsTr('Imatge')
         }
     }
 
     Component.onCompleted: {
         if (annotationEditor.idAnnotation != -1) {
             var details = annotationsModel.getObject(annotationEditor.idAnnotation);
-            annotationEditor.annotation = details.title;
-            annotationEditor.desc = (details.desc == null)?'':details.desc;
-            annotationEditor.image = (details.image == null)?'':details.image;
+            titleComponent.originalContent = details.title;
+            descComponent.originalContent = (details.desc == null)?'':details.desc;
+            imageComponent.originalContent = (details.image == null)?'':details.image;
             annotationEditor.setChanges(false);
         }
-        idxAnnotation = addSection(qsTr('Anotació'),annotation,'yellow',editorType['TextLine']);
-        idxDesc = addSection(qsTr('Descripció'),desc,'yellow',editorType['TextArea']);
-        idxImage = addSection(qsTr('Imatge'),image,'yellow',editorType['Image']);
     }
 
     function requestClose() {

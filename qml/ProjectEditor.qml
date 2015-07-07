@@ -1,9 +1,10 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
+import QtQml.Models 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
-ItemInspector {
+CollectionInspector {
     id: projectEditor
     pageTitle: qsTr('Edita detalls de projecte')
 
@@ -14,34 +15,30 @@ ItemInspector {
 
     signal savedProjectDetails
 
-    property int idxName
-    property int idxDesc
+    model: ObjectModel {
+        EditTextItemInspector {
+            id: nameComponent
+            width: projectEditor.width
+            caption: qsTr('Títol')
+        }
+        EditTextAreaInspector {
+            id: descComponent
+            width: projectEditor.width
+            caption: qsTr('Descripció')
+        }
+    }
 
     Component.onCompleted: {
-        console.log(idProject);
         var obj = projectsModel.getObject(idProject);
-        for (var prop in obj) {
-            console.log(prop + '--' + obj[prop]);
-        }
 
-        if ('name' in obj)
-            name = obj['name'];
-        if ('desc' in obj)
-            desc = obj['desc'];
-
-        addSection(qsTr('Projecte'), projectEditor.idProject,'yellow',editorType['None']);
-
-        idxName = addSection(qsTr('Nom'), projectEditor.name,'yellow',editorType['TextLine']);
-        idxDesc = addSection(qsTr('Descripció'), projectEditor.desc,'yellow',editorType['TextArea']);
+        nameComponent.originalContent = coalesce(obj['name'],'');
+        descComponent.originalContent = coalesce(obj['desc'],'');
     }
 
     onSaveDataRequested: {
-        projectEditor.name = getContent(idxName);
-        projectEditor.desc = getContent(idxDesc);
-
         var object = {
-            name: projectEditor.name,
-            desc: projectEditor.desc
+            name: nameComponent.editedContent,
+            desc: descComponent.editedContent
         }
 
         if (idProject == -1) {

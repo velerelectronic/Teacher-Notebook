@@ -2,9 +2,14 @@ import QtQuick 2.2
 
 ListView {
     id: list
+
     property int fromNumber: -1
     property int toNumber
     property real itemHeight: units.fingerUnit
+
+    property bool trackChanges: true
+
+    signal highlightedValueChanged()  // Emitted when the user has selected some value, either clicking or moving the wheel
 
     model: toNumber-fromNumber+1
     clip: true
@@ -23,14 +28,23 @@ ListView {
         }
         MouseArea {
             anchors.fill: parent
-            onClicked: {
-                list.currentIndex = model.index;
-            }
+            onClicked: list.currentIndex = model.index;
         }
     }
     keyNavigationWraps: true
 
+    onCurrentIndexChanged: {
+        if (trackChanges)
+            highlightedValueChanged();
+    }
+
     function moveToNumber(number) {
+        trackChanges = false;
         positionViewAtIndex(number,ListView.Center);
+        trackChanges = true;
+    }
+
+    function getCurrentValue() {
+        return currentIndex + fromNumber;
     }
 }

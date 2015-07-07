@@ -84,21 +84,12 @@ Rectangle {
 
     ListModel {
         id: buttonsModel
-        ListElement {
-            method: 'createEvent'
-            image: 'plus-24844'
-        }
-        ListElement {
-            method: 'showCalendar'
-            image: 'calendar-23684'
-        }
-        ListElement {
-            method: 'showList'
-            image: 'list-153185'
-        }
-        ListElement {
-            method: 'showGantt'
-            image: 'percent-40844'
+
+        Component.onCompleted: {
+            append({method: 'createEvent', image: 'plus-24844', title: qsTr('Crea un esdeveniment')});
+            append({method: 'showCalendar', image: 'calendar-23684', title: qsTr('Mostra el calendari')});
+            append({method: 'showList', image: 'list-153185', title: qsTr('Mostra la llista de tasques i esdeveniments')});
+            append({method: 'showGantt', image: 'percent-40844', title: qsTr('Mostra el diagrama de Gantt')});
         }
     }
 

@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.5
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
@@ -19,9 +19,9 @@ Rectangle {
 
     ListModel {
         id: buttonsModel
-        ListElement {
-            method: 'newAnnotation'
-            image: 'plus-24844'
+
+        Component.onCompleted: {
+            append({method: 'newAnnotation', image: 'plus-24844', title: qsTr('Introdueix una nova anotació')});
         }
     }
 
@@ -102,6 +102,20 @@ Rectangle {
                 }
                 onAnnotationLongSelected: annotations.editAnnotation(model.id,title,desc)
             }
+            footer: Item {
+                z: 300
+                width: annotationsList.width
+                height: units.fingerUnit * 4
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.margins: units.fingerUnit
+                    border.color: 'black'
+                    color: 'red'
+                    opacity: 0.5
+                }
+            }
+            footerPositioning: ListView.OverlayFooter
+
             model: annotationsModel
 
             Item {

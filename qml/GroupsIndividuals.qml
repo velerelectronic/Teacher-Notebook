@@ -89,6 +89,16 @@ Rectangle {
                 }
             }
         }
+
+        Common.SuperposedButton {
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            size: units.fingerUnit * 2
+            fontSize: units.glanceUnit
+            label: qsTr('+')
+            margins: units.nailUnit
+            onClicked: individualsModel.insertObject({group: qsTr('Nou grup'), name: qsTr('-'), surname: qsTr('-'), faceImage: ''});
+        }
     }
 
     MessageDialog {

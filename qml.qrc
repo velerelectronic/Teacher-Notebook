@@ -59,5 +59,15 @@
         <file>qml/BasicDatabase.qml</file>
         <file>qml/GroupsIndividuals.qml</file>
         <file>qml/GroupIndividualEditor.qml</file>
+        <file>qml/ResourceManager.qml</file>
+        <file>qml/ShowResource.qml</file>
+        <file>qml/CollectionInspector.qml</file>
+        <file>qml/CollectionInspectorItem.qml</file>
+        <file>qml/EditTextItemInspector.qml</file>
+        <file>qml/EditTextAreaInspector.qml</file>
+        <file>qml/EditStateItemInspector.qml</file>
+        <file>qml/EditDateTimeItemInspector.qml</file>
+        <file>qml/EditFakeItemInspector.qml</file>
+        <file>qml/EditListItemInspector.qml</file>
     </qresource>
 </RCC>

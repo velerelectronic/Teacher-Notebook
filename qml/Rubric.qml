@@ -35,13 +35,9 @@ Rectangle {
     ListModel {
         id: buttonsModel
 
-        ListElement {
-            method: 'newCriterium'
-            image: 'plus-24844'
-        }
-        ListElement {
-            method: 'newLevel'
-            image: 'plus-24844'
+        Component.onCompleted: {
+            append({method: 'newCriterium', image: 'plus-24844', title: qsTr('Afegeix un criteri a la rúbrica')});
+            append({method: 'newLevel', image: 'plus-24844', title: qsTr('Afegeix un nivell als criteris')});
         }
     }
 

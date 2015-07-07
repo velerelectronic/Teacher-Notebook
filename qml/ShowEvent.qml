@@ -1,14 +1,15 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.1
+import QtQml.Models 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import "qrc:///javascript/Storage.js" as Storage
-// import "qrc:///javascript/FormatDates.js" as FormatDates
+import "qrc:///common/FormatDates.js" as FormatDates
 
 
-ItemInspector {
-    id: newEvent
+CollectionInspector {
+    id: eventEditor
     anchors.margins: units.nailUnit
 
     pageTitle: qsTr('Edita esdeveniment')
@@ -29,17 +30,10 @@ ItemInspector {
 
     property SqlTableModel projectsModel
 
-    property int idxEvent
-    property int idxState
-    property int idxDesc
-    property int idxStart
-    property int idxEnd
-    property int idxProject
-
     Common.UseUnits { id: units }
 
     onSaveDataRequested: {
-        prepareDataAndSave(newEvent.idEvent);
+        prepareDataAndSave(eventEditor.idEvent);
         closePage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'));
     }
 
@@ -57,64 +51,75 @@ ItemInspector {
 
     onClosePageRequested: closePage('')
 
+    model: ObjectModel {
+        EditTextItemInspector {
+            id: titleComponent
+            width: eventEditor.width
+            caption: qsTr('Esdeveniment')
+        }
+        EditStateItemInspector {
+            id: stateComponent
+            width: eventEditor.width
+            caption: qsTr('Estat')
+        }
+        EditTextAreaInspector {
+            id: descComponent
+            width: eventEditor.width
+            caption: qsTr('Descripció')
+        }
+        EditDateTimeItemInspector {
+            id: startComponent
+            width: eventEditor.width
+            caption: qsTr('Inici')
+        }
+        EditDateTimeItemInspector {
+            id: endComponent
+            width: eventEditor.width
+            caption: qsTr('Final')
+        }
+        EditTextItemInspector {
+            id: projectComponent
+            width: eventEditor.width
+            caption: qsTr('Projecte')
+        }
+    }
+
     Component.onCompleted: {
-        if (newEvent.idEvent != -1) {
-            var details = scheduleModel.getObject(newEvent.idEvent);
-            newEvent.event = details.event;
-            newEvent.desc = details.desc;
-            newEvent.startDate = details.startDate;
-            newEvent.startTime = details.startTime;
-            newEvent.endDate = details.endDate;
-            newEvent.endTime = details.endTime;
-            newEvent.stateEvent = details.state;
-            newEvent.project = (details.ref !== '')?parseInt(details.ref):-1;
+        if (eventEditor.idEvent != -1) {
+            var details = scheduleModel.getObject(eventEditor.idEvent);
+            titleComponent.originalContent = details.event;
+            descComponent.originalContent = details.desc;
+            startComponent.originalContent = {date: details.startDate, time: details.startTime};
+            endComponent.originalContent = {date: details.endDate, time: details.endTime};
+            stateComponent.originalContent = details.state;
+            projectComponent.originalContent = (details.ref !== '')?parseInt(details.ref):-1;
         }
 
-        idxEvent = addSection(qsTr('Esdeveniment'), newEvent.event,'yellow',editorType['TextLine']);
-        idxState = addSection(qsTr('Estat'), newEvent.stateEvent,'yellow',editorType['State']);
-        idxDesc = addSection(qsTr('Descripció'), newEvent.desc,'yellow',editorType['TextArea']);
-        idxStart = addSection(qsTr('Inici'),{date: newEvent.startDate, time: newEvent.startTime},'green',editorType['DateTime']);
-        idxEnd = addSection(qsTr('Final'),{date: newEvent.endDate, time: newEvent.endTime},'green',editorType['DateTime']);
-        idxProject = addSection(qsTr('Projecte'), {reference: newEvent.project, model: projectsModel, nameAttribute: 'name'}, 'white', editorType['List']);
-
         // Reinit changes
-        newEvent.setChanges(false);
+        eventEditor.setChanges(false);
     }
 
     function prepareDataAndSave(idCode) {
-        newEvent.event = getContent(idxEvent);
-        newEvent.stateEvent = getContent(idxState);
-        newEvent.desc = getContent(idxDesc).toString();
-        var start = getContent(idxStart);
-        newEvent.startDate = start['date'];
-        newEvent.startTime = start['time'];
-        var end = getContent(idxEnd);
-        newEvent.endDate = end['date'];
-        newEvent.endTime = end['time'];
-        newEvent.project = getContent(idxProject).reference;
-
         var object = {
-            created: Storage.currentTime(),
-            event: newEvent.event,
-            desc: newEvent.desc,
-            startDate: newEvent.startDate,
-            startTime: newEvent.startTime,
-            endDate: newEvent.endDate,
-            endTime: newEvent.endTime,
-            state: newEvent.stateEvent,
-            ref: newEvent.project
+            event: titleComponent.editedContent,
+            desc: descComponent.editedContent,
+            startDate: startComponent.editedContent['date'],
+            startTime: startComponent.editedContent['time'],
+            endDate: endComponent.editedContent['date'],
+            endTime: endComponent.editedContent['time'],
+            state: stateComponent.editedContent,
+            ref: projectComponent.editedContent
         }
 
-        console.log('Object ref ' + object.ref);
-
         if (idCode == -1) {
+            scheduleModel['created'] = Storage.currentTime();
             scheduleModel.insertObject(object);
         } else {
             object['id'] = idCode;
-            console.log('updating ' + scheduleModel.updateObject(object));
+            scheduleModel.updateObject(object);
         }
-        newEvent.setChanges(false);
-        newEvent.savedEvent(newEvent.event,newEvent.desc,newEvent.startDate,newEvent.startTime,newEvent.endDate,newEvent.endTime);
+        eventEditor.setChanges(false);
+        eventEditor.savedEvent(object['title'],object['desc'],object['startDate'],object['startTime'],object['endDate'],object['endTime']);
     }
 
     function requestClose() {

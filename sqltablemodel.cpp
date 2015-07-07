@@ -95,6 +95,7 @@ QVariantMap SqlTableModel::getObject(QString key) const {
     QSqlRecord searchRecord;
     bool found = false;
     int row=0;
+
     while ((!found) && (row<rowCount())) {
         searchRecord = this->record(row);
         if (searchRecord.value(primaryKey().fieldName(0))==key)

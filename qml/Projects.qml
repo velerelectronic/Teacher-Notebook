@@ -13,6 +13,7 @@ Rectangle {
 
     signal editEvent(int idEvent,string event, string desc,string startDate,string startTime,string endDate,string endTime)
     signal newProjectRequest(var model)
+    signal showProject(int project,var model)
 
     property string documents: ''
     property int sectionsHeight: units.fingerUnit * 3
@@ -23,9 +24,8 @@ Rectangle {
     ListModel {
         id: buttonsModel
 
-        ListElement {
-            method: 'newProject'
-            image: 'plus-24844'
+        Component.onCompleted: {
+            append({method: 'newProject', image: 'plus-24844', title: qsTr('Defineix un nou projecte')});
         }
     }
 
@@ -63,6 +63,10 @@ Rectangle {
                 verticalAlignment: Text.AlignVCenter
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 elide: Text.ElideRight
+            }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: showProject(model.id,projectsModel)
             }
         }
 

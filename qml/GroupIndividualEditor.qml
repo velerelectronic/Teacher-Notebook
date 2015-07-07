@@ -1,44 +1,51 @@
 import QtQuick 2.3
+import QtQml.Models 2.1
 import PersonalTypes 1.0
 
-ItemInspector {
+CollectionInspector {
     id: groupIndividualEditor
+
+    property string pageTitle: qsTr("Editor d'individus i grups")
 
     property SqlTableModel groupsIndividualsModel
 
     property int individual
     property string group: ''
-    property string name: ''
-    property string surname: ''
-
-    property int idxGroup
-    property int idxName
-    property int idxSurname
 
     signal savedGroupIndividual
+
+    model: ObjectModel {
+        EditTextItemInspector {
+            id: nameComponent
+            width: groupIndividualEditor.width
+            caption: qsTr('Nom')
+        }
+        EditTextItemInspector {
+            id: surnameComponent
+            width: groupIndividualEditor.width
+            caption: qsTr('Llinatges')
+        }
+        EditTextItemInspector {
+            id: groupComponent
+            width: groupIndividualEditor.width
+            caption: qsTr('Grup')
+        }
+    }
 
     Component.onCompleted: {
         if (individual >= 0) {
             var obj = groupsIndividualsModel.getObject(individual);
-            name = obj['name'];
-            surname = obj['surname'];
-            group = obj['group'];
+            nameComponent.originalContent = obj['name'];
+            surnameComponent.originalContent = obj['surname'];
+            groupComponent.originalContent = obj['group'];
         }
-
-        idxGroup = addSection(qsTr('Grup'), group, 'yellow', editorType['TextLine']);
-        idxName = addSection(qsTr('Nom'), name , 'yellow', editorType['TextLine']);
-        idxSurname = addSection(qsTr('Llinatges'), surname, 'yellow', editorType['TextLine']);
     }
 
     onSaveDataRequested: {
-        group = getContent(idxGroup);
-        name = getContent(idxName);
-        surname = getContent(idxSurname);
-
         var object = {
-            name: groupIndividualEditor.name,
-            surname: groupIndividualEditor.surname,
-            group: groupIndividualEditor.group,
+            name: nameComponent.editedContent,
+            surname: surnameComponent.editedContent,
+            group: groupComponent.editedContent
         }
 
         if (individual == -1) {

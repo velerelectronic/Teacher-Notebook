@@ -38,8 +38,8 @@ Rectangle {
                 height: units.fingerUnit * 4
                 fromNumber: 1
                 toNumber: 31
-                onCurrentIndexChanged: {
-                    datePicker.date.setDate(days.currentIndex + days.fromNumber);
+                onHighlightedValueChanged: {
+                    datePicker.date.setDate(getCurrentValue());
                     updateDayOfWeek();
                     updatedByUser();
                 }
@@ -50,8 +50,8 @@ Rectangle {
                 width: units.fingerUnit * 2
                 height: units.fingerUnit * 4
                 model: monthsAb
-                onCurrentIndexChanged: {
-                    datePicker.date.setMonth(months.currentIndex);
+                onHighlightedValueChanged: {
+                    datePicker.date.setMonth(getCurrentValue());
                     updateDayOfWeek();
                     updatedByUser();
                 }
@@ -63,8 +63,8 @@ Rectangle {
                 height: units.fingerUnit * 4
                 fromNumber: 2000
                 toNumber: 2200
-                onCurrentIndexChanged: {
-                    datePicker.date.setFullYear(year.currentIndex + year.fromNumber);
+                onHighlightedValueChanged: {
+                    datePicker.date.setFullYear(getCurrentValue());
                     updateDayOfWeek();
                     updatedByUser();
                 }

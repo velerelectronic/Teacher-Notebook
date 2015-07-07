@@ -1,9 +1,10 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
+import QtQml.Models 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
-ItemInspector {
+CollectionInspector {
     id: rubricDescriptorItem
     pageTitle: qsTr('Edita descriptor de rúbrica')
 
@@ -12,37 +13,54 @@ ItemInspector {
     property int level
     property string definition: ''
 
-    onIdDescriptorChanged: console.log('CEITER: ' + idDescriptor)
-
     property SqlTableModel descriptorsModel
 
     signal savedDescriptor
 
-    property int idxDefinition
+    model: ObjectModel {
+        EditFakeItemInspector {
+            id: criteriumComponent
+            width: rubricDescriptorItem.width
+            caption: qsTr('Criteri')
+        }
+        EditFakeItemInspector {
+            id: levelComponent
+            width: rubricDescriptorItem.width
+            caption: qsTr('Nivell')
+        }
+        EditTextAreaInspector {
+            id: definitionComponent
+            width: rubricDescriptorItem.width
+            caption: qsTr('Definició')
+        }
+    }
 
     Component.onCompleted: {
-        addSection(qsTr('Criteri'), rubricDescriptorItem.criterium,'yellow',editorType['None']);
-        addSection(qsTr('Nivell'), rubricDescriptorItem.level,'yellow',editorType['None']);
+        criteriaModel.select();
+        var criteriumObj = criteriaModel.getObject(rubricDescriptorItem.criterium);
+        criteriumComponent.originalContent = criteriumObj['ord'] + " - " + criteriumObj['title'] + ' (' + criteriumObj['weight'] + ')' + ((criteriumObj['desc']!=='')?'\n'+criteriumObj['desc']:'')
 
-        idxDefinition = addSection(qsTr('Definició'), rubricDescriptorItem.definition,'yellow',editorType['TextArea']);
+        levelsModel.select();
+        var levelObj = levelsModel.getObject(rubricDescriptorItem.level);
+        levelComponent.originalContent =  levelObj['score'] + " - " + levelObj['title'] + ((levelObj['desc']!=='')?'\n'+levelObj['desc']:'');
+
+        if (idDescriptor !== -1) {
+            var obj = descriptorsModel.getObject(idDescriptor);
+            definitionComponent.originalContent = obj['definition'];
+        }
     }
 
     onSaveDataRequested: {
-        rubricDescriptorItem.definition = getContent(idxDefinition);
-
         var object = {
-            criterium: rubricDescriptorItem.criterium,
+            criterium: criteriumComponent.originalContent,
             level: rubricDescriptorItem.level,
-            definition: rubricDescriptorItem.definition
+            definition: definitionComponent.editedContent
         }
 
         if (idDescriptor < 0) {
             descriptorsModel.insertObject(object);
         } else {
             object['id'] = idDescriptor;
-            for (var pro in object) {
-                console.log(pro + '---' + object[pro]);
-            }
 
             if (descriptorsModel.updateObject(object)) {
                 console.log('DONE');
@@ -56,4 +74,15 @@ ItemInspector {
     onCopyDataRequested: {}
     onDiscardDataRequested: {}
     onClosePageRequested: {}
+
+    SqlTableModel {
+        id: levelsModel
+        tableName: 'rubrics_levels'
+        fieldNames: ['id', 'title', 'desc', 'rubric', 'score']
+    }
+    SqlTableModel {
+        id: criteriaModel
+        tableName: 'rubrics_criteria'
+        fieldNames: ['id', 'title', 'desc', 'rubric', 'ord', 'weight']
+    }
 }

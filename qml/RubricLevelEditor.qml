@@ -1,10 +1,11 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
+import QtQml.Models 2.1
 import 'qrc:///common' as Common
 
-ItemInspector {
-    id: rubricCriteriumItem
+CollectionInspector {
+    id: rubricLevelEditor
     pageTitle: qsTr('Edita nivell de rúbrica')
 
     property int idLevel: -1
@@ -15,31 +16,53 @@ ItemInspector {
 
     signal savedLevel
 
-    property int idxTitle
-    property int idxDesc
-    property int idxScore
+    SqlTableModel {
+        id: rubricsModel
+        tableName: 'rubrics'
+        fieldNames: ['id', 'title', 'desc']
+    }
 
     property SqlTableModel levelsModel
 
-    Component.onCompleted: {
-        addSection(qsTr('Nivell'), rubricCriteriumItem.idLevel,'yellow',editorType['None']);
-        addSection(qsTr('Rúbrica'), rubricCriteriumItem.rubric,'yellow',editorType['None']);
+    model: ObjectModel {
+        EditFakeItemInspector {
+            id: rubricComponent
+            width: rubricLevelEditor.width
+            caption: qsTr('Rúbrica')
+        }
+        EditTextItemInspector {
+            id: titleComponent
+            width: rubricLevelEditor.width
+            caption: qsTr('Títol')
+        }
+        EditTextAreaInspector {
+            id: descComponent
+            width: rubricLevelEditor.width
+            caption: qsTr('Descripció')
+        }
+        EditTextItemInspector {
+            id: scoreComponent
+            width: rubricLevelEditor.width
+            caption: qsTr('Puntuació')
+        }
+    }
 
-        idxTitle = addSection(qsTr('Títol'), rubricCriteriumItem.title,'yellow',editorType['TextLine']);
-        idxDesc = addSection(qsTr('Descripció'), rubricCriteriumItem.desc,'yellow',editorType['TextArea']);
-        idxScore = addSection(qsTr('Puntuació'), rubricCriteriumItem.score, 'yellow',editorType['TextLine']);
+    Component.onCompleted: {
+        rubricsModel.select();
+        var obj = rubricsModel.getObject(rubricLevelEditor.rubric);
+        rubricComponent.originalContent = obj['title'] + ((obj['desc'] !== '')?'\n' + obj['desc']:'');
+
+        titleComponent.originalContent = rubricLevelEditor.title;
+        descComponent.originalContent = rubricLevelEditor.desc;
+        scoreComponent.originalContent = rubricLevelEditor.score;
     }
 
     onSaveDataRequested: {
-        rubricCriteriumItem.title = getContent(idxTitle);
-        rubricCriteriumItem.desc = getContent(idxDesc);
-        rubricCriteriumItem.score = getContent(idxScore);
-
         var object = {
-            rubric: rubricCriteriumItem.rubric,
-            title: rubricCriteriumItem.title,
-            desc: rubricCriteriumItem.desc,
-            score: rubricCriteriumItem.score
+            rubric: rubricLevelEditor.rubric,
+            title: titleComponent.editedContent,
+            desc: descComponent.editedContent,
+            score: scoreComponent.editedContent
         }
 
         if (idLevel == -1) {
@@ -54,8 +77,8 @@ ItemInspector {
                 console.log(prop + '-' + object[prop]);
             }
         }
-        rubricCriteriumItem.setChanges(false);
-        rubricCriteriumItem.savedLevel();
+        setChanges(false);
+        savedLevel();
     }
 
     onCopyDataRequested: {}

@@ -29,7 +29,16 @@ Rectangle {
     property int contentsWidth: units.fingerUnit * 7
 
     signal editRubricDetails(int idRubric, string title, string desc, var model)
-    signal editRubricAssessmentDescriptor(int assessment, int criterium, int individual, int descriptor, var scoresSaveModel, var scoresModel, var levelDescriptorsModel)
+    signal editRubricAssessmentDescriptor(
+        int idAssessment,
+        int criterium,
+        int individual,
+        int lastScoreId,
+        var rubricIndividualScoresSaveModel,
+        var rubricIndividualScoresModel,
+        var levelDescriptorsModel,
+        var individualsModel,
+        var lastScoresModel)
 
     Common.UseUnits { id: units }
 
@@ -219,9 +228,24 @@ Rectangle {
                     ListView {
                         id: individualsList
                         anchors.fill: parent
-                        clip: true
 
-                        model: individualsModel
+                        property bool enableValues: false
+                        //clip: true
+
+                        model: SqlTableModel {
+                            id: rubricIndividualLastScoresModel
+                            tableName: 'rubrics_last_scores' // 'rubrics_descriptors_scores'
+                            fieldNames: ['assessment', 'individual', 'descriptor', 'moment', 'comment', 'criterium', 'criteriumTitle', 'criteriumDesc', 'weight', 'lastScoreId', 'score', 'level', 'definition']
+                            filters: [
+                                "\"group\"='" + rubricRectangle.group + "'",
+                                "criterium='" +  wholeCriteria.criterium + "'",
+                                "assessment='" + idAssessment + "'",
+                            ]
+                            Component.onCompleted: {
+                                select();
+                            }
+                        }
+
                         orientation: ListView.Horizontal
                         interactive: false
                         highlight: Rectangle {
@@ -230,82 +254,86 @@ Rectangle {
                             color: '#E3F6CE'
                         }
 
+                        SqlTableModel {
+                            id: rubricIndividualScoresSaveModel
+                            tableName: 'rubrics_scores'
+                            fieldNames: ['id', 'assessment', 'descriptor', 'moment', 'individual', 'comment']
+                        }
+
+
                         delegate: Rectangle {
+                            id: valuesForIndividual
                             // The scores for a single individual
 
                             height: contentsHeight
                             width: contentsWidth
                             border.color: 'black'
-                            color: ((ListView.isCurrentItem) && (wholeCriteria.isCurrentItem))?'#BEF781':'transparent'
+                            color: ((valuesForIndividual.isCurrentItem) && (wholeCriteria.isCurrentItem))?'#BEF781':'transparent'
+
+                            property bool isCurrentItem: ListView.isCurrentItem
+
                             //color: (model.index === fixedHeadingsTable.currentHorizontalIndex)?((wholeCriteria.verticalIndex === fixedHeadingsTable.currentVerticalIndex)?'#ffffaa':'yellow'):'transparent'
 
                             // property int criteriumId: model.id
                             // property int descriptorId: -1
                             // property string definition: ''
 
+                            Text {
+                                id: valuesText
+                                anchors.fill: parent
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                text: (model.lastScoreId == '')?'Cap registre':model.level + " " + model.definition + "\n" + model.score + "\n" + model.comment
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                elide: Text.ElideRight
+                            }
+
                             SqlTableModel {
                                 id: rubricIndividualScoresModel
                                 tableName: 'rubrics_descriptors_scores'
-                                fieldNames: ['assessment', 'individual', 'descriptor', 'moment', 'comment', 'criterium', 'criteriumTitle', 'criteriumDesc', 'weight', 'score', 'level', 'definition']
+                                fieldNames: [
+                                    'assessment',
+                                    'rubric',
+                                    'individual',
+                                    'name',
+                                    'surname',
+                                    '\"group\"',
+
+                                    'criterium',
+                                    'criteriumTitle',
+                                    'criteriumDesc',
+                                    'weight',
+
+                                    'descriptor',
+                                    'moment',
+                                    'comment',
+
+                                    'level',
+                                    'definition',
+                                    'score'
+                                ]
                                 filters: [
+                                    "\"group\"='" + rubricRectangle.group + "'",
                                     "criterium='" +  wholeCriteria.criterium + "'",
                                     "assessment='" + idAssessment + "'",
-                                    "individual='" + model.id + "'"
+                                    "individual='" + model.individual + "'"
                                 ]
-                                Component.onCompleted: {
-                                    setSort(3, Qt.DescendingOrder);
-                                    select();
-                                    console.log('Recompte ' + count);
-                                }
-                            }
-                            SqlTableModel {
-                                id: rubricIndividualScoresSaveModel
-                                tableName: 'rubrics_scores'
-                                fieldNames: ['id', 'assessment', 'descriptor', 'moment', 'individual', 'comment']
                             }
 
-                            ListView {
-                                id: valuesList
-                                anchors.fill: parent
-                                model: rubricIndividualScoresModel
-                                interactive: false
-                                delegate: Item {
-                                    id: individualScoreItem
-                                    width: valuesList.width
-                                    height: valuesList.height
 
-                                    Text {
-                                        anchors {
-                                            fill: parent
-                                            margins: units.nailUnit
-                                        }
-
-                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                        font.pixelSize: units.readUnit
-
-                                        text: model.score + " " + model.definition + ' ' + model.comment + ((rubricIndividualScoresModel.count>1)?(' (' + rubricIndividualScoresModel.count + ')'):'')
-                                    }
-                                }
-                            }
-                            Text {
-                                visible: rubricIndividualScoresModel.count === 0
-                                anchors.fill: parent
-                                verticalAlignment: Text.AlignVCenter
-                                horizontalAlignment: Text.AlignHCenter
-                                text: qsTr('No definit')
-                            }
                             MouseArea {
                                 property bool selectedCell: (model.index === fixedHeadingsTable.currentHorizontalIndex) || (wholeCriteria.criteriumIndex == fixedHeadingsTable.currentVerticalIndex)
                                 anchors.fill: parent
                                 preventStealing: false
                                 propagateComposedEvents: true
-                                onClicked: {
-                                    var levels = [];
-                                    for (var i=0; i<levelDescriptorsModel.count; i++) {
-                                        levels.push(levelDescriptorsModel.getObjectInRow(i)['id']);
-                                    }
 
+                                onClicked: {
                                     if (selectedCell) {
+                                        var levels = [];
+                                        for (var i=0; i<levelDescriptorsModel.count; i++) {
+                                            levels.push(levelDescriptorsModel.getObjectInRow(i)['id']);
+                                        }
+
                                         var newObj = {
                                             assessment: idAssessment,
                                             individual: model.id,
@@ -313,8 +341,8 @@ Rectangle {
                                         }
                                         var newDescriptor;
 
-                                        if (rubricIndividualScoresModel.count>0) {
-                                            var obj = rubricIndividualScoresModel.getObjectInRow(0);
+                                        if (rubricIndividualLastScoresModel.count>0) {
+                                            var obj = rubricIndividualLastScoresModel.getObjectInRow(0);
                                             newObj['comment'] = obj['comment'] + '*';
                                             var descriptorIndex = levels.indexOf(obj['descriptor']);
                                             newDescriptor = levels[(descriptorIndex + 1) % levels.length];
@@ -324,19 +352,46 @@ Rectangle {
                                         }
                                         newObj['descriptor'] = newDescriptor;
                                         rubricIndividualScoresSaveModel.insertObject(newObj);
-                                        rubricIndividualScoresModel.select();
+                                        rubricIndividualLastScoresModel.select();
                                     } else {
-                                        editRubricAssessmentDescriptor(idAssessment, wholeCriteria.criterium, model.id, model.descriptor, rubricIndividualScoresSaveModel, rubricIndividualScoresModel, levelDescriptorsModel);
+                                        rubricIndividualScoresModel.setSort(11, Qt.DescendingOrder);
+                                        rubricIndividualScoresModel.select();
+                                        editRubricAssessmentDescriptor(
+                                                    idAssessment,
+                                                    wholeCriteria.criterium,
+                                                    model.individual,
+                                                    model.lastScoreId,
+                                                    rubricIndividualScoresSaveModel,
+                                                    rubricIndividualScoresModel,
+                                                    levelDescriptorsModel,
+                                                    individualsModel,
+                                                    rubricIndividualLastScoresModel
+                                                    );
                                     }
                                 }
                                 onPressAndHold: {
                                     if (selectedCell) {
-                                        editRubricAssessmentDescriptor(idAssessment, wholeCriteria.criterium, model.id, model.descriptor, rubricIndividualScoresSaveModel, rubricIndividualScoresModel, levelDescriptorsModel);
+                                        rubricIndividualScoresModel.setSort(11, Qt.DescendingOrder);
+                                        rubricIndividualScoresModel.select();
+                                        editRubricAssessmentDescriptor(
+                                                    idAssessment,
+                                                    wholeCriteria.criterium,
+                                                    model.individual,
+                                                    model.lastScoreId,
+                                                    rubricIndividualScoresSaveModel,
+                                                    rubricIndividualScoresModel,
+                                                    levelDescriptorsModel,
+                                                    individualsModel,
+                                                    rubricIndividualLastScoresModel
+                                                    );
                                     }
                                 }
                             }
                         }
-                        highlightMoveDuration: 250
+                        highlightMoveDuration: 200
+                        Component.onCompleted: {
+                            enableValues = true;
+                        }
                     }
                     Connections {
                         target: fixedHeadingsTable

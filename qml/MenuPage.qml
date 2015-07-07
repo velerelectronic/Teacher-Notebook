@@ -4,6 +4,7 @@ import 'qrc:///common' as Common
 import QtQuick.Controls 1.1
 import "qrc:///javascript/Storage.js" as Storage
 import PersonalTypes 1.0
+import QtGraphicalEffects 1.0
 
 Rectangle {
     id: menuPage
@@ -17,6 +18,8 @@ Rectangle {
     property real buttonHeight: buttonsGrid.cellHeight - 2 * units.nailUnit
 
     Common.UseUnits { id: units }
+
+    color: 'white'
 
     VisualItemModel {
         id: widgetsModel
@@ -190,6 +193,13 @@ Rectangle {
         Common.BigButton {
             width: buttonWidth
             height: buttonHeight
+            title: qsTr('Recursos')
+            onClicked: menuPage.openPage('ResourceManager')
+        }
+
+        Common.BigButton {
+            width: buttonWidth
+            height: buttonHeight
             title: qsTr('! Recerca de coneixement')
             onClicked: menuPage.openPage('Researcher')
         }
@@ -211,11 +221,26 @@ Rectangle {
             title: qsTr('Gestor de dades')
             onClicked: menuPage.openPage('DataMan')
         }
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Calendari')
-            onClicked: menuPage.openPage('Calendar')
+    }
+
+    Rectangle {
+        id: background
+        anchors.fill: parent
+        color: 'green'
+    }
+
+    Colorize {
+        id: backgroundColorize
+        anchors.fill: parent
+        source: background
+        hue: 0.5
+        saturation: 0.5
+        lightness: 0
+        NumberAnimation on hue {
+            duration: 250
+        }
+        NumberAnimation on saturation {
+            duration: 250
         }
     }
 
@@ -229,6 +254,69 @@ Rectangle {
         cellHeight: units.fingerUnit * 6
 
         model: widgetsModel
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        propagateComposedEvents: true
+
+        property real newHue
+        property real newSaturation
+
+        property bool ascendingHue: false
+        property bool ascendingSaturation: false
+
+        property real initialCoordinateX: 0
+        property real initialCoordinateY: 0
+
+        function rotateValues(currentValue,difference,ascending,minValue,maxValue) {
+            if (ascending) {
+                if (currentValue + difference > maxValue) {
+                    return maxValue;
+                } else
+                    return currentValue + difference;
+            } else {
+                if (currentValue - difference < minValue) {
+                    return minValue;
+                } else
+                    return currentValue - difference;
+            }
+        }
+
+        function changeColors() {
+            newHue = Math.random() / 100;
+            newSaturation = Math.random() / 100;
+
+            backgroundColorize.hue = rotateValues(backgroundColorize.hue,newHue,ascendingHue,0,1);
+            backgroundColorize.saturation = rotateValues(backgroundColorize.saturation,newHue,ascendingSaturation,0.5,1);
+            if (backgroundColorize.hue==0)
+                ascendingHue = true;
+            if (backgroundColorize.hue==1)
+                ascendingHue = false;
+            if (backgroundColorize.saturation==0.5)
+                ascendingSaturation = true;
+            if (backgroundColorize.saturation==1)
+                ascendingSaturation = false;
+
+        }
+
+        onPressed: {
+            propagateComposedEvents = true;
+            initialCoordinateX = mouseX;
+            initialCoordinateY = mouseY;
+            changeColors();
+        }
+        onMouseYChanged: changeColors()
+        onMouseXChanged: changeColors()
+        onReleased: {
+            if (Math.pow(mouseX - initialCoordinateX, 2) + Math.pow(mouseY - initialCoordinateY, 2) > units.fingerUnit) {
+                propagateComposedEvents = false;
+                mouse.accepted = true;
+            } else {
+                propagateComposedEvents = true;
+                mouse.accepted = false;
+            }
+        }
     }
 
     SqlTableModel {

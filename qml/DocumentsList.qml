@@ -41,19 +41,11 @@ Rectangle {
 
     ListModel {
         id: buttonsModel
-        ListElement {
-            method: 'gotoParentFolder'
-            image: 'computer-31223'
-        }
-        ListElement {
-            method: 'toggleDetails'
-            image: 'info-147927'
-            checkable: true
-            checked: false
-        }
-        ListElement {
-            method: 'createItem'
-            image: 'plus-24844'
+
+        Component.onCompleted: {
+            append({method: 'gotoParentFolder', image: 'computer-31223', title: qsTr('Pujar a la carpeta contenidora de la carpeta actual')});
+            append({method: 'toggleDetails', image: 'info-147927', checkable: true, checked: false, title: qsTr('Mostra o amaga els detalls de cada document')});
+            append({method: 'createItem', image: 'plus-24844', title: qsTr('Crea un document o una carpeta')});
         }
     }
 
