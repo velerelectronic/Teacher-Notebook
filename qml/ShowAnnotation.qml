@@ -13,6 +13,7 @@ CollectionInspector {
     signal closePage(string message)
     signal savedAnnotation(int id,string annotation,string desc)
     signal duplicatedAnnotation(string annotation,string desc)
+    signal openCamera(var receiver)
 
     property int idAnnotation: -1
     property string annotation: ''
@@ -70,10 +71,12 @@ CollectionInspector {
             width: annotationEditor.width
             caption: qsTr('Descripció')
         }
-        EditTextItemInspector {
+        EditImageItemInspector {
             id: imageComponent
             width: annotationEditor.width
             caption: qsTr('Imatge')
+
+            onOpenCamera: annotationEditor.openCamera(receiver)
         }
     }
 

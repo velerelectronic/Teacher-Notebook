@@ -30,5 +30,6 @@
         <file>common/SidePanel2.qml</file>
         <file>common/CollapsiblePanel.qml</file>
         <file>common/SuperposedButton.qml</file>
+        <file>common/CameraShoot.qml</file>
     </qresource>
 </RCC>

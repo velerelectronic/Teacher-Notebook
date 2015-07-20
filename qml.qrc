@@ -68,5 +68,7 @@
         <file>qml/EditDateTimeItemInspector.qml</file>
         <file>qml/EditFakeItemInspector.qml</file>
         <file>qml/EditListItemInspector.qml</file>
+        <file>qml/EditImageItemInspector.qml</file>
+        <file>qml/CameraShoot.qml</file>
     </qresource>
 </RCC>

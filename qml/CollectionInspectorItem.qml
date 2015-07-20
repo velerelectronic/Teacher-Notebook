@@ -117,6 +117,7 @@ Common.AbstractEditor {
         anchors.fill: parent
         anchors.margins: units.nailUnit
         spacing: units.nailUnit
+        clip: true
 
         Text {
             id: captionText
@@ -130,12 +131,13 @@ Common.AbstractEditor {
         Rectangle {
             Layout.fillHeight: true
             Layout.preferredWidth: units.fingerUnit
-            color: (mainEditor.status == Loader.Null)?'transparent':'#FAAC58'
+            color: (mainEditor.status == Loader.Null)?'transparent':((collectionInspectorItem.state === 'viewMode')?'#FAAC58':'#FFFF00')
         }
 
         Item {
             Layout.fillWidth: true
             Layout.preferredHeight: totalHeight
+
             Loader {
                 id: mainVisor
                 anchors.fill: parent

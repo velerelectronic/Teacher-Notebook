@@ -248,6 +248,7 @@ Window {
             }
             onEditAnnotation: openNewPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id)
             onOpenAnnotations: openSubPage('AnnotationsList',{annotationsModel: annotationsModel},'')
+            onOpenCamera: openNewPage('CameraShoot',{receiver: receiver})
 
             // Document list
             onCreatedFile: messageBox.publishMessage('Creat el fitxer «' + file + '»')

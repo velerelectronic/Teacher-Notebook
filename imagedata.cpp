@@ -17,7 +17,7 @@ const QString &ImageData::dataURL() {
     QFile file(innerSource);
     if (file.open(QIODevice::ReadOnly)) {
         qDebug() << "inside";
-        *result = file.readAll().toBase64();
+        *result += QString("data:image/png;base64,") + file.readAll().toBase64();
     }
     file.close();
     dataURLChanged();

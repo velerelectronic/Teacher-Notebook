@@ -30,6 +30,23 @@ Item {
         propagateComposedEvents: true
     }
 
+    function getLastRegion() {
+        var q;
+        var p;
+        if (points.length>=1) {
+            q = points[points.length-1];
+            if (points.length == 1) {
+                p = points[points.length-2];
+            } else {
+                p = q;
+            }
+        } else {
+            p = Qt.point(0,0);
+            p = p;
+        }
+        return Qt.rect(Math.min(p.x, q.x), Math.min(p.y, q.y), Math.abs(p.x-q.x), Math.abs(p.y-q.y) );
+    }
+
     function drawLineSegment(ctx,px,py,qx,qy) {
         ctx.beginPath();
         ctx.moveTo(px, py);
@@ -65,6 +82,8 @@ Item {
 
     function paintLast() {
         ctx.save();
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = strokeStyle;
         var l = points.length;
         var p = points[(l>1)?(l-2):(l-1)];
         var q = points[l-1];

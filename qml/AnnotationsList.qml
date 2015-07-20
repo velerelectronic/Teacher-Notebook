@@ -47,35 +47,7 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        RowLayout {
-            Layout.fillWidth: true
-            Common.SearchBox {
-                id: searchAnnotations
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit
-                anchors.margins: units.nailUnit
-                onPerformSearch: {
-                    annotationsModel.searchString = text;
-                }
-            }
-            Button {
-                id: editButton
-                anchors.margins: units.nailUnit
-                Layout.preferredHeight: units.fingerUnit
-                text: 'Edita'
-                onClicked: editBox.state = 'show'
-            }
-        }
 
-        Common.EditBox {
-            id: editBox
-            maxHeight: units.fingerUnit
-            Layout.preferredHeight: height
-            Layout.fillWidth: true
-            anchors.margins: units.nailUnit
-            onCancel: annotationsModel.deselectAllObjects()
-            onDeleteItems: deletedAnnotations(annotationsModel.removeSelectedObjects())
-        }
 
         ListView {
             id: annotationsList
@@ -83,7 +55,71 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
+            states: [
+                State {
+                    name: 'simpleList'
+                },
+                State {
+                    name: 'deleteList'
+                }
+            ]
             clip: true
+            header: Item {
+                z: 300
+                width: annotationsList.width
+                height: units.fingerUnit * 2
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    spacing: units.nailUnit
+
+                    Common.SearchBox {
+                        id: searchAnnotations
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
+                        onPerformSearch: {
+                            annotationsModel.searchString = text;
+                        }
+                    }
+                    Item {
+                        Layout.preferredHeight: units.fingerUnit
+                        Layout.preferredWidth: (annotationsList.state == 'deleteList')?(parent.width / 2):editButton.width
+                        Button {
+                            id: editButton
+                            anchors {
+                                top: parent.top
+                                bottom: parent.bottom
+                                left: parent.left
+                            }
+
+                            text: 'Edita'
+                            onClicked: {
+                                annotationsList.state = 'deleteList';
+                            }
+                        }
+                        Common.EditBox {
+                            id: editBox
+                            anchors {
+                                top: parent.top
+                                left: parent.left
+                                right: parent.right
+                            }
+                            height: maxHeight
+                            visible: annotationsList.state == 'deleteList'
+                            maxHeight: units.fingerUnit
+                            onCancel: {
+                                annotationsModel.deselectAllObjects();
+                                annotationsList.state = 'simpleList';
+                            }
+                            onDeleteItems: deletedAnnotations(annotationsModel.removeSelectedObjects())
+                        }
+                    }
+
+                }
+            }
+            headerPositioning: ListView.OverlayHeader
+
             delegate: AnnotationItem {
                 id: oneAnnotation
                 anchors.left: parent.left
@@ -93,7 +129,7 @@ Rectangle {
                 image: (model.image)?model.image:''
                 // state: (model.selected)?'selected':'basic'
                 onAnnotationSelected: {
-                    if (editBox.state == 'show') {
+                    if (annotationsList.state == 'deleteList') {
                         annotationsModel.selectObject(model.index,!annotationsModel.isSelectedObject(model.index));
                     } else {
                         // State == 'hidden'
@@ -102,19 +138,6 @@ Rectangle {
                 }
                 onAnnotationLongSelected: annotations.editAnnotation(model.id,title,desc)
             }
-            footer: Item {
-                z: 300
-                width: annotationsList.width
-                height: units.fingerUnit * 4
-                Rectangle {
-                    anchors.fill: parent
-                    anchors.margins: units.fingerUnit
-                    border.color: 'black'
-                    color: 'red'
-                    opacity: 0.5
-                }
-            }
-            footerPositioning: ListView.OverlayFooter
 
             model: annotationsModel
 
