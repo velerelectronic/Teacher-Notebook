@@ -91,12 +91,12 @@ Rectangle {
         }
 
         Common.SuperposedButton {
-            anchors.bottom: parent.bottom
-            anchors.right: parent.right
+            anchors {
+                bottom: parent.bottom
+                right: parent.right
+            }
             size: units.fingerUnit * 2
-            fontSize: units.glanceUnit
-            label: qsTr('+')
-            margins: units.nailUnit
+            imageSource: 'plus-24844'
             onClicked: individualsModel.insertObject({group: qsTr('Nou grup'), name: qsTr('-'), surname: qsTr('-'), faceImage: ''});
         }
     }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="640" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="480">
+ <defs>
+  <linearGradient id="linearGradient1343" y2="43.714" gradientUnits="userSpaceOnUse" x2="76.875" y1="34.429" x1="73.839">
+   <stop id="stop2124" stop-color="#2edc32" offset="0"/>
+   <stop id="stop2126" stop-color="#11661d" offset="1"/>
+  </linearGradient>
+  <linearGradient id="linearGradient1345" y2="47.375" gradientUnits="userSpaceOnUse" x2="85" y1="35.589" x1="72.946">
+   <stop id="stop1317" stop-color="#97ff82" offset="0"/>
+   <stop id="stop1319" stop-color="#ceff24" stop-opacity="0" offset="1"/>
+  </linearGradient>
+  <linearGradient id="linearGradient1341" y2="47.451" gradientUnits="userSpaceOnUse" x2="84.911" y1="32.362" x1="74.911">
+   <stop id="stop1366" stop-color="#236b0d" offset="0"/>
+   <stop id="stop1368" stop-color="#081b04" offset="1"/>
+  </linearGradient>
+ </defs>
+ <g id="layer1">
+  <g id="g1330" stroke-linejoin="round" stroke-linecap="round" stroke-width="97.655">
+   <path id="path1362" fill="url(#linearGradient1341)" d="m605.89 5.1146c-2.985 0.57242-5.8193 1.7728-8.3211 3.5242l-386.93 262.2-165.04-126.17c-8.2991-6.3276-19.836-5.8322-27.581 1.1842-7.7447 7.0163-9.5504 18.609-4.317 27.714l177.52 293.21c3.4292 6.0558 9.4679 10.112 16.293 10.945 6.8251 0.83252 13.637-1.6566 18.378-6.7159l399.41-428.54c6.6775-6.879 8.1977-17.364 3.7566-25.909-4.4413-8.5448-13.819-13.178-23.173-11.448z"/>
+   <path id="path2120" fill="url(#linearGradient1343)" d="m608.66 17.513c-1.4816 0.1051-2.9131 0.59002-4.1606 1.4097l-394.56 267.14-171.97-131.1c-3.2552-3.6981-8.8434-4.0137-12.482-0.70483-3.6383 3.3088-3.9486 8.989-0.69343 12.687l177.52 293.21c1.4409 2.3563 3.8768 3.8991 6.5928 4.1751 2.7162 0.27612 5.4042-0.7456 7.2758-2.7654l399.41-428.54c2.8411-2.6092 3.6945-6.787 2.1101-10.33-1.5844-3.5429-5.2424-5.6365-9.0444-5.1764z"/>
+   <path id="path1323" fill="url(#linearGradient1345)" d="m607.28 28.79l-397.33 269.25-175.44-133.92 176.13 290.39 396.64-425.72z"/>
+  </g>
+ </g>
+</svg>

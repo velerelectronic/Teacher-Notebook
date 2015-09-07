@@ -1,4 +1,4 @@
-import QtQuick 2.3
+import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
@@ -11,18 +11,8 @@ Rectangle {
 
     property string pageTitle: qsTr('Recursos')
 
-    property alias buttons: buttonsModel
-
     signal createResource(var model)
     signal showResource(int idResource,var model)
-
-    ListModel {
-        id: buttonsModel
-
-        Component.onCompleted: {
-            append({method: 'newResource', image: 'plus-24844', title: qsTr('Afegeix un recurs')});
-        }
-    }
 
     SqlTableModel {
         id: resourcesModel
@@ -34,74 +24,75 @@ Rectangle {
         }
     }
 
-    Rectangle {
-        id: resourceHeader
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-        }
-
-        height: units.fingerUnit
-        RowLayout {
-            anchors.fill: parent
-            anchors.margins: units.nailUnit
-            spacing: units.nailUnit
-            Text {
-                Layout.fillHeight: true
-                Layout.preferredWidth: resourceHeader.width / 4
-                font.pixelSize: units.readUnit
-                text: qsTr('Títol')
-                verticalAlignment: Text.AlignVCenter
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                elide: Text.ElideRight
-            }
-            Text {
-                Layout.fillHeight: true
-                Layout.preferredWidth: resourceHeader.width / 4
-                font.pixelSize: units.readUnit
-                text: qsTr('Descripció')
-                verticalAlignment: Text.AlignVCenter
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                elide: Text.ElideRight
-            }
-            Text {
-                Layout.fillHeight: true
-                Layout.preferredWidth: resourceHeader.width / 4
-                font.pixelSize: units.readUnit
-                text: qsTr('Tipus')
-                verticalAlignment: Text.AlignVCenter
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                elide: Text.ElideRight
-            }
-            Text {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                font.pixelSize: units.readUnit
-                text: qsTr('Origen')
-                verticalAlignment: Text.AlignVCenter
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                elide: Text.ElideRight
-            }
-        }
-    }
-
     ListView {
         id: resourcesList
-        anchors {
-            top: resourceHeader.bottom
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
-        }
+        anchors.fill: parent
 
         clip: true
         model: resourcesModel
+
+        header: Rectangle {
+            id: resourceHeader
+
+            width: resourcesList.width
+            height: units.fingerUnit
+            z: 2
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+                spacing: units.nailUnit
+                Text {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: resourceHeader.width / 4
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Títol')
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
+                }
+                Text {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: resourceHeader.width / 4
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Descripció')
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
+                }
+                Text {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: resourceHeader.width / 4
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Tipus')
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
+                }
+                Text {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Origen')
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
+                }
+            }
+        }
+
+        headerPositioning: ListView.OverlayHeader
 
         delegate: Rectangle {
             id: resourceItem
             width: resourcesList.width
             height: units.fingerUnit * 2
+            z: 1
+
             border.color: 'grey'
             RowLayout {
                 anchors.fill: parent
@@ -152,13 +143,11 @@ Rectangle {
 
     Common.SuperposedButton {
         anchors {
-            bottom: resourcesList.bottom
-            right: resourcesList.right
+            bottom: parent.bottom
+            right: parent.right
         }
         size: units.fingerUnit * 2
-        margins: units.nailUnit
-        label: '+'
-        fontSize: units.glanceUnit
+        imageSource: 'plus-24844'
         onClicked: newResource()
     }
 

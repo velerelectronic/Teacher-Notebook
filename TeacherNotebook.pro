@@ -23,7 +23,8 @@ RESOURCES += qml.qrc \
     images.qrc \
     javascript.qrc \
     common.qrc \
-    showdown.qrc
+    showdown.qrc \
+    models.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -41,6 +42,8 @@ HEADERS += \
     standardpaths.h \
     XmlGrid/xmlgrid.h \
     MarkDownParser/markdownparser.h
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 OTHER_FILES += \
     android/AndroidManifest.xml

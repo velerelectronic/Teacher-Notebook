@@ -31,5 +31,8 @@
         <file>common/CollapsiblePanel.qml</file>
         <file>common/SuperposedButton.qml</file>
         <file>common/CameraShoot.qml</file>
+        <file>common/ImageButton.qml</file>
+        <file>common/BoxedText.qml</file>
+        <file>common/CustomDialog.qml</file>
     </qresource>
 </RCC>

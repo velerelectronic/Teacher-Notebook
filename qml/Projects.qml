@@ -12,39 +12,33 @@ Rectangle {
     property string pageTitle: qsTr('Projectes')
 
     signal editEvent(int idEvent,string event, string desc,string startDate,string startTime,string endDate,string endTime)
-    signal newProjectRequest(var model)
-    signal showProject(int project,var model)
+    signal newProjectRequest()
+    signal showProject(int project)
+    signal showCharacteristics(int project)
+    signal showEvents(int project)
 
     property string documents: ''
     property int sectionsHeight: units.fingerUnit * 3
     property int sectionsWidth: units.fingerUnit * 5
 
-    property alias buttons: buttonsModel
-
-    ListModel {
-        id: buttonsModel
-
-        Component.onCompleted: {
-            append({method: 'newProject', image: 'plus-24844', title: qsTr('Defineix un nou projecte')});
-        }
-    }
-
     SqlTableModel {
         id: projectsModel
 
-        tableName: 'projects'
-        fieldNames: ['id','name','desc']
+        tableName: globalProjectsModel.tableName
+        fieldNames: globalProjectsModel.fieldNames
+    }
+
+    Connections {
+        target: globalProjectsModel
+
+        onUpdated: projectsModel.select()
     }
 
     ListView {
         id: projectsList
         z: 2
-        anchors {
-            top: parent.top
-            left: parent.left
-            bottom: parent.bottom
-        }
-        width: sectionsWidth
+        anchors.fill: parent
+        anchors.margins: units.nailUnit
         clip: true
 
         model: projectsModel
@@ -53,183 +47,70 @@ Rectangle {
             id: eventTitle
             width: projectsList.width
             height: sectionsHeight
-            border.color: 'grey'
             clip: true
-            Text {
+            border.color: 'black'
+            RowLayout {
                 anchors.fill: parent
                 anchors.margins: units.nailUnit
-                font.pixelSize: units.readUnit
-                text: model.name
-                verticalAlignment: Text.AlignVCenter
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                elide: Text.ElideRight
-            }
-            MouseArea {
-                anchors.fill: parent
-                onClicked: showProject(model.id,projectsModel)
+                spacing: units.nailUnit
+                Common.BoxedText {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    fontSize: units.readUnit
+                    margins: 0
+                    border.color: 'transparent'
+                    text: model.name
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: showProject(model.id)
+                    }
+                }
+
+                Common.BoxedText {
+                    Layout.preferredWidth: units.fingerUnit * 5
+                    Layout.fillHeight: true
+                    fontSize: units.readUnit
+                    text: qsTr('Esdeveniments')
+                    textColor: 'green'
+                    border.color: 'transparent'
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: showEvents(model.id)
+                    }
+                }
+
+                Common.BoxedText {
+                    Layout.preferredWidth: units.fingerUnit * 5
+                    Layout.fillHeight: true
+                    fontSize: units.readUnit
+                    textColor: 'pink'
+                    border.color: 'transparent'
+                    text: qsTr('Característiques')
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: showCharacteristics(model.id)
+                    }
+                }
             }
         }
 
-        onContentYChanged: {
-            if (movingVertically) {
-                gantList.contentY = contentY;
+        Common.SuperposedButton {
+            anchors {
+                bottom: parent.bottom
+                right: parent.right
             }
-        }
-    }
-
-    Flickable {
-        id: flickable
-        flickableDirection: Flickable.HorizontalFlick
-        anchors {
-            top: parent.top
-            left: projectsList.right
-            right: parent.right
-            bottom: parent.bottom
-        }
-        z: 1
-        clip: true
-
-        contentHeight: height
-        contentWidth: gantList.width
-
-        ListView {
-            id: gantList
-            height: flickable.contentHeight
-            width: Math.max(spaceAtSides * 2 + daysWidth * daysDifference  + 2 * units.nailUnit, gantDiagram.width - projectsList.width)
-
-            onWidthChanged: flickable.contentWidth = gantList.width
-            onContentYChanged: {
-                if (movingVertically) {
-                    projectsList.contentY = contentY;
-                }
-            }
-            clip: true
-
-            property string startLimit: ''
-            property string endLimit: ''
-
-            property var startDateLimit: new Date()
-            property var endDateLimit: new Date()
-
-            property int daysDifference: 0
-            property real daysWidth: units.fingerUnit
-            property real spaceAtSides: units.fingerUnit * 5
-
-            model: projectsModel
-
-            delegate: Rectangle {
-                id: singleItem
-                border.color: 'grey'
-                width: gantList.width
-                height: units.fingerUnit
-                property string startDate: ''
-                property string endDate: ''
-
-                Rectangle {
-                    id: barItem
-                    color: 'red'
-                    anchors {
-                        top: parent.top
-                        bottom: parent.bottom
-                        margins: units.nailUnit
-                    }
-                }
-                Text {
-                    id: leftText
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    anchors.right: barItem.left
-                    horizontalAlignment: Text.AlignRight
-                    verticalAlignment: Text.AlignVCenter
-                    text: singleItem.startDate
-                }
-                Text {
-                    id: rightText
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    anchors.left: barItem.right
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    text: singleItem.endDate
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        console.log('Edit event ' + model.id);
-                        editEvent(model.id,model.event,model.desc,model.startDate,model.startTime,model.endDate,model.endTime)
-                    }
-                }
-
-                Connections {
-                    target: gantList
-                    onDaysDifferenceChanged: singleItem.recalculateRectangle()
-                    onWidthChanged: singleItem.recalculateRectangle()
-                }
-
-                function recalculateRectangle() {
-                    var start = new Date();
-                    start.fromYYYYMMDDFormat(singleItem.startDate);
-                    var days = gantList.startDateLimit.differenceInDays(start);
-                    barItem.x = days * gantList.daysWidth + gantList.spaceAtSides + units.nailUnit; // barItem.parent.width / gantList.daysDifference;
-
-                    var end = new Date();
-                    end.fromYYYYMMDDFormat(singleItem.endDate);
-                    days = start.differenceInDays(end) + 1;
-                    barItem.width = days * gantList.daysWidth; // barItem.parent.width / gantList.daysDifference;
-                }
-
-                onStartDateChanged: gantList.updateStartLimit(startDate)
-                onEndDateChanged: gantList.updateEndLimit(endDate)
-
-                Component.onCompleted: recalculateRectangle()
-            }
-
-            function updateStartLimit(date) {
-                if (date !== '') {
-                    if ((startLimit == '') || (startLimit > date)) {
-                        startLimit = date;
-                        startDateLimit.fromYYYYMMDDFormat(startLimit);
-                        recalculateDifference();
-                    }
-                }
-            }
-
-            function updateEndLimit(date) {
-                if (date !== '') {
-                    if ((endLimit == '') || (endLimit < date)) {
-                        endLimit = date;
-                        endDateLimit.fromYYYYMMDDFormat(endLimit);
-                        recalculateDifference();
-                    }
-                }
-            }
-
-            function recalculateDifference() {
-                daysDifference = startDateLimit.differenceInDays(endDateLimit) + 1;
-            }
-
-            onDaysDifferenceChanged: console.log('Days difference: ' + daysDifference + " from " + startLimit + " till " + endLimit)
-
-            function initializeList() {
-                startDateLimit = new Date();
-                endDateLimit = new Date();
-                startLimit = '';
-                endLimit = '';
-                daysDifference = 0;
-            }
-
-            Component.onCompleted: initializeList()
+            size: units.fingerUnit * 2
+            imageSource: 'plus-24844'
+            onClicked: newProject()
         }
     }
 
     function newProject() {
-        newProjectRequest(projectsModel);
+        newProjectRequest();
     }
 
     Component.onCompleted: {
         projectsModel.select();
-        console.log(projectsModel.count)
     }
 
     /*

@@ -6,11 +6,13 @@ Item {
     property alias fontSize: text.font.pixelSize
     property int size: 100
     property alias label: text.text
-    property int margins: 100
+    property string imageSource: ''
+    property int margins: size / 4
     signal clicked
+    signal pressAndHold
 
-    width: size
-    height: size
+    width: size + 2 * margins
+    height: width
 
     Rectangle {
         anchors.fill: parent
@@ -27,9 +29,18 @@ Item {
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
         }
+        Image {
+            id: image
+            anchors.fill: parent
+            anchors.margins: parent.radius / 4
+            source: 'qrc:///icons/' + imageSource + '.svg'
+            fillMode: Image.PreserveAspectFit
+        }
+
         MouseArea {
             anchors.fill: parent
             onClicked: superposedButton.clicked()
+            onPressAndHold: superposedButton.pressAndHold()
         }
     }
 

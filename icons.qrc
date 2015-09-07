@@ -36,5 +36,7 @@
         <file>icons/microsoft-windows-23242.svg</file>
         <file>icons/menu-145772.svg</file>
         <file>icons/hierarchy-35795.svg</file>
+        <file>icons/tick-mark-296754.svg</file>
+        <file>icons/outline-27146.svg</file>
     </qresource>
 </RCC>

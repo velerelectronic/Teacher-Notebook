@@ -57,6 +57,11 @@ Common.AbstractEditor {
     property alias editorComponent: mainEditor.sourceComponent
 
     property var originalContent
+
+    property bool enableSendClick: false
+
+    signal sendClick
+
     onOriginalContentChanged: {
         if (mainVisor.status == Loader.Ready) {
             console.log("collection inspector item " + typeof originalContent);
@@ -100,14 +105,21 @@ Common.AbstractEditor {
 
     MouseArea {
         anchors.fill: parent
-        enabled: mainEditor.sourceComponent !== null
+        enabled: (mainEditor.sourceComponent !== null) || (enableSendClick)
         onClicked: {
-            if (collectionInspectorItem.state == 'viewMode') {
-                view.requestShowMode();
-                enableEditMode();
-            } else {
-                // Do something more
-                enableShowMode();
+            if (enableSendClick) {
+                sendClick();
+            }
+
+            if (mainEditor.sourceComponent !== null) {
+                if (collectionInspectorItem.state == 'viewMode') {
+                    view.requestShowMode();
+                    enableEditMode();
+                } else {
+                    // Do something more
+                    enableShowMode();
+                }
+
             }
         }
     }

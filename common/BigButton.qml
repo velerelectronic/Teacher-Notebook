@@ -13,8 +13,12 @@ Rectangle {
 
     Text {
         id: titleText
-        anchors.centerIn: parent
+        anchors.fill: parent
+        anchors.margins: units.nailUnit
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignHCenter
         font.pixelSize: units.readUnit
+        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
     }
     MouseArea {
         anchors.fill: parent

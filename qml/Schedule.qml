@@ -10,10 +10,11 @@ import "qrc:///javascript/Storage.js" as Storage
 Rectangle {
     id: schedule
     property string pageTitle: qsTr('Agenda');
-    signal editEvent(int idEvent,string event, string desc,string startDate,string startTime,string endDate,string endTime,int project,var projectsModel)
+    signal showEvent(int idEvent,string event, string desc,string startDate,string startTime,string endDate,string endTime,int project)
     signal deletedEvents (int num)
 
     property SqlTableModel projectsModel
+    property int order: 0
 
     Common.UseUnits { id: units }
 
@@ -21,7 +22,6 @@ Rectangle {
         id: eventList
         anchors.fill: parent
 
-        property int order: 0
         clip: true
 
         model: scheduleModel
@@ -67,8 +67,7 @@ Rectangle {
                 }
             }
             onScheduleItemLongSelected: {
-                console.log('REF' + model.ref);
-                schedule.editEvent(id,event,desc,startDate,startTime,endDate,endTime,project,projectsModel);
+                schedule.showEvent(id,event,desc,startDate,startTime,endDate,endTime,project);
             }
         }
         snapMode: ListView.SnapToItem
@@ -87,7 +86,7 @@ Rectangle {
                     font.bold: true
                     font.pixelSize: units.readUnit
                     verticalAlignment: Text.AlignBottom
-                    text: ((eventList.order==1)||(eventList.order==3)?qsTr('A partir de'):qsTr('Fins a')) + ' ' + (section!=''?(new Date()).fromYYYYMMDDFormat(section).toLongDate():qsTr('no especificat'))
+                    text: (((schedule.order === 1)||(schedule.order === 3))?qsTr('A partir de'):qsTr('Fins a')) + ' ' + (section!=''?(new Date()).fromYYYYMMDDFormat(section).toLongDate():qsTr('no especificat'))
                 }
             }
         }

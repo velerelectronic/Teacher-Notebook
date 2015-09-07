@@ -14,6 +14,12 @@ SqlTableModel::SqlTableModel(QObject *parent, QSqlDatabase db) :
     setEditStrategy(QSqlTableModel::OnRowChange);
     innerLimit=0;
     connect(this,SIGNAL(rowsInserted(QModelIndex,int,int)),this,SLOT(select()));
+    connect(this,SIGNAL(rowsInserted(QModelIndex,int,int)),this,SLOT(debug()));
+    connect(this,SIGNAL(rowsInserted(QModelIndex,int,int)),this,SIGNAL(updated()));
+}
+
+void SqlTableModel::debug() {
+    qDebug() << "HHOOOLA";
 }
 
 QSqlRecord SqlTableModel::buildRecord(const QVariantMap &object,bool autoValue) {
@@ -160,6 +166,7 @@ bool SqlTableModel::insertObject(const QVariantMap &object) {
     qDebug() << record.field("id").isAutoValue();
     bool result = insertRowIntoTable(record); // Append the record
     qDebug() << lastError();
+    updated();
     select();
     return result;
 }
@@ -176,15 +183,19 @@ QString SqlTableModel::reference() {
 }
 
 bool SqlTableModel::removeObjectInRow(int row) {
-    return removeRows(row,1);
+    bool result = removeRows(row,1);
+    updated();
+    return result;
 }
 
 bool SqlTableModel::removeObjectWithKeyValue(const QVariant &value) {
     int row = searchRowWithKeyValue(value);
 
-    if (row>-1)
-        return removeRows(row,1);
-    else
+    if (row>-1) {
+        bool result = removeRows(row,1);
+        updated();
+        return result;
+    } else
         return false;
 }
 
@@ -193,8 +204,10 @@ int SqlTableModel::removeSelectedObjects() {
     QMap<int,bool>::iterator row = subselectedRows.end();
     while (row != subselectedRows.begin()) {
         --row;
-        if (removeObjectInRow(row.key()))
+        if (removeObjectInRow(row.key())) {
             i++;
+            updated();
+        }
     }
     subselectedRows.clear();
     select();
@@ -385,6 +398,7 @@ void SqlTableModel::setTableName(const QString &tableName) {
 }
 
 const QString &SqlTableModel::tableName() {
+    qDebug() << "Returning innerTableName " << innerTableName;
     return innerTableName;
 }
 
@@ -397,6 +411,7 @@ bool SqlTableModel::updateObject(const QVariantMap &object) {
         result = updateRowInTable(row,record);
         qDebug() << lastError();
         selectRow(row);
+        updated();
         select();
     }
     return result;

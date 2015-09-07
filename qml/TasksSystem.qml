@@ -17,8 +17,9 @@ Rectangle {
     signal emitSignal(string name, var param)
 
     signal newEvent(var projectsModel)
-    signal editEvent(int idEvent,string event, string desc,string startDate,string startTime,string endDate,string endTime,int project,var projectsModel)
+    signal showEvent(int idEvent,string event, string desc,string startDate,string startTime,string endDate,string endTime,int project)
 
+    property int project: -1
     property int order: -1
     property int stateType: NotebookEvent.StateNotDone
 
@@ -46,12 +47,13 @@ Rectangle {
             scheduleModel.setSort(9,Qt.DescendingOrder);
         }
         scheduleModel.select();
-        if (typeof tasksLoader.item.order !== 'undefined')
+        if ((tasksLoader.item !== null) && (typeof tasksLoader.item.order !== 'undefined'))
             tasksLoader.item.order = order;
     }
 
     function changeScheduleFilters() {
-        scheduleModel.filters = stateFilter.concat(timeFilter);
+        var projectFilter = (project !== -1)?["ref='" + project + "'"]:[];
+        scheduleModel.filters = stateFilter.concat(projectFilter,timeFilter);
         console.log('Changing filters ' + scheduleModel.filters);
         console.log('Selecting with filters');
         scheduleModel.select();
@@ -59,9 +61,12 @@ Rectangle {
 
     function changeTimeFilter() {
         timeFilter = [];
-        timeFilter.push("startDate>='" + firstDate.toYYYYMMDDFormat() + "' OR ifnull(startDate,'')=''");
-        timeFilter.push("endDate<='" + lastDate.toYYYYMMDDFormat() + "' OR ifnull(endDate,'')=''");
-        console.log(timeFilter);
+        if (firstDate !== null)
+            timeFilter.push("startDate>='" + firstDate.toYYYYMMDDFormat() + "' OR ifnull(startDate,'')=''");
+
+        if (lastDate !== null)
+            timeFilter.push("endDate<='" + lastDate.toYYYYMMDDFormat() + "' OR ifnull(endDate,'')=''");
+
         changeScheduleFilters();
     }
 
@@ -86,7 +91,6 @@ Rectangle {
         id: buttonsModel
 
         Component.onCompleted: {
-            append({method: 'createEvent', image: 'plus-24844', title: qsTr('Crea un esdeveniment')});
             append({method: 'showCalendar', image: 'calendar-23684', title: qsTr('Mostra el calendari')});
             append({method: 'showList', image: 'list-153185', title: qsTr('Mostra la llista de tasques i esdeveniments')});
             append({method: 'showGantt', image: 'percent-40844', title: qsTr('Mostra el diagrama de Gantt')});
@@ -195,6 +199,22 @@ Rectangle {
                                 changeTimeFilter();
                             }
                         }
+                        MenuItem {
+                            id: showNoStart
+                            text: qsTr("Ignora data d'inici")
+                            onTriggered: {
+                                firstDate = null;
+                                changeTimeFilter();
+                            }
+                        }
+                        MenuItem {
+                            id: showNoEnd
+                            text: qsTr("Ignora data de final")
+                            onTriggered: {
+                                lastDate = null;
+                                changeTimeFilter();
+                            }
+                        }
                     }
                 }
 
@@ -244,24 +264,45 @@ Rectangle {
             Connections {
                 target: tasksLoader.item
                 ignoreUnknownSignals: true
-                onEditEvent: {
-                    tasksSystem.editEvent(idEvent, event, desc, startDate, startTime, endDate, endTime, project, projectsModel);
-                    tasksSystem.emitSignal('ShowEvent',{idEvent: idEvent, event: event, desc: desc, startDate: startDate, startTime: startTime, endDate: endDate, endTime: endTime, project: project, projectsModel: projectsModel});
+                onShowEvent: {
+                    tasksSystem.showEvent(idEvent, event, desc, startDate, startTime, endDate, endTime, project);
+                    tasksSystem.emitSignal('ShowEvent',{idEvent: idEvent, event: event, desc: desc, startDate: startDate, startTime: startTime, endDate: endDate, endTime: endTime, project: project});
                 }
             }
 
             Component.onCompleted: showGantt()
         }
     }
+    Common.SuperposedButton {
+        anchors {
+            bottom: parent.bottom
+            right: parent.right
+        }
+        size: units.fingerUnit * 2
+        imageSource: 'plus-24844'
+        onClicked: createEvent()
+    }
 
     SqlTableModel {
         id: projectsModel
         tableName: 'projects'
-        fieldNames: ['id, name, desc']
+        fieldNames: ['id', 'name', 'desc']
 
+//        filters: (tasksSystem.project !== -1)?["ref='" + tasksSystem.project + "'"]:[]
         Component.onCompleted: {
             select();
         }
+    }
+
+    SqlTableModel {
+        id: scheduleModel
+        tableName: globalScheduleModel.tableName
+        Component.onCompleted: select()
+    }
+
+    Connections {
+        target: globalScheduleModel
+        onUpdated: scheduleModel.select()
     }
 
     Component.onCompleted: {

@@ -3,6 +3,7 @@ import QtQuick 2.0
 Rectangle {
     id: searchBox
     signal performSearch(string text)
+    signal introPressed()
     property alias text: searchText.text
 
     width: 300
@@ -26,6 +27,7 @@ Rectangle {
         onAccepted: {
             waitTimer.stop();
             searchBox.performSearch(searchText.text);
+            searchBox.introPressed();
         }
 
         Text {
@@ -44,6 +46,9 @@ Rectangle {
         interval: 500
         running: false
         repeat: false
-        onTriggered: searchBox.performSearch(searchText.text)
+        onTriggered: {
+            searchBox.performSearch(searchText.text);
+            searchBox.forceActiveFocus()
+        }
     }
 }

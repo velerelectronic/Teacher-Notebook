@@ -353,4 +353,9 @@ Common.AbstractEditor {
             onClicked: textArea.select(textArea.selectionStart,textArea.selectionEnd+1)
         }
     }
+
+    function copyAll() {
+        textArea.selectAll();
+        textArea.copy();
+    }
 }

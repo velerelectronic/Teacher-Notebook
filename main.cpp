@@ -48,9 +48,28 @@ int main(int argc, char *argv[])
 
     SqlTableModel annotationsModel;
     SqlTableModel scheduleModel;
+    SqlTableModel projectsModel;
+    SqlTableModel resourcesModel;
+    SqlTableModel resourcesAnnotationsModel;
 
-    engine.rootContext()->setContextProperty("annotationsModel",&annotationsModel);
-    engine.rootContext()->setContextProperty("scheduleModel",&scheduleModel);
+    annotationsModel.setTableName("annotations");
+    scheduleModel.setTableName("schedule");
+    projectsModel.setTableName("projects");
+    resourcesModel.setTableName("resources");
+    resourcesAnnotationsModel.setTableName("resourcesAnnotations");
+
+    annotationsModel.select();
+    scheduleModel.select();
+    projectsModel.select();
+    resourcesModel.select();
+    resourcesAnnotationsModel.select();
+
+    engine.rootContext()->setContextProperty("globalAnnotationsModel",&annotationsModel);
+    engine.rootContext()->setContextProperty("globalScheduleModel",&scheduleModel);
+    engine.rootContext()->setContextProperty("globalProjectsModel",&projectsModel);
+    engine.rootContext()->setContextProperty("globalResourcesModel",&resourcesModel);
+    engine.rootContext()->setContextProperty("globalResourcesAnnotationsModel",&resourcesAnnotationsModel);
+
     engine.rootContext()->setContextProperty("tmp",&model2);
 
     engine.load(QUrl(QStringLiteral("qrc:///qml/main.qml")));

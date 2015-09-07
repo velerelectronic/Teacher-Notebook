@@ -14,19 +14,22 @@ Rectangle {
     signal openPageArgs (string page, var args)
     signal savedQuickAnnotation(string contents)
 
-    property real buttonWidth: buttonsGrid.cellWidth - 2 * units.nailUnit
-    property real buttonHeight: buttonsGrid.cellHeight - 2 * units.nailUnit
+    property real buttonWidth: units.fingerUnit * 4
+    property real buttonHeight: units.fingerUnit * 4
+
+    signal showAnnotation(int id, string title, string desc)
+    signal showEvent(int idEvent, string event, string desc, string startDate, string startTime, string endDate, string endTime, string project)
 
     Common.UseUnits { id: units }
 
-    color: 'white'
+    color: '#AAFFAA'
 
-    VisualItemModel {
-        id: widgetsModel
+    ColumnLayout {
+        anchors.fill: parent
 
         QuickAnnotation {
-            width: buttonWidth
-            height: buttonHeight
+            Layout.fillWidth: true
+            Layout.preferredHeight: height
             onSavedQuickAnnotation: {
                 if (lastAnnotationsModel.insertObject({title: 'Anotació ràpida',desc: contents})) {
                     annotationsTotal.select();
@@ -36,190 +39,193 @@ Rectangle {
             }
         }
 
-        Common.PreviewBox {
-            id: lastAnnotations
-            width: buttonWidth
-            height: buttonHeight
+        ListView {
+            id: mainList
+            Layout.fillWidth: true
+            Layout.fillHeight: true
 
-            model: SqlTableModel {
-                id: lastAnnotationsModel
-                tableName: 'annotations'
-                limit: 3
-                Component.onCompleted: {
-                    setSort(0,Qt.DescendingOrder);
-                    select();
+            clip: true
+            spacing: units.nailUnit
+
+            model: ListModel { id: mainListModel }
+
+            preferredHighlightBegin: 0
+            preferredHighlightEnd: height
+
+            delegate: Rectangle {
+                id: listSection
+
+                color: model.color
+
+                states: [
+                    State {
+                        name: 'minimum'
+
+                        PropertyChanges {
+                            target: listSection
+                            height: Math.max(mainList.height / 3, units.fingerUnit * 4)
+                        }
+
+                        PropertyChanges {
+                            target: mainList
+                            interactive: true
+                        }
+
+                        PropertyChanges {
+                            target: listItemLoader
+                            interactivity: false
+                        }
+                    },
+                    State {
+                        name: 'maximum'
+
+                        PropertyChanges {
+                            target: listSection
+                            height: mainList.height
+                        }
+
+                        PropertyChanges {
+                            target: mainList
+                            interactive: false
+                        }
+
+                        PropertyChanges {
+                            target: listItemLoader
+                            interactivity: true
+                        }
+                    }
+                ]
+
+                width: mainList.width
+                state: 'minimum'
+
+                Behavior on height {
+                    PropertyAnimation { duration: 250 }
                 }
-            }
-            delegate: Item {
-                width: parent.width
-                height: units.fingerUnit
-                Text {
-                    id: textAnnot
-                    anchors.fill: parent
-                    anchors.margins: units.nailUnit
-                    elide: Text.ElideRight
-                    maximumLineCount: 1
-                    font.pixelSize: units.readUnit
-                    verticalAlignment: Text.AlignVCenter
-                    text: '– ' + title + ' ' + desc
-                }
+
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: sendSignal('openPageArgs',{page: 'ShowAnnotation', idAnnotation: id})
+                    onClicked: {
+                        if (listSection.state == 'minimum') {
+                            listSection.state = 'maximum';
+                            mainList.currentIndex = model.index;
+                        }
+                    }
                 }
-            }
-            caption: qsTr('Darreres anotacions')
-            captionBackgroundColor: '#F3F781'
-            color: '#F7F8E0'
-            totalBackgroundColor: '#F2F5A9'
-            maxItems: 3
-            prefixTotal: qsTr('Hi ha')
-            totalCount: annotationsTotal.count
-            suffixTotal: qsTr('anotacions')
-            onCaptionClicked: openPage('AnnotationsList')
-            onTotalCountClicked: openPage('AnnotationsList')
-        }
-        Common.PreviewBox {
-            id: nextEvents
-            width: buttonWidth
-            height: buttonHeight
 
-            model: SqlTableModel {
-                tableName: 'schedule'
-                limit: 3
-                filters: ["ifnull(state,'') != 'done'"]
-                Component.onCompleted: {
-                    setSort(6,Qt.AscendingOrder); // Order by end date
-                    select();
-                }
-            }
-
-            delegate: Item {
-                width: parent.width
-                height: units.fingerUnit
-                RowLayout {
-                    id: textEvents
+                ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: units.nailUnit
-
-                    Text {
-                        Layout.fillHeight: true
-                        text: model.endDate
-                        font.bold: true
-                        font.pixelSize: units.readUnit
-                        verticalAlignment: Text.AlignVCenter
-                    }
 
                     Text {
                         Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        elide: Text.ElideRight
-                        maximumLineCount: 1
-                        font.pixelSize: units.readUnit
+                        Layout.preferredHeight: units.fingerUnit
+                        text: model.title
+                        font.bold: true
                         verticalAlignment: Text.AlignVCenter
-                        text: model.event
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                openPageArgs(model.extraPage, model.extraArguments);
+                            }
+                        }
+
+                        Common.ImageButton {
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            image: 'road-sign-147409'
+                            onClicked: listSection.state = 'minimum'
+                            available: listSection.state == 'maximum'
+                        }
+                    }
+                    Loader {
+                        id: listItemLoader
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        sourceComponent: model.component
+
+                        clip: true
+
+                        property bool interactivity: true
+
+                        onInteractivityChanged: item.interactivity = interactivity
                     }
                 }
-                MouseArea {
-                    anchors.fill: textEvents
-                    onClicked: openPageArgs('ShowEvent',{idEvent: id})
-                }
             }
-            caption: qsTr("Pròxims terminis")
-            captionBackgroundColor: '#F7BE81'
-            color: '#F8ECE0'
-            totalBackgroundColor: '#F5D0A9'
-            maxItems: 3
-            prefixTotal: qsTr('Hi ha')
-            totalCount: scheduleTotal.count
-            suffixTotal: qsTr('esdeveniments')
-            onCaptionClicked: menuPage.openPage('Schedule')
-            onTotalCountClicked: menuPage.openPage('Schedule')
+
+            Component.onCompleted: {
+                mainListModel.append({title: qsTr('Darreres anotacions'), color: '#F3F781', extraPage: 'AnnotationsList', extraArguments: {}, component: lastAnnotationsComponent})
+                mainListModel.append({title: qsTr('Pròxims terminis'), color: '#F7BE81', extraPage: 'TasksSystem', extraArguments: {}, component: nextEventsComponent})
+                mainListModel.append({title: qsTr('Projectes'), color: '#FFAACC', extraPage: 'Projects', extraArguments: {}, component: projectsComponent})
+            }
         }
 
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Rúbriques')
-            onClicked: menuPage.openPage('RubricsList')
-        }
+        Rectangle {
+            Layout.preferredHeight: units.fingerUnit + buttonHeight + units.nailUnit * 3
+            Layout.fillWidth: true
+            color: '#FFCCAA'
 
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Espai de treball')
-            onClicked: menuPage.openPage('WorkSpace')
-        }
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+                spacing: units.nailUnit
 
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Projectes')
-            onClicked: menuPage.openPage('Projects')
-        }
+                Common.BoxedText {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    color: 'transparent'
+                    border.color: 'transparent'
+                    margins: units.nailUnit
+                    text: qsTr('Opcions')
+                    width: parent.width
+                    height: units.fingerUnit
+                }
 
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Anotacions')
-            onClicked: menuPage.openPage('AnnotationsList')
-        }
+                ListView {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
 
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Tasques i esdeveniments')
-            onClicked: menuPage.openPage('TasksSystem')
-        }
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Pissarra')
-            onClicked: menuPage.openPage('Whiteboard')
-        }
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Documents')
-            onClicked: menuPage.openPage('DocumentsList')
-        }
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Avaluació')
-            onClicked: menuPage.openPage('AssessmentSystem')
-        }
+                    orientation: ListView.Horizontal
 
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Recursos')
-            onClicked: menuPage.openPage('ResourceManager')
-        }
+                    clip: true
 
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('! Recerca de coneixement')
-            onClicked: menuPage.openPage('Researcher')
+                    model: widgetsModel
+
+                    spacing: units.nailUnit
+
+                    delegate: Common.BigButton {
+                        width: buttonWidth
+                        height: buttonHeight
+                        anchors.margins: units.nailUnit
+                        title: model.title
+                        onClicked: menuPage.openPage(model.page)
+                    }
+                }
+
+            }
         }
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Feeds')
-            onClicked: menuPage.openPage('FeedWEIB')
-        }
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Rellotge')
-            onClicked: menuPage.openPage('TimeController')
-        }
-        Common.BigButton {
-            width: buttonWidth
-            height: buttonHeight
-            title: qsTr('Gestor de dades')
-            onClicked: menuPage.openPage('DataMan')
+    }
+
+    ListModel {
+        id: widgetsModel
+
+        Component.onCompleted: {
+            widgetsModel.append({title: qsTr('Rúbriques'), page: 'RubricsList'});
+            widgetsModel.append({title: qsTr('Espai de treball'), page: 'WorkSpace'});
+            widgetsModel.append({title: qsTr('Projectes'), page: 'Projects'});
+            widgetsModel.append({title: qsTr('Anotacions'), page: 'AnnotationsList'});
+            widgetsModel.append({title: qsTr('Pissarra'), page: 'Whiteboard'});
+            widgetsModel.append({title: qsTr('Documents'), page: 'DocumentsList'});
+            widgetsModel.append({title: qsTr('Avaluació'), page: 'AssessmentSystem'});
+            widgetsModel.append({title: qsTr('Recursos'), page: 'ResourceManager'});
+            widgetsModel.append({title: qsTr('! Recerca de coneixement'), page: 'Researcher'});
+            widgetsModel.append({title: qsTr('Feeds'), page: 'FeedWEIB'});
+            widgetsModel.append({title: qsTr('Rellotge'), page: 'TimeController'});
+            widgetsModel.append({title: qsTr('Gestor de dades'), page: 'DataMan'});
         }
     }
 
@@ -227,12 +233,15 @@ Rectangle {
         id: background
         anchors.fill: parent
         color: 'green'
+        visible: false
     }
 
     Colorize {
         id: backgroundColorize
         anchors.fill: parent
         source: background
+        visible: false
+
         hue: 0.5
         saturation: 0.5
         lightness: 0
@@ -244,20 +253,9 @@ Rectangle {
         }
     }
 
-    GridView {
-        id: buttonsGrid
-
-        anchors.fill: parent
-        anchors.margins: units.nailUnit
-
-        cellWidth: width / 3
-        cellHeight: units.fingerUnit * 6
-
-        model: widgetsModel
-    }
-
     MouseArea {
         anchors.fill: parent
+        enabled: false
         propagateComposedEvents: true
 
         property real newHue
@@ -321,13 +319,217 @@ Rectangle {
 
     SqlTableModel {
         id: annotationsTotal
-        tableName: 'annotations'
+        tableName: globalAnnotationsModel.tableName
         Component.onCompleted: select()
     }
     SqlTableModel {
         id: scheduleTotal
-        tableName: 'schedule'
+        tableName: globalScheduleModel.tableName
         filters: ["ifnull(state,'') != 'done'"]
         Component.onCompleted: select();
     }
+
+    Connections {
+        target: globalScheduleModel
+        onUpdated: scheduleTotal.select()
+    }
+
+    Component {
+        id: lastAnnotationsComponent
+
+        GridView {
+            id: lastAnnotations
+
+            cellWidth: units.fingerUnit * 4
+            cellHeight: units.fingerUnit * 4
+
+            property alias interactivity: lastAnnotations.interactive
+
+            clip: true
+            interactive: false
+
+            property int horizontalCapacity: Math.floor(width / cellWidth)
+            property int verticalCapacity: Math.floor(height / cellHeight)
+            property int capacity: horizontalCapacity * verticalCapacity
+
+            model: SqlTableModel {
+                id: lastAnnotationsModel
+                tableName: globalAnnotationsModel.tableName
+                limit: (lastAnnotations.interactivity)?0:lastAnnotations.capacity
+
+                onLimitChanged: select()
+                onTableNameChanged: console.log("ARAAAAA" + lastAnnotationsModel.tableName)
+
+                Component.onCompleted: {
+                    setSort(0,Qt.DescendingOrder);
+                    select();
+                }
+            }
+
+            Connections {
+                target: globalAnnotationsModel
+                onUpdated: lastAnnotationsModel.select()
+            }
+
+            delegate: Item {
+                width: lastAnnotations.cellWidth
+                height: lastAnnotations.cellHeight
+
+                Common.BoxedText {
+                    anchors {
+                        fill: parent
+                        margins: units.nailUnit
+                    }
+                    margins: units.nailUnit
+
+                    color: '#F7F8E0'
+                    border.color: 'transparent'
+
+                    fontSize: units.readUnit
+                    text: title + ' ' + desc
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: showAnnotation(id, title, desc)
+                    }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: nextEventsComponent
+
+        GridView {
+            id: nextEvents
+
+            property alias interactivity: nextEvents.interactive
+
+            clip: true
+            interactive: false
+
+            cellWidth: units.fingerUnit * 4
+            cellHeight: units.fingerUnit * 4
+
+            property int horizontalCapacity: Math.floor(width / cellWidth)
+            property int verticalCapacity: Math.floor(height / cellHeight)
+            property int capacity: horizontalCapacity * verticalCapacity
+
+            model: SqlTableModel {
+                id: nextEventsModel
+                tableName: globalScheduleModel.tableName
+                fieldNames: globalScheduleModel.fieldNames
+                limit: (nextEvents.interactivity)?0:nextEvents.capacity
+
+                onLimitChanged: select()
+
+                filters: ["ifnull(state,'') != 'done'"]
+                Component.onCompleted: {
+                    setSort(6,Qt.AscendingOrder); // Order by end date
+                    select();
+                }
+            }
+            Connections {
+                target: globalScheduleModel
+                onUpdated: nextEventsModel.select()
+            }
+
+            delegate: Item {
+                width: nextEvents.cellWidth
+                height: nextEvents.cellHeight
+
+                Rectangle {
+                    color: '#F8ECE0'
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+
+                    ColumnLayout {
+                        id: textEvents
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+
+                        Text {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: contentHeight
+                            text: model.endDate
+                            font.bold: true
+                            font.pixelSize: units.readUnit
+                        }
+
+                        Text {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            elide: Text.ElideRight
+                            maximumLineCount: 1
+                            font.pixelSize: units.readUnit
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: model.event
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: showEvent(id, event, desc, startDate, startTime, endDate, endTime, ref)
+                    }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: projectsComponent
+
+        GridView {
+            id: projectsGrid
+
+            property alias interactivity: projectsGrid.interactive
+
+            clip: true
+            interactive: false
+
+            cellWidth: units.fingerUnit * 4
+            cellHeight: units.fingerUnit * 4
+
+            property int horizontalCapacity: Math.floor(width / cellWidth)
+            property int verticalCapacity: Math.floor(height / cellHeight)
+            property int capacity: horizontalCapacity * verticalCapacity
+
+            model: SqlTableModel {
+                id: projectsModel
+                tableName: globalProjectsModel.tableName
+
+                Component.onCompleted: {
+                    select();
+                }
+            }
+
+            Connections {
+                target: globalProjectsModel
+                onUpdated: projectsModel.select()
+            }
+
+            delegate: Item {
+                width: projectsGrid.cellWidth
+                height: projectsGrid.cellHeight
+
+                Common.BoxedText {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    color: '#F8ECE0'
+                    border.color: 'transparent'
+                    margins: units.nailUnit
+                    text: model.name
+                    fontSize: units.readUnit
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: openPageArgs('ProjectEditor',{idProject: id, projectsModel: projectsModel})
+                    }
+                }
+            }
+
+        }
+    }
+
 }

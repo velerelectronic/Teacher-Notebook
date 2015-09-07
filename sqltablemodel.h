@@ -83,9 +83,12 @@ signals:
     void searchFieldsChanged();
     void searchStringChanged();
     void tableNameChanged();
+    void updated();
 //    void countChanged();
 
 public slots:
+    void debug();
+
 
 private:
     QString innerTableName;

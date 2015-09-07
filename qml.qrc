@@ -70,5 +70,10 @@
         <file>qml/EditListItemInspector.qml</file>
         <file>qml/EditImageItemInspector.qml</file>
         <file>qml/CameraShoot.qml</file>
+        <file>qml/CharacteristicsList.qml</file>
+        <file>qml/ModelImporter.qml</file>
+        <file>qml/EventCharacteristicsEditor.qml</file>
+        <file>qml/EditDeleteItemInspector.qml</file>
+        <file>qml/ResourceAttachment.qml</file>
     </qresource>
 </RCC>

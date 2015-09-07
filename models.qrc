@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>models/CharacteristicsModel.qml</file>
+        <file>models/ScheduleModel.qml</file>
+        <file>models/DetailedEventCharacteristics.qml</file>
+        <file>models/EventCharacteristicsModel.qml</file>
+        <file>models/ProjectsModel.qml</file>
+        <file>models/DetailedAnnotationsModel.qml</file>
+        <file>models/ResourcesModel.qml</file>
+        <file>models/DetailedResourcesModel.qml</file>
+        <file>models/ResourcesAnnotationsModel.qml</file>
+    </qresource>
+</RCC>

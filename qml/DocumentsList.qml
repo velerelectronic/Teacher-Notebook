@@ -20,6 +20,7 @@ Rectangle {
     height: 200
     property string pageTitle: 'Documents'
     property bool selectDirectory: false
+    property bool selectFiles: false
     property string goBack: ''
     property var buttons: buttonsModel
 
@@ -32,10 +33,14 @@ Rectangle {
     signal notCreatedFile(string file)
 
     signal closePageRequested()
+    signal closePage(string message)
     signal openDirectoryWithPage(string directory, string page)
 
     property bool showDetails: false
     property bool showCreationItem: false
+
+    property bool selectDocument: false
+    property var documentReceiver: null
 
     Common.UseUnits { id: units }
 
@@ -45,7 +50,6 @@ Rectangle {
         Component.onCompleted: {
             append({method: 'gotoParentFolder', image: 'computer-31223', title: qsTr('Pujar a la carpeta contenidora de la carpeta actual')});
             append({method: 'toggleDetails', image: 'info-147927', checkable: true, checked: false, title: qsTr('Mostra o amaga els detalls de cada document')});
-            append({method: 'createItem', image: 'plus-24844', title: qsTr('Crea un document o una carpeta')});
         }
     }
 
@@ -144,6 +148,27 @@ Rectangle {
                 width: parent.width
                 height: units.fingerUnit * 2
 
+                MouseArea {
+                    anchors.fill: parent
+                    function hasExtension(name,ext) {
+                        return (name.length - name.lastIndexOf(ext) === ext.length);
+                    }
+
+                    onClicked: {
+                        // Different actions whether it is a file or a folder
+                        if (fileIsDir) {
+                            if (hasExtension(model.fileURL.toString(),'.tbook')) {
+                                console.log('tbook');
+                                openTBook(fileURL);
+                            } else {
+                                folderList.folder = model.fileURL;
+                            }
+                        } else {
+                            processDocument(fileURL);
+                        }
+                    }
+                }
+
                 RowLayout {
                     anchors.fill: parent
                     anchors.margins: units.nailUnit
@@ -178,28 +203,27 @@ Rectangle {
                         text: fileModified
                         clip: true
                     }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    function hasExtension(name,ext) {
-                        return (name.length - name.lastIndexOf(ext) === ext.length);
-                    }
-
-                    onClicked: {
-                        // Different actions whether it is a file or a folder
-                        if (fileIsDir) {
-                            if (hasExtension(model.fileURL.toString(),'.tbook')) {
-                                console.log('tbook');
-                                openTBook(fileURL);
-                            } else {
-                                folderList.folder = model.fileURL;
-                            }
-                        } else {
-                            processDocument(fileURL);
+                    Button {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: (selectDocument)?units.fingerUnit * 3:0
+                        text: qsTr('Selecciona')
+                        onClicked: {
+                            if (documentReceiver !== null)
+                                documentReceiver.sendFile(fileURL)
+                            closePage(qsTr('Seleccionat ') + fileURL);
                         }
                     }
                 }
+
+            }
+            Common.SuperposedButton {
+                anchors {
+                    bottom: parent.bottom
+                    right: parent.right
+                }
+                size: units.fingerUnit * 2
+                imageSource: 'plus-24844'
+                onClicked: createItem()
             }
         }
     }
@@ -207,6 +231,9 @@ Rectangle {
     StandardPaths {
         id: paths
     }
+
+    onInitialDirectoryChanged: folderList.setInitialDirectory()
+    onSelectDocumentChanged: folderList.setInitialDirectory()
 
     FolderListModel {
         id: folderList
@@ -216,7 +243,26 @@ Rectangle {
         showDirsFirst: true
 
         Component.onCompleted: {
-            folderList.folder = 'file:///' + (initialDirectory != '')?initialDirectory:paths.documents;
+//            folderList.folder = 'file:///' + (initialDirectory != '')?initialDirectory:paths.documents;
+        }
+
+        function setInitialDirectory() {
+            console.log('INITIAL DIRECTORY ' + initialDirectory)
+            if (initialDirectory == '') {
+                folderList.folder = 'file:///' + paths.documents;
+            } else {
+                if (initialDirectory.toString().indexOf('file://')==0) {
+                    console.log(selectDocument);
+                    if (selectDocument) {
+                        var path = initialDirectory.toString();
+                        console.log(path.substring(0,path.lastIndexOf('/')));
+                        folderList.folder = path.substring(0,path.lastIndexOf('/'));
+                    } else
+                        folderList.folder = initialDirectory;
+                } else {
+                    folderList.folder = 'file:///' + initialDirectory;
+                }
+            }
         }
     }
 

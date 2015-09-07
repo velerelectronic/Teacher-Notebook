@@ -10,7 +10,7 @@ Rectangle {
     Common.UseUnits { id: units }
 
     property string pageTitle: qsTr('Diagrama de Gantt')
-    signal editEvent(int idEvent,string event, string desc,string startDate,string startTime,string endDate,string endTime,int project,var projectsModel)
+    signal showEvent(int idEvent,string event, string desc,string startDate,string startTime,string endDate,string endTime,int project)
 
     property string searchString: ''
     property SqlTableModel projectsModel
@@ -258,7 +258,7 @@ Rectangle {
                             ref = -1;
                         }
 
-                        editEvent(model.id,model.event,model.desc,model.startDate,model.startTime,model.endDate,model.endTime,ref,projectsModel)
+                        showEvent(model.id,model.event,model.desc,model.startDate,model.startTime,model.endDate,model.endTime,ref)
                     }
                 }
 

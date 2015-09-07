@@ -139,12 +139,12 @@ Rectangle {
                     }
                 }
                 Common.SuperposedButton {
-                    anchors.bottom: parent.bottom
-                    anchors.right: parent.right
+                    anchors {
+                        bottom: parent.bottom
+                        right: parent.right
+                    }
                     size: units.fingerUnit * 2
-                    fontSize: units.glanceUnit
-                    label: qsTr('+')
-                    margins: units.nailUnit
+                    imageSource: 'plus-24844'
                     onClicked: openRubricAssessmentDetails(-1, -1, -1, rubricsModel, rubricsAssessmentModel)
                 }
             }
@@ -198,12 +198,12 @@ Rectangle {
             }
 
             Common.SuperposedButton {
-                anchors.bottom: parent.bottom
-                anchors.right: parent.right
+                anchors {
+                    bottom: parent.bottom
+                    right: parent.right
+                }
                 size: units.fingerUnit * 2
-                fontSize: units.glanceUnit
-                label: qsTr('+')
-                margins: units.nailUnit
+                imageSource: 'plus-24844'
                 onClicked: openRubricDetails(-1, rubricsModel)
             }
         }

@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 import PersonalTypes 1.0
 
 Rectangle {
@@ -11,47 +12,26 @@ Rectangle {
     width: 300
     height: 200
 
-    signal editAnnotation (int id,string annotation, string desc)
+    signal showAnnotation (int id,string annotation, string desc)
     signal deletedAnnotations (int num)
+
+    signal importAnnotations(var fieldNames, var writeModel, var fieldConstants)
+    signal exportAnnotations(var fieldNames, var writeModel, var fieldConstants)
+
     property bool canClose: true
 
-    property var buttons: buttonsModel
-
-    ListModel {
-        id: buttonsModel
-
-        Component.onCompleted: {
-            append({method: 'newAnnotation', image: 'plus-24844', title: qsTr('Introdueix una nova anotació')});
-        }
-    }
-
     function newAnnotation() {
-        annotations.editAnnotation(-1,(searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'),'');
+        annotations.showAnnotation(-1,(annotationsModel.searchString!='')?annotationsModel.searchString:qsTr('Sense títol'),'');
     }
-
-    /*
-    VisualItemModel {
-        id: buttonsModel
-        Button {
-            text: qsTr('Nova')
-            onClicked: {
-                annotations.editAnnotation(-1,(searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'),'');
-//                    editAnnotation.setSource('AnnotationEditor.qml',{title: (searchAnnotations.text!='')?searchAnnotations.text:qsTr('Sense títol'), desc: ''})
-//                    editAnnotation.visible = true
-            }
-        }
-    }
-*/
 
     Common.UseUnits { id: units }
 
     ColumnLayout {
         anchors.fill: parent
-
+        anchors.margins: units.nailUnit
 
         ListView {
             id: annotationsList
-            anchors.margins: units.nailUnit
             Layout.fillWidth: true
             Layout.fillHeight: true
 
@@ -80,6 +60,9 @@ Rectangle {
                         Layout.preferredHeight: units.fingerUnit
                         onPerformSearch: {
                             annotationsModel.searchString = text;
+                        }
+                        onIntroPressed: {
+                            console.log('INTRO')
                         }
                     }
                     Item {
@@ -127,6 +110,7 @@ Rectangle {
                 title: model.title
                 desc: (model.desc)?model.desc:''
                 image: (model.image)?model.image:''
+                labels: (model.labels)?model.labels:''
                 // state: (model.selected)?'selected':'basic'
                 onAnnotationSelected: {
                     if (annotationsList.state == 'deleteList') {
@@ -136,7 +120,7 @@ Rectangle {
                         oneAnnotation.state = (oneAnnotation.state == 'basic')?'expanded':'basic';
                     }
                 }
-                onAnnotationLongSelected: annotations.editAnnotation(model.id,title,desc)
+                onAnnotationLongSelected: annotations.showAnnotation(model.id,title,desc)
             }
 
             model: annotationsModel
@@ -168,10 +152,44 @@ Rectangle {
 
                 }
             }
+            Common.SuperposedButton {
+                anchors {
+                    bottom: parent.bottom
+                    right: parent.right
+                }
+                size: units.fingerUnit * 2
+                imageSource: 'plus-24844'
+                onClicked: newAnnotation()
+                onPressAndHold: importAnnotations(['title','desc','image'],annotationsModel,[])
+            }
+
+            Common.SuperposedButton {
+                anchors {
+                    top: parent.top
+                    right: parent.right
+                }
+                size: units.fingerUnit * 2
+                imageSource: 'box-24557'
+                onClicked: exportAnnotations(['title','desc','image'],annotationsModel,[])
+            }
         }
     }
 
-    Component.onCompleted: {
-        annotationsModel.searchFields = ['title','desc'];
+    Models.DetailedAnnotationsModel {
+        id: annotationsModel
+        Component.onCompleted: select()
+    }
+
+    Connections {
+        target: globalAnnotationsModel
+        onUpdated: annotationsModel.select()
+    }
+    Connections {
+        target: globalScheduleModel
+        onUpdated: annotationsModel.select()
+    }
+    Connections {
+        target: globalResourcesAnnotationsModel
+        onUpdated: annotationsModel.select()
     }
 }

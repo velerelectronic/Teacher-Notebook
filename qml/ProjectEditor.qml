@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.1
 import QtQml.Models 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 
 CollectionInspector {
     id: projectEditor
@@ -11,9 +12,10 @@ CollectionInspector {
     property int idProject: -1
     property string name: ''
     property string desc: ''
-    property SqlTableModel projectsModel
 
     signal savedProjectDetails
+    signal showCharacteristics(int project)
+    signal showEvents(int project)
 
     model: ObjectModel {
         EditTextItemInspector {
@@ -26,13 +28,42 @@ CollectionInspector {
             width: projectEditor.width
             caption: qsTr('Descripció')
         }
+        EditFakeItemInspector {
+            id: characteristicsComponent
+            width: projectEditor.width
+            caption: qsTr('Característiques')
+            originalContent: qsTr('Hi ha ' + characteristicsModel.count + ' característiques')
+            enableSendClick: true
+            onSendClick: showCharacteristics(idProject)
+        }
+        EditFakeItemInspector {
+            id: eventsComponent
+            width: projectEditor.width
+            caption: qsTr('Esdeveniments')
+            originalContent: qsTr('Hi ha ' + scheduleModel.count + ' esdeveniments')
+            enableSendClick: true
+            onSendClick: showEvents(idProject)
+        }
+    }
+
+    Models.ScheduleModel {
+        id: scheduleModel
+        filters: ["ref='" + idProject + "'"]
+    }
+
+    Models.CharacteristicsModel {
+        id: characteristicsModel
+        filters: ["ref='" + idProject + "'"]
     }
 
     Component.onCompleted: {
-        var obj = projectsModel.getObject(idProject);
+        var obj = globalProjectsModel.getObject(idProject);
 
         nameComponent.originalContent = coalesce(obj['name'],'');
         descComponent.originalContent = coalesce(obj['desc'],'');
+
+        characteristicsModel.select();
+        scheduleModel.select();
     }
 
     onSaveDataRequested: {
@@ -42,10 +73,10 @@ CollectionInspector {
         }
 
         if (idProject == -1) {
-            projectsModel.insertObject(object);
+            globalProjectsModel.insertObject(object);
         } else {
             object['id'] = idProject;
-            projectsModel.updateObject(object);
+            globalProjectsModel.updateObject(object);
         }
         projectEditor.setChanges(false);
         projectEditor.savedProjectDetails();

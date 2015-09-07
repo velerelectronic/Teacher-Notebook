@@ -9,10 +9,17 @@ CollectionInspectorItem {
 
     clip: true
 
+    signal addRow()
+
+    ListModel {
+        id: emptyModel
+    }
+
+
     visorComponent: Text {
         id: textVisor
         property int requiredHeight: Math.max(contentHeight, units.fingerUnit)
-        property var shownContent: {reference: -1; nameAttribute: ''; model: undefined}
+        property var shownContent: {reference: -1; nameAttribute: ''; model: emptyModel}
 
         // reference: the specific code of the selected item in the model. The code refers to the column 'id'
         // valued: if true, the shown title for the item is the same as the reference
@@ -45,7 +52,7 @@ CollectionInspectorItem {
     editorComponent: ListView {
         id: listEditor
         property int requiredHeight: contentItem.height
-        property var editedContent: {reference: -1; valued: false; nameAttribute: ''; model: undefined}
+        property var editedContent: {reference: -1; valued: false; nameAttribute: ''; model: emptyModel }
         property int preselectedIndex: -1
 
         interactive: false
@@ -57,6 +64,7 @@ CollectionInspectorItem {
         }
 
         model: editedContent.model
+
         delegate: Rectangle {
             width: listEditor.width
             height: units.fingerUnit * 2
@@ -94,6 +102,15 @@ CollectionInspectorItem {
             }
         }
 
+        footer: Common.SuperposedButton {
+            id: newButton
+
+            size: units.fingerUnit
+            imageSource: 'plus-24844'
+            margins: units.nailUnit
+            onClicked: editState.addRow()
+        }
+
         onCurrentIndexChanged: {
             if (preselectedIndex !== -1) {
                 if (currentIndex !== preselectedIndex) {
@@ -103,7 +120,6 @@ CollectionInspectorItem {
                 }
             }
         }
-
     }
 
 }

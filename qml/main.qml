@@ -29,6 +29,9 @@
   * Multiple windows: http://pixabay.com/es/ventanas-equipo-escritorio-97883/
 
   * Categories: http://pixabay.com/es/jerarqu%C3%ADa-niveles-de-arreglos-35795/
+
+  * Outline select: https://pixabay.com/es/contorno-frontera-mesa-digitales-27146/#_=_
+  * Tick mark: https://pixabay.com/es/marca-de-verificaci%C3%B3n-comprobar-296754/
 */
 
 import QtQuick 2.2
@@ -38,6 +41,7 @@ import QtQuick.Window 2.1
 import QtQuick.Dialogs 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 
 Window {
     id: mainApp
@@ -218,7 +222,7 @@ Window {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
 
-        initialItem: Qt.resolvedUrl('MenuPage.qml')
+//        initialItem: Qt.resolvedUrl('MenuPage.qml')
 
         Connections {
             target: pagesView.currentItem
@@ -246,9 +250,14 @@ Window {
                 messageBox.publishMessage(qsTr("S'ha creat un duplicat"));
                 lastAnnotationsModel.select();
             }
-            onEditAnnotation: openNewPage('ShowAnnotation',{idAnnotation: id, annotation: annotation, desc: desc},id)
-            onOpenAnnotations: openSubPage('AnnotationsList',{annotationsModel: annotationsModel},'')
+            onShowAnnotation: {
+                console.log(id + "-" + title + "-" + desc);
+                openNewPage('ShowAnnotation',{idAnnotation: id, annotation: title, desc: desc});
+            }
+            onOpenAnnotations: openSubPage('AnnotationsList',{annotationsModel: globalAnnotationsModel, projectsModel: globalProjectsModel})
             onOpenCamera: openNewPage('CameraShoot',{receiver: receiver})
+            onImportAnnotations: openNewPage('ModelImporter',{fieldNames: fieldNames, writeModel: writeModel, fieldConstants: fieldConstants})
+            onExportAnnotations: openNewPage('ModelImporter',{importData: false, fieldNames: fieldNames, writeModel: writeModel, fieldConstants: fieldConstants})
 
             // Document list
             onCreatedFile: messageBox.publishMessage('Creat el fitxer «' + file + '»')
@@ -258,13 +267,12 @@ Window {
             onOpeningDocumentExternally: messageBox.publishMessage(qsTr("Obrint el document «") + document + "»")
 
             // Events
+            onShowEvents: openNewPage('TasksSystem', {project: project})
             onDeletedEvents: messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'))
-            onEditEvent: openNewPage('ShowEvent',{idEvent: idEvent, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime,project: project, projectsModel: projectsModel})
-            onNewEvent: openNewPage('ShowEvent', {projectsModel: projectsModel})
+            onShowEvent: openNewPage('ShowEvent',{idEvent: idEvent, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime,project: project})
+            onNewEvent: openNewPage('ShowEvent', parameters)
             onSavedEvent: {
                 messageBox.publishMessage(qsTr("S'ha desat l'esdeveniment"));
-                scheduleModel.select();
-                nextEventsModel.select();
             }
 
             // Quick annotations
@@ -302,6 +310,7 @@ Window {
 
             // Altres - revisar
             onOpenDocumentsList: openNewPage('DocumentsList',{},'')
+            onSelectDocument: openNewPage('DocumentsList', {initialDirectory: source, selectDocument: true, documentReceiver: documentReceiver})
             onRefusedCloseEditorRequest: messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
 
             // Rubrics
@@ -350,16 +359,39 @@ Window {
             }
 
             // Projects
-            onNewProjectRequest: openNewPage('ProjectEditor',{projectsModel: model});
-            onShowProject: openNewPage('ProjectEditor',{idProject: project, projectsModel: model})
+            onNewProject: openNewPage('ProjectEditor')
+            onNewProjectRequest: openNewPage('ProjectEditor');
+            onShowProject: openNewPage('ProjectEditor',{idProject: project})
             onSavedProjectDetails: {
                 messageBox.publishMessage(qsTr("S'ha desat el projecte"));
                 closeCurrentPage();
             }
 
             // Resources
+            onNewResource: openNewPage('ShowResource')
+            onNewResourceAttachment: openNewPage('ResourceAttachment',parameters);
             onCreateResource: openNewPage('ShowResource',{resourcesModel: model});
+            onInsertedResourceAttachment: {
+                messageBox.publishMessage(message);
+                closeCurrentPage();
+            }
+
             onShowResource: openNewPage('ShowResource',{idResource: idResource, resourcesModel: model});
+            onUpdatedResourceAttachment: {
+                messageBox.publishMessage(message);
+                closeCurrentPage();
+            }
+
+            // Characteristics
+            onShowCharacteristics: {
+                openNewPage('CharacteristicsList',{project: project});
+            }
+            onShowEventCharacteristics: {
+                openNewPage('EventCharacteristicsEditor',{event: event, characteristicsModel: characteristicsModel, writeModel: writeModel})
+            }
+
+            // Data import
+            onImportData: openNewPage('ModelImporter',{fieldNames: fieldNames, fieldConstants: fieldConstants, writeModel: writeModel})
         }
 
         function requestClosePage() {
@@ -392,6 +424,8 @@ Window {
         function invokeMethod(method) {
             currentItem[method]();
         }
+
+        Component.onCompleted: openMainPage()
     }
 
     Common.SidePanel2 {
@@ -640,7 +674,7 @@ Window {
 
     SqlTableModel {
         id: nextEventsModel
-        tableName: 'schedule'
+        tableName: globalScheduleModel.tableName
         limit: 3
         filters: ["ifnull(state,'') != 'done'"]
         Component.onCompleted: {
@@ -648,9 +682,10 @@ Window {
             select();
         }
     }
+
     SqlTableModel {
         id: lastAnnotationsModel
-        tableName: 'annotations'
+        tableName: globalAnnotationsModel.tableName
         limit: 3
         Component.onCompleted: {
             setSort(0,Qt.DescendingOrder);
@@ -680,6 +715,12 @@ Window {
 
     SqlTableModel {
         id: auditModel
+    }
+
+    Models.ProjectsModel {
+        id: globalProjectsModel
+
+        Component.onCompleted: select()
     }
 
     function auditTable(tableName, fields) {

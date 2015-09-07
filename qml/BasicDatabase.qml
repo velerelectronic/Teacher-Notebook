@@ -7,22 +7,65 @@ DatabaseBackup {
     function initEverything() {
         createTables();
 
-        annotationsModel.tableName = 'annotations';
-        annotationsModel.fieldNames =  ['created','id','title','desc','image'];
-        annotationsModel.select();
+//        globalAnnotationsModel.tableName = 'annotations';
+        console.log("SELECTING in annotations")
+        globalAnnotationsModel.fieldNames =  ['created','id','title','desc','image','labels'];
+        globalAnnotationsModel.select();
 
-        scheduleModel.tableName = 'schedule';
-        scheduleModel.fieldNames = ['created','id','event','desc','startDate','startTime','endDate','endTime','state','ref'];
-        scheduleModel.setSort(5,Qt.AscendingOrder);
-        scheduleModel.select();
+//        globalScheduleModel.tableName = 'schedule';
+        globalScheduleModel.fieldNames = ['created','id','event','desc','startDate','startTime','endDate','endTime','state','ref'];
+        globalScheduleModel.setSort(5,Qt.AscendingOrder);
+        globalScheduleModel.select();
+
+//        globalProjectsModel.tableName = 'projects';
+        globalProjectsModel.fieldNames = ['id', 'name', 'desc'];
+        globalProjectsModel.select();
+    }
+
+    function configureEventCharacteristics(model) {
+        model.tableName = 'eventCharacteristics';
+        model.fieldNames = ['id','characteristic','event','comment'];
+    }
+
+    function configureDetailedEventCharacteristics(model) {
+        model.tableName = 'detailedEventCharacteristics';
+        model.fieldNames = ['id','comment','characteristicId','characteristicTitle','characteristicDesc','eventId','eventTitle','eventDesc','startDate','startTime','endDate','endTime','eventState','eventRef'];
     }
 
     function createTables() {
         //dataBck.dropTable('annotations');
         //dataBck.dropTable('schedule');
         //dataBck.dropTable('rubrics_criteria');
-        dataBck.createTable('annotations','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, image BLOB, ref INTEGER');
+        dataBck.createTable('annotations','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, image BLOB, ref INTEGER, labels TEXT');
         dataBck.createTable('schedule','id INTEGER PRIMARY KEY, created TEXT, event TEXT, desc TEXT, startDate TEXT, startTime TEXT, endDate TEXT, endTime TEXT, state TEXT, ref INTEGER');
+
+        dataBck.createTable('characteristics','id INTEGER PRIMARY KEY, title TEXT, desc TEXT, ref INTEGER');
+        dataBck.createTable('eventCharacteristics', 'id INTEGER PRIMARY KEY, characteristic INTEGER, event INTEGER, comment TEXT');
+
+        createView('detailedEventCharacteristics',
+            "SELECT eventCharacteristics.id             AS id,
+                    eventCharacteristics.comment        AS comment,
+                    characteristics.id                  AS characteristicId,
+                    characteristics.title               AS characteristicTitle,
+                    characteristics.desc                AS characteristicDesc,
+                    schedule.id                         AS eventId,
+                    schedule.event                      AS eventTitle,
+                    schedule.desc                       AS eventDesc,
+                    schedule.startDate                  AS startDate,
+                    schedule.startTime                  AS startTime,
+                    schedule.endDate                    AS endDate,
+                    schedule.endTime                    AS endTime,
+                    schedule.state                      AS eventState,
+                    schedule.ref                        AS eventRef
+            FROM    eventCharacteristics, characteristics, schedule
+            WHERE   eventCharacteristics.characteristic = characteristics.id AND
+                    eventCharacteristics.event = schedule.id
+            ORDER BY    startDate ASC,
+                        startTime ASC,
+                        endDate ASC,
+                        endTime ASC,
+                        state ASC
+            ");
 
         //dataBck.dropTable('rubrics');
         //dataBck.dropTable('rubrics_labels');
@@ -46,7 +89,23 @@ DatabaseBackup {
 
         dataBck.createTable('individuals_list', 'id INTEGER PRIMARY KEY, "group" TEXT NOT NULL, name TEXT, surname TEXT, faceImage BLOB');
 
-        dataBck.createTable('resources','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, type TEXT, source TEXT, contents BLOB');
+//        dataBck.dropTable('resources');
+        dataBck.createTable('resources','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, type TEXT, source TEXT, contents BLOB, hash TEXT');
+        dataBck.createTable('resourcesAnnotations', 'id INTEGER PRIMARY KEY, resource INTEGER, annotation INTEGER');
+
+        dataBck.createView('detailedResourcesAnnotations',
+                           "SELECT  resourcesAnnotations.id         AS  id,
+                                    resourcesAnnotations.resource   AS  resourceId,
+                                    resources.title                 AS  resourceTitle,
+                                    resources.desc                  AS  resourceDesc,
+                                    resources.type                  AS  resourceType,
+                                    resources.source                AS  resourceSource,
+                                    resources.contents              AS  resourceContents,
+                                    resourcesAnnotations.annotation AS  annotationId
+                            FROM    resources,
+                                    resourcesAnnotations
+                            WHERE   resourcesAnnotations.resource = resources.id
+                            ");
 
         // Views
         dataBck.createView('rubrics_levels_descriptors',"SELECT rubrics_descriptors.id AS id, rubrics_descriptors.criterium AS criterium, rubrics_criteria.title AS criteriumTitle, rubrics_criteria.desc AS criteriumDesc, rubrics_descriptors.level AS level, rubrics_descriptors.definition AS definition, rubrics_levels.title AS title, rubrics_levels.desc AS desc, rubrics_levels.score AS score FROM rubrics_levels, rubrics_criteria LEFT JOIN rubrics_descriptors ON rubrics_levels.id=rubrics_descriptors.level WHERE rubrics_criteria.id=rubrics_descriptors.criterium");
@@ -151,17 +210,32 @@ DatabaseBackup {
 
         dataBck.createView('rubrics_total_scores','SELECT assessment, individual, name, surname, \"group\", SUM(weight) AS weight, SUM(score) AS score, SUM(weight * score) AS points FROM rubrics_descriptors_scores GROUP BY assessment, individual');
 
+        // Detailed Annotations
+
+        dataBck.dropView('detailedAnnotations');
+        dataBck.createView('detailedAnnotations',
+                    "SELECT annotations.id                  AS id,
+                            annotations.created             AS created,
+                            annotations.title               AS title,
+                            annotations.desc                AS desc,
+                            annotations.image               AS image,
+                            annotations.ref                 AS project,
+                            annotations.labels              AS labels,
+                            count(schedule.id)              AS events,
+                            count(resourcesAnnotations.id)  AS resources
+                        FROM        annotations
+                        LEFT JOIN   schedule
+                            ON      schedule.ref = annotations.id
+                        LEFT JOIN   resourcesAnnotations
+                            ON      resourcesAnnotations.annotation = annotations.id
+                        GROUP BY    annotations.id, schedule.ref
+                    ");
+
+
         // Assessment
         // dataBck.dropTable('assessmentGrid');
         dataBck.createTable('assessmentGrid','id INTEGER PRIMARY KEY, created TEXT, moment TEXT, "group" TEXT, individual TEXT, variable TEXT, value TEXT, comment TEXT');
         dataBck.createView('individuals_groups','SELECT "group" FROM individuals_list GROUP BY "group"');
-
-        annotationsModel.tableName = 'annotations';
-        annotationsModel.fieldNames = ['id', 'created' ,'title', 'desc', 'image', 'ref'];
-        annotationsModel.setSort(0,Qt.AscendingOrder);
-        scheduleModel.tableName = 'schedule';
-        scheduleModel.fieldNames = ['id', 'created', 'event', 'desc', 'startDate', 'startTime', 'endDate', 'endTime', 'state', 'ref'];
-        scheduleModel.setSort(4,Qt.AscendingOrder);
     }
 
 }

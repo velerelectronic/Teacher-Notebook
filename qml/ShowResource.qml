@@ -14,6 +14,7 @@ CollectionInspector {
     signal closePage(string message)
     signal savedResource(int id,string title,string desc)
     signal duplicatedResource(string title,string desc)
+    signal selectDocument(string source, var documentReceiver)
 
     property SqlTableModel resourcesModel
 
@@ -67,12 +68,26 @@ CollectionInspector {
             caption: qsTr('Tipus')
             originalContent: resourceEditor.type
         }
-        EditTextItemInspector {
+        EditFakeItemInspector {
             id: resourceSource
             width: resourceEditor.width
             caption: qsTr('Origen')
+            enableSendClick: true
+
+            Item {
+                id: docReceiver
+                anchors.fill: parent
+
+                function sendFile(file) {
+                    resourceEditor.source = file;
+                }
+            }
+
             originalContent: resourceEditor.source
+            editedContent: originalContent
+            onSendClick: resourceEditor.selectDocument(resourceSource.editedContent, docReceiver)
         }
+
         EditTextItemInspector {
             id: resourceContents
             width: resourceEditor.width
@@ -92,10 +107,10 @@ CollectionInspector {
         if (idCode === -1) {
             console.log('Inserint ' + obj);
             obj['created'] = Storage.currentTime();
-            resourcesModel.insertObject(obj);
+            globalResourcesModel.insertObject(obj);
         } else {
             obj['id'] = idCode;
-            resourcesModel.updateObject(obj);
+            globalResourcesModel.updateObject(obj);
         }
     }
 
