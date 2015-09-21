@@ -14,7 +14,7 @@ CollectionInspectorItem {
     visorComponent: Text {
         id: textVisor
         property int requiredHeight: Math.max(contentHeight, units.fingerUnit)
-        property var shownContent
+        property var shownContent: {date: ''; time: ''}
 
         text: shownContent['date'] + " - " + shownContent['time']
         font.pixelSize: units.readUnit
@@ -29,6 +29,7 @@ CollectionInspectorItem {
         color: 'white'
 
         Flow {
+            id: dateTimeFlow
             anchors {
                 top: parent.top
                 left: parent.left
@@ -59,6 +60,22 @@ CollectionInspectorItem {
                 }
             }
 
+            Calendar {
+                id: limitDatePicker
+
+                width: dateTimeFlow.width
+                height: width
+                visible: limitDateOption.checked
+                onClicked: {
+                    datetimeToContent();
+                }
+
+                function setDate(date) {
+                    selectedDate = date;
+                }
+            }
+
+            /*
             Editors.DatePicker {
                 id: limitDatePicker
                 // We can choose the date whenever the option has been enabled
@@ -67,6 +84,7 @@ CollectionInspectorItem {
                     datetimeToContent();
                 }
             }
+            */
 
             Editors.TimePicker {
                 id: limitTimePicker
@@ -106,7 +124,7 @@ CollectionInspectorItem {
             var refDate = new Date();
             console.log('DateTimeEditor');
             console.log(editedContent['date'] + "---> " + editedContent['time']);
-            limitDatePicker.setDate((editedContent['date'] !== '')?refDate.fromYYYYMMDDFormat(editedContent['date']):refDate);
+            limitDatePicker.selectedDate = ((editedContent['date'] !== '')?refDate.fromYYYYMMDDFormat(editedContent['date']):refDate);
             limitDateOption.checked = editedContent['date'] !== '';
             limitTimePicker.setDateTime((editedContent['time'] !== '')?refDate.fromHHMMFormat(editedContent['time']):refDate);
             limitTimeOption.checked = editedContent['time'] !== '';
@@ -116,7 +134,7 @@ CollectionInspectorItem {
             var dateStr = '';
             var timeStr = '';
             if (limitDateOption.checked) {
-                dateStr = limitDatePicker.getDate().toYYYYMMDDFormat();
+                dateStr = limitDatePicker.selectedDate.toYYYYMMDDFormat();
                 if (limitTimeOption.checked) {
                     timeStr = limitTimePicker.getTime().toHHMMFormat();
                 }

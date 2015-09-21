@@ -8,6 +8,8 @@ Rectangle {
     property alias fontSize: mainText.font.pixelSize
     property alias text: mainText.text
     property int margins: 0
+    property int contentHeight: mainText.contentHeight + 2 * margins
+    property alias elide: mainText.elide
 
     border.color: borderColor
     Text {

@@ -17,8 +17,8 @@ Rectangle {
     property real buttonWidth: units.fingerUnit * 4
     property real buttonHeight: units.fingerUnit * 4
 
-    signal showAnnotation(int id, string title, string desc)
-    signal showEvent(int idEvent, string event, string desc, string startDate, string startTime, string endDate, string endTime, string project)
+    signal showAnnotation(var parameters)
+    signal showEvent(var parameters)
 
     Common.UseUnits { id: units }
 
@@ -390,7 +390,7 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: showAnnotation(id, title, desc)
+                        onClicked: showAnnotation({idAnnotation: id})
                     }
                 }
             }
@@ -470,7 +470,7 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: showEvent(id, event, desc, startDate, startTime, endDate, endTime, ref)
+                        onClicked: showEvent({idEvent: model.id})
                     }
                 }
             }

@@ -1,9 +1,11 @@
-import QtQuick 2.3
+import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.2
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
+import 'qrc:///models' as Models
+import "qrc:///common/FormatDates.js" as FormatDates
 
 Rectangle {
     id: rubricsListArea
@@ -16,6 +18,7 @@ Rectangle {
     signal openRubricDetails(int rubric, var rubricsModel)
     signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
     signal openRubricAssessmentDetails(int assessment, int rubric, string group, var rubricsModel, var rubricsAssessmentModel)
+    signal openRubricHistory(string group)
     signal editGroupIndividual(int individual, var groupsIndividualsModel)
 
     property bool newIndividual: false
@@ -49,58 +52,76 @@ Rectangle {
         Item {
             id: rubricsAssessmentItem
 
-            RowLayout {
-                id: layout
-                property real titleWidth: width / 3
-                property real descWidth: titleWidth
-
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                    margins: units.nailUnit
-                }
-                height: units.fingerUnit * 2
-
-                Text {
-                    Layout.preferredHeight: layout.titleWidth
-                    Layout.fillHeight: true
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    font.bold: true
-                    text: qsTr('Títol')
-                }
-                Text {
-                    Layout.preferredWidth: layout.descWidth
-                    Layout.fillHeight: true
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    font.bold: true
-                    text: qsTr('Descripció')
-                }
-                Text {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    font.bold: true
-                    text: qsTr('Grup')
-                }
-            }
             ListView {
                 id: rubricsAssessmentList
-                anchors {
-                    top: layout.bottom
-                    left: parent.left
-                    right: parent.right
-                    bottom: parent.bottom
-                }
+                anchors.fill: parent
 
                 clip: true
                 model: rubricsAssessmentModel
+
+                headerPositioning: ListView.OverlayHeader
+
+                header: Rectangle {
+                    height: units.fingerUnit
+                    width: parent.width
+                    z: 2
+
+                    RowLayout {
+                        id: layout
+                        property real titleWidth: width / 3
+                        property real descWidth: titleWidth
+
+                        anchors {
+                            top: parent.top
+                            left: parent.left
+                            right: parent.right
+                            margins: units.nailUnit
+                        }
+                        height: units.fingerUnit * 2
+
+                        Text {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.bold: true
+                            text: qsTr('Títol')
+                        }
+                        Text {
+                            Layout.preferredWidth: rubricsAssessmentList.width / 5
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.bold: true
+                            text: qsTr('Descripció')
+                        }
+                        Text {
+                            Layout.preferredWidth: rubricsAssessmentList.width / 5
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.bold: true
+                            text: qsTr('Grup')
+                        }
+                        Text {
+                            Layout.preferredWidth: rubricsAssessmentList.width / 5
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.bold: true
+                            text: qsTr('Termini')
+                        }
+
+                        Item {
+                            Layout.preferredWidth: rubricsAssessmentList.width / 5
+                        }
+                    }
+                }
+
                 delegate: Rectangle {
                     width: rubricsAssessmentList.width
                     height: units.fingerUnit * 2
+                    z: 1
                     border.color: 'black'
                     MouseArea {
                         anchors.fill: parent
@@ -110,26 +131,52 @@ Rectangle {
                         anchors.fill: parent
                         anchors.margins: units.nailUnit
                         Text {
-                            Layout.preferredWidth: layout.titleWidth
+                            Layout.fillWidth: true
                             Layout.fillHeight: true
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             text: model.title
                         }
                         Text {
-                            Layout.preferredWidth: layout.descWidth
+                            Layout.preferredWidth: rubricsAssessmentList.width / 5
                             Layout.fillHeight: true
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             text: model.desc
                         }
                         Text {
-                            Layout.fillWidth: true
+                            Layout.preferredWidth: rubricsAssessmentList.width / 5
                             Layout.fillHeight: true
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             text: model.group
                         }
+                        Text {
+                            Layout.preferredWidth: rubricsAssessmentList.width / 5
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
+                            Component.onCompleted: {
+                                var obj = scheduleModel.getObject(model.event);
+
+                                if (typeof obj['startDate'] !== 'undefined') {
+                                    if (obj['startDate'] === obj['endDate']) {
+                                        var date = (new Date()).fromYYYYMMDDFormat(obj['startDate']);
+                                        text = date.toShortReadableDate();
+                                    } else {
+                                        text = qsTr('Des de ') + obj['startDate'] + qsTr(' fins a ') + obj['endDate'];
+                                    }
+                                }
+                            }
+                        }
+
+                        Button {
+                            Layout.fillHeight: true
+                            text: qsTr('Historial')
+                            onClicked: openRubricHistory(model.group)
+                        }
+
                         Button {
                             Layout.fillHeight: true
                             // Layout.preferredWidth: height
@@ -238,7 +285,13 @@ Rectangle {
     SqlTableModel {
         id: rubricsAssessmentModel
         tableName: 'rubrics_assessment'
-        fieldNames: ['id', 'rubric', 'group', 'startValidity', 'endValidity']
+        fieldNames: ['id', 'title', 'desc', 'rubric', 'group', 'event']
+    }
+
+    Models.ScheduleModel {
+        id: scheduleModel
+
+        Component.onCompleted: select();
     }
 
     function newButton() {

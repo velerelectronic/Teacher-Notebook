@@ -75,5 +75,8 @@
         <file>qml/EventCharacteristicsEditor.qml</file>
         <file>qml/EditDeleteItemInspector.qml</file>
         <file>qml/ResourceAttachment.qml</file>
+        <file>qml/ShowRubricGroupAssessmentByCriterium.qml</file>
+        <file>qml/ShowRubricGroupAssessmentByIndividual.qml</file>
+        <file>qml/RubricAssessmentHistory.qml</file>
     </qresource>
 </RCC>

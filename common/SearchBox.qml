@@ -14,9 +14,8 @@ Rectangle {
     TextInput {
         id: searchText
         anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.right: emptySearch.left
         anchors.leftMargin: searchBox.radius
-        anchors.rightMargin: searchBox.radius
         anchors.verticalCenter: parent.verticalCenter
         text: ''
         font.pixelSize: units.readUnit
@@ -41,6 +40,24 @@ Rectangle {
             color: 'gray'
         }
     }
+    Text {
+        id: emptySearch
+        anchors {
+            top: parent.top
+            bottom: parent.bottom
+            right: parent.right
+            rightMargin: searchBox.radius
+        }
+        width: contentWidth
+        text: 'X'
+        verticalAlignment: Text.AlignVCenter
+        font.pixelSize: units.readUnit
+        MouseArea {
+            anchors.fill: parent
+            onClicked: searchText.text = ''
+        }
+    }
+
     Timer {
         id: waitTimer
         interval: 500
@@ -48,7 +65,7 @@ Rectangle {
         repeat: false
         onTriggered: {
             searchBox.performSearch(searchText.text);
-            searchBox.forceActiveFocus()
+            searchText.forceActiveFocus()
         }
     }
 }

@@ -232,7 +232,10 @@ Window {
             onStateChanged: buttons.model = pagesView.getButtonsList()
 
             // Page handling
-            onOpenPage: openNewPage(page,{})
+            onOpenPage: {
+                console.log('Opening page ' + page);
+                openNewPage(page,{});
+            }
             onOpenPageArgs: openNewPage(page,args)
             onClosePage: {
                 closeCurrentPage();
@@ -251,8 +254,7 @@ Window {
                 lastAnnotationsModel.select();
             }
             onShowAnnotation: {
-                console.log(id + "-" + title + "-" + desc);
-                openNewPage('ShowAnnotation',{idAnnotation: id, annotation: title, desc: desc});
+                openNewPage('ShowAnnotation',parameters);
             }
             onOpenAnnotations: openSubPage('AnnotationsList',{annotationsModel: globalAnnotationsModel, projectsModel: globalProjectsModel})
             onOpenCamera: openNewPage('CameraShoot',{receiver: receiver})
@@ -269,7 +271,7 @@ Window {
             // Events
             onShowEvents: openNewPage('TasksSystem', {project: project})
             onDeletedEvents: messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' esdeveniments'))
-            onShowEvent: openNewPage('ShowEvent',{idEvent: idEvent, event: event,desc: desc,startDate: startDate,startTime: startTime,endDate: endDate,endTime: endTime,project: project})
+            onShowEvent: openNewPage('ShowEvent', parameters)
             onNewEvent: openNewPage('ShowEvent', parameters)
             onSavedEvent: {
                 messageBox.publishMessage(qsTr("S'ha desat l'esdeveniment"));
@@ -319,6 +321,7 @@ Window {
             onOpenRubricGroupAssessment: {
                 openNewPage('RubricGroupAssessment', {idAssessment: assessment, rubric: rubric, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel})
             }
+            onOpenRubricHistory: openNewPage('RubricAssessmentHistory',{group: group})
             onOpenRubricAssessmentDetails: openNewPage('RubricAssessmentEditor', {idAssessment: assessment, group: group, rubric: rubric, rubricsAssessmentModel: rubricsAssessmentModel})
             onEditCriterium: openNewPage('RubricCriteriumEditor',{idCriterium: idCriterium, rubric: rubric, title: title, desc: desc, ord: ord, weight: weight, criteriaModel: model})
             onEditLevel: openNewPage('RubricLevelEditor',{idLevel: idLevel, rubric: rubric, title: title, desc: desc, score: score, levelsModel: model})
@@ -329,15 +332,12 @@ Window {
                                                               assessment: idAssessment,
                                                               criterium: criterium,
                                                               individual: individual,
-                                                              lastScoreId: lastScoreId,
-                                                              scoresSaveModel: rubricIndividualScoresSaveModel,
-                                                              scoresModel: rubricIndividualScoresModel,
-                                                              levelDescriptorsModel: levelDescriptorsModel,
-                                                              individualsModel: individualsModel,
-                                                              lastScoresModel: lastScoresModel
+                                                              lastScoreId: lastScoreId
                                                           });
 
             onEditGroupIndividual: openNewPage('GroupIndividualEditor', {individual: individual, groupsIndividualsModel: groupsIndividualsModel})
+            onEditRubricAssessmentByCriterium: openNewPage('ShowRubricGroupAssessmentByCriterium',{assessment: assessment,criterium: criterium})
+            onEditRubricAssessmentByIndividual: openNewPage('ShowRubricGroupAssessmentByIndividual',{assessment: assessment,individual: individual})
 
             onSavedAssessmentDescriptor: {
                 messageBox.publishMessage(qsTr("S'han desat les dades del descriptor"));
@@ -427,6 +427,7 @@ Window {
 
         Component.onCompleted: openMainPage()
     }
+
 
     Common.SidePanel2 {
         id: sidePanel
@@ -706,6 +707,7 @@ Window {
     function openNewPage(page,param) {
         sidePanel.state = 'hidePanel';
         header.state = 'minimized';
+        console.log(Qt.resolvedUrl(page + '.qml'));
         pagesView.push({item: Qt.resolvedUrl(page + '.qml'), properties: param});
         pagesView.updatePageChange();
 

@@ -10,6 +10,8 @@ Rectangle {
     property string pageTitle: qsTr("Llista d'avaluació");
     property string groupName: ''
 
+    signal showEvent(var parameters)
+
     Common.UseUnits { id: units }
 
     SqlTableModel {

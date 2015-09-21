@@ -13,7 +13,8 @@ Rectangle {
                 target: scheduleItem
                 height: units.fingerUnit * 2
             }
-            PropertyChanges { target: datesRect; color: '#ffd06e' }
+            PropertyChanges { target: startRect; color: '#ffd06e' }
+            PropertyChanges { target: endRect; color: '#ffd06e' }
             PropertyChanges { target: mainContents; color: '#EFFBF5' }
         },
         State {
@@ -23,7 +24,8 @@ Rectangle {
                 height: Math.max(units.fingerUnit * 2, eventTitle.height + eventDesc.height + units.nailUnit * 3)
             }
 
-            PropertyChanges { target: datesRect; color: '#ffd06e' }
+            PropertyChanges { target: startRect; color: '#ffd06e' }
+            PropertyChanges { target: endRect; color: '#ffd06e' }
             PropertyChanges { target: mainContents; color: '#EFFBF5' }
         },
         State {
@@ -32,7 +34,8 @@ Rectangle {
                 target: scheduleItem
                 height: Math.max(units.fingerUnit * 2, eventTitle.height + eventDesc.height + units.nailUnit * 3)
             }
-            PropertyChanges { target: datesRect; color: '#E6E6E6' }
+            PropertyChanges { target: startRect; color: '#E6E6E6' }
+            PropertyChanges { target: endRect; color: '#E6E6E6' }
             PropertyChanges { target: mainContents; color: '#E6E6E6' }
         },
         State {
@@ -59,7 +62,8 @@ Rectangle {
         }
     ]
 
-    property string event: ''
+    property int idEvent: -1
+    property string title: ''
     property alias desc: eventDesc.text
     property alias startDate: startDate.text
     property alias startTime: startTime.text
@@ -67,21 +71,14 @@ Rectangle {
     property alias endTime: endTime.text
     property var stateEvent: ''
     property int project: -1
-    property string projectName: ''
-    property SqlTableModel projectsModel
+    property string annotationTitleDesc: ''
+    property string section: ''
 
     Component.onCompleted: {
-        if (project>=0) {
-            var obj = projectsModel.getObject(project);
-            if ('name' in obj)
-                projectName = obj['name'];
-            else
-                projectName = qsTr('-- No existeix --');
-        }
     }
 
-    signal scheduleItemSelected (string event,string desc,string startDate,string startTime,string endDate,string endTime)
-    signal scheduleItemLongSelected (string event,string desc,string startDate,string startTime,string endDate,string endTime, int project, var projectsModel)
+    signal scheduleItemSelected (int event,string desc,string startDate,string startTime,string endDate,string endTime)
+    signal scheduleItemLongSelected (int event)
 
     border.color: 'black'
 
@@ -91,54 +88,76 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        Rectangle {
-            id: datesRect
-            border.color: 'black'
-            Layout.preferredWidth: units.fingerUnit * 6 + 2 * units.nailUnit
+        Common.BoxedText {
             Layout.preferredHeight: parent.height
-            GridLayout {
-                anchors.fill: parent
-                anchors.margins: units.nailUnit
+            Layout.preferredWidth: parent.width / 5
+            text: scheduleItem.section
+            margins: units.nailUnit
+        }
 
-                rows: 3
-                flow: GridLayout.TopToBottom
-                columnSpacing: 0
-                rowSpacing: units.nailUnit
-
-                Text {
-                    id: startDate
-                    Layout.preferredWidth: units.fingerUnit * 3
-                    Layout.preferredHeight: units.fingerUnit
-                    font.pixelSize: units.readUnit
-                    horizontalAlignment: Text.AlignHCenter
-                    font.bold: true
-                }
-                Text {
-                    id: startTime
-                    Layout.preferredWidth: units.fingerUnit * 3
-                    Layout.preferredHeight: units.fingerUnit
-                    horizontalAlignment: Text.AlignHCenter
-                    font.pixelSize: units.readUnit
-                }
-                Item {
-                    Layout.fillHeight: true
+        Rectangle {
+            id: startRect
+            Layout.preferredWidth: parent.width / 5
+            Layout.fillHeight: true
+            border.color: 'black'
+            Text {
+                id: startDate
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.verticalCenter
                 }
 
-                Text {
-                    id: endDate
-                    Layout.preferredWidth: units.fingerUnit * 3
-                    Layout.preferredHeight: units.fingerUnit
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    horizontalAlignment: Text.AlignHCenter
+                font.pixelSize: units.readUnit
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font.bold: true
+            }
+            Text {
+                id: startTime
+                anchors {
+                    top: parent.verticalCenter
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.bottom
                 }
-                Text {
-                    id: endTime
-                    Layout.preferredWidth: units.fingerUnit * 3
-                    Layout.preferredHeight: units.fingerUnit
-                    font.pixelSize: units.readUnit
-                    horizontalAlignment: Text.AlignHCenter
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: units.readUnit
+            }
+        }
+
+        Rectangle {
+            id: endRect
+            Layout.preferredWidth: parent.width / 5
+            Layout.fillHeight: true
+            border.color: 'black'
+
+            Text {
+                id: endDate
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.verticalCenter
                 }
+                font.pixelSize: units.readUnit
+                font.bold: true
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+            Text {
+                id: endTime
+                anchors {
+                    top: parent.verticalCenter
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.bottom
+                }
+                font.pixelSize: units.readUnit
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
             }
         }
 
@@ -159,7 +178,7 @@ Rectangle {
                     Layout.preferredWidth: parent.width
                     Layout.preferredHeight: paintedHeight
                     font.bold: true
-                    text: scheduleItem.event + ' - ' + scheduleItem.projectName
+                    text: scheduleItem.title + ' - ' + scheduleItem.annotationTitleDesc
                     textFormat: Text.PlainText
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 }
@@ -176,8 +195,8 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: scheduleItem.scheduleItemSelected(scheduleItem.event,scheduleItem.desc,scheduleItem.startDate,scheduleItem.startTime,scheduleItem.endDate,scheduleItem.endTime)
-        onPressAndHold: scheduleItem.scheduleItemLongSelected(scheduleItem.event,scheduleItem.desc,scheduleItem.startDate,scheduleItem.startTime,scheduleItem.endDate,scheduleItem.endTime,project,projectsModel)
+        onClicked: scheduleItem.scheduleItemSelected(scheduleItem.idEvent,scheduleItem.desc,scheduleItem.startDate,scheduleItem.startTime,scheduleItem.endDate,scheduleItem.endTime)
+        onPressAndHold: scheduleItem.scheduleItemLongSelected(scheduleItem.idEvent)
     }
 
     Common.ExtraInfo {

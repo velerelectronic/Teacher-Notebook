@@ -16,8 +16,8 @@ Rectangle {
     property var buttons: buttonsModel
     signal emitSignal(string name, var param)
 
-    signal newEvent(var projectsModel)
-    signal showEvent(int idEvent,string event, string desc,string startDate,string startTime,string endDate,string endTime,int project)
+    signal newEvent(var parameters)
+    signal showEvent(var parameters)
 
     property int project: -1
     property int order: -1
@@ -92,26 +92,26 @@ Rectangle {
 
         Component.onCompleted: {
             append({method: 'showCalendar', image: 'calendar-23684', title: qsTr('Mostra el calendari')});
-            append({method: 'showList', image: 'list-153185', title: qsTr('Mostra la llista de tasques i esdeveniments')});
             append({method: 'showGantt', image: 'percent-40844', title: qsTr('Mostra el diagrama de Gantt')});
+            append({method: 'showList', image: 'list-153185', title: qsTr('Mostra la llista de tasques i esdeveniments')});
         }
     }
 
     function createEvent() {
-        newEvent(projectsModel);
+        newEvent({});
         emitSignal('ShowEvent',{projectsModel: projectsModel});
     }
 
     function showCalendar() {
-        tasksLoader.setSource(Qt.resolvedUrl('Calendar.qml'), {searchString: scheduleModel.searchString, projectsModel: projectsModel});
+        tasksLoader.setSource(Qt.resolvedUrl('Calendar.qml'), {searchString: scheduleModel.searchString, scheduleModel: scheduleModel});
     }
 
     function showGantt() {
-        tasksLoader.setSource(Qt.resolvedUrl('GanttDiagram.qml'), {projectsModel: projectsModel, startDateLimit: firstDate, endDateLimit: lastDate});
+        tasksLoader.setSource(Qt.resolvedUrl('GanttDiagram.qml'), {scheduleModel: scheduleModel, startDateLimit: firstDate, endDateLimit: lastDate});
     }
 
     function showList() {
-        tasksLoader.setSource(Qt.resolvedUrl('Schedule.qml'), {searchString: scheduleModel.searchString, projectsModel: projectsModel})
+        tasksLoader.setSource(Qt.resolvedUrl('Schedule.qml'), {searchString: scheduleModel.searchString, scheduleModel: scheduleModel})
     }
 
     ColumnLayout {
@@ -265,12 +265,12 @@ Rectangle {
                 target: tasksLoader.item
                 ignoreUnknownSignals: true
                 onShowEvent: {
-                    tasksSystem.showEvent(idEvent, event, desc, startDate, startTime, endDate, endTime, project);
-                    tasksSystem.emitSignal('ShowEvent',{idEvent: idEvent, event: event, desc: desc, startDate: startDate, startTime: startTime, endDate: endDate, endTime: endTime, project: project});
+                    tasksSystem.showEvent(parameters);
+                    tasksSystem.emitSignal('ShowEvent',parameters);
                 }
             }
 
-            Component.onCompleted: showGantt()
+            Component.onCompleted: showList()
         }
     }
     Common.SuperposedButton {
@@ -306,7 +306,7 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        order = 0;
+        order = 1;
         searchEvents.text = scheduleModel.searchString;
         scheduleModel.searchFields = ['event','desc'];
 

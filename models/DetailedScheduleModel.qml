@@ -1,7 +1,9 @@
+import QtQuick 2.5
 import PersonalTypes 1.0
 
 SqlTableModel {
-    tableName: 'schedule'
+    id: tableModel
+    tableName: 'detailedSchedule'
     fieldNames: [
         'id',
         'created',
@@ -12,6 +14,10 @@ SqlTableModel {
         'endDate',
         'endTime',
         'state',
-        'ref'
+        'annotationId',
+        'annotationTitle',
+        'annotationDesc',
+        'annotationLabels'
     ]
+
 }

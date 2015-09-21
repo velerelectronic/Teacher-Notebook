@@ -8,7 +8,7 @@ import 'qrc:///common' as Common
 Common.AbstractEditor {
     id: collectionInspector
 
-    property alias pageTitle: titlePage.text
+    property string pageTitle: qsTr('Abstract Collection Inspector')
     property alias pageBackground: backgroundImage.source
     property alias model: inspectorGrid.model
 
@@ -18,6 +18,8 @@ Common.AbstractEditor {
     signal copyDataRequested
     signal discardDataRequested(bool changes)
     signal closePageRequested()
+
+    color: '#5FB404'
 
     ListModel {
         id: buttonsModel
@@ -52,28 +54,20 @@ Common.AbstractEditor {
         anchors.fill: parent
     }
 
-
-    ColumnLayout {
+    ListView {
+        id: inspectorGrid
         anchors.fill: parent
-        Text {
-            id: titlePage
-            Layout.fillWidth: true
-            font.pixelSize: units.readUnit
-            font.bold: true
-        }
-        ListView {
-            id: inspectorGrid
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            clip: true
+        anchors.margins: units.nailUnit
+        clip: true
 
-            property int captionsWidth: units.fingerUnit
+        property int captionsWidth: units.fingerUnit
 
-            model: VisualItemModel { }
+        spacing: units.nailUnit
 
-            function requestShowMode() {
-                collapseEditors();
-            }
+        model: VisualItemModel { }
+
+        function requestShowMode() {
+            collapseEditors();
         }
     }
 

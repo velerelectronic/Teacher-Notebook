@@ -12,16 +12,18 @@ Rectangle {
     width: 300
     height: 200
 
-    signal showAnnotation (int id,string annotation, string desc)
+    signal showAnnotation (var parameters)
     signal deletedAnnotations (int num)
 
     signal importAnnotations(var fieldNames, var writeModel, var fieldConstants)
     signal exportAnnotations(var fieldNames, var writeModel, var fieldConstants)
+    signal openingDocumentExternally(string document)
+    signal showEvent(var parameters)
 
     property bool canClose: true
 
     function newAnnotation() {
-        annotations.showAnnotation(-1,(annotationsModel.searchString!='')?annotationsModel.searchString:qsTr('Sense títol'),'');
+        annotations.showAnnotation({idAnnotation: -1});
     }
 
     Common.UseUnits { id: units }
@@ -35,6 +37,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
+            bottomMargin: units.fingerUnit * 3
             states: [
                 State {
                     name: 'simpleList'
@@ -103,10 +106,23 @@ Rectangle {
             }
             headerPositioning: ListView.OverlayHeader
 
+            section.property: 'projectName'
+            section.delegate: Common.BoxedText {
+                color: 'green'
+                width: annotationsList.width
+                height: units.fingerUnit
+                text: section
+                fontSize: units.readUnit
+                margins: units.nailUnit
+                textColor: 'white'
+            }
+
             delegate: AnnotationItem {
                 id: oneAnnotation
                 anchors.left: parent.left
                 anchors.right: parent.right
+
+                idAnnotation: model.id
                 title: model.title
                 desc: (model.desc)?model.desc:''
                 image: (model.image)?model.image:''
@@ -120,7 +136,9 @@ Rectangle {
                         oneAnnotation.state = (oneAnnotation.state == 'basic')?'expanded':'basic';
                     }
                 }
-                onAnnotationLongSelected: annotations.showAnnotation(model.id,title,desc)
+                onAnnotationLongSelected: annotations.showAnnotation({idAnnotation: model.id})
+                onOpeningDocumentExternally: openingDocumentExternally(document)
+                onShowEvent: annotations.showEvent(parameters)
             }
 
             model: annotationsModel
@@ -153,6 +171,7 @@ Rectangle {
                 }
             }
             Common.SuperposedButton {
+                id: addButton
                 anchors {
                     bottom: parent.bottom
                     right: parent.right
@@ -165,8 +184,8 @@ Rectangle {
 
             Common.SuperposedButton {
                 anchors {
-                    top: parent.top
-                    right: parent.right
+                    bottom: parent.bottom
+                    left: parent.left
                 }
                 size: units.fingerUnit * 2
                 imageSource: 'box-24557'
@@ -177,6 +196,7 @@ Rectangle {
 
     Models.DetailedAnnotationsModel {
         id: annotationsModel
+
         Component.onCompleted: select()
     }
 

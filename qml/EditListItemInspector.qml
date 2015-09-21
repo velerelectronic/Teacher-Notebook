@@ -1,4 +1,4 @@
-import QtQuick 2.3
+import QtQuick 2.5
 import QtQuick.Controls 1.2
 import 'qrc:///common' as Common
 
@@ -10,6 +10,7 @@ CollectionInspectorItem {
     clip: true
 
     signal addRow()
+    signal performSearch(string searchString)
 
     ListModel {
         id: emptyModel
@@ -32,6 +33,7 @@ CollectionInspectorItem {
         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
 
         onShownContentChanged: {
+            console.log('SHOWN CONTENT changed')
             var s = textVisor.shownContent;
             if (typeof s !== 'undefined') {
                 if (s.valued) {
@@ -65,9 +67,22 @@ CollectionInspectorItem {
 
         model: editedContent.model
 
+        header: Item {
+            z: 2
+            width: listEditor.width
+            height: units.fingerUnit * 1.5
+            Common.SearchBox {
+                anchors.fill: parent
+                onPerformSearch: editState.performSearch(text)
+            }
+        }
+
+        headerPositioning: ListView.OverlayHeader
+
         delegate: Rectangle {
             width: listEditor.width
             height: units.fingerUnit * 2
+            z: 1
             border.color: '#CCCCCC'
             color: 'transparent'
             Text {

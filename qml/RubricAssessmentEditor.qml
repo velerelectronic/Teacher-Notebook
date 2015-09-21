@@ -1,8 +1,9 @@
-import QtQuick 2.0
+import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 
 CollectionInspector {
     id: rubricAssessmentEditor
@@ -18,6 +19,7 @@ CollectionInspector {
     property SqlTableModel rubricsAssessmentModel
 
     signal savedRubricAssessment
+    signal showEvent(var parameters)
 
     model: ObjectModel {
         EditTextItemInspector {
@@ -44,6 +46,16 @@ CollectionInspector {
             id: eventComponent
             width: rubricAssessmentEditor.width
             caption: qsTr('Esdeveniment')
+            onPerformSearch: {
+                var text = searchString.toLowerCase();
+                eventsModel.filters = ["INSTR(LOWER(event),'" + text + "') OR INSTR(LOWER(desc), '" + text + "')"];
+                eventsModel.select();
+            }
+            onAddRow: {
+                var today = new Date();
+                var day = today.toYYYYMMDDFormat();
+                showEvent({event: qsTr('[AutoGenerat]') + ((titleComponent.editedContent !== '')?' ':'') + titleComponent.editedContent + ' ' + groupComponent.editedContent['reference'], startDate: day, endDate: day});
+            }
         }
     }
 
@@ -57,6 +69,7 @@ CollectionInspector {
         console.log('STR' + str);
         titleComponent.originalContent = str;
         descComponent.originalContent = coalesce(obj['desc'],'');
+        rubricAssessmentEditor.event = obj['event'];
 
         console.log('Rubric ' + rubricAssessmentEditor.rubric);
         console.log(coalesce(obj['rubric'],-1));
@@ -75,7 +88,7 @@ CollectionInspector {
             nameAttribute: 'group'
         };
         eventComponent.originalContent = {
-            reference: (rubricAssessmentEditor.event !== -1)?rubricAssessmentEditor.event:coalesce(obj['event'],-1),
+            reference: rubricAssessmentEditor.event, // (rubricAssessmentEditor.event !== -1)?rubricAssessmentEditor.event:coalesce(obj['event'],-1),
             valued: false,
             model: eventsModel,
             nameAttribute: 'event'
@@ -119,9 +132,10 @@ CollectionInspector {
         fieldNames: ['id','title','desc']
     }
 
-    SqlTableModel {
+    Models.ScheduleModel {
         id: eventsModel
-        tableName: 'schedule'
-        fieldNames: ['id', 'created', 'event', 'desc', 'startDate', 'startTime', 'endDate', 'endTime', 'state', 'ref']
+
+        filters: ["ifnull(state,'') != 'done'"]
+        limit: 20
     }
 }

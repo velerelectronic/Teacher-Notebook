@@ -14,6 +14,8 @@ Rectangle {
     signal createResource(var model)
     signal showResource(int idResource,var model)
 
+    property int requiredHeight: resourcesList.contentItem.height
+
     SqlTableModel {
         id: resourcesModel
 

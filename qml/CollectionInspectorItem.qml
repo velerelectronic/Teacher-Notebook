@@ -1,11 +1,13 @@
-import QtQuick 2.3
+import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
 
 Common.AbstractEditor {
     id: collectionInspectorItem
     objectName: 'collectionInspectorItem'
-    border.color: 'black'
+    color: 'white'
+
+    property alias captionHeight: captionText.height
 
     states: [
         State {
@@ -74,7 +76,7 @@ Common.AbstractEditor {
 
     property var editedContent: originalContent
 
-    height: totalHeight + editorItemLayout.anchors.margins * 2
+    height: captionHeight + totalHeight + units.nailUnit + editorItemLayout.anchors.margins * 2
 
     Behavior on height {
         PropertyAnimation {
@@ -124,26 +126,43 @@ Common.AbstractEditor {
         }
     }
 
-    RowLayout {
+    MouseArea {
+        anchors.fill: parent
+        enabled: collectionInspectorItem.state == 'editMode'
+        propagateComposedEvents: false
+        onPressed: mouse.accepted = true
+    }
+
+    GridLayout {
         id: editorItemLayout
         anchors.fill: parent
         anchors.margins: units.nailUnit
-        spacing: units.nailUnit
+        columns: 2
+        rows: 2
+        columnSpacing: units.nailUnit
+        rowSpacing: units.nailUnit
         clip: true
 
         Text {
             id: captionText
-            Layout.fillHeight: true
-            Layout.preferredWidth: parent.width / 4
+            Layout.preferredHeight: contentHeight
+            Layout.fillWidth: true
+            Layout.columnSpan: 2
             font.pixelSize: units.readUnit
             font.bold: true
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         }
 
         Rectangle {
-            Layout.fillHeight: true
+            Layout.preferredHeight: totalHeight
             Layout.preferredWidth: units.fingerUnit
             color: (mainEditor.status == Loader.Null)?'transparent':((collectionInspectorItem.state === 'viewMode')?'#FAAC58':'#FFFF00')
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: collectionInspectorItem.state == 'editMode'
+                onClicked: enableShowMode()
+            }
         }
 
         Item {
@@ -176,5 +195,7 @@ Common.AbstractEditor {
                 }
             }
         }
+
     }
+
 }

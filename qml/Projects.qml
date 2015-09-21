@@ -1,31 +1,28 @@
-import QtQuick 2.3
+import QtQuick 2.0
 import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
-import "qrc:///common/FormatDates.js" as FormatDates
+import 'qrc:///models' as Models
 
 Rectangle {
-    id: gantDiagram
+    id: projects
 
     Common.UseUnits { id: units }
 
     property string pageTitle: qsTr('Projectes')
 
-    signal editEvent(int idEvent,string event, string desc,string startDate,string startTime,string endDate,string endTime)
     signal newProjectRequest()
     signal showProject(int project)
     signal showCharacteristics(int project)
     signal showEvents(int project)
 
-    property string documents: ''
     property int sectionsHeight: units.fingerUnit * 3
     property int sectionsWidth: units.fingerUnit * 5
 
-    SqlTableModel {
+    Models.ProjectsModel {
         id: projectsModel
 
-        tableName: globalProjectsModel.tableName
-        fieldNames: globalProjectsModel.fieldNames
+        Component.onCompleted: select()
     }
 
     Connections {
@@ -101,26 +98,9 @@ Rectangle {
             }
             size: units.fingerUnit * 2
             imageSource: 'plus-24844'
-            onClicked: newProject()
+            onClicked: projects.newProjectRequest()
         }
     }
 
-    function newProject() {
-        newProjectRequest();
-    }
 
-    Component.onCompleted: {
-        projectsModel.select();
-    }
-
-    /*
-    SqlTableModel {
-        id: events
-        tableName: 'schedule'
-        filters: []
-        Component.onCompleted: {
-            setSort(4,Qt.DescendingOrder); // Order by startDate
-        }
-    }
-    */
 }

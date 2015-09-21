@@ -4,18 +4,15 @@ SqlTableModel {
     tableName: 'detailedAnnotations'
     fieldNames: [
         'id',
-        'comment',
-        'characteristicId',
-        'characteristicTitle',
-        'characteristicDesc',
-        'eventId',
-        'eventTitle',
-        'eventDesc',
-        'startDate',
-        'startTime',
-        'endDate',
-        'endTime',
-        'eventState',
-        'eventRef'
+        'created',
+        'title',
+        'desc',
+        'image',
+        'project',
+        'labels',
+        'projectName',
+        'eventsCount',
+        'resourcesCount'
     ]
+    searchFields: ['title','desc','projectName','labels']
 }

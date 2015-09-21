@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.5
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.1
@@ -6,6 +6,7 @@ import QtQuick.Dialogs 1.2
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import "qrc:///javascript/Storage.js" as Storage
+import "qrc:///common/FormatDates.js" as FormatDates
 import PersonalTypes 1.0
 
 CollectionInspector {
@@ -16,7 +17,7 @@ CollectionInspector {
     signal savedAnnotation(int id,string annotation,string desc)
     signal duplicatedAnnotation(string annotation,string desc)
     signal openCamera(var receiver)
-    signal showEvent(int idEvent, string event, string desc, string startDate, string startTime, string endDate, string endTime, int project)
+    signal showEvent(var parameters)
     signal newEvent(var parameters)
     signal newResourceAttachment(var parameters)
     signal openingDocumentExternally(string document)
@@ -73,6 +74,20 @@ CollectionInspector {
             obj['id'] = idCode;
             globalAnnotationsModel.updateObject(obj);
         }
+    }
+
+    Models.ScheduleModel {
+        id: eventsModel
+        filters: ["ref='" + idAnnotation + "'"]
+        onFiltersChanged: {
+            setSort(5,Qt.AscendingOrder);
+            select();
+        }
+    }
+
+    Connections {
+        target: globalScheduleModel
+        onUpdated: eventsModel.select()
     }
 
     model: ObjectModel {
@@ -172,7 +187,7 @@ CollectionInspector {
                             left: parent.left
                             right: parent.right
                         }
-                        height: childrenRect.height
+                        //height: childrenRect.height
 
                         Text {
                             Layout.fillWidth: true
@@ -191,9 +206,10 @@ CollectionInspector {
                                 Rectangle {
                                     border.color: 'black'
                                     radius: units.nailUnit * 2
-                                    width: Math.max(units.fingerUnit, childrenRect.width) + units.nailUnit * 2
-                                    height: Math.max(units.fingerUnit, childrenRect.height) + units.nailUnit
+                                    width: Math.max(units.fingerUnit, labelText.width) + units.nailUnit * 3
+                                    height: Math.max(units.fingerUnit, labelText.height) + units.nailUnit
                                     Text {
+                                        id: labelText
                                         anchors {
                                             top: parent.top
                                             left: parent.left
@@ -252,7 +268,6 @@ CollectionInspector {
                 }
 
                 onEditedContentChanged: {
-                    console.log('Splitting ' + editedContent);
                     var labelsArray = editedContent.split(' ');
                     labelsListItem.model = labelsArray;
                 }
@@ -263,78 +278,112 @@ CollectionInspector {
             width: annotationEditor.width
             caption: qsTr('Esdeveniments')
 
-            property bool enableDeletion: false
+            property bool enableDeletion: eventsModel.count == 0
 
-            visorComponent: ListView {
+            visorComponent: Schedule {
+                // Required height defined inside Schedule
+                property string shownContent: ''
+
+                interactive: false
+
+                onShownContentChanged: {
+                    eventsModel.select();
+                }
+                onShowEvent: annotationEditor.showEvent(parameters)
+
+                scheduleModel: eventsModel
+
+                Common.SuperposedButton {
+                    id: newEventButton
+                    anchors {
+                        top: parent.top
+                        right: parent.right
+                    }
+
+                    size: units.fingerUnit
+                    imageSource: 'plus-24844'
+                    onClicked: {
+                        var date = (new Date());
+                        var dateStr = date.toYYYYMMDDFormat();
+                        var timeStr = date.toHHMMFormat();
+                        var obj = {
+                            annotation: annotationEditor.idAnnotation,
+                            startDate: dateStr,
+                            startTime: timeStr,
+                            endDate: dateStr,
+                            endTime: timeStr
+                        };
+                        newEvent(obj);
+                    }
+                }
+            }
+
+            /*
+            ListView {
                 id: eventsList
 
                 property int requiredHeight: contentItem.height
                 property string shownContent: ''
 
-                model: SqlTableModel {
-                    id: eventsModel
-                    tableName: globalScheduleModel.tableName
-                    filters: ["ref='" + eventsList.shownContent + "'"]
-                    onFiltersChanged: select()
-                    onCountChanged: eventsComponent.enableDeletion = (count == 0)
+                onShownContentChanged: {
+                    eventsModel.select();
                 }
 
-                Connections {
-                    target: globalScheduleModel
-                    onUpdated: eventsModel.select()
-                }
+                model: eventsModel
 
                 delegate: Rectangle {
                     border.color: 'black'
                     width: eventsList.width
                     height: units.fingerUnit * 2
+                    color: (model.state == 'done')?'gray':'#eeffff'
                     RowLayout {
                         id: eventLayout
                         anchors.fill: parent
-                        anchors.margins: units.nailUnit
-                        Text {
+                        spacing: 0
+                        Common.BoxedText {
                             Layout.fillHeight: true
                             Layout.fillWidth: true
+                            margins: units.nailUnit
+                            color: 'transparent'
                             text: model.event
                         }
-                        Text {
+                        Common.BoxedText {
                             Layout.fillHeight: true
                             Layout.preferredWidth: eventLayout.width / 6
+                            margins: units.nailUnit
+                            color: 'transparent'
                             text: model.startDate
                         }
-                        Text {
+                        Common.BoxedText {
                             Layout.fillHeight: true
                             Layout.preferredWidth: eventLayout.width / 6
+                            margins: units.nailUnit
+                            color: 'transparent'
                             text: model.startTime
                         }
-                        Text {
+                        Common.BoxedText {
                             Layout.fillHeight: true
                             Layout.preferredWidth: eventLayout.width / 6
+                            margins: units.nailUnit
+                            color: 'transparent'
                             text: model.endDate
                         }
-                        Text {
+                        Common.BoxedText {
                             Layout.fillHeight: true
                             Layout.preferredWidth: eventLayout.width / 6
+                            margins: units.nailUnit
+                            color: 'transparent'
                             text: model.endTime
                         }
                     }
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: annotationEditor.showEvent(model.id,'','','','','','','')
+                        onClicked: annotationEditor.showEvent({idEvent: model.id})
                     }
                 }
 
-                footer: Common.SuperposedButton {
-                    id: newEventButton
-                    size: units.fingerUnit
-                    imageSource: 'plus-24844'
-                    onClicked: {
-                        var obj = {annotation: annotationEditor.idAnnotation};
-                        console.log(obj);
-                        newEvent(obj);
-                    }
-                }
             }
+            */
         }
         CollectionInspectorItem {
             id: resourcesComponent
@@ -416,6 +465,26 @@ CollectionInspector {
             }
         }
 
+        CollectionInspectorItem {
+            id: characteristicsComponent
+            width: annotationEditor.width
+            caption: qsTr('Característiques')
+
+            visorComponent: ListView {
+                model: 3
+                property int requiredHeight: contentItem.height
+                delegate: Common.BoxedText {
+                    width: parent.width
+                    height: units.fingerUnit * 2
+                    fontSize: units.readUnit
+                    margins: units.nailUnit
+                    text: modelData
+                }
+            }
+            enableSendClick: true
+            onSendClick: showEventCharacteristics(idEvent, eventCharacteristicsModel, writeCharacteristicsModel)
+        }
+
         EditDeleteItemInspector {
             id: deleteButton
             width: annotationEditor.width
@@ -433,13 +502,8 @@ CollectionInspector {
 
     function fillValues() {
         var reference = -1;
-        console.log("ID: " + idAnnotation);
         if (annotationEditor.idAnnotation != -1) {
             var details = globalAnnotationsModel.getObject(annotationEditor.idAnnotation);
-            console.log("FIELD names " + globalAnnotationsModel.fieldNames);
-            for (var prop in details) {
-                console.log('Prop ' + prop + "->" + details[prop]);
-            }
 
             titleComponent.originalContent = details.title;
             descComponent.originalContent = (details.desc == null)?'':details.desc;
@@ -449,7 +513,7 @@ CollectionInspector {
 
             labelsComponent.originalContent = (details.labels == null)?'':details.labels;
 
-            eventsComponent.originalContent = details.id;
+            eventsComponent.originalContent = details.id.toString();
 
             annotationEditor.setChanges(false);
         }
@@ -471,7 +535,6 @@ CollectionInspector {
         Component.onCompleted: select()
 
         onCountChanged: {
-            console.log('Now');
             var labelsArray = [];
             for (var i=0; i<count; i++) {
                 var labelsString = getObjectInRow(i)['labels'];
@@ -482,8 +545,21 @@ CollectionInspector {
                 }
             }
             labelsArray.sort();
-            existingLabelsModel = labelsArray;
-            console.log(labelsArray);
+
+            // remove duplicates
+
+            var uniqueLabelsArray = [];
+            if (labelsArray.length>0) {
+                uniqueLabelsArray.push(labelsArray[0]);
+                for (var k=1; k<labelsArray.length; k++) {
+                    if (labelsArray[k] !== labelsArray[k-1])
+                        uniqueLabelsArray.push(labelsArray[k]);
+                }
+            }
+
+            existingLabelsModel = uniqueLabelsArray;
         }
     }
+
+    Component.onCompleted: fillValues()
 }

@@ -19,7 +19,7 @@ SqlTableModel::SqlTableModel(QObject *parent, QSqlDatabase db) :
 }
 
 void SqlTableModel::debug() {
-    qDebug() << "HHOOOLA";
+//    qDebug() << "HHOOOLA";
 }
 
 QSqlRecord SqlTableModel::buildRecord(const QVariantMap &object,bool autoValue) {
@@ -102,8 +102,10 @@ QVariantMap SqlTableModel::getObject(QString key) const {
     bool found = false;
     int row=0;
 
+    qDebug() << "Searching for "  << key << " in " << rowCount() << " rows.";
     while ((!found) && (row<rowCount())) {
         searchRecord = this->record(row);
+        qDebug() << searchRecord.value(primaryKey().fieldName(0)) << key;
         if (searchRecord.value(primaryKey().fieldName(0))==key)
             found = true;
         else
@@ -243,7 +245,7 @@ QString SqlTableModel::searchString() {
 
 bool SqlTableModel::select() {
     deselectAllObjects();
-    qDebug() << "Se seleccionara" << selectStatement();
+//    qDebug() << "Se seleccionara" << selectStatement();
 
     if ((innerLimit==0) && (innerGroupBy=="")) {
         bool res = QSqlRelationalTableModel::select();
@@ -251,16 +253,16 @@ bool SqlTableModel::select() {
         return res;
     } else {
         if (innerGroupBy != "") {
-            qDebug() << selectStatement() + " GROUP BY " + innerGroupBy;
+//            qDebug() << selectStatement() + " GROUP BY " + innerGroupBy;
             QSqlQueryModel::setQuery(selectStatement() + " GROUP BY " + innerGroupBy);
-            qDebug() << selectStatement();
+//            qDebug() << selectStatement();
             countChanged();
-            qDebug() << query().lastError();
+//            qDebug() << query().lastError();
             return !query().lastError().isValid();
         } else {
             QSqlQueryModel::setQuery(selectStatement() + " LIMIT " + QString::number(innerLimit));
             countChanged();
-            qDebug() << query().lastError();
+//            qDebug() << query().lastError();
             return !query().lastError().isValid();
         }
     }
@@ -268,7 +270,7 @@ bool SqlTableModel::select() {
 
 bool SqlTableModel::selectUnique(QString field) {
     QSqlQueryModel::setQuery("SELECT " + field + " FROM " + innerTableName + " GROUP BY " + field);
-    qDebug() << query().executedQuery();
+//    qDebug() << query().executedQuery();
     countChanged();
     return !query().lastError().isValid();
 }
@@ -284,10 +286,10 @@ QStringList SqlTableModel::selectDistinct(QString field,QString order,QString fi
 
     QStringList vector;
     QSqlQuery query("SELECT DISTINCT " + field + " FROM " + this->innerTableName + ((filter != "")?(" WHERE " + filter):"") + " ORDER BY " + order + ((ascending)?" ASC":" DESC "));
-    qDebug() << query.executedQuery();
+//    qDebug() << query.executedQuery();
     bool iter = query.first();
     while (iter) {
-        qDebug() << ".";
+//        qDebug() << ".";
         vector.append(query.record().value(0).toString());
         iter = query.next();
     }
@@ -295,7 +297,7 @@ QStringList SqlTableModel::selectDistinct(QString field,QString order,QString fi
 }
 
 void SqlTableModel::selectObject(int row,bool activate) {
-    qDebug() << "Selecting object in " << row << " " << activate;
+//    qDebug() << "Selecting object in " << row << " " << activate;
     if (activate)
         subselectedRows.insert(row,true);
     else
@@ -305,7 +307,7 @@ void SqlTableModel::selectObject(int row,bool activate) {
 }
 
 bool SqlTableModel::setData(const QModelIndex &item, const QVariant &value, int role) {
-    qDebug() << "Set data";
+//    qDebug() << "Set data";
     return true;
 }
 
@@ -353,7 +355,7 @@ void SqlTableModel::setInnerFilters() {
     }
 
     QSqlTableModel::setFilter(fieldFilter);
-    qDebug() << tableName() + "Filter " + fieldFilter;
+//    qDebug() << tableName() + "Filter " + fieldFilter;
 }
 
 void SqlTableModel::setGroupBy(const QString &group) {
@@ -398,13 +400,15 @@ void SqlTableModel::setTableName(const QString &tableName) {
 }
 
 const QString &SqlTableModel::tableName() {
-    qDebug() << "Returning innerTableName " << innerTableName;
+//    qDebug() << "Returning innerTableName " << innerTableName;
     return innerTableName;
 }
 
 bool SqlTableModel::updateObject(const QVariantMap &object) {
+    qDebug() << "Field name" << this->primaryKey().fieldName(0);
     int row = searchRowWithKeyValue(object.value(this->primaryKey().fieldName(0)));
 
+    qDebug() << "Updating " << object;
     bool result = false;
     if (row>-1) {
         QSqlRecord record = buildRecord(object,false);

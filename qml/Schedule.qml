@@ -1,8 +1,9 @@
-import QtQuick 2.0
+import QtQuick 2.5
 import QtQuick.Controls 1.0
 import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 import "qrc:///common/FormatDates.js" as FormatDates
 import "qrc:///javascript/Storage.js" as Storage
 
@@ -10,23 +11,61 @@ import "qrc:///javascript/Storage.js" as Storage
 Rectangle {
     id: schedule
     property string pageTitle: qsTr('Agenda');
-    signal showEvent(int idEvent,string event, string desc,string startDate,string startTime,string endDate,string endTime,int project)
+    signal showEvent(var parameters)
     signal deletedEvents (int num)
 
-    property SqlTableModel projectsModel
+    property SqlTableModel scheduleModel
     property int order: 0
+
+    property int requiredHeight: eventList.contentItem.height + units.nailUnit * 2
+
+    property alias interactive: eventList.interactive
 
     Common.UseUnits { id: units }
 
     ListView {
         id: eventList
         anchors.fill: parent
+        anchors.margins: units.nailUnit
 
         clip: true
 
         model: scheduleModel
+
+        headerPositioning: ListView.OverlayHeader
+        header: Rectangle {
+            width: eventList.width
+            height: units.fingerUnit
+            z: 2
+            RowLayout {
+                anchors.fill: parent
+                Text {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: parent.width / 5
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: ((schedule.order === 1)||(schedule.order === 3))?qsTr('A partir de'):qsTr('Fins a')
+                }
+                Text {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: 2 * parent.width / 5
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Terminis')
+                }
+                Text {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Descripció')
+                }
+            }
+        }
+
         delegate: ScheduleItem {
             id: oneScheduleItem
+            z: 1
             anchors.left: parent.left
             anchors.right: parent.right
             state: {
@@ -40,7 +79,8 @@ Rectangle {
                     }
                 }
             }
-            event: Storage.convertNull(model.event)
+            idEvent: model.id
+            title: Storage.convertNull(model.event)
             desc: Storage.convertNull(model.desc)
             startDate: Storage.convertNull(model.startDate)
             startTime: Storage.convertNull(model.startTime)
@@ -48,9 +88,21 @@ Rectangle {
             endTime: Storage.convertNull(model.endTime)
             stateEvent: Storage.convertNull(model.state)
             project: (model.ref !=='')?parseInt(model.ref):-1
-            projectsModel: schedule.projectsModel
-
+            annotationTitleDesc: model.annotationTitle + model.annotationDesc
+            section: {
+                if (ListView.section === '') {
+                    return qsTr('Sense data');
+                } else {
+                    if (ListView.section !== ListView.previousSection) {
+                        var date = (new Date()).fromYYYYMMDDFormat(ListView.section).toShortReadableDate();
+                        return date;
+                    } else
+                        return '';
+                }
+            }
             onScheduleItemSelected: {
+                schedule.showEvent({idEvent: event});
+                /*
                 if (editBox.state == 'show') {
                     scheduleModel.selectObject(model.index,!scheduleModel.isSelectedObject(model.index));
                 } else {
@@ -65,9 +117,10 @@ Rectangle {
                         break;
                     }
                 }
+                */
             }
             onScheduleItemLongSelected: {
-                schedule.showEvent(id,event,desc,startDate,startTime,endDate,endTime,project);
+                schedule.showEvent({idEvent: event});
             }
         }
         snapMode: ListView.SnapToItem
@@ -75,20 +128,10 @@ Rectangle {
         section.property: ((order==1)||(order==3))?"startDate":"endDate"
         section.criteria: ViewSection.FullString
         section.labelPositioning: ViewSection.InlineLabels
-        section.delegate: Component {
-            Rectangle {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                color: 'white'
-                height: units.fingerUnit
-                Text {
-                    anchors.fill: parent
-                    font.bold: true
-                    font.pixelSize: units.readUnit
-                    verticalAlignment: Text.AlignBottom
-                    text: (((schedule.order === 1)||(schedule.order === 3))?qsTr('A partir de'):qsTr('Fins a')) + ' ' + (section!=''?(new Date()).fromYYYYMMDDFormat(section).toLongDate():qsTr('no especificat'))
-                }
-            }
+        section.delegate: Rectangle {
+            width: eventList.width
+            height: units.nailUnit * 2
+            z: 1
         }
     }
 }

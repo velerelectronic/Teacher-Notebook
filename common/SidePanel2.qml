@@ -9,6 +9,8 @@ Item {
 
     property real percentageShown: (panelWidth+panelItem.x)/panelWidth
 
+    property bool enableSidePabel: false
+
     default property alias mainItem: panelLoader.sourceComponent
 
     states: [
@@ -43,7 +45,9 @@ Item {
         opacity: 0.5 * percentageShown
         MouseArea {
             id: shadowMouseArea
+            enabled: enableSidePabel
             anchors.fill: parent
+
             onPressed: {
                 sidePanel.state = 'hidePanel';
             }
@@ -64,6 +68,7 @@ Item {
             anchors.fill: parent
             anchors.rightMargin: -handleSize
 
+            enabled: enableSidePabel
             drag.target: panelItem
             drag.axis: Drag.XAxis
             drag.minimumX: -panelItem.width

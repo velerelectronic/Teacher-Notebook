@@ -15,6 +15,7 @@ DatabaseBackup {
 //        globalScheduleModel.tableName = 'schedule';
         globalScheduleModel.fieldNames = ['created','id','event','desc','startDate','startTime','endDate','endTime','state','ref'];
         globalScheduleModel.setSort(5,Qt.AscendingOrder);
+        globalScheduleModel.filters = [];
         globalScheduleModel.select();
 
 //        globalProjectsModel.tableName = 'projects';
@@ -42,6 +43,23 @@ DatabaseBackup {
         dataBck.createTable('characteristics','id INTEGER PRIMARY KEY, title TEXT, desc TEXT, ref INTEGER');
         dataBck.createTable('eventCharacteristics', 'id INTEGER PRIMARY KEY, characteristic INTEGER, event INTEGER, comment TEXT');
 
+        createView('detailedSchedule',
+                   "SELECT  schedule.id         AS id,
+                            schedule.created    AS created,
+                            schedule.event      AS event,
+                            schedule.desc       AS desc,
+                            schedule.startDate  AS startDate,
+                            schedule.startTime  AS startTime,
+                            schedule.endDate    AS endDate,
+                            schedule.endTime    AS endTime,
+                            schedule.state      AS state,
+                            schedule.ref        AS annotationId,
+                            annotations.title   AS annotationTitle,
+                            annotations.desc    AS annotationDesc,
+                            annotations.labels  AS annotationLabels
+                    FROM    schedule
+                    LEFT JOIN   annotations     ON annotations.id = schedule.ref
+                    ");
         createView('detailedEventCharacteristics',
             "SELECT eventCharacteristics.id             AS id,
                     eventCharacteristics.comment        AS comment,
@@ -108,7 +126,7 @@ DatabaseBackup {
                             ");
 
         // Views
-        dataBck.createView('rubrics_levels_descriptors',"SELECT rubrics_descriptors.id AS id, rubrics_descriptors.criterium AS criterium, rubrics_criteria.title AS criteriumTitle, rubrics_criteria.desc AS criteriumDesc, rubrics_descriptors.level AS level, rubrics_descriptors.definition AS definition, rubrics_levels.title AS title, rubrics_levels.desc AS desc, rubrics_levels.score AS score FROM rubrics_levels, rubrics_criteria LEFT JOIN rubrics_descriptors ON rubrics_levels.id=rubrics_descriptors.level WHERE rubrics_criteria.id=rubrics_descriptors.criterium");
+        dataBck.createView('rubrics_levels_descriptors',"SELECT rubrics_descriptors.id AS id, rubrics_descriptors.criterium AS criterium, rubrics_criteria.title AS criteriumTitle, rubrics_criteria.desc AS criteriumDesc, rubrics_descriptors.id AS descriptor, rubrics_descriptors.level AS level, rubrics_descriptors.definition AS definition, rubrics_levels.title AS title, rubrics_levels.desc AS desc, rubrics_levels.score AS score FROM rubrics_levels, rubrics_criteria LEFT JOIN rubrics_descriptors ON rubrics_levels.id=rubrics_descriptors.level WHERE rubrics_criteria.id=rubrics_descriptors.criterium");
 
         dataBck.createView('rubrics_last_scores',
             "SELECT ra.id           AS assessment,
@@ -163,7 +181,7 @@ DatabaseBackup {
                     ORDER BY assessment, criterium, individual ASC
             ");
 
-
+        dataBck.dropView('rubrics_descriptors_scores');
         dataBck.createView('rubrics_descriptors_scores',
                     "SELECT rubrics_assessment.id           AS assessment,
                             rubrics_assessment.rubric       AS rubric,
@@ -214,21 +232,24 @@ DatabaseBackup {
 
         dataBck.dropView('detailedAnnotations');
         dataBck.createView('detailedAnnotations',
-                    "SELECT annotations.id                  AS id,
-                            annotations.created             AS created,
-                            annotations.title               AS title,
-                            annotations.desc                AS desc,
-                            annotations.image               AS image,
-                            annotations.ref                 AS project,
-                            annotations.labels              AS labels,
-                            count(schedule.id)              AS events,
-                            count(resourcesAnnotations.id)  AS resources
+                    "SELECT annotations.id                          AS id,
+                            annotations.created                     AS created,
+                            annotations.title                       AS title,
+                            annotations.desc                        AS desc,
+                            annotations.image                       AS image,
+                            annotations.ref                         AS project,
+                            annotations.labels                      AS labels,
+                            projects.name                           AS projectName,
+                            COUNT(DISTINCT schedule.id)             AS eventsCount,
+                            COUNT(DISTINCT resourcesAnnotations.id) AS resourcesCount
                         FROM        annotations
+                        LEFT JOIN   projects
+                            ON      annotations.ref = projects.id
                         LEFT JOIN   schedule
                             ON      schedule.ref = annotations.id
                         LEFT JOIN   resourcesAnnotations
                             ON      resourcesAnnotations.annotation = annotations.id
-                        GROUP BY    annotations.id, schedule.ref
+                        GROUP BY    annotations.id, schedule.ref, resourcesAnnotations.annotation
                     ");
 
 

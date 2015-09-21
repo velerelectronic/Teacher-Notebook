@@ -52,7 +52,7 @@ CollectionInspector {
 
     onSaveDataRequested: {
         var object = {
-            criterium: criteriumComponent.originalContent,
+            criterium: criterium,
             level: rubricDescriptorItem.level,
             definition: definitionComponent.editedContent
         }

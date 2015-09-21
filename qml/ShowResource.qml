@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
+import QtQuick.Dialogs 1.2
 import QtQml.Models 2.1
 
 import 'qrc:///common' as Common
@@ -74,12 +75,27 @@ CollectionInspector {
             caption: qsTr('Origen')
             enableSendClick: true
 
+            property string sourceName: ''
+
             Item {
                 id: docReceiver
                 anchors.fill: parent
 
                 function sendFile(file) {
                     resourceEditor.source = file;
+                    var l = resourceEditor.source.lastIndexOf('/');
+                    resourceSource.sourceName = resourceEditor.source.substring(l+1);
+                    copySourceToTitle.open();
+                }
+            }
+
+            MessageDialog {
+                id: copySourceToTitle
+                title: qsTr('Canviar nom')
+                informativeText: qsTr("Vols canviar el nom del recurs per «" + resourceSource.sourceName + "»?")
+                standardButtons: StandardButton.Ok | StandardButton.Cancel
+                onAccepted: {
+                    resourceTitle.originalContent = resourceSource.sourceName;
                 }
             }
 

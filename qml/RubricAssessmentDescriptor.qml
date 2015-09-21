@@ -4,6 +4,7 @@ import QtQml.Models 2.1
 import QtQuick.Dialogs 1.2
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 import "qrc:///javascript/Storage.js" as Storage
 
 CollectionInspector {
@@ -16,16 +17,42 @@ CollectionInspector {
     property int descriptor: -1
     property int criterium: -1
     property string comment: ''
-
-    property SqlTableModel scoresSaveModel
-    property SqlTableModel scoresModel
-    property SqlTableModel levelDescriptorsModel
-    property SqlTableModel individualsModel
-    property SqlTableModel lastScoresModel
+    property string group: ''
 
     signal savedAssessmentDescriptor
 
     Common.UseUnits { id: units }
+
+    Models.IndividualsModel {
+        id: individualsModel
+    }
+
+    Models.RubricsLevelsDescriptorsModel {
+        id: levelDescriptorsModel
+        filters: [
+            "criterium='" + criterium + "'"
+        ]
+        Component.onCompleted: {
+            setSort(9,Qt.AscendingOrder);
+            select();
+        }
+    }
+
+    Models.RubricsDetailedScoresModel {
+        id: scoresModel
+        filters: [
+            "assessment='" + assessment + "'",
+            "criterium='" +  criterium + "'",
+            "\"group\"='" + group + "'",
+            "individual='" + individual + "'"
+        ]
+
+        Component.onCompleted: select()
+    }
+
+    Models.RubricsScoresModel {
+        id: scoresSaveModel
+    }
 
     model: ObjectModel {
         EditFakeItemInspector {
@@ -167,15 +194,19 @@ CollectionInspector {
     Component.onCompleted: {
 //        scoresModel.select();
 
+        individualsModel.select();
+
         var individualObject = individualsModel.getObject(individual);
 
-        groupComponent.originalContent = individualObject['group'];
+        assessmentDescriptorItem.group = individualObject['group'];
+        groupComponent.originalContent = assessmentDescriptorItem.group;
         individualComponent.originalContent = individualObject['name'] + " " + individualObject['surname'];
 
         var criteriumObject = levelDescriptorsModel.getObject('criterium',criterium);
         criteriumComponent.originalContent = [criteriumObject['criteriumTitle'],criteriumObject['criteriumDesc']];
 
         console.log('Last scoreId ' + lastScoreId);
+
         var obj2 = scoresModel.getObject('scoreId',lastScoreId);
 
         console.log('obj2 [ "descriptor" ]: ' + obj2['descriptor'] );
@@ -202,7 +233,6 @@ CollectionInspector {
 
         scoresSaveModel.insertObject(object);
         scoresModel.select();
-        lastScoresModel.select();
         setChanges(false);
         savedAssessmentDescriptor();
     }

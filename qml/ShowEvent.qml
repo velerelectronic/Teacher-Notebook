@@ -92,60 +92,55 @@ CollectionInspector {
         }
         */
 
-        CollectionInspectorItem {
-            id: characteristicsComponent
-            width: eventEditor.width
-            caption: qsTr('Característiques')
-
-            visorComponent: ListView {
-                model: 3
-                property int requiredHeight: contentItem.height
-                delegate: Common.BoxedText {
-                    width: parent.width
-                    height: units.fingerUnit * 2
-                    fontSize: units.readUnit
-                    margins: units.nailUnit
-                    text: modelData
-                }
-            }
-            enableSendClick: true
-            onSendClick: showEventCharacteristics(idEvent, eventCharacteristicsModel, writeCharacteristicsModel)
-        }
         EditDeleteItemInspector {
             id: deleteButton
             width: eventEditor.width
 
-            enableButton: true
+            enableButton: eventEditor.idEvent != -1
             buttonCaption: qsTr('Esborrar esdeveniment')
             dialogTitle: buttonCaption
             dialogText: qsTr("Esborrareu l'esdeveniment. Voleu continuar?")
 
-            model: globalScheduleModel
-            itemId: idEvent
+            model: scheduleModel
+            itemId: eventEditor.idEvent
             onDeleted: closePage(qsTr("S'ha esborrat l'esdeveniment"))
         }
     }
 
-    Models.DetailedEventCharacteristics {
-        id: eventCharacteristicsModel
-        filters: ["eventId='" + idEvent + "'"]
+    function ifUndefined(text,alternative) {
+        return (typeof text === 'undefined')?alternative:text;
     }
 
-    Models.EventCharacteristicsModel {
-        id: writeCharacteristicsModel
-        filters: ["event='" + idEvent + "'"]
+    function ifEmpty(text,alternative) {
+        return (text !== '')?text:alternative;
     }
 
     Component.onCompleted: {
+        scheduleModel.select();
+
+        console.log("ID event " + idEvent);
         if (eventEditor.idEvent != -1) {
-            var details = globalScheduleModel.getObject(eventEditor.idEvent);
-            titleComponent.originalContent = details.event;
-            descComponent.originalContent = details.desc;
-            startComponent.originalContent = {date: details.startDate, time: details.startTime};
-            endComponent.originalContent = {date: details.endDate, time: details.endTime};
+            var details = scheduleModel.getObject('id',eventEditor.idEvent);
+
+            eventEditor.event = ifUndefined(details.event,'');
+            eventEditor.desc = ifUndefined(details.desc,'');
+
+            startDate = ifUndefined(details.startDate,'');
+            startTime = ifUndefined(details.startTime,'');
+            endDate = ifUndefined(details.endDate,'');
+            endTime = ifUndefined(details.endTime,'');
+
             stateComponent.originalContent = details.state;
-            annotation = (typeof details.ref !== 'undefined')?details.ref:-1;
+            annotation = details.ref;
         }
+
+        console.log('TERMINIS ' + [startDate,startTime,endDate,endTime].join('...'));
+
+        titleComponent.originalContent = eventEditor.event;
+        descComponent.originalContent = eventEditor.desc;
+
+        startComponent.originalContent = {date: startDate, time: startTime};
+        endComponent.originalContent = {date: endDate, time: endTime};
 
         annotationComponent.originalContent = {
             reference: annotation,
@@ -180,17 +175,27 @@ CollectionInspector {
         }
 
         if (idCode == -1) {
-            globalScheduleModel['created'] = Storage.currentTime();
-            globalScheduleModel.insertObject(object);
+            console.log('Totally new');
+            object['created'] = Storage.currentTime();
+            scheduleModel.insertObject(object);
         } else {
             object['id'] = idCode;
-            globalScheduleModel.updateObject(object);
+            if (scheduleModel.updateObject(object))
+                console.log('Updated!');
+            else
+                console.log('Not updated');
         }
+        globalScheduleModel.select();
+
         eventEditor.setChanges(false);
         eventEditor.savedEvent(object['title'],object['desc'],object['startDate'],object['startTime'],object['endDate'],object['endTime']);
     }
 
     function requestClose() {
         closeItem();
+    }
+
+    Models.ScheduleModel {
+        id: scheduleModel
     }
 }

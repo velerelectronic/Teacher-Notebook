@@ -34,5 +34,6 @@
         <file>common/ImageButton.qml</file>
         <file>common/BoxedText.qml</file>
         <file>common/CustomDialog.qml</file>
+        <file>common/VerticalBoxDiagram.qml</file>
     </qresource>
 </RCC>
