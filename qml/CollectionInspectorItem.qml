@@ -1,5 +1,8 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
+import QtGraphicalEffects 1.0
+import QtQuick.Dialogs 1.2
+
 import 'qrc:///common' as Common
 
 Common.AbstractEditor {
@@ -27,6 +30,10 @@ Common.AbstractEditor {
                 opacity: 0
                 enabled: false
             }
+            PropertyChanges {
+                target: glowEffect
+                visible: false
+            }
         },
         State {
             name: 'editMode'
@@ -43,6 +50,11 @@ Common.AbstractEditor {
                 target: mainEditor
                 opacity: 1
                 enabled: true
+                sourceComponent: editorComponent
+            }
+            PropertyChanges {
+                target: glowEffect
+                visible: true
             }
         }
     ]
@@ -56,7 +68,7 @@ Common.AbstractEditor {
     property real requiredEditorHeight: ((mainEditor.item !== null) && (typeof mainEditor.item.requiredHeight === 'number'))?mainEditor.item.requiredHeight:0
 
     property alias visorComponent: mainVisor.sourceComponent
-    property alias editorComponent: mainEditor.sourceComponent
+    property Component editorComponent: null
 
     property var originalContent
 
@@ -76,7 +88,7 @@ Common.AbstractEditor {
 
     property var editedContent: originalContent
 
-    height: captionHeight + totalHeight + units.nailUnit + editorItemLayout.anchors.margins * 2
+    height: captionHeight + totalHeight + units.nailUnit + editorItemRectangle.anchors.margins * 2 + editorItemLayout.anchors.margins * 2
 
     Behavior on height {
         PropertyAnimation {
@@ -87,6 +99,29 @@ Common.AbstractEditor {
     signal editModeEntered
     signal viewModeEntered
 
+    function askDiscardChanges() {
+        if (state == 'editMode') {
+            if (mainVisor.item.shownContent !== mainEditor.item.editedContent)
+                askDiscardDialog.open();
+            else
+                discardChanges();
+        }
+    }
+
+    MessageDialog {
+        id: askDiscardDialog
+        title: qsTr('Descartar els canvis?')
+        text: title
+        standardButtons: StandardButton.Ok | StandardButton.Cancel
+        onAccepted: discardChanges()
+    }
+
+    function discardChanges() {
+        collectionInspectorItem.state = 'viewMode';
+        mainEditor.sourceComponent = null;
+        viewModeEntered();
+    }
+
     function enableShowMode() {
         mainVisor.item.shownContent = mainEditor.item.editedContent;
         editedContent = mainEditor.item.editedContent;
@@ -95,8 +130,8 @@ Common.AbstractEditor {
     }
 
     function enableEditMode() {
-        mainEditor.item.editedContent = mainVisor.item.shownContent;
         collectionInspectorItem.state = 'editMode';
+        mainEditor.item.editedContent = mainVisor.item.shownContent;
         editModeEntered();
     }
 
@@ -105,15 +140,23 @@ Common.AbstractEditor {
         mainEditor.item.editedContent = newContent;
     }
 
+    RectangularGlow {
+        id: glowEffect
+        anchors.fill: editorItemRectangle
+        glowRadius: units.nailUnit
+        spread: 0.5
+        color: 'gray'
+    }
+
     MouseArea {
         anchors.fill: parent
-        enabled: (mainEditor.sourceComponent !== null) || (enableSendClick)
+        enabled: (collectionInspectorItem.editorComponent !== null) || (enableSendClick)
         onClicked: {
             if (enableSendClick) {
                 sendClick();
             }
 
-            if (mainEditor.sourceComponent !== null) {
+            if (editorComponent !== null) {
                 if (collectionInspectorItem.state == 'viewMode') {
                     view.requestShowMode();
                     enableEditMode();
@@ -133,69 +176,103 @@ Common.AbstractEditor {
         onPressed: mouse.accepted = true
     }
 
-    GridLayout {
-        id: editorItemLayout
+    Rectangle {
+        id: editorItemRectangle
         anchors.fill: parent
         anchors.margins: units.nailUnit
-        columns: 2
-        rows: 2
-        columnSpacing: units.nailUnit
-        rowSpacing: units.nailUnit
-        clip: true
 
-        Text {
-            id: captionText
-            Layout.preferredHeight: contentHeight
-            Layout.fillWidth: true
-            Layout.columnSpan: 2
-            font.pixelSize: units.readUnit
-            font.bold: true
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-        }
+        GridLayout {
+            id: editorItemLayout
+            anchors.fill: parent
+            anchors.margins: units.nailUnit
+            columns: 2
+            rows: 2
+            flow: GridLayout.TopToBottom
+            columnSpacing: units.nailUnit
+            rowSpacing: units.nailUnit
+            clip: true
 
-        Rectangle {
-            Layout.preferredHeight: totalHeight
-            Layout.preferredWidth: units.fingerUnit
-            color: (mainEditor.status == Loader.Null)?'transparent':((collectionInspectorItem.state === 'viewMode')?'#FAAC58':'#FFFF00')
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.preferredWidth: units.fingerUnit
+                Layout.rowSpan: 2
+                color: (editorComponent === null)?'#DDDDDD':((collectionInspectorItem.state === 'viewMode')?'#FAAC58':'#FFFF00')
 
-            MouseArea {
-                anchors.fill: parent
-                enabled: collectionInspectorItem.state == 'editMode'
-                onClicked: enableShowMode()
-            }
-        }
-
-        Item {
-            Layout.fillWidth: true
-            Layout.preferredHeight: totalHeight
-
-            Loader {
-                id: mainVisor
-                anchors.fill: parent
-                onLoaded: {
-                    if (typeof originalContent !== 'undefined') {
-                        item.shownContent = originalContent;
+                ColumnLayout {
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
                     }
-                }
-            }
-            Loader {
-                id: mainEditor
-                anchors.fill: parent
 
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 100
+                    spacing: units.nailUnit
+                    enabled: collectionInspectorItem.state == 'editMode'
+                    visible: enabled
+
+                    Common.ImageButton {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
+                        image: 'floppy-35952'
+                        onClicked: enableShowMode()
+                    }
+
+                    Common.ImageButton {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
+                        image: 'road-sign-147409'
+                        onClicked: discardChanges()
                     }
                 }
 
-                onLoaded: {
-                    if (typeof originalContent !== 'undefined') {
-                        item.editedContent = originalContent;
+                /*
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: collectionInspectorItem.state == 'editMode'
+                    onClicked: enableShowMode()
+                }
+                */
+            }
+
+            Text {
+                id: captionText
+                Layout.preferredHeight: contentHeight
+                Layout.fillWidth: true
+                font.pixelSize: units.readUnit
+                font.bold: true
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            }
+
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: totalHeight
+
+                Loader {
+                    id: mainVisor
+                    anchors.fill: parent
+                    onLoaded: {
+                        if (typeof originalContent !== 'undefined') {
+                            item.shownContent = originalContent;
+                        }
+                    }
+                }
+                Loader {
+                    id: mainEditor
+                    anchors.fill: parent
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 100
+                        }
+                    }
+
+                    onLoaded: {
+                        if (typeof originalContent !== 'undefined') {
+                            item.editedContent = originalContent;
+                        }
                     }
                 }
             }
-        }
 
+        }
     }
-
 }

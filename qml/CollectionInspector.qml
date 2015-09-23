@@ -19,7 +19,7 @@ Common.AbstractEditor {
     signal discardDataRequested(bool changes)
     signal closePageRequested()
 
-    color: '#5FB404'
+    color: 'white'
 
     ListModel {
         id: buttonsModel
@@ -116,7 +116,7 @@ Common.AbstractEditor {
             console.log(widget.objectName);
             if (widget.objectName === 'collectionInspectorItem') {
                 if (widget.state === 'editMode')
-                    widget.enableShowMode();
+                    widget.askDiscardChanges();
             }
         }
     }

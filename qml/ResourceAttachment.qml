@@ -21,6 +21,9 @@ CollectionInspector {
     Models.DetailedResourcesModel {
         id: resourcesModel
 
+        searchFields: ['resourceTitle','resourceDesc','resourceType','resourceSource']
+
+        onCountChanged: console.log('NEW count ' + count)
         Component.objectName: select()
     }
 
@@ -35,6 +38,7 @@ CollectionInspector {
             id: resourceComponent
             width: attachmentEditor.width
             caption: qsTr('Recurs')
+            onPerformSearch: resourcesModel.searchString = searchString
             onAddRow: newResource()
         }
 
@@ -70,8 +74,8 @@ CollectionInspector {
         resourceComponent.originalContent = {
             reference: attachmentEditor.resource,
             valued: false,
-            nameAttribute: 'title',
-            model: globalResourcesModel
+            nameAttribute: 'resourceTitle',
+            model: resourcesModel
         }
     }
 

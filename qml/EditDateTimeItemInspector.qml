@@ -28,43 +28,41 @@ CollectionInspectorItem {
 
         color: 'white'
 
-        Flow {
+        GridLayout {
             id: dateTimeFlow
             anchors {
                 top: parent.top
                 left: parent.left
                 right: parent.right
             }
-            height: childrenRect.height
+//            height: childrenRect.height
+            columnSpacing: units.nailUnit
+            rowSpacing: columnSpacing
+            rows: 3
+            columns: 2
 
-            spacing: units.nailUnit
-
-            ColumnLayout {
-                width: units.fingerUnit * 5 // Math.max(limitDateOption.width,limitTimeOption.width)
-                height: limitDateOption.height + spacing + limitTimeOption.height
-                spacing: units.nailUnit
-
-                CheckBox {
-                    id: limitDateOption
-                    text: qsTr('Especifica data')
-                    checked: editedContent['date'] !== ''
-                    onClicked: datetimeToContent()
-                }
-                CheckBox {
-                    id: limitTimeOption
-                    text: qsTr('Especifica hora')
-                    checked: editedContent['time'] !== ''
-                    // If the date is not specified then we don't show the option to change the time
-                    visible: limitDateOption.checked
-                    onClicked: datetimeToContent()
-                }
+            CheckBox {
+                id: limitDateOption
+                Layout.fillWidth: true
+                text: qsTr('Especifica data')
+                checked: editedContent['date'] !== ''
+                onClicked: datetimeToContent()
+            }
+            CheckBox {
+                id: limitTimeOption
+                text: qsTr('Especifica hora')
+                checked: editedContent['time'] !== ''
+                // If the date is not specified then we don't show the option to change the time
+                visible: limitDateOption.checked
+                onClicked: datetimeToContent()
             }
 
             Calendar {
                 id: limitDatePicker
 
-                width: dateTimeFlow.width
-                height: width
+                Layout.fillWidth: true
+                Layout.preferredHeight: (visible)?width:0
+
                 visible: limitDateOption.checked
                 onClicked: {
                     datetimeToContent();
@@ -74,17 +72,6 @@ CollectionInspectorItem {
                     selectedDate = date;
                 }
             }
-
-            /*
-            Editors.DatePicker {
-                id: limitDatePicker
-                // We can choose the date whenever the option has been enabled
-                visible: limitDateOption.checked
-                onUpdatedByUser: {
-                    datetimeToContent();
-                }
-            }
-            */
 
             Editors.TimePicker {
                 id: limitTimePicker
@@ -116,10 +103,9 @@ CollectionInspectorItem {
                     console.log("Edited: " + editedContent['date']+ "---" + editedContent['time']);
                 }
             }
-            Item {
-                Layout.fillWidth: true
-            }
+
         }
+
         onEditedContentChanged: {
             var refDate = new Date();
             console.log('DateTimeEditor');

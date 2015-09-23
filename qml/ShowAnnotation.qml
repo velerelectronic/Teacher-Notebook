@@ -113,6 +113,9 @@ CollectionInspector {
             width: annotationEditor.width
             caption: qsTr('Projecte')
             onAddRow: newProject()
+            onPerformSearch: {
+                projectsModel.searchString = searchString;
+            }
         }
         CollectionInspectorItem {
             id: labelsComponent
@@ -522,12 +525,20 @@ CollectionInspector {
             reference: reference,
             valued: false,
             nameAttribute: 'name',
-            model: globalProjectsModel
+            model: projectsModel
         }
     }
 
     function requestClose() {
         closeItem();
+    }
+
+    Models.ProjectsModel {
+        id: projectsModel
+
+        searchFields: ['name','desc']
+
+        Component.onCompleted: select()
     }
 
     SqlTableModel {
