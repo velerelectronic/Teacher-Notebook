@@ -46,11 +46,7 @@ CollectionInspector {
             id: eventComponent
             width: rubricAssessmentEditor.width
             caption: qsTr('Esdeveniment')
-            onPerformSearch: {
-                var text = searchString.toLowerCase();
-                eventsModel.filters = ["INSTR(LOWER(event),'" + text + "') OR INSTR(LOWER(desc), '" + text + "')"];
-                eventsModel.select();
-            }
+            onPerformSearch: eventsModel.searchString = searchString
             onAddRow: {
                 var today = new Date();
                 var day = today.toYYYYMMDDFormat();
@@ -136,6 +132,7 @@ CollectionInspector {
         id: eventsModel
 
         filters: ["ifnull(state,'') != 'done'"]
+        searchFields: ['event','desc']
         limit: 20
     }
 }

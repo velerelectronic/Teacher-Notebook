@@ -20,6 +20,7 @@ CollectionInspector {
     signal canceledEvent(bool changes)
 
     signal showEventCharacteristics(int event, var characteristicsModel, var writeModel)
+    signal showAnnotation(var parameters)
 
     property int idEvent: -1
     property string event: ''
@@ -82,6 +83,9 @@ CollectionInspector {
             id: annotationComponent
             width: eventEditor.width
             caption: qsTr('Anotació')
+
+            onPerformSearch: annotationsModel.searchString = searchString
+            onAddRow: eventEditor.showAnnotation({})
         }
 
         /*
@@ -146,7 +150,7 @@ CollectionInspector {
             reference: annotation,
             valued: false,
             nameAttribute: 'title',
-            model: globalAnnotationsModel
+            model: annotationsModel
         }
 
         /*
@@ -185,7 +189,7 @@ CollectionInspector {
             else
                 console.log('Not updated');
         }
-        globalScheduleModel.select();
+        annotationsModel.select();
 
         eventEditor.setChanges(false);
         eventEditor.savedEvent(object['title'],object['desc'],object['startDate'],object['startTime'],object['endDate'],object['endTime']);
@@ -193,6 +197,13 @@ CollectionInspector {
 
     function requestClose() {
         closeItem();
+    }
+
+    Models.AnnotationsModel {
+        id: annotationsModel
+
+        searchFields: ['title','desc','labels']
+        Component.onCompleted: select()
     }
 
     Models.ScheduleModel {

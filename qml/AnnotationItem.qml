@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
+import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 
@@ -66,6 +67,10 @@ Rectangle {
         PropertyAnimation {
             duration: 100
         }
+    }
+
+    MarkDownParser {
+        id: parser
     }
 
     MouseArea {
@@ -220,9 +225,15 @@ Rectangle {
             property int requiredHeight: contentHeight
             property string desc
 
-            text: descLabel.desc
             font.pixelSize: units.readUnit
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
+            onDescChanged: {
+                var html = parser.toHtml(descLabel.desc);
+                descLabel.text = html;
+            }
+
+            onLinkActivated: Qt.openUrlExternally(link)
         }
     }
 
