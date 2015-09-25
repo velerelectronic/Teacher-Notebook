@@ -161,16 +161,17 @@ QString &SqlTableModel::groupBy() {
     return innerGroupBy;
 }
 
-bool SqlTableModel::insertObject(const QVariantMap &object) {
+QVariant SqlTableModel::insertObject(const QVariantMap &object) {
     qDebug() << "Object to insert: " << object;
     QSqlRecord record = buildRecord(object,true);
     qDebug() << record;
     qDebug() << record.field("id").isAutoValue();
     bool result = insertRowIntoTable(record); // Append the record
+    QVariant lastId = query().lastInsertId();
     qDebug() << lastError();
     updated();
     select();
-    return result;
+    return lastId;
 }
 
 bool SqlTableModel::isSelectedObject(const int &row) {

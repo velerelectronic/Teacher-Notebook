@@ -34,50 +34,92 @@ CollectionInspector {
 
     Common.UseUnits { id: units }
 
-    onSaveDataRequested: {
-        prepareDataAndSave(eventEditor.idEvent);
-        closePage(qsTr('Esdeveniment desat: títol «') + event + qsTr('», descripcio «') + desc + qsTr('»'));
-    }
-
     onCopyDataRequested: {
         prepareDataAndSave(-1);
     }
 
-    onDiscardDataRequested: {
-        if (changes) {
-            closePage(qsTr("S'han descartat els canvis a l'esdeveniment"));
+    onClosePageRequested: closePage('')
+
+    function saveOrUpdate(field, contents) {
+        var res = false;
+        var obj = {};
+        obj[field] = contents;
+
+        if (idEvent == -1) {
+            obj['created'] = Storage.currentTime();
+            res = scheduleModel.insertObject(obj);
+            console.log('Resultat', res);
+            if (res !== '') {
+                idEvent = res;
+            }
         } else {
-            closePage('');
+            obj['id'] = idEvent;
+            res = scheduleModel.updateObject(obj);
         }
+        return res;
     }
 
-    onClosePageRequested: closePage('')
+    function saveOrUpdate2(field1, contents1, field2, contents2) {
+        var res = false;
+        var obj = {};
+        obj[field1] = contents1;
+        obj[field2] = contents2;
+
+        if (idEvent == -1) {
+            obj['created'] = Storage.currentTime();
+            res = scheduleModel.insertObject(obj);
+        } else {
+            obj['id'] = idEvent;
+            res = scheduleModel.updateObject(obj);
+        }
+        return res;
+    }
 
     model: ObjectModel {
         EditTextItemInspector {
             id: titleComponent
             width: eventEditor.width
             caption: qsTr('Esdeveniment')
+            onSaveContents: {
+                if (saveOrUpdate('event',editedContent))
+                    notifySavedContents();
+            }
         }
         EditStateItemInspector {
             id: stateComponent
             width: eventEditor.width
             caption: qsTr('Estat')
+            onSaveContents: {
+                if (saveOrUpdate('state',editedContent))
+                    notifySavedContents();
+            }
         }
         EditTextAreaInspector {
             id: descComponent
             width: eventEditor.width
             caption: qsTr('Descripció')
+            onSaveContents: {
+                if (saveOrUpdate('desc',editedContent))
+                    notifySavedContents();
+            }
         }
         EditDateTimeItemInspector {
             id: startComponent
             width: eventEditor.width
             caption: qsTr('Inici')
+            onSaveContents: {
+                if (saveOrUpdate2('startDate',editedContent['date'],'startTime',editedContent['time']))
+                    notifySavedContents();
+            }
         }
         EditDateTimeItemInspector {
             id: endComponent
             width: eventEditor.width
             caption: qsTr('Final')
+            onSaveContents: {
+                if (saveOrUpdate2('endDate',editedContent['date'],'endTime',editedContent['time']))
+                    notifySavedContents();
+            }
         }
         EditListItemInspector {
             id: annotationComponent
@@ -86,15 +128,11 @@ CollectionInspector {
 
             onPerformSearch: annotationsModel.searchString = searchString
             onAddRow: eventEditor.showAnnotation({})
+            onSaveContents: {
+                if (saveOrUpdate('ref',editedContent.reference))
+                    notifySavedContents();
+            }
         }
-
-        /*
-        EditListItemInspector {
-            id: projectComponent
-            width: eventEditor.width
-            caption: qsTr('Projecte')
-        }
-        */
 
         EditDeleteItemInspector {
             id: deleteButton
@@ -122,7 +160,6 @@ CollectionInspector {
     Component.onCompleted: {
         scheduleModel.select();
 
-        console.log("ID event " + idEvent);
         if (eventEditor.idEvent != -1) {
             var details = scheduleModel.getObject('id',eventEditor.idEvent);
 
@@ -135,10 +172,8 @@ CollectionInspector {
             endTime = ifUndefined(details.endTime,'');
 
             stateComponent.originalContent = details.state;
-            annotation = details.ref;
+            annotation = parseInt(details.ref);
         }
-
-        console.log('TERMINIS ' + [startDate,startTime,endDate,endTime].join('...'));
 
         titleComponent.originalContent = eventEditor.event;
         descComponent.originalContent = eventEditor.desc;
@@ -153,46 +188,8 @@ CollectionInspector {
             model: annotationsModel
         }
 
-        /*
-        projectComponent.originalContent = {
-            reference: reference,
-            valued: false,
-            nameAttribute: 'name',
-            model: projectsModel
-        }
-        */
-
         // Reinit changes
         eventEditor.setChanges(false);
-    }
-
-    function prepareDataAndSave(idCode) {
-        var object = {
-            event: titleComponent.editedContent,
-            desc: descComponent.editedContent,
-            startDate: startComponent.editedContent['date'],
-            startTime: startComponent.editedContent['time'],
-            endDate: endComponent.editedContent['date'],
-            endTime: endComponent.editedContent['time'],
-            state: stateComponent.editedContent,
-            ref: annotationComponent.editedContent['reference']
-        }
-
-        if (idCode == -1) {
-            console.log('Totally new');
-            object['created'] = Storage.currentTime();
-            scheduleModel.insertObject(object);
-        } else {
-            object['id'] = idCode;
-            if (scheduleModel.updateObject(object))
-                console.log('Updated!');
-            else
-                console.log('Not updated');
-        }
-        annotationsModel.select();
-
-        eventEditor.setChanges(false);
-        eventEditor.savedEvent(object['title'],object['desc'],object['startDate'],object['startTime'],object['endDate'],object['endTime']);
     }
 
     function requestClose() {

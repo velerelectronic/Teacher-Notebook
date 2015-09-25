@@ -24,11 +24,13 @@ Common.AbstractEditor {
     ListModel {
         id: buttonsModel
 
+        /*
         Component.onCompleted: {
             append({image: 'floppy-35952', method: 'saveItem', title: qsTr('Desa els canvis')});
             append({image: 'road-sign-147409', method: 'closeItem', title: qsTr('Tanca sense desar els canvis')});
             append({image: 'clone-153447', method: 'duplicateItem', title: qsTr('Fes un duplicat de les dades')});
         }
+        */
     }
 
     function saveItem() {

@@ -11,6 +11,7 @@ Common.AbstractEditor {
     color: 'white'
 
     property alias captionHeight: captionText.height
+    signal saveContents()
 
     states: [
         State {
@@ -36,6 +37,13 @@ Common.AbstractEditor {
             }
         },
         State {
+            name: 'savingMode'
+            PropertyChanges {
+                target: glowEffect
+                color: 'yellow'
+            }
+        },
+        State {
             name: 'editMode'
             PropertyChanges {
                 target: collectionInspectorItem
@@ -54,6 +62,7 @@ Common.AbstractEditor {
             }
             PropertyChanges {
                 target: glowEffect
+                color: 'gray'
                 visible: true
             }
         }
@@ -116,6 +125,17 @@ Common.AbstractEditor {
         onAccepted: discardChanges()
     }
 
+    function saveChanges() {
+        editedContent = mainEditor.item.editedContent;
+        collectionInspectorItem.state = 'savingMode';
+        collectionInspectorItem.saveContents();
+    }
+
+    function notifySavedContents() {
+        collectionInspectorItem.state = 'viewMode';
+        mainVisor.item.shownContent = editedContent;
+    }
+
     function discardChanges() {
         collectionInspectorItem.state = 'viewMode';
         mainEditor.sourceComponent = null;
@@ -145,7 +165,6 @@ Common.AbstractEditor {
         anchors.fill: editorItemRectangle
         glowRadius: units.nailUnit
         spread: 0.5
-        color: 'gray'
     }
 
     MouseArea {
@@ -213,7 +232,7 @@ Common.AbstractEditor {
                         Layout.fillWidth: true
                         Layout.preferredHeight: units.fingerUnit
                         image: 'floppy-35952'
-                        onClicked: enableShowMode()
+                        onClicked: saveChanges()
                     }
 
                     Common.ImageButton {

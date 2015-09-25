@@ -34,46 +34,32 @@ CollectionInspector {
 
     Common.UseUnits { id: units }
 
-    onSaveDataRequested: {
-        prepareDataAndSave(idAnnotation);
-        savedAnnotation(idAnnotation,annotation,desc);
-        closePage('');
-    }
-
     onCopyDataRequested: {
         prepareDataAndSave(-1);
         annotationEditor.setChanges(false);
         duplicatedAnnotation(annotation,desc);
     }
 
-    onDiscardDataRequested: {
-        if (changes) {
-            annotationEditor.closePage(qsTr("S'han descartat els canvis en l'anotació"));
-        } else {
-            closePage('');
-        }
-    }
-
     onClosePageRequested: closePage('')
 
     onIdAnnotationChanged: fillValues()
 
-    function prepareDataAndSave(idCode) {
-        var obj = {
-            title: titleComponent.editedContent,
-            desc: descComponent.editedContent,
-            image: imageComponent.editedContent,
-            ref: projectComponent.editedContent['reference'],
-            labels: labelsComponent.editedContent
-        };
+    function saveOrUpdate(field, contents) {
+        var res = false;
+        var obj = {};
+        obj[field] = contents;
 
-        if (idCode == -1) {
-            globalAnnotationsModel['created'] = Storage.currentTime();
-            globalAnnotationsModel.insertObject(obj);
+        if (idAnnotation == -1) {
+            obj['created'] = Storage.currentTime();
+            res = globalAnnotationsModel.insertObject(obj);
+            if (res !== '') {
+                idAnnotation = res;
+            }
         } else {
-            obj['id'] = idCode;
-            globalAnnotationsModel.updateObject(obj);
+            obj['id'] = idAnnotation;
+            res = globalAnnotationsModel.updateObject(obj);
         }
+        return res;
     }
 
     Models.ScheduleModel {
@@ -95,11 +81,19 @@ CollectionInspector {
             id: titleComponent
             width: annotationEditor.width
             caption: qsTr('Títol')
+            onSaveContents: {
+                if (saveOrUpdate('title',editedContent))
+                    notifySavedContents();
+            }
         }
         EditTextAreaInspector {
             id: descComponent
             width: annotationEditor.width
             caption: qsTr('Descripció')
+            onSaveContents: {
+                if (saveOrUpdate('desc',editedContent))
+                    notifySavedContents();
+            }
         }
         EditImageItemInspector {
             id: imageComponent
@@ -107,6 +101,10 @@ CollectionInspector {
             caption: qsTr('Imatge')
 
             onOpenCamera: annotationEditor.openCamera(receiver)
+            onSaveContents: {
+                if (saveOrUpdate('image',editedContent))
+                    notifySavedContents();
+            }
         }
         EditListItemInspector {
             id: projectComponent
@@ -115,6 +113,10 @@ CollectionInspector {
             onAddRow: newProject()
             onPerformSearch: {
                 projectsModel.searchString = searchString;
+            }
+            onSaveContents: {
+                if (saveOrUpdate('ref',editedContent.reference))
+                    notifySavedContents();
             }
         }
         CollectionInspectorItem {
@@ -275,6 +277,10 @@ CollectionInspector {
                     labelsListItem.model = labelsArray;
                 }
             }
+            onSaveContents: {
+                if (saveOrUpdate('labels',editedContent))
+                    notifySavedContents();
+            }
         }
         CollectionInspectorItem {
             id: eventsComponent
@@ -320,73 +326,6 @@ CollectionInspector {
                     }
                 }
             }
-
-            /*
-            ListView {
-                id: eventsList
-
-                property int requiredHeight: contentItem.height
-                property string shownContent: ''
-
-                onShownContentChanged: {
-                    eventsModel.select();
-                }
-
-                model: eventsModel
-
-                delegate: Rectangle {
-                    border.color: 'black'
-                    width: eventsList.width
-                    height: units.fingerUnit * 2
-                    color: (model.state == 'done')?'gray':'#eeffff'
-                    RowLayout {
-                        id: eventLayout
-                        anchors.fill: parent
-                        spacing: 0
-                        Common.BoxedText {
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                            margins: units.nailUnit
-                            color: 'transparent'
-                            text: model.event
-                        }
-                        Common.BoxedText {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: eventLayout.width / 6
-                            margins: units.nailUnit
-                            color: 'transparent'
-                            text: model.startDate
-                        }
-                        Common.BoxedText {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: eventLayout.width / 6
-                            margins: units.nailUnit
-                            color: 'transparent'
-                            text: model.startTime
-                        }
-                        Common.BoxedText {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: eventLayout.width / 6
-                            margins: units.nailUnit
-                            color: 'transparent'
-                            text: model.endDate
-                        }
-                        Common.BoxedText {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: eventLayout.width / 6
-                            margins: units.nailUnit
-                            color: 'transparent'
-                            text: model.endTime
-                        }
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: annotationEditor.showEvent({idEvent: model.id})
-                    }
-                }
-
-            }
-            */
         }
         CollectionInspectorItem {
             id: resourcesComponent
