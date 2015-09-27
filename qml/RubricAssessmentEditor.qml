@@ -44,6 +44,7 @@ CollectionInspector {
             id: titleComponent
             width: rubricAssessmentEditor.width
             caption: qsTr('Títol')
+            originalContent: rubricAssessmentEditor.title
             onSaveContents: {
                 if (saveOrUpdate('title',editedContent))
                     notifySavedContents();
@@ -53,6 +54,7 @@ CollectionInspector {
             id: descComponent
             width: rubricAssessmentEditor.width
             caption: qsTr('Descripció')
+            originalContent: rubricAssessmentEditor.desc
             onSaveContents: {
                 if (saveOrUpdate('desc',editedContent))
                     notifySavedContents();
@@ -69,7 +71,10 @@ CollectionInspector {
                 'nameAttribute': 'title'
             }
 
-            Component.onCompleted: { console.log('Rubric component', rubricComponent.originalContent) }
+            onOriginalContentChanged: {
+                console.log('New ORIGIAN content', originalContent.reference);
+            }
+
             onSaveContents: {
                 if (saveOrUpdate('rubric',editedContent.reference))
                     notifySavedContents();
@@ -123,10 +128,8 @@ CollectionInspector {
 
         if (idAssessment !== -1) {
             var obj = rubricsAssessmentModel.getObject(idAssessment);
-            var str = coalesce(obj['title'],'');
-            console.log('STR' + str);
-            titleComponent.originalContent = str;
-            descComponent.originalContent = coalesce(obj['desc'],'');
+            rubricAssessmentEditor.title = obj['title'];
+            rubricAssessmentEditor.desc = obj['desc'];
             rubricAssessmentEditor.event = obj['event'];
             rubricAssessmentEditor.rubric = obj['rubric'];
             rubricAssessmentEditor.group = obj['group'];

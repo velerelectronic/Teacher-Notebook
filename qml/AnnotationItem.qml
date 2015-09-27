@@ -126,7 +126,7 @@ Rectangle {
                     Layout.preferredWidth: contents.width / 4
                     Layout.fillHeight: true
                     clip: true
-                    text: labels
+                    text: (labels !== '')?'# ' + labels:''
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     color: 'green'
                     font.pixelSize: units.readUnit

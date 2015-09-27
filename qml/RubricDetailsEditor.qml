@@ -15,16 +15,44 @@ CollectionInspector {
 
     signal savedRubricDetails
 
+    function saveOrUpdate(field, contents) {
+        var res = false;
+        var obj = {};
+        obj[field] = contents;
+
+        if (idRubric == -1) {
+            res = rubricsModel.insertObject(obj);
+            console.log('Resultat', res);
+            if (res !== '') {
+                idRubric = res;
+            }
+        } else {
+            obj['id'] = idRubric;
+            res = rubricsModel.updateObject(obj);
+        }
+        return res;
+    }
+
     model: ObjectModel {
         EditTextItemInspector {
             id: rubricTitle
             width: rubricDetailsItem.width
             caption: qsTr('Títol')
+            originalContent: rubricDetailsItem.title
+            onSaveContents: {
+                if (saveOrUpdate('title',editedContent))
+                    notifySavedContents();
+            }
         }
         EditTextAreaInspector {
             id: rubricDesc
             width: rubricDetailsItem.width
             caption: qsTr('Descripció')
+            originalContent: rubricDetailsItem.desc
+            onSaveContents: {
+                if (saveOrUpdate('desc',editedContent))
+                    notifySavedContents();
+            }
         }
     }
 
@@ -32,28 +60,12 @@ CollectionInspector {
         if (idRubric !== -1) {
             var obj = rubricsModel.getObject(idRubric);
 
-            rubricTitle.originalContent = ('title' in obj)?obj['title']:obj['desc'];
-            rubricDesc.originalContent = ('desc' in obj)?obj['desc']:'';
+            rubricDetailsItem.title = obj['title'];
+            rubricDetailsItem.desc = obj['desc'];
         }
     }
 
-    onSaveDataRequested: {
-        var object = {
-            title: rubricTitle.editedContent,
-            desc: rubricDesc.editedContent
-        }
-
-        if (idRubric == -1) {
-            rubricsModel.insertObject(object);
-        } else {
-            object['id'] = idRubric;
-            rubricsModel.updateObject(object);
-        }
-        rubricDetailsItem.setChanges(false);
-        rubricDetailsItem.savedRubricDetails();
-    }
 
     onCopyDataRequested: {}
-    onDiscardDataRequested: {}
     onClosePageRequested: {}
 }

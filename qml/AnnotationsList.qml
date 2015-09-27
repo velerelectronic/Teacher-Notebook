@@ -22,6 +22,8 @@ Rectangle {
 
     property bool canClose: true
 
+    property string searchString: ''
+
     function newAnnotation() {
         annotations.showAnnotation({idAnnotation: -1});
     }
@@ -61,8 +63,30 @@ Rectangle {
                         id: searchAnnotations
                         Layout.fillWidth: true
                         Layout.preferredHeight: units.fingerUnit
+
+                        text: annotations.searchString
                         onPerformSearch: {
-                            annotationsModel.searchString = text;
+                            var textArray = text.split(/\s+/i);
+                            // text.split(/[$|\b+][#\B+][^|\b+]/i);
+                            console.log(textArray);
+                            var descArray = [];
+                            var labelsArray = [];
+                            for (var i=0; i<textArray.length; i++) {
+                                if (textArray[i].indexOf('#') === 0) {
+                                    labelsArray.push(textArray[i].substr(1));
+                                } else {
+                                    descArray.push(textArray[i]);
+                                }
+                            }
+
+                            annotationsModel.searchString = descArray.join(' ');
+
+                            var filtersArray = [];
+                            for (var i=0; i<labelsArray.length; i++) {
+                                filtersArray.push("INSTR(UPPER(labels),UPPER('" + labelsArray[i] + "'))");
+                            }
+
+                            annotationsModel.filters = filtersArray.join();
                         }
                         onIntroPressed: {
                             console.log('INTRO')

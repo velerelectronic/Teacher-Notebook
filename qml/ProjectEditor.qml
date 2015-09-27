@@ -17,16 +17,43 @@ CollectionInspector {
     signal showCharacteristics(int project)
     signal showEvents(int project)
 
+    function saveOrUpdate(field, contents) {
+        var res = false;
+        var obj = {};
+        obj[field] = contents;
+
+        if (idProject == -1) {
+            res = globalProjectsModel.insertObject(obj);
+            if (res !== '') {
+                idProject = res;
+            }
+        } else {
+            obj['id'] = idProject;
+            res = globalProjectsModel.updateObject(obj);
+        }
+        return res;
+    }
+
     model: ObjectModel {
         EditTextItemInspector {
             id: nameComponent
             width: projectEditor.width
             caption: qsTr('Títol')
+            originalContent: projectEditor.name
+            onSaveContents: {
+                if (saveOrUpdate('name',editedContent))
+                    notifySavedContents();
+            }
         }
         EditTextAreaInspector {
             id: descComponent
             width: projectEditor.width
             caption: qsTr('Descripció')
+            originalContent: projectEditor.desc
+            onSaveContents: {
+                if (saveOrUpdate('desc',editedContent))
+                    notifySavedContents();
+            }
         }
         EditFakeItemInspector {
             id: characteristicsComponent
@@ -59,30 +86,15 @@ CollectionInspector {
     Component.onCompleted: {
         var obj = globalProjectsModel.getObject(idProject);
 
-        nameComponent.originalContent = coalesce(obj['name'],'');
-        descComponent.originalContent = coalesce(obj['desc'],'');
+        if (idProject !== -1) {
+            projectEditor.name = coalesce(obj['name'],'');
+            projectEditor.desc = coalesce(obj['desc'],'');
+        }
 
         characteristicsModel.select();
         scheduleModel.select();
     }
 
-    onSaveDataRequested: {
-        var object = {
-            name: nameComponent.editedContent,
-            desc: descComponent.editedContent
-        }
-
-        if (idProject == -1) {
-            globalProjectsModel.insertObject(object);
-        } else {
-            object['id'] = idProject;
-            globalProjectsModel.updateObject(object);
-        }
-        projectEditor.setChanges(false);
-        projectEditor.savedProjectDetails();
-    }
-
     onCopyDataRequested: {}
-    onDiscardDataRequested: {}
     onClosePageRequested: {}
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<manifest package="org.developerjmpc.teachernotebook" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.0" android:versionCode="1" android:installLocation="auto">
-    <application android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="@string/app_name" android:icon="@drawable/icon">
-        <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|locale|fontScale|keyboard|keyboardHidden|navigation" android:name="org.qtproject.qt5.android.bindings.QtActivity" android:label="@string/app_name" android:screenOrientation="unspecified">
+<manifest package="org.developerjmpc.teachernotebook" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="0.6" android:versionCode="2" android:installLocation="auto">
+    <application android:hardwareAccelerated="true" android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="@string/app_name" android:icon="@drawable/icon">
+        <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|locale|fontScale|keyboard|keyboardHidden|navigation" android:name="org.qtproject.qt5.android.bindings.QtActivity" android:label="@string/app_name" android:screenOrientation="unspecified" android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -26,17 +26,26 @@
             <meta-data android:value="@string/ministro_needed_msg" android:name="android.app.ministro_needed_msg"/>
             <meta-data android:value="@string/fatal_error_msg" android:name="android.app.fatal_error_msg"/>
             <!--  Messages maps -->
+
             <!-- Splash screen -->
-            <meta-data android:name="android.app.splash_screen" android:resource="@layout/splash"/>
+            <!--
+            <meta-data android:name="android.app.splash_screen_drawable" android:resource="@drawable/logo"/>
+            -->
             <!-- Splash screen -->
         </activity>
     </application>
-    <uses-feature android:glEsVersion="0x00020000"/>
-    <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="21"/>
+    <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="14"/>
     <supports-screens android:largeScreens="true" android:normalScreens="true" android:anyDensity="true" android:smallScreens="true"/>
+
+    <!-- The following comment will be replaced upon deployment with default permissions based on the dependencies of the application.
+         Remove the comment if you do not require these default permissions. -->
     <!-- %%INSERT_PERMISSIONS -->
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <!-- The following comment will be replaced upon deployment with default features based on the dependencies of the application.
+         Remove the comment if you do not require these default features. -->
     <!-- %%INSERT_FEATURES -->
+
 <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CLEAR_APP_USER_DATA"/>
 </manifest>

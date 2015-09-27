@@ -39,10 +39,12 @@ CollectionInspectorItem {
                 if (s.valued) {
                     textVisor.text = s.reference;
                 } else {
-                    console.log("s.reference " + s.reference);
+                    console.log("Name attribute", s.nameAttribute, "reference", s.reference);
                     if (typeof s.reference === 'undefined')
                         textVisor.text = qsTr('No definit');
                     else {
+                        console.log('model COUNT', s.model.count);
+                        s.model.select();
                         var obj = s.model.getObject('id',s.reference);
                         textVisor.text = (typeof obj[s.nameAttribute] !== 'undefined')?obj[s.nameAttribute]:qsTr("No s'ha trobat el codi");
                     }
