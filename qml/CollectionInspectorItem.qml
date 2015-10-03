@@ -58,6 +58,9 @@ Common.AbstractEditor {
                 target: mainEditor
                 opacity: 1
                 enabled: true
+            }
+            PropertyChanges {
+                target: mainEditorLoader
                 sourceComponent: editorComponent
             }
             PropertyChanges {
@@ -74,7 +77,7 @@ Common.AbstractEditor {
     property real totalHeight
 
     property real requiredVisorHeight: (typeof mainVisor.item.requiredHeight === 'number')?mainVisor.item.requiredHeight:units.fingerUnit
-    property real requiredEditorHeight: ((mainEditor.item !== null) && (typeof mainEditor.item.requiredHeight === 'number'))?mainEditor.item.requiredHeight:0
+    property real requiredEditorHeight: units.fingerUnit + ((mainEditorLoader.item !== null) && (typeof mainEditorLoader.item.requiredHeight == 'number'))?mainEditorLoader.item.requiredHeight:0
 
     property alias visorComponent: mainVisor.sourceComponent
     property Component editorComponent: null
@@ -110,7 +113,7 @@ Common.AbstractEditor {
 
     function askDiscardChanges() {
         if (state == 'editMode') {
-            if (mainVisor.item.shownContent !== mainEditor.item.editedContent)
+            if (mainVisor.item.shownContent !== mainEditorLoader.item.editedContent)
                 askDiscardDialog.open();
             else
                 discardChanges();
@@ -126,7 +129,7 @@ Common.AbstractEditor {
     }
 
     function saveChanges() {
-        editedContent = mainEditor.item.editedContent;
+        editedContent = mainEditorLoader.item.editedContent;
         collectionInspectorItem.state = 'savingMode';
         collectionInspectorItem.saveContents();
     }
@@ -138,26 +141,26 @@ Common.AbstractEditor {
 
     function discardChanges() {
         collectionInspectorItem.state = 'viewMode';
-        mainEditor.sourceComponent = null;
+        mainEditorLoader.sourceComponent = null;
         viewModeEntered();
     }
 
     function enableShowMode() {
-        mainVisor.item.shownContent = mainEditor.item.editedContent;
-        editedContent = mainEditor.item.editedContent;
+        mainVisor.item.shownContent = mainEditorLoader.item.editedContent;
+        editedContent = mainEditorLoader.item.editedContent;
         collectionInspectorItem.state = 'viewMode';
         viewModeEntered();
     }
 
     function enableEditMode() {
         collectionInspectorItem.state = 'editMode';
-        mainEditor.item.editedContent = mainVisor.item.shownContent;
+        mainEditorLoader.item.editedContent = mainVisor.item.shownContent;
         editModeEntered();
     }
 
     function showEditedContent(newContent) {
         mainVisor.item.shownContent = newContent;
-        mainEditor.item.editedContent = newContent;
+        mainEditorLoader.item.editedContent = newContent;
     }
 
     RectangularGlow {
@@ -228,19 +231,6 @@ Common.AbstractEditor {
                     enabled: collectionInspectorItem.state == 'editMode'
                     visible: enabled
 
-                    Common.ImageButton {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: units.fingerUnit
-                        image: 'floppy-35952'
-                        onClicked: saveChanges()
-                    }
-
-                    Common.ImageButton {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: units.fingerUnit
-                        image: 'road-sign-147409'
-                        onClicked: discardChanges()
-                    }
                 }
 
                 /*
@@ -274,22 +264,59 @@ Common.AbstractEditor {
                         }
                     }
                 }
-                Loader {
+                ColumnLayout {
                     id: mainEditor
                     anchors.fill: parent
+                    spacing: units.nailUnit
 
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 100
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
+                        color: 'yellow'
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 0
+                            spacing: units.nailUnit
+
+                            Common.ImageButton {
+                                Layout.preferredWidth: units.fingerUnit
+                                Layout.fillHeight: true
+                                image: 'floppy-35952'
+                                onClicked: saveChanges()
+                            }
+
+                            Common.ImageButton {
+                                Layout.preferredWidth: units.fingerUnit
+                                Layout.fillHeight: true
+                                image: 'road-sign-147409'
+                                onClicked: discardChanges()
+                            }
                         }
                     }
 
-                    onLoaded: {
-                        if (typeof originalContent !== 'undefined') {
-                            item.editedContent = originalContent;
+                    Loader {
+                        id: mainEditorLoader
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 100
+                            }
+                        }
+
+                        sourceComponent: null
+
+                        onLoaded: {
+                            if (typeof originalContent !== 'undefined') {
+                                item.editedContent = originalContent;
+                            }
                         }
                     }
+
                 }
+
             }
 
         }

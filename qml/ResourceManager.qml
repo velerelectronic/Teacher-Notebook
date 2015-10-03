@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 import "qrc:///common/FormatDates.js" as FormatDates
 
 Rectangle {
@@ -16,11 +17,9 @@ Rectangle {
 
     property int requiredHeight: resourcesList.contentItem.height
 
-    SqlTableModel {
+    Models.ResourcesModel {
         id: resourcesModel
 
-        tableName: 'resources'
-        fieldNames: ['id','created','title','desc','type','source','contents']
         Component.onCompleted: {
             select();
         }

@@ -13,7 +13,10 @@ CollectionInspector {
 
     property int assessment: -1
     property int individual: -1
+    property string individualName: ''
+    property string individualSurname: ''
     property int lastScoreId: -1
+    property int newScoreId: -1
     property int descriptor: -1
     property int criterium: -1
     property string comment: ''
@@ -22,6 +25,35 @@ CollectionInspector {
     signal savedAssessmentDescriptor
 
     Common.UseUnits { id: units }
+
+    function saveOrUpdate() {
+        var res = false;
+        var obj = {};
+        obj['descriptor'] = descriptor;
+        obj['comment'] = comment;
+        obj['moment'] = Storage.currentTime();
+
+        obj['assessment'] = assessment;
+        obj['individual'] = individual;
+
+        if (newScoreId === -1) {
+            res = scoresModel.insertObject(obj);
+            if (res !== '') {
+                newScoreId = parseInt(res);
+            }
+        } else {
+            obj['id'] = newScoreId;
+            res = scoresModel.updateObject(obj);
+        }
+
+        return res;
+    }
+
+    Models.RubricsScoresModel {
+        id: scoresModel
+
+        Component.onCompleted: select()
+    }
 
     Models.IndividualsModel {
         id: individualsModel
@@ -39,7 +71,7 @@ CollectionInspector {
     }
 
     Models.RubricsDetailedScoresModel {
-        id: scoresModel
+        id: detailedScoresModel
         filters: [
             "assessment='" + assessment + "'",
             "criterium='" +  criterium + "'",
@@ -65,11 +97,14 @@ CollectionInspector {
             id: groupComponent
             width: assessmentDescriptorItem.width
             caption: qsTr('Grup')
+            originalContent: assessmentDescriptorItem.group
         }
         EditFakeItemInspector {
             id: individualComponent
             width: assessmentDescriptorItem.width
             caption: qsTr('Individu')
+            originalContent: individualName  + " " + individualSurname
+
         }
         CollectionInspectorItem {
             id: criteriumComponent
@@ -106,18 +141,50 @@ CollectionInspector {
                     text: criteriumVisor.shownContent[1]
                 }
             }
+
+            Connections {
+                target: assessmentDescriptorItem
+                onCriteriumChanged: {
+                    var criteriumObject = levelDescriptorsModel.getObject('criterium',criterium);
+                    criteriumComponent.originalContent = [criteriumObject['criteriumTitle'],criteriumObject['criteriumDesc']];
+                }
+            }
         }
 
         EditListItemInspector {
             id: descriptorComponent
             width: assessmentDescriptorItem.width
             caption: qsTr('Puntuació')
+            originalContent: {
+                'reference': descriptor,
+                'valued': false,
+                'model': levelDescriptorsModel,
+                'nameAttribute': 'definition'
+            }
+            onSaveContents: {
+                descriptor = editedContent.reference;
+                var res = saveOrUpdate();
+                if (res) {
+                    notifySavedContents();
+                    detailedScoresModel.select();
+                }
+            }
         }
 
         EditTextAreaInspector {
             id: commentsComponent
             width: assessmentDescriptorItem.width
             caption: qsTr('Comentaris')
+            originalContent: comment
+            onSaveContents: {
+                comment = editedContent;
+                var res = saveOrUpdate();
+                console.log('RES', res);
+                if (res) {
+                    notifySavedContents();
+                    detailedScoresModel.select();
+                }
+            }
         }
 
         CollectionInspectorItem {
@@ -125,7 +192,7 @@ CollectionInspector {
             width: assessmentDescriptorItem.width
             caption: qsTr('Històric')
             visorComponent: previousValues
-            originalContent: scoresModel
+            originalContent: detailedScoresModel
         }
     }
 
@@ -199,35 +266,19 @@ CollectionInspector {
         var individualObject = individualsModel.getObject(individual);
 
         assessmentDescriptorItem.group = individualObject['group'];
-        groupComponent.originalContent = assessmentDescriptorItem.group;
-        individualComponent.originalContent = individualObject['name'] + " " + individualObject['surname'];
-
-        var criteriumObject = levelDescriptorsModel.getObject('criterium',criterium);
-        criteriumComponent.originalContent = [criteriumObject['criteriumTitle'],criteriumObject['criteriumDesc']];
+        assessmentDescriptorItem.individualName = individualObject['name'];
+        assessmentDescriptorItem.individualSurname = individualObject['surname'];
 
         console.log('Last scoreId ' + lastScoreId);
 
-        var obj2 = scoresModel.getObject('scoreId',lastScoreId);
+        var obj2 = detailedScoresModel.getObject('scoreId',lastScoreId);
+        descriptor = obj2['descriptor'];
 
-        console.log('obj2 [ "descriptor" ]: ' + obj2['descriptor'] );
-
-        descriptorComponent.originalContent = {
-            reference: obj2['descriptor'],
-            valued: false,
-            model: levelDescriptorsModel,
-            nameAttribute: 'definition'
-        }
-
-        commentsComponent.originalContent = (typeof obj2['comment'] !== 'undefined')?obj2['comment']:'';
+        comment = (typeof obj2['comment'] !== 'undefined')?obj2['comment']:'';
     }
 
     onSaveDataRequested: {
         var object = {
-            assessment: assessmentComponent.originalContent,
-            individual: individual,
-            descriptor: descriptorComponent.editedContent.reference,
-            comment: commentsComponent.editedContent,
-            moment: Storage.currentTime()
         }
         //dataBck.createTable('rubrics_scores','id INTEGER PRIMARY KEY, assessment INTEGER, descriptor INTEGER, moment TEXT, individual INTEGER, comment TEXT');
 

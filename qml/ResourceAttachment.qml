@@ -27,11 +27,39 @@ CollectionInspector {
         Component.objectName: select()
     }
 
+    Models.ResourcesAnnotationsModel {
+        id: resourcesAnnotationsModel
+
+        Component.onCompleted: select()
+    }
+
+    function saveOrUpdate(field, contents) {
+        var res = false;
+        var obj = {};
+        obj['annotation'] = annotation;
+        obj['resource'] = resource;
+        obj[field] = contents;
+
+        console.log('ATTACHMENT ID ', attachmentId)
+        if (attachmentId == -1) {
+            res = resourcesAnnotationsModel.insertObject(obj);
+            if (res !== '') {
+                attachmentId = res;
+                console.log(attachmentId);
+            }
+        } else {
+            obj['id'] = attachmentId;
+            res = resourcesAnnotationsModel.updateObject(obj);
+        }
+        return res;
+    }
+
     model: ObjectModel {
         EditFakeItemInspector {
             id: annotationComponent
             width: attachmentEditor.width
             caption: qsTr('Anotació')
+            originalContent: annotation
         }
 
         EditListItemInspector {
@@ -40,6 +68,20 @@ CollectionInspector {
             caption: qsTr('Recurs')
             onPerformSearch: resourcesModel.searchString = searchString
             onAddRow: newResource()
+            originalContent: {
+                'reference': attachmentEditor.resource,
+                'valued': false,
+                'nameAttribute': 'resourceTitle',
+                'model': resourcesModel
+            }
+            onSaveContents: {
+                if (saveOrUpdate('resource',editedContent.reference))
+                    notifySavedContents();
+            }
+            Component.onCompleted: {
+                originalContent.model.select();
+                console.log('Count ' + resourcesModel.count);
+            }
         }
 
         EditDeleteItemInspector {
@@ -70,29 +112,7 @@ CollectionInspector {
             attachmentEditor.resource = obj['resourceId'];
             annotationComponent.originalContent = annotation
         }
-
-        resourceComponent.originalContent = {
-            reference: attachmentEditor.resource,
-            valued: false,
-            nameAttribute: 'resourceTitle',
-            model: resourcesModel
-        }
     }
 
-    onSaveDataRequested: {
-        var obj = {
-            annotation: attachmentEditor.annotation,
-            resource: resourceComponent.editedContent['reference']
-        }
-
-        if (attachmentEditor.attachmentId != -1) {
-            obj['id'] = attachmentEditor.attachmentId;
-            globalResourcesAnnotationsModel.updateObject(obj);
-            updatedResourceAttachment(qsTr("S'ha actualitzat l'adjunció de recurs."));
-        } else {
-            globalResourcesAnnotationsModel.insertObject(obj);
-            insertedResourceAttachment(qsTr("S'ha adjuntat un nou recurs a l'anotació."));
-        }
-    }
 }
 

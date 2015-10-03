@@ -15,7 +15,25 @@ CollectionInspector {
 
     property SqlTableModel descriptorsModel
 
+
     signal savedDescriptor
+
+    function saveOrUpdate(field, contents) {
+        var res = false;
+        var obj = {};
+        obj[field] = contents;
+
+        if (idDescriptor == -1) {
+            res = descriptorsModel.insertObject(obj);
+            if (res !== '') {
+                idDescriptor = res;
+            }
+        } else {
+            obj['id'] = idDescriptor;
+            res = descriptorsModel.updateObject(obj);
+        }
+        return res;
+    }
 
     model: ObjectModel {
         EditFakeItemInspector {
