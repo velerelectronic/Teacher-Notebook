@@ -20,6 +20,10 @@ Rectangle {
     Models.ResourcesModel {
         id: resourcesModel
 
+        searchFields: ['title','desc','type','source']
+
+        limit: 30
+
         Component.onCompleted: {
             select();
         }
@@ -36,13 +40,26 @@ Rectangle {
             id: resourceHeader
 
             width: resourcesList.width
-            height: units.fingerUnit
+            height: units.fingerUnit * 2 + units.nailUnit
             z: 2
 
-            RowLayout {
+            GridLayout {
                 anchors.fill: parent
                 anchors.margins: units.nailUnit
-                spacing: units.nailUnit
+                columnSpacing: units.nailUnit
+                rowSpacing: columnSpacing
+
+                rows: 2
+                columns: 4
+
+                Common.SearchBox {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    Layout.columnSpan: 4
+
+                    onPerformSearch: resourcesModel.searchString = text
+                }
+
                 Text {
                     Layout.fillHeight: true
                     Layout.preferredWidth: resourceHeader.width / 4
@@ -149,11 +166,7 @@ Rectangle {
         }
         size: units.fingerUnit * 2
         imageSource: 'plus-24844'
-        onClicked: newResource()
-    }
-
-    function newResource() {
-        resourceManager.createResource(resourcesModel);
+        onClicked: resourceManager.createResource(resourcesModel)
     }
 
 }

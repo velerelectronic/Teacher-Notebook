@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
+import QtQml.Models 2.2
 
 import 'qrc:///common' as Common
 
@@ -72,12 +73,15 @@ Common.AbstractEditor {
     ]
     state: 'viewMode'
 
-    property var view: ListView.view
+    property ListView view: ListView.view
+    property int index: ObjectModel.index
+
     property alias caption: captionText.text
     property real totalHeight
+    property real maximumHeight: totalHeight
 
     property real requiredVisorHeight: (typeof mainVisor.item.requiredHeight === 'number')?mainVisor.item.requiredHeight:units.fingerUnit
-    property real requiredEditorHeight: units.fingerUnit + ((mainEditorLoader.item !== null) && (typeof mainEditorLoader.item.requiredHeight == 'number'))?mainEditorLoader.item.requiredHeight:0
+    property real requiredEditorHeight: units.fingerUnit + (((mainEditorLoader.item !== null) && (typeof mainEditorLoader.item.requiredHeight == 'number'))?mainEditorLoader.item.requiredHeight:0)
 
     property alias visorComponent: mainVisor.sourceComponent
     property Component editorComponent: null
@@ -181,7 +185,10 @@ Common.AbstractEditor {
             if (editorComponent !== null) {
                 if (collectionInspectorItem.state == 'viewMode') {
                     view.requestShowMode();
-                    enableEditMode();
+                    console.log(index);
+                    if (view.askEnableEditMode(index)) {
+                        enableEditMode();
+                    }
                 } else {
                     // Do something more
                     enableShowMode();

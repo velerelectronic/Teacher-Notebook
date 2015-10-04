@@ -64,12 +64,19 @@ Common.AbstractEditor {
 
         property int captionsWidth: units.fingerUnit
 
+        highlightMoveDuration: 200
+        highlightRangeMode: ListView.ApplyRange
         spacing: units.nailUnit
 
         model: VisualItemModel { }
 
         function requestShowMode() {
             collapseEditors();
+        }
+
+        function askEnableEditMode(index) {
+            currentIndex = index;
+            return true;
         }
     }
 

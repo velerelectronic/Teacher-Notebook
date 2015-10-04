@@ -74,6 +74,10 @@ Item {
             onCurrentItemChanged: {
                 buttons.model = getButtonsList();
             }
+
+            function invokeMethod(method) {
+                currentItem[method]();
+            }
         }
     }
 
@@ -332,7 +336,7 @@ Item {
                 onClicked: {
                     if (checkable)
                         checked = !checked;
-                    pagesView.invokeMethod(model.method);
+                    pagesStack.invokeMethod(model.method);
                     header.state = 'minimized';
                 }
             }

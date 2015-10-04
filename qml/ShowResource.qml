@@ -83,6 +83,13 @@ CollectionInspector {
 
                 function sendFile(file) {
                     resourceEditor.source = file;
+                    var obj = {
+                        id: idResource,
+                        source: resourceSource.editedContent
+                    }
+
+                    globalResourcesModel.updateObject(obj);
+
                     var l = resourceEditor.source.lastIndexOf('/');
                     resourceSource.sourceName = resourceEditor.source.substring(l+1);
                     copySourceToTitle.open();
