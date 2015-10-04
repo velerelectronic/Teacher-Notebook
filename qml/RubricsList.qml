@@ -12,7 +12,6 @@ Rectangle {
     width: 100
     height: 62
     property string pageTitle: qsTr("Rúbriques");
-    property var buttons: buttonsModel
 
     signal openRubricEditor(int id, var rubricsModel)
     signal openRubricDetails(int rubric, var rubricsModel)
@@ -24,15 +23,6 @@ Rectangle {
     property bool newIndividual: false
 
     Common.UseUnits { id: units }
-
-    ListModel {
-        id: buttonsModel
-
-        ListElement {
-            method: 'newButton'
-            image: 'plus-24844'
-        }
-    }
 
     Common.TabbedView {
         id: tabbedView

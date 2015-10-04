@@ -78,5 +78,6 @@
         <file>qml/ShowRubricGroupAssessmentByCriterium.qml</file>
         <file>qml/ShowRubricGroupAssessmentByIndividual.qml</file>
         <file>qml/RubricAssessmentHistory.qml</file>
+        <file>qml/WorkingSpace.qml</file>
     </qresource>
 </RCC>

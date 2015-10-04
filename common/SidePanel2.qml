@@ -11,11 +11,17 @@ Item {
 
     property bool enableSidePabel: false
 
-    default property alias mainItem: panelLoader.sourceComponent
+    default property Component mainItem
 
     states: [
         State {
             name: 'showPanel'
+            PropertyChanges {
+                target: panelLoader
+                sourceComponent: mainItem
+                restoreEntryValues: false
+            }
+
             PropertyChanges {
                 target: panelItem
                 x: 0
@@ -27,6 +33,7 @@ Item {
         },
         State {
             name: 'hidePanel'
+
             PropertyChanges {
                 target: panelItem
                 x: -panelWidth
@@ -35,9 +42,26 @@ Item {
                 target: shadowMouseArea
                 enabled: false
             }
+            PropertyChanges {
+                target: panelLoader
+                sourceComponent: undefined
+            }
         }
     ]
     state: 'hidePanel'
+
+    transitions: [
+        Transition {
+            from: 'showPanel'
+            to: 'hidePanel'
+
+            PropertyAnimation {
+                target: panelItem
+                property: "x"
+                duration: 200
+            }
+        }
+    ]
 
     Rectangle {
         anchors.fill: parent

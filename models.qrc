@@ -16,5 +16,6 @@
         <file>models/RubricsDetailedScoresModel.qml</file>
         <file>models/RubricsScoresModel.qml</file>
         <file>models/AnnotationsModel.qml</file>
+        <file>models/SavedAnnotationsSearchesModel.qml</file>
     </qresource>
 </RCC>

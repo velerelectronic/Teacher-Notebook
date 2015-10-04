@@ -1,9 +1,10 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
+import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
-import PersonalTypes 1.0
+import "qrc:///javascript/Storage.js" as Storage
 
 Rectangle {
     id: annotations
@@ -92,6 +93,19 @@ Rectangle {
                             console.log('INTRO')
                         }
                     }
+
+                    Common.ImageButton {
+                        image: 'floppy-35952'
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: height
+                        onClicked: {
+                            if (searchAnnotations.text !== '') {
+                                var t = searchAnnotations.text;
+                                searchesModel.insertObject({title: t, terms: t, created: Storage.currentTime()});
+                            }
+                        }
+                    }
+
                     Item {
                         Layout.preferredHeight: units.fingerUnit
                         Layout.preferredWidth: (annotationsList.state == 'deleteList')?(parent.width / 2):editButton.width
@@ -221,6 +235,11 @@ Rectangle {
     Models.DetailedAnnotationsModel {
         id: annotationsModel
 
+        Component.onCompleted: select()
+    }
+
+    Models.SavedAnnotationsSearchesModel {
+        id: searchesModel
         Component.onCompleted: select()
     }
 

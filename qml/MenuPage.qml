@@ -1,24 +1,23 @@
 import QtQuick 2.2
 import QtQuick.Layouts 1.1
-import 'qrc:///common' as Common
 import QtQuick.Controls 1.1
-import "qrc:///javascript/Storage.js" as Storage
 import PersonalTypes 1.0
 import QtGraphicalEffects 1.0
+import 'qrc:///common' as Common
+import 'qrc:///models' as Models
+import "qrc:///javascript/Storage.js" as Storage
 
 Rectangle {
     id: menuPage
     property string pageTitle: qsTr('Teacher Notebook');
 
-    signal openPage (string page)
-    signal openPageArgs (string page, var args)
     signal savedQuickAnnotation(string contents)
 
     property real buttonWidth: units.fingerUnit * 4
     property real buttonHeight: units.fingerUnit * 4
 
-    signal showAnnotation(var parameters)
-    signal showEvent(var parameters)
+    signal openWorkingPage(string page, var parameters)
+    signal sendOutputMessage(string message)
 
     Common.UseUnits { id: units }
 
@@ -127,7 +126,7 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                openPageArgs(model.extraPage, model.extraArguments);
+                                openWorkingPage(model.extraPage + ".qml", model.extraArguments);
                             }
                         }
 
@@ -202,7 +201,7 @@ Rectangle {
                         height: buttonHeight
                         anchors.margins: units.nailUnit
                         title: model.title
-                        onClicked: menuPage.openPage(model.page)
+                        onClicked: menuPage.openWorkingPage(model.page + ".qml",{})
                     }
                 }
 
@@ -352,23 +351,9 @@ Rectangle {
             property int verticalCapacity: Math.floor(height / cellHeight)
             property int capacity: horizontalCapacity * verticalCapacity
 
-            model: SqlTableModel {
-                id: lastAnnotationsModel
-                tableName: globalAnnotationsModel.tableName
-                limit: (lastAnnotations.interactivity)?0:lastAnnotations.capacity
-
-                onLimitChanged: select()
-                onTableNameChanged: console.log("ARAAAAA" + lastAnnotationsModel.tableName)
-
-                Component.onCompleted: {
-                    setSort(0,Qt.DescendingOrder);
-                    select();
-                }
-            }
-
-            Connections {
-                target: globalAnnotationsModel
-                onUpdated: lastAnnotationsModel.select()
+            model: Models.SavedAnnotationsSearchesModel {
+                id: savedSearches
+                Component.onCompleted: select()
             }
 
             delegate: Item {
@@ -386,11 +371,11 @@ Rectangle {
                     border.color: 'transparent'
 
                     fontSize: units.readUnit
-                    text: title + ' ' + desc
+                    text: model.title
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: showAnnotation({idAnnotation: id})
+                        onClicked: openWorkingPage('AnnotationsList.qml',{searchString: model.terms})
                     }
                 }
             }
@@ -470,7 +455,7 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: showEvent({idEvent: model.id})
+                        onClicked: openWorkingPage('ShowEvent.qml',{idEvent: model.id})
                     }
                 }
             }
@@ -524,7 +509,7 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: openPageArgs('ProjectEditor',{idProject: id, projectsModel: projectsModel})
+                        onClicked: openWorkingPage('ProjectEditor.qml',{idProject: id, projectsModel: projectsModel})
                     }
                 }
             }

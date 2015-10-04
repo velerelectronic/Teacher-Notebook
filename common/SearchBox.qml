@@ -65,7 +65,7 @@ Rectangle {
         repeat: false
         onTriggered: {
             searchBox.performSearch(searchText.text);
-            searchText.forceActiveFocus()
+//            searchText.forceActiveFocus()
         }
     }
 }
