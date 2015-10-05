@@ -10,6 +10,7 @@
 #include "databasebackup.h"
 #include "standardpaths.h"
 #include "MarkDownParser/markdownparser.h"
+#include "ClipboardAdapter/qmlclipboardadapter.h"
 
 int main(int argc, char *argv[])
 {
@@ -23,6 +24,7 @@ int main(int argc, char *argv[])
     }
 
     qmlRegisterType<FileIO, 1>("FileIO", 1, 0, "FileIO");
+    qmlRegisterType<QmlClipboardAdapter, 1>("ClipboardAdapter", 1, 0, "QClipboard");
     qmlRegisterType<XmlModel>("PersonalTypes", 1, 0, "XmlModel");
     qmlRegisterType<TeachingPlanning>("PersonalTypes", 1, 0, "TeachingPlanning");
     qmlRegisterType<ImageData>("PersonalTypes", 1, 0, "ImageData");

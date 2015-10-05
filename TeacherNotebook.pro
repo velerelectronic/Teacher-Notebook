@@ -41,7 +41,8 @@ HEADERS += \
     databasebackup.h \
     standardpaths.h \
     XmlGrid/xmlgrid.h \
-    MarkDownParser/markdownparser.h
+    MarkDownParser/markdownparser.h \
+    ClipboardAdapter/qmlclipboardadapter.h
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
