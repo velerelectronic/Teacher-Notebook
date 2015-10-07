@@ -35,5 +35,7 @@
         <file>common/BoxedText.qml</file>
         <file>common/CustomDialog.qml</file>
         <file>common/VerticalBoxDiagram.qml</file>
+        <file>common/DownSlideMenu.qml</file>
+        <file>common/TextButton.qml</file>
     </qresource>
 </RCC>

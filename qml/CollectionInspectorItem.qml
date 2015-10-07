@@ -124,6 +124,10 @@ Common.AbstractEditor {
         }
     }
 
+    function openMenu(initialHeight, menu) {
+        view.openMenuFunction(initialHeight, menu);
+    }
+
     MessageDialog {
         id: askDiscardDialog
         title: qsTr('Descartar els canvis?')

@@ -94,6 +94,8 @@ CollectionInspector {
                 if (saveOrUpdate('desc',editedContent))
                     notifySavedContents();
             }
+
+//            onOpenMenu: annotationEditor.openMenu(initialHeight, menu)
         }
         EditImageItemInspector {
             id: imageComponent

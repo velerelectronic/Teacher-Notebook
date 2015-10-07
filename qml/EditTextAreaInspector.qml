@@ -28,26 +28,9 @@ CollectionInspectorItem {
             id: buttonsLayout
             anchors {
                 top: parent.top
-                left: parent.left
                 right: parent.right
             }
             height: units.fingerUnit
-
-            Button {
-                id: copyButton
-
-                Layout.fillHeight: true
-                text: qsTr('Copia')
-                onClicked: clipboard.copia(textVisor.text)
-            }
-
-            Button {
-                id: sendButton
-
-                Layout.fillHeight: true
-                text: qsTr('Envia')
-                onClicked: Qt.openUrlExternally("mailto:?subject=Anotació&body=" + encodeURIComponent(itemVisor.shownContent))
-            }
 
             Button {
                 id: markdownButton
@@ -57,6 +40,14 @@ CollectionInspectorItem {
                 checkable: true
                 checked: true
                 onClicked: textVisor.getReadableText()
+            }
+            Button {
+                Layout.fillHeight: true
+                height: units.fingerUnit
+                text: qsTr('Més...')
+                onClicked: {
+                    editText.openMenu(units.fingerUnit * 2,menuComponent);
+                }
             }
         }
         Text {
@@ -81,6 +72,49 @@ CollectionInspectorItem {
 
             MarkDownParser {
                 id: parser
+            }
+        }
+
+        Component {
+            id: menuComponent
+            Rectangle {
+                id: menuRect
+
+                property int requiredHeight: childrenRect.height + units.fingerUnit * 2
+
+                signal closeMenu()
+
+                color: 'white'
+                ColumnLayout {
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
+                    }
+                    anchors.margins: units.fingerUnit
+
+                    spacing: units.fingerUnit
+                    Common.TextButton {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
+                        fontSize: units.readUnit
+                        text: qsTr('Copia')
+                        onClicked: {
+                            menuRect.closeMenu();
+                            clipboard.copia(textVisor.text);
+                        }
+                    }
+                    Common.TextButton {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
+                        fontSize: units.readUnit
+                        text: qsTr('Envia')
+                        onClicked: {
+                            menuRect.closeMenu();
+                            Qt.openUrlExternally("mailto:?subject=Anotació&body=" + encodeURIComponent(itemVisor.shownContent));
+                        }
+                    }
+                }
             }
         }
     }

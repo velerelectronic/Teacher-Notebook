@@ -18,6 +18,7 @@ Common.AbstractEditor {
     signal copyDataRequested
     signal discardDataRequested(bool changes)
     signal closePageRequested()
+    signal openMenu(int initialHeight, var menu)
 
     color: 'white'
 
@@ -77,6 +78,10 @@ Common.AbstractEditor {
         function askEnableEditMode(index) {
             currentIndex = index;
             return true;
+        }
+
+        function openMenuFunction(initialHeight, menu) {
+            collectionInspector.openMenu(initialHeight, menu);
         }
     }
 

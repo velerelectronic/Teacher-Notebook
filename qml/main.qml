@@ -166,6 +166,13 @@ Window {
                 onCloseWorkingSpace: {
                     workingPagesModel.remove(model.index);
                 }
+                onOpenMenu: {
+                    console.log('OPEN menu');
+                    console.log(menu);
+                    slideMenu.initialHeight = initialHeight;
+                    slideMenu.menu = menu;
+                    slideMenu.state = 'showHeading';
+                }
             }
         }
 
@@ -196,6 +203,10 @@ Window {
         }
     }
 
+    Common.DownSlideMenu {
+        id: slideMenu
+        anchors.fill: parent
+    }
 
     Common.MessageBox {
         id: messageBox

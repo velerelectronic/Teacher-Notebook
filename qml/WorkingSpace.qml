@@ -12,6 +12,7 @@ Item {
     property var initialProperties
 
     signal closeWorkingSpace()
+    signal openMenu(int initialHeight, var menu)
 
     ColumnLayout {
         anchors.fill: parent
@@ -84,6 +85,12 @@ Item {
     Connections {
         target: pagesStack.currentItem
         ignoreUnknownSignals: true
+
+        // Slide menu
+
+        onOpenMenu: {
+            openMenu(initialHeight, menu);
+        }
 
         // Page handling
         onOpenPage: {
