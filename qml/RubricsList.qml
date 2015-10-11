@@ -118,6 +118,8 @@ Rectangle {
                     height: units.fingerUnit * 2
                     z: 1
                     border.color: 'black'
+                    clip: true
+
                     MouseArea {
                         anchors.fill: parent
                         onClicked: openRubricGroupAssessment(model.id, model.rubric, rubricsModel, rubricsAssessmentModel)

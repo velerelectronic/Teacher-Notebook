@@ -22,6 +22,8 @@ Rectangle {
         int lastScoreId
         )
 
+    signal showExtendedAnnotation(var parameters)
+
     Common.UseUnits {
         id: units
     }
@@ -263,6 +265,13 @@ Rectangle {
                                                                 */
                                                             }
 
+                                                            MouseArea {
+                                                                anchors.fill: parent
+                                                                onClicked: {
+                                                                    rubricAssessmentHistory.editRubricAssessmentDescriptor(model.assessment, model.criterium, model.individual, model.lastScoreId)
+                                                                }
+                                                            }
+
                                                             ColumnLayout {
                                                                 anchors.fill: parent
                                                                 spacing: 0
@@ -278,12 +287,16 @@ Rectangle {
                                                                         height: parent.width
                                                                         font.pixelSize: units.readUnit
                                                                         fontSizeMode: Text.Fit
-                                                                        text: model.annotationStart
+                                                                        text: model.annotationStart + " " + model.annotationTitle
                                                                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                                                         verticalAlignment: Text.AlignVCenter
                                                                         horizontalAlignment: Text.AlignHCenter
                                                                         transformOrigin: Item.Center
                                                                         rotation: 270
+                                                                    }
+                                                                    MouseArea {
+                                                                        anchors.fill: parent
+                                                                        onClicked: rubricAssessmentHistory.showExtendedAnnotation({title: model.annotationTitle})
                                                                     }
                                                                 }
 
@@ -342,12 +355,6 @@ Rectangle {
                                                                         transformOrigin: Item.Center
                                                                         rotation: 270
                                                                     }
-                                                                }
-                                                            }
-                                                            MouseArea {
-                                                                anchors.fill: parent
-                                                                onClicked: {
-                                                                    rubricAssessmentHistory.editRubricAssessmentDescriptor(model.assessment, model.criterium, model.individual, model.lastScoreId)
                                                                 }
                                                             }
                                                         }
