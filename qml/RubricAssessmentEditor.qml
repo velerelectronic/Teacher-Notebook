@@ -15,11 +15,14 @@ CollectionInspector {
     property int rubric: -1
     property string group: ''
     property int event: -1
+    property string annotation: ''
 
     property SqlTableModel rubricsAssessmentModel
 
     signal savedRubricAssessment
     signal showEvent(var parameters)
+
+    Common.UseUnits { id: units }
 
     function saveOrUpdate(field, contents) {
         var res = false;
@@ -97,25 +100,32 @@ CollectionInspector {
                     notifySavedContents();
             }
         }
-        EditListItemInspector {
-            id: eventComponent
+        CollectionInspectorItem {
+            id: annotationComponent
             width: rubricAssessmentEditor.width
-            caption: qsTr('Esdeveniment')
-            originalContent: {
-                'reference': rubricAssessmentEditor.event,
-                'valued': false,
-                'model': eventsModel,
-                'nameAttribute': 'event'
+            caption: qsTr('Anotació')
+            originalContent: rubricAssessmentEditor.annotation
+
+            visorComponent: Text {
+                property string shownContent: ''
+                property int requiredHeight: Math.max(units.fingerUnit, contentHeight)
+
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                font.pixelSize: units.readUnit
+
+                text: shownContent
             }
 
-            onPerformSearch: eventsModel.searchString = searchString
-            onAddRow: {
-                var today = new Date();
-                var day = today.toYYYYMMDDFormat();
-                showEvent({event: qsTr('[AutoGenerat]') + ((titleComponent.editedContent !== '')?' ':'') + titleComponent.editedContent + ' ' + groupComponent.editedContent['reference'], startDate: day, endDate: day});
+            editorComponent: ExtendedAnnotationsList {
+                property string editedContent: ''
+                property int requiredHeight: units.fingerUnit * 10
+
+                chooseMode: true
+                onChosenAnnotation: editedContent = annotation
             }
+
             onSaveContents: {
-                if (saveOrUpdate('event',editedContent.reference))
+                if (saveOrUpdate('annotation',editedContent))
                     notifySavedContents();
             }
         }
@@ -134,6 +144,7 @@ CollectionInspector {
             rubricAssessmentEditor.rubric = obj['rubric'];
             rubricAssessmentEditor.group = obj['group'];
             rubricAssessmentEditor.event = obj['event'];
+            rubricAssessmentEditor.annotation = obj['annotation'];
         }
     }
 

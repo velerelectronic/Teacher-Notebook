@@ -75,18 +75,10 @@ Rectangle {
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             font.bold: true
-                            text: qsTr('Títol')
+                            text: qsTr('Identificació')
                         }
                         Text {
-                            Layout.preferredWidth: rubricsAssessmentList.width / 5
-                            Layout.fillHeight: true
-                            font.pixelSize: units.readUnit
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            font.bold: true
-                            text: qsTr('Descripció')
-                        }
-                        Text {
-                            Layout.preferredWidth: rubricsAssessmentList.width / 5
+                            Layout.preferredWidth: rubricsAssessmentList.width / 6
                             Layout.fillHeight: true
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -94,7 +86,15 @@ Rectangle {
                             text: qsTr('Grup')
                         }
                         Text {
-                            Layout.preferredWidth: rubricsAssessmentList.width / 5
+                            Layout.preferredWidth: rubricsAssessmentList.width / 6
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.bold: true
+                            text: qsTr('Anotació')
+                        }
+                        Text {
+                            Layout.preferredWidth: rubricsAssessmentList.width / 6
                             Layout.fillHeight: true
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -102,8 +102,13 @@ Rectangle {
                             text: qsTr('Termini')
                         }
 
-                        Item {
-                            Layout.preferredWidth: rubricsAssessmentList.width / 5
+                        Text {
+                            Layout.preferredWidth: rubricsAssessmentList.width / 6
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.bold: true
+                            text: qsTr('Opcions')
                         }
                     }
                 }
@@ -125,37 +130,41 @@ Rectangle {
                             Layout.fillHeight: true
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            text: model.title
+                            text: '<b>' + model.title + '</b><br>' + model.desc
                         }
                         Text {
-                            Layout.preferredWidth: rubricsAssessmentList.width / 5
-                            Layout.fillHeight: true
-                            font.pixelSize: units.readUnit
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            text: model.desc
-                        }
-                        Text {
-                            Layout.preferredWidth: rubricsAssessmentList.width / 5
+                            Layout.preferredWidth: rubricsAssessmentList.width / 6
                             Layout.fillHeight: true
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             text: model.group
                         }
                         Text {
-                            Layout.preferredWidth: rubricsAssessmentList.width / 5
+                            Layout.preferredWidth: rubricsAssessmentList.width / 6
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: model.annotation
+                        }
+                        Text {
+                            Layout.preferredWidth: rubricsAssessmentList.width / 6
                             Layout.fillHeight: true
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
 
-                            Component.onCompleted: {
-                                var obj = scheduleModel.getObject(model.event);
+                            property string annotation: model.annotation
 
-                                if (typeof obj['startDate'] !== 'undefined') {
-                                    if (obj['startDate'] === obj['endDate']) {
-                                        var date = (new Date()).fromYYYYMMDDFormat(obj['startDate']);
+                            onAnnotationChanged: {
+                                console.log('Annotation changed');
+
+                                var obj = annotationsModel.getObject(annotation);
+
+                                if (obj['start'] != '') {
+                                    if (obj['start'] === obj['end']) {
+                                        var date = (new Date()).fromYYYYMMDDFormat(obj['start']);
                                         text = date.toShortReadableDate();
                                     } else {
-                                        text = qsTr('Des de ') + obj['startDate'] + qsTr(' fins a ') + obj['endDate'];
+                                        text = qsTr('Des de ') + obj['start'] + qsTr('fins a ') + obj['end'];
                                     }
                                 }
                             }
@@ -163,13 +172,14 @@ Rectangle {
 
                         Button {
                             Layout.fillHeight: true
+                            Layout.preferredWidth: rubricsAssessmentList.width / 12
                             text: qsTr('Historial')
                             onClicked: openRubricHistory(model.group)
                         }
 
                         Button {
                             Layout.fillHeight: true
-                            // Layout.preferredWidth: height
+                            Layout.preferredWidth: rubricsAssessmentList.width / 12
                             text: qsTr('Detalls')
                             onClicked: openRubricAssessmentDetails(model.id, model.rubric, model.group, rubricsModel, rubricsAssessmentModel)
                         }
@@ -275,11 +285,11 @@ Rectangle {
     SqlTableModel {
         id: rubricsAssessmentModel
         tableName: 'rubrics_assessment'
-        fieldNames: ['id', 'title', 'desc', 'rubric', 'group', 'event']
+        fieldNames: ['id', 'title', 'desc', 'rubric', 'group', 'event', 'annotation']
     }
 
-    Models.ScheduleModel {
-        id: scheduleModel
+    Models.ExtendedAnnotations {
+        id: annotationsModel
 
         Component.onCompleted: select();
     }

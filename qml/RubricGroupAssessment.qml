@@ -23,9 +23,10 @@ Rectangle {
     property string rubricTitle
     property string rubricDesc
     property string group
+    property string annotation: ''
 
     property int sectionsHeight: units.fingerUnit * 2
-    property int sectionsWidth: units.fingerUnit * 2
+    property int sectionsWidth: units.fingerUnit * 3
     property int contentsHeight: units.fingerUnit * 2
     property int contentsWidth: units.fingerUnit * 2
 
@@ -39,6 +40,7 @@ Rectangle {
 
     signal editRubricAssessmentByCriterium(int assessment, int criterium)
     signal editRubricAssessmentByIndividual(int assessment, int individual)
+    signal showExtendedAnnotation(var parameters)
 
     Common.UseUnits { id: units }
 
@@ -51,9 +53,41 @@ Rectangle {
     ColumnLayout {
         anchors.fill: parent
 
-        RowLayout {
+        GridLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: units.fingerUnit
+
+            columns: 2
+
+            Text {
+                Layout.preferredHeight: units.fingerUnit
+                Layout.preferredWidth: sectionsWidth
+                text: qsTr('Anotació')
+            }
+            Rectangle {
+                Layout.preferredHeight: units.fingerUnit
+                Layout.fillWidth: true
+
+                color: 'white'
+
+                Text {
+                    anchors {
+                        fill: parent
+                        margins: units.nailUnit
+                    }
+
+                    verticalAlignment: Text.AlignVCenter
+                    font.pixelSize: units.readUnit
+                    elide: Text.ElideRight
+
+                    text: rubricRectangle.annotation
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: rubricRectangle.showExtendedAnnotation({title: rubricRectangle.annotation})
+                }
+            }
+
 
             Text {
                 Layout.preferredHeight: units.fingerUnit
@@ -70,7 +104,9 @@ Rectangle {
                         fill: parent
                         margins: units.nailUnit
                     }
+                    verticalAlignment: Text.AlignVCenter
                     font.pixelSize: units.readUnit
+                    elide: Text.ElideRight
                     text: rubricRectangle.group
                 }
             }
@@ -429,8 +465,10 @@ Rectangle {
             rubricDesc = obj['desc'];
 
         var objAssessment = rubricsAssessmentModel.getObject(rubricRectangle.idAssessment);
-        if ('group' in objAssessment)
+        if ('group' in objAssessment) {
             group = objAssessment['group'];
+            annotation = objAssessment['annotation'];
+        }
 
     }
 }

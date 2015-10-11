@@ -16,6 +16,10 @@ SqlTableModel {
         'criteriumDesc',
         'weight',
 
+        'annotationTitle',
+        'annotationStart',
+        'anotationEnd',
+
         'lastScoreId',
         'descriptor',
         'moment',

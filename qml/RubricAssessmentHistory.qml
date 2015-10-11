@@ -56,6 +56,8 @@ Rectangle {
         anchors.margins: units.nailUnit
         model: individualsModel
         spacing: units.nailUnit
+        clip: true
+
         delegate: Rectangle {
             id: individualRow
 
@@ -200,7 +202,7 @@ Rectangle {
                                         delegate: Rectangle {
                                             id: criteriumRow
                                             width: criteriaList.width
-                                            height: units.fingerUnit * (rubricRow.maxValue - rubricRow.minValue + 5)
+                                            height: units.fingerUnit * (rubricRow.maxValue - rubricRow.minValue + 10)
 
                                             property int criterium: model.id
 
@@ -236,7 +238,7 @@ Rectangle {
                                                                 "criterium='" + criteriumRow.criterium + "'"
                                                             ]
                                                             Component.onCompleted: {
-                                                                setSort(13, Qt.DescendingOrder);
+                                                                setSort(21, Qt.DescendingOrder);
                                                                 select();
                                                             }
                                                         }
@@ -247,6 +249,10 @@ Rectangle {
                                                             border.width: 1
                                                             width: units.fingerUnit
                                                             height: scoresList.height
+
+                                                            property string start: model.annotationStart
+
+                                                            onStartChanged: console.log('Annotation start ' + start)
 
                                                             Component.onCompleted: {
                                                                 console.log('SCORE: ' + model.score);
@@ -260,6 +266,27 @@ Rectangle {
                                                             ColumnLayout {
                                                                 anchors.fill: parent
                                                                 spacing: 0
+
+                                                                Item {
+                                                                    Layout.fillWidth: true
+                                                                    Layout.preferredHeight: units.fingerUnit * 4
+
+                                                                    clip: parent
+                                                                    Text {
+                                                                        anchors.centerIn: parent
+                                                                        width: parent.height
+                                                                        height: parent.width
+                                                                        font.pixelSize: units.readUnit
+                                                                        fontSizeMode: Text.Fit
+                                                                        text: model.annotationStart
+                                                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                                                        verticalAlignment: Text.AlignVCenter
+                                                                        horizontalAlignment: Text.AlignHCenter
+                                                                        transformOrigin: Item.Center
+                                                                        rotation: 270
+                                                                    }
+                                                                }
+
                                                                 Rectangle {
                                                                     Layout.fillWidth: true
                                                                     Layout.fillHeight: true

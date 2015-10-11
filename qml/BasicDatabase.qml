@@ -105,6 +105,10 @@ DatabaseBackup {
         dataBck.createTable('rubrics_descriptors','id INTEGER PRIMARY KEY, criterium INTEGER, level INTEGER, definition TEXT');
 
         dataBck.createTable('rubrics_assessment','id INTEGER PRIMARY KEY, title TEXT, desc TEXT, rubric INTEGER, "group" TEXT, event INTEGER');
+
+        console.log('ALTERING table');
+        dataBck.alterTable('rubrics_assessment','annotation','TEXT');
+
         dataBck.createTable('rubrics_scores','id INTEGER PRIMARY KEY, assessment INTEGER, descriptor INTEGER, moment TEXT, individual INTEGER, comment TEXT');
 
         dataBck.createTable('projects','id INTEGER PRIMARY KEY, name TEXT, desc TEXT');
@@ -146,9 +150,16 @@ DatabaseBackup {
                     rc.desc         AS criteriumDesc,
                     rc.weight       AS weight,
 
-                    lastScores.*
+                    lastScores.*,
+
+                    ea.title        AS annotationTitle,
+                    ea.start        AS annotationStart,
+                    ea.end          AS annotationEnd
 
                     FROM rubrics_assessment AS ra, individuals_list AS il, rubrics_criteria AS rc
+
+                    LEFT JOIN   extended_annotations    AS ea
+                        ON      ra.annotation = ea.title
 
                     LEFT JOIN (
                         SELECT  MAX(rubrics_scores.id)          AS lastScoreId,
@@ -182,13 +193,17 @@ DatabaseBackup {
                     WHERE   ra.\"group\" = il.\"group\"
                     AND     ra.rubric = rc.rubric
 
-                    ORDER BY assessment, criterium, individual ASC
+                    ORDER BY annotationStart ASC, assessment, criterium, individual ASC
             ");
 
         dataBck.dropView('rubrics_descriptors_scores');
         dataBck.createView('rubrics_descriptors_scores',
                     "SELECT rubrics_assessment.id           AS assessment,
                             rubrics_assessment.rubric       AS rubric,
+                            rubrics_assessment.annotation   AS annotationTitle,
+
+                            extended_annotations.start      AS annotationStart,
+                            extended_annotations.end        AS annotationEnd,
 
                             individuals_list.id             AS individual,
                             individuals_list.name           AS name,
@@ -217,6 +232,9 @@ DatabaseBackup {
                                     rubrics_descriptors,
                                     rubrics_levels
 
+                            LEFT JOIN   extended_annotations
+                                ON      rubrics_assessment.annotation = extended_annotations.title
+
                             WHERE       rubrics_assessment.id = rubrics_scores.assessment
                                 AND     rubrics_assessment.\"group\" = individuals_list.\"group\"
                                 AND     rubrics_assessment.rubric = rubrics_criteria.rubric
@@ -227,7 +245,7 @@ DatabaseBackup {
                                 AND     rubrics_scores.individual = individuals_list.id
                                 AND     rubrics_scores.descriptor = rubrics_descriptors.id
 
-                            ORDER BY assessment, criterium, individual ASC
+                            ORDER BY annotationStart DESC, assessment, criterium, individual ASC
                         ");
 
         dataBck.createView('rubrics_total_scores','SELECT assessment, individual, name, surname, \"group\", SUM(weight) AS weight, SUM(score) AS score, SUM(weight * score) AS points FROM rubrics_descriptors_scores GROUP BY assessment, individual');

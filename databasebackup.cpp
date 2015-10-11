@@ -21,6 +21,14 @@ DatabaseBackup::DatabaseBackup(QObject *parent) :
 {
 }
 
+
+bool DatabaseBackup::alterTable(const QString &tableName, const QString &columnName, const QString &columnDefinition) {
+    QSqlQueryModel model(this);
+    model.setQuery(QSqlQuery("ALTER TABLE " + tableName + " ADD " + columnName + " " + columnDefinition));
+    qDebug() << model.lastError();
+}
+
+
 bool DatabaseBackup::createTable(const QString &table, const QString &fields) {
     QSqlQueryModel model(this);
     model.setQuery(QSqlQuery("CREATE TABLE IF NOT EXISTS " + table + " (" + fields + ")"));

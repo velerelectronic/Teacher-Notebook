@@ -13,8 +13,10 @@ Rectangle {
     property bool isVertical: width<height
 
     signal showExtendedAnnotation (var parameters)
-
     signal openMenu(int initialHeight, var menu)
+    signal chosenAnnotation(string annotation)
+
+    property bool chooseMode: false
     /*
     signal deletedAnnotations (int num)
 
@@ -213,6 +215,11 @@ Rectangle {
                     onClicked: {
                         if (annotationItem.state === 'unselected') {
                             annotationItem.state = 'selected';
+                            if (chooseMode) {
+                                selectedAnnotationsModel.clear();
+                                chosenAnnotation(model.title);
+                            }
+
                             selectedAnnotationsModel.append({title: model.title, fake: model.index});
                             console.log('Appended',model.title);
                         } else {

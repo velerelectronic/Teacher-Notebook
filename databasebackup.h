@@ -20,6 +20,7 @@ public slots:
     Q_INVOKABLE bool createTable(const QString &, const QString &);
     Q_INVOKABLE bool createView(const QString &, const QString &);
     Q_INVOKABLE bool dropTable(const QString &);
+    Q_INVOKABLE bool alterTable(const QString &, const QString &, const QString &);
     Q_INVOKABLE bool dropView(const QString &);
     Q_INVOKABLE bool saveContents(const QString &);
     Q_INVOKABLE bool readContents(const QString &filename);
