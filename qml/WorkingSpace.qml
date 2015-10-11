@@ -114,6 +114,10 @@ Item {
             messageBox.publishMessage(qsTr("S'ha creat un duplicat"));
             lastAnnotationsModel.select();
         }
+        onShowExtendedAnnotation: {
+            openNewPage('ShowExtendedAnnotation', parameters);
+        }
+
         onShowAnnotation: {
             openNewPage('ShowAnnotation',parameters);
         }

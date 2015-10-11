@@ -11,7 +11,7 @@ import PersonalTypes 1.0
 
 CollectionInspector {
     id: annotationEditor
-    pageTitle: qsTr("Editor d'anotacions")
+    pageTitle: qsTr("Editor d'anotacions (esteses)")
 
     signal closePage(string message)
     signal savedAnnotation(int id,string annotation,string desc)
@@ -23,57 +23,51 @@ CollectionInspector {
     signal openingDocumentExternally(string document)
     signal newProject()
 
-    property int idAnnotation: -1
-    property string annotation: ''
-    property string desc: ''
-    property string image: ''
-    property string labels: ''
-    property bool enableDeletion: eventsComponent.enableDeletion & resourcesComponent.enableDeletion
+    property alias title: titleComponent.originalContent // PRIMARY KEY
+    property alias desc: descComponent.originalContent
+    property alias labels: labelsComponent.originalContent
+    property alias project: projectComponent.originalContent
+    property alias start: projectComponent.originalContent
+    property alias end: projectComponent.originalContent
+    property alias state: projectComponent.originalContent
+
+    property bool enableDeletion: resourcesComponent.enableDeletion
 
     property var existingLabelsModel: []
 
     Common.UseUnits { id: units }
 
-    onCopyDataRequested: {
-        prepareDataAndSave(-1);
-        annotationEditor.setChanges(false);
-        duplicatedAnnotation(annotation,desc);
-    }
-
     onClosePageRequested: closePage('')
 
-    onIdAnnotationChanged: fillValues()
+    onTitleChanged: fillValues()
 
-    function saveOrUpdate(field, contents) {
+    function save() {
         var res = false;
-        var obj = {};
-        obj[field] = contents;
 
-        if (idAnnotation == -1) {
-            obj['created'] = Storage.currentTime();
-            res = globalAnnotationsModel.insertObject(obj);
-            if (res !== '') {
-                idAnnotation = res;
-            }
-        } else {
-            obj['id'] = idAnnotation;
-            res = globalAnnotationsModel.updateObject(obj);
+        var obj = {
+            title: titleComponent.editedContent,
+            desc: descComponent.editedContent,
+            project: projectComponent.editedContent['reference'],
+            labels: labelsComponent.editedContent,
+            start: startComponent.translatedEditedContent,
+            end: endComponent.translatedEditedContent,
+            state: stateComponent.editedContent,
+            created: Storage.currentTime()
         }
+
+        res = annotationsModel.insertObject(obj);
+
         return res;
     }
 
-    Models.ScheduleModel {
-        id: eventsModel
-        filters: ["ref='" + idAnnotation + "'"]
-        onFiltersChanged: {
-            setSort(5,Qt.AscendingOrder);
-            select();
-        }
-    }
+    function updateRecord(field, contents) {
+        var obj = {
+            title: annotationEditor.title
+        };
 
-    Connections {
-        target: globalScheduleModel
-        onUpdated: eventsModel.select()
+        obj[field] = contents;
+
+        return annotationsModel.updateObject(obj);
     }
 
     model: ObjectModel {
@@ -82,7 +76,7 @@ CollectionInspector {
             width: annotationEditor.width
             caption: qsTr('Títol')
             onSaveContents: {
-                if (saveOrUpdate('title',editedContent))
+                if (save())
                     notifySavedContents();
             }
         }
@@ -91,22 +85,12 @@ CollectionInspector {
             width: annotationEditor.width
             caption: qsTr('Descripció')
             onSaveContents: {
-                if (saveOrUpdate('desc',editedContent))
+                console.log('HOLA')
+                if (updateRecord('desc',editedContent))
                     notifySavedContents();
             }
 
 //            onOpenMenu: annotationEditor.openMenu(initialHeight, menu)
-        }
-        EditImageItemInspector {
-            id: imageComponent
-            width: annotationEditor.width
-            caption: qsTr('Imatge')
-
-            onOpenCamera: annotationEditor.openCamera(receiver)
-            onSaveContents: {
-                if (saveOrUpdate('image',editedContent))
-                    notifySavedContents();
-            }
         }
         EditListItemInspector {
             id: projectComponent
@@ -117,7 +101,7 @@ CollectionInspector {
                 projectsModel.searchString = searchString;
             }
             onSaveContents: {
-                if (saveOrUpdate('ref',editedContent.reference))
+                if (updateRecord('project',editedContent.reference))
                     notifySavedContents();
             }
         }
@@ -280,55 +264,42 @@ CollectionInspector {
                 }
             }
             onSaveContents: {
-                if (saveOrUpdate('labels',editedContent))
+                if (updateRecord('labels',editedContent))
                     notifySavedContents();
             }
         }
-        CollectionInspectorItem {
-            id: eventsComponent
+        EditDateTimeItemInspector2 {
+            id: startComponent
+
             width: annotationEditor.width
-            caption: qsTr('Esdeveniments')
+            caption: qsTr('Inici')
+            onSaveContents: {
+                if (updateRecord('start',editedContent))
+                    notifySavedContents();
+            }
 
-            property bool enableDeletion: eventsModel.count == 0
+        }
+        EditDateTimeItemInspector2 {
+            id: endComponent
 
-            visorComponent: Schedule {
-                // Required height defined inside Schedule
-                property string shownContent: ''
-
-                interactive: false
-
-                onShownContentChanged: {
-                    eventsModel.select();
-                }
-                onShowEvent: annotationEditor.showEvent(parameters)
-
-                scheduleModel: eventsModel
-
-                Common.SuperposedButton {
-                    id: newEventButton
-                    anchors {
-                        top: parent.top
-                        right: parent.right
-                    }
-
-                    size: units.fingerUnit
-                    imageSource: 'plus-24844'
-                    onClicked: {
-                        var date = (new Date());
-                        var dateStr = date.toYYYYMMDDFormat();
-                        var timeStr = date.toHHMMFormat();
-                        var obj = {
-                            annotation: annotationEditor.idAnnotation,
-                            startDate: dateStr,
-                            startTime: timeStr,
-                            endDate: dateStr,
-                            endTime: timeStr
-                        };
-                        newEvent(obj);
-                    }
+            width: annotationEditor.width
+            caption: qsTr('Final')
+            onSaveContents: {
+                if (updateRecord('end',editedContent))
+                    notifySavedContents();
+            }
+        }
+        EditTextItemInspector {
+            id: stateComponent
+            width: annotationEditor.width
+            caption: qsTr('Estat')
+            onSaveContents: {
+                if (updateRecord('state', editedContent)) {
+                    notifySavedContents();
                 }
             }
         }
+
         CollectionInspectorItem {
             id: resourcesComponent
             width: annotationEditor.width
@@ -344,7 +315,7 @@ CollectionInspector {
 
                 model: Models.DetailedResourcesModel {
                     id: resourcesModel
-                    filters: ["annotationId='" + idAnnotation + "'"]
+                    filters: ["annotationId='" + title + "'"]
                     onFiltersChanged: select()
                     onCountChanged: resourcesComponent.enableDeletion = (count == 0)
 
@@ -409,26 +380,6 @@ CollectionInspector {
             }
         }
 
-        CollectionInspectorItem {
-            id: characteristicsComponent
-            width: annotationEditor.width
-            caption: qsTr('Característiques')
-
-            visorComponent: ListView {
-                model: 3
-                property int requiredHeight: contentItem.height
-                delegate: Common.BoxedText {
-                    width: parent.width
-                    height: units.fingerUnit * 2
-                    fontSize: units.readUnit
-                    margins: units.nailUnit
-                    text: modelData
-                }
-            }
-            enableSendClick: true
-            onSendClick: showEventCharacteristics(idEvent, eventCharacteristicsModel, writeCharacteristicsModel)
-        }
-
         EditDeleteItemInspector {
             id: deleteButton
             width: annotationEditor.width
@@ -438,66 +389,43 @@ CollectionInspector {
             dialogTitle: buttonCaption
             dialogText: qsTr("Esborrareu l'anotació. Voleu continuar?")
 
-            model: globalAnnotationsModel
-            itemId: idAnnotation
+            model: annotationsModel
+            itemId: annotationEditor.title
             onDeleted: closePage(qsTr("S'ha esborrat l'anotació"))
-        }
-
-        CollectionInspectorItem {
-            id: exportButton
-
-            width: annotationEditor.width
-            visorComponent: Button {
-                text: qsTr('EXPORTA anotació')
-                onClicked: {
-                    projectsModel.select();
-                    var oldObj = globalAnnotationsModel.getObject(annotationEditor.idAnnotation);
-                    var obj = {
-                        title: titleComponent.originalContent,
-                        desc: descComponent.originalContent,
-                        labels: labelsComponent.originalContent,
-                        created: oldObj['created'],
-                        project: projectsModel.getObject(projectComponent.originalContent['reference'])['name'],
-                        start: '',
-                        end: '',
-                        state: 0
-                    };
-
-                    console.log('OBJ');
-                    console.log(projectComponent.originalContent['reference']);
-                    for (var prop in obj) {
-                        console.log(prop,'-->',obj[prop])
-                    }
-
-                    extendedAnnotations.insertObject(obj);
-                }
-            }
         }
     }
 
     function fillValues() {
-        var reference = -1;
-        if (annotationEditor.idAnnotation != -1) {
-            var details = globalAnnotationsModel.getObject(annotationEditor.idAnnotation);
+        if (annotationEditor.title !== "") {
+            var project = "";
 
-            titleComponent.originalContent = details.title;
-            descComponent.originalContent = (details.desc == null)?'':details.desc;
-            imageComponent.originalContent = (details.image == null)?'':details.image;
+            annotationsModel.select();
 
-            reference = (typeof details.ref !== 'undefined')?details.ref:-1;
+            var details = annotationsModel.getObject(annotationEditor.title);
 
-            labelsComponent.originalContent = (details.labels == null)?'':details.labels;
+            if (details.title !== '') {
+                descComponent.originalContent = (details.desc == null)?'':details.desc;
 
-            eventsComponent.originalContent = details.id.toString();
+                project = details.project;
 
-            annotationEditor.setChanges(false);
-        }
+                labelsComponent.originalContent = (details.labels == null)?'':details.labels;
 
-        projectComponent.originalContent = {
-            reference: reference,
-            valued: false,
-            nameAttribute: 'name',
-            model: projectsModel
+                startComponent.originalContent = details.start;
+                endComponent.originalContent = details.end;
+
+                annotationEditor.setChanges(false);
+
+            }
+
+            projectsModel.select();
+
+            projectComponent.originalContent = {
+                reference: project,
+                valued: true,
+                nameAttribute: 'name',
+                model: projectsModel
+            }
+
         }
     }
 
@@ -509,18 +437,11 @@ CollectionInspector {
         id: projectsModel
 
         searchFields: ['name','desc']
-
-        Component.onCompleted: select()
     }
 
     Models.ExtendedAnnotations {
-        id: extendedAnnotations
+        id: annotationsModel
 
-        Component.onCompleted: select()
-    }
-
-    SqlTableModel {
-        tableName: globalAnnotationsModel.tableName;
         Component.onCompleted: select()
 
         onCountChanged: {

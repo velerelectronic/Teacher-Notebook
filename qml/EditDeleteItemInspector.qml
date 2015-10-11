@@ -13,7 +13,7 @@ CollectionInspectorItem {
     property string dialogTitle: qsTr('Esborrar')
     property string dialogText: ''
     property SqlTableModel model
-    property int itemId: -1
+    property var itemId: -1
     signal deleted()
 
     visorComponent: Button {

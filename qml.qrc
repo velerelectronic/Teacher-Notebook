@@ -79,5 +79,8 @@
         <file>qml/ShowRubricGroupAssessmentByIndividual.qml</file>
         <file>qml/RubricAssessmentHistory.qml</file>
         <file>qml/WorkingSpace.qml</file>
+        <file>qml/ExtendedAnnotationsList.qml</file>
+        <file>qml/ShowExtendedAnnotation.qml</file>
+        <file>qml/EditDateTimeItemInspector2.qml</file>
     </qresource>
 </RCC>

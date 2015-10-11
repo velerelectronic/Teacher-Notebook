@@ -156,7 +156,7 @@ Rectangle {
             }
 
             Component.onCompleted: {
-                mainListModel.append({title: qsTr('Darreres anotacions'), color: '#F3F781', extraPage: 'AnnotationsList', extraArguments: {}, component: lastAnnotationsComponent})
+                mainListModel.append({title: qsTr('Darreres anotacions'), color: '#F3F781', extraPage: 'ExtendedAnnotationsList', extraArguments: {}, component: lastAnnotationsComponent})
                 mainListModel.append({title: qsTr('Pròxims terminis'), color: '#F7BE81', extraPage: 'TasksSystem', extraArguments: {}, component: nextEventsComponent})
                 mainListModel.append({title: qsTr('Projectes'), color: '#FFAACC', extraPage: 'Projects', extraArguments: {}, component: projectsComponent})
             }
@@ -375,7 +375,7 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: openWorkingPage('AnnotationsList.qml',{searchString: model.terms})
+                        onClicked: openWorkingPage('ExtendedAnnotationsList.qml',{searchString: model.terms})
                     }
                 }
             }
