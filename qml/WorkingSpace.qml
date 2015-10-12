@@ -188,6 +188,7 @@ Item {
         onOpenRubricDetails: openNewPage('RubricDetailsEditor',{rubric: rubric, rubricsModel: rubricsModel})
         onOpenRubricEditor: openNewPage('Rubric',{rubric: id, rubricsModel: rubricsModel, state: 'edit'}, '')
         onOpenRubricGroupAssessment: {
+            console.log('GROUP assessment');
             openNewPage('RubricGroupAssessment', {idAssessment: assessment, rubric: rubric, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel})
         }
         onOpenRubricHistory: openNewPage('RubricAssessmentHistory',{group: group})

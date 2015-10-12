@@ -31,9 +31,11 @@ CollectionInspector {
     property alias end: projectComponent.originalContent
     property alias state: projectComponent.originalContent
 
-    property bool enableDeletion: resourcesComponent.enableDeletion
+    property bool enableDeletion: resourcesComponent.enableDeletion && rubricsComponent.enableDeletion
 
     property var existingLabelsModel: []
+
+    signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
 
     Common.UseUnits { id: units }
 
@@ -377,6 +379,64 @@ CollectionInspector {
                         newResourceAttachment(obj);
                     }
                 }
+            }
+        }
+
+        CollectionInspectorItem {
+            id: rubricsComponent
+
+            width: annotationEditor.width
+            caption: qsTr('Rúbriques')
+            property bool enableDeletion: assessmentsModel.count == 0
+
+            visorComponent: ListView {
+                id: rubricsList
+                interactive: false
+                property int requiredHeight: contentItem.height
+
+                header: (assessmentsModel.count == 0)?header:null
+
+                Component {
+                    id: header
+
+                    Common.BoxedText {
+                        width: rubricsList.width
+                        height: units.fingerUnit * 2
+                        margins: units.nailUnit
+                        text: qsTr('Cap rúbrica està associada a aquesta anotació.')
+                    }
+                }
+
+                model: assessmentsModel
+
+                delegate: Common.BoxedText {
+                    width: rubricsList.width
+                    height: units.fingerUnit * 2
+                    margins: units.nailUnit
+                    text: model.title + " " + model.desc
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            console.log('NOW');
+                            annotationEditor.openRubricGroupAssessment(model.id, model.rubric, rubricsModel, assessmentsModel);
+                        }
+                    }
+                }
+
+                Models.RubricsModel {
+                    id: rubricsModel
+
+                    Component.onCompleted: select()
+                }
+
+            }
+            Models.RubricsAssessmentModel {
+                id: assessmentsModel
+
+                filters: [
+                    "annotation='" + annotationEditor.title + "'"
+                ]
+                Component.onCompleted: assessmentsModel.select()
             }
         }
 

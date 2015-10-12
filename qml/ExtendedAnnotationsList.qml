@@ -15,6 +15,7 @@ Rectangle {
     signal showExtendedAnnotation (var parameters)
     signal openMenu(int initialHeight, var menu)
     signal chosenAnnotation(string annotation)
+    signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
 
     property bool chooseMode: false
     /*
@@ -311,6 +312,7 @@ Rectangle {
                     title: parent.thisTitle
 
                     onOpenMenu: annotations.openMenu(initialHeight,menu)
+                    onOpenRubricGroupAssessment: annotations.openRubricGroupAssessment(assessment, rubric, rubricsModel, rubricsAssessmentModel)
                 }
             }
         }
