@@ -6,6 +6,7 @@
 #include "xmlmodel.h"
 #include "imagedata.h"
 #include "teachingplanning.h"
+#include "SqlTableModel2/sqltablemodel2.h"
 #include "sqltablemodel.h"
 #include "databasebackup.h"
 #include "standardpaths.h"
@@ -31,6 +32,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<XmlModel>("XmlModel");
     qmlRegisterType<DatabaseBackup>("PersonalTypes", 1, 0, "DatabaseBackup");
     qmlRegisterType<SqlTableModel>("PersonalTypes", 1, 0, "SqlTableModel");
+    qmlRegisterType<SqlTableModel2>("PersonalTypes", 1, 0, "SqlTableModel2");
     qmlRegisterType<StandardPaths>("PersonalTypes", 1, 0, "StandardPaths");
     qmlRegisterType<MarkDownParser>("PersonalTypes", 1, 0, "MarkDownParser");
 

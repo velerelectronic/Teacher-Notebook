@@ -95,6 +95,18 @@ Rectangle {
                     anchors.margins: units.nailUnit
                     spacing: units.nailUnit
 
+                    Common.ImageButton {
+                        image: 'floppy-35952'
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: height
+                        onClicked: {
+                            if (searchAnnotations.text !== '') {
+                                var t = searchAnnotations.text;
+                                searchesModel.insertObject({title: t, terms: t, created: Storage.currentTime()});
+                            }
+                        }
+                    }
+
                     Common.SearchBox {
                         id: searchAnnotations
                         Layout.fillWidth: true
@@ -125,21 +137,10 @@ Rectangle {
                             }
 
                             annotationsModel.filters = filtersArray.join();
+                            annotationsModel.select();
                         }
                         onIntroPressed: {
                             console.log('INTRO')
-                        }
-                    }
-
-                    Common.ImageButton {
-                        image: 'floppy-35952'
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: height
-                        onClicked: {
-                            if (searchAnnotations.text !== '') {
-                                var t = searchAnnotations.text;
-                                searchesModel.insertObject({title: t, terms: t, created: Storage.currentTime()});
-                            }
                         }
                     }
                 }
@@ -326,6 +327,10 @@ Rectangle {
         id: annotationsModel
 
         searchFields: ['title', 'desc', 'project']
+
+//        bindValues: ['2015-10-05']
+//        filters: ["start>=?"]
+
         Component.onCompleted: {
             setSort(1, Qt.DescendingOrder);
             select();

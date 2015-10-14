@@ -22,6 +22,10 @@ void SqlTableModel::debug() {
 //    qDebug() << "HHOOOLA";
 }
 
+QStringList SqlTableModel::bindValues() const {
+    return innerBindValues;
+}
+
 QSqlRecord SqlTableModel::buildRecord(const QVariantMap &object,bool autoValue) {
     QSqlRecord record;
     QVariantMap::const_iterator i = object.constBegin();
@@ -246,8 +250,27 @@ QString SqlTableModel::searchString() {
 
 bool SqlTableModel::select() {
     deselectAllObjects();
-//    qDebug() << "Se seleccionara" << selectStatement();
 
+    qDebug() << "Preparing" << QSqlRelationalTableModel::selectStatement();
+//    query.prepare("SELECT * FROM " + innerTableName + " WHERE " + SqlTableModel::filter());
+
+    QStringList::const_iterator i = innerBindValues.constBegin();
+
+    while (i != innerBindValues.constEnd()) {
+        qDebug() << "Bind value" << *i;
+        QSqlTableModel::query().addBindValue(*i);
+        ++i;
+    }
+
+//    query.exec();
+//    QSqlQueryModel::setQuery(query);
+
+//    qDebug() << "Abans de seleccionar" << query.executedQuery();
+    QSqlTableModel::select();
+    countChanged();
+    qDebug() << "Despres se selecciona" << QSqlTableModel::selectStatement();
+
+    /*
     if ((innerLimit==0) && (innerGroupBy=="")) {
         bool res = QSqlRelationalTableModel::select();
         countChanged();
@@ -267,6 +290,7 @@ bool SqlTableModel::select() {
             return !query().lastError().isValid();
         }
     }
+    */
 }
 
 bool SqlTableModel::selectUnique(QString field) {
@@ -307,8 +331,12 @@ void SqlTableModel::selectObject(int row,bool activate) {
     this->dataChanged(index,index);
 }
 
+void SqlTableModel::setBindValues(const QStringList &bindValues) {
+    innerBindValues = bindValues;
+}
+
 bool SqlTableModel::setData(const QModelIndex &item, const QVariant &value, int role) {
-//    qDebug() << "Set data";
+    qDebug() << "Set data";
     return true;
 }
 
@@ -318,6 +346,7 @@ void SqlTableModel::setFieldNames(const QStringList &fields) {
 
 void SqlTableModel::setFilters(const QStringList &filters) {
     innerFilters = filters;
+    qDebug() << "Filters of" << innerTableName << innerFilters;
     filtersChanged();
     setInnerFilters();
 }
@@ -357,6 +386,10 @@ void SqlTableModel::setInnerFilters() {
 
     QSqlTableModel::setFilter(fieldFilter);
 //    qDebug() << tableName() + "Filter " + fieldFilter;
+}
+
+void SqlTableModel::setInnerFilters2() {
+
 }
 
 void SqlTableModel::setGroupBy(const QString &group) {

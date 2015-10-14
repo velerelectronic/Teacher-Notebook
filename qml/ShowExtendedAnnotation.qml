@@ -87,7 +87,6 @@ CollectionInspector {
             width: annotationEditor.width
             caption: qsTr('Descripció')
             onSaveContents: {
-                console.log('HOLA')
                 if (updateRecord('desc',editedContent))
                     notifySavedContents();
             }
@@ -422,21 +421,20 @@ CollectionInspector {
                         }
                     }
                 }
+            }
+            Models.RubricsModel {
+                id: rubricsModel
 
-                Models.RubricsModel {
-                    id: rubricsModel
-
-                    Component.onCompleted: select()
-                }
-
+                Component.onCompleted: select()
             }
             Models.RubricsAssessmentModel {
                 id: assessmentsModel
 
                 filters: [
-                    "annotation='" + annotationEditor.title + "'"
+                    "annotation='" + annotationEditor.title.replace("'","''") + "'"
                 ]
-                Component.onCompleted: assessmentsModel.select()
+                // There is a strong need to change the replace() in the previous line by a better solution.
+                // I need to use bind-values in the SqlTableModel inner class.
             }
         }
 

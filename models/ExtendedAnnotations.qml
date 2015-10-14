@@ -1,6 +1,6 @@
 import PersonalTypes 1.0
 
-SqlTableModel {
+SqlTableModel2 {
     tableName: 'extended_annotations'
     fieldNames: [
         'title',

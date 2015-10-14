@@ -15,7 +15,8 @@ SOURCES += main.cpp \
     databasebackup.cpp \
     standardpaths.cpp \
     XmlGrid/xmlgrid.cpp \
-    MarkDownParser/markdownparser.cpp
+    MarkDownParser/markdownparser.cpp \
+    SqlTableModel2/sqltablemodel2.cpp
 
 RESOURCES += qml.qrc \
     icons.qrc \
@@ -42,7 +43,8 @@ HEADERS += \
     standardpaths.h \
     XmlGrid/xmlgrid.h \
     MarkDownParser/markdownparser.h \
-    ClipboardAdapter/qmlclipboardadapter.h
+    ClipboardAdapter/qmlclipboardadapter.h \
+    SqlTableModel2/sqltablemodel2.h
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
