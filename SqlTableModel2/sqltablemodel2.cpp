@@ -152,24 +152,26 @@ QString &SqlTableModel2::groupBy() {
 }
 
 QVariant SqlTableModel2::insertObject(const QVariantMap &object) {
-    qDebug() << "Object to insert: " << object;
-
     QStringList keys = object.keys();
     QStringList placeHolders;
+
     for (int i=0; i<object.size(); i++)
         placeHolders << "?";
 
-    query().prepare("INSERT INTO " + innerTableName + "(" + keys.join(", ") + ") VALUES (" + placeHolders.join(",") + ")");
+    QSqlQuery query;
+    query.prepare("INSERT INTO " + innerTableName + " (" + keys.join(", ") + ") VALUES (" + placeHolders.join(",") + ")");
 
     QVariantMap::const_iterator values = object.cbegin();
     while ( values != object.cend()) {
-        query().addBindValue(*values);
+        query.addBindValue(*values);
         ++values;
     }
 
-    query().exec();
+    query.exec();
 
-    QVariant lastId = query().lastInsertId();
+    setQuery(query);
+
+    QVariant lastId = query.lastInsertId();
     updated();
     return lastId;
 }
@@ -380,23 +382,36 @@ const QString &SqlTableModel2::tableName() {
     return innerTableName;
 }
 
-bool SqlTableModel2::updateObject(const QVariantMap &object) {
-/*
-    qDebug() << "Field name" << this->primaryKey();
-    int row = searchRowWithKeyValue(object.value(this->primaryKey().fieldName(0)));
+int SqlTableModel2::updateObject(const QVariantMap &object) {
+    qDebug() << "Updating" << object;
+    if (innerPrimaryKey != "") {
+        QStringList keys;
+        QVariantMap::const_iterator keysIterator = object.cbegin();
+        while ( keysIterator != object.cend()) {
+            QString set = (*keysIterator).toString() + "=?";
+            qDebug() << set;
+            keys << set;
+            ++keysIterator;
+        }
 
-    qDebug() << "Updating " << object;
-    */
-    bool result = false;
-/*
-    if (row>-1) {
-        QSqlRecord record = buildRecord(object,false);
-        result = updateRowInTable(row,record);
-        qDebug() << lastError();
-        selectRow(row);
+        qDebug() << keys;
+        QSqlQuery query;
+        query.prepare("UPDATE " + innerTableName + " SET " + keys.join(", ") + " WHERE " + innerPrimaryKey + "=?");
+
+        QVariantMap::const_iterator valuesIterator = object.cbegin();
+        while ( valuesIterator != object.cend()) {
+            query.addBindValue(*valuesIterator);
+            ++valuesIterator;
+        }
+        query.addBindValue(object[innerPrimaryKey]);
+
+        query.exec();
+
+        setQuery(query);
+
+        qDebug() << query.lastQuery();
+        int rows = query.numRowsAffected();
         updated();
-        select();
+        return rows;
     }
-    */
-    return result;
 }

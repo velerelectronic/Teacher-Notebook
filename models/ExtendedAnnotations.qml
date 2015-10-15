@@ -12,4 +12,5 @@ SqlTableModel2 {
         'end',
         'state'
     ]
+    primaryKey: title
 }
