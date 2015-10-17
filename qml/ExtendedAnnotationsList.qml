@@ -18,6 +18,17 @@ Rectangle {
     signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
 
     property bool chooseMode: false
+
+    property var stateTypes: {
+        'done': "state < 0",
+        'active': "state >= 0 OR state IS NULL",
+        'specific': "state = 0",
+        'all': ''
+    }
+    property string stateFilter: stateTypes.active
+
+    property var labelsFilter: []
+
     /*
     signal deletedAnnotations (int num)
 
@@ -95,24 +106,14 @@ Rectangle {
                     anchors.margins: units.nailUnit
                     spacing: units.nailUnit
 
-                    Common.ImageButton {
-                        image: 'floppy-35952'
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: height
-                        onClicked: {
-                            if (searchAnnotations.text !== '') {
-                                var t = searchAnnotations.text;
-                                searchesModel.insertObject({title: t, terms: t, created: Storage.currentTime()});
-                            }
-                        }
-                    }
-
                     Common.SearchBox {
                         id: searchAnnotations
                         Layout.fillWidth: true
                         Layout.preferredHeight: units.fingerUnit
 
                         text: annotations.searchString
+
+                        onTextChanged: annotations.searchString = text
                         onPerformSearch: {
                             var textArray = text.split(/\s+/i);
                             // text.split(/[$|\b+][#\B+][^|\b+]/i);
@@ -136,12 +137,16 @@ Rectangle {
                                 filtersArray.push("INSTR(UPPER(labels),UPPER('" + labelsArray[i] + "'))");
                             }
 
-                            annotationsModel.filters = filtersArray.join();
-                            annotationsModel.select();
+                            annotations.labelsFilter = filtersArray;
                         }
                         onIntroPressed: {
                             console.log('INTRO')
                         }
+                    }
+                    Common.TextButton {
+                        Layout.fillHeight: true
+                        text: qsTr('Opcions')
+                        onClicked: openMenu(units.fingerUnit * 4, annotationsMenu)
                     }
                 }
             }
@@ -164,12 +169,12 @@ Rectangle {
                 width: annotationsList.width
                 height: units.fingerUnit * 2
                 border.color: 'black'
+                color: (model.state>=0)?'white':'#AAAAAA'
                 states: [
                     State {
                         name: 'unselected'
                         PropertyChanges {
                             target: annotationItem
-                            color: 'white'
                         }
                     },
                     State {
@@ -328,17 +333,149 @@ Rectangle {
 
         searchFields: ['title', 'desc', 'project']
 
+        sort: 'created DESC'
 //        bindValues: ['2015-10-05']
-//        filters: ["start>=?"]
 
-        Component.onCompleted: {
-            setSort(1, Qt.DescendingOrder);
-            select();
-        }
+        Component.onCompleted: select();
+    }
+
+    onStateFilterChanged: {
+        annotationsModel.filters = stateFilter.concat(labelsFilter);
+        annotationsModel.select();
+    }
+    onLabelsFilterChanged: {
+        annotationsModel.filters = stateFilter.concat(labelsFilter);
+        annotationsModel.select();
     }
 
     Models.SavedAnnotationsSearchesModel {
         id: searchesModel
         Component.onCompleted: select()
+    }
+
+    Component {
+        id: annotationsMenu
+
+        Rectangle {
+            id: menuRect
+
+            property int requiredHeight: childrenRect.height + units.fingerUnit * 2
+
+            signal closeMenu()
+
+            color: 'white'
+            ColumnLayout {
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                }
+                anchors.margins: units.fingerUnit
+
+                spacing: units.fingerUnit
+
+                GridView {
+                    id: searchesGrid
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: contentItem.height
+
+                    cellWidth: units.fingerUnit * 4
+                    cellHeight: units.fingerUnit * 2
+
+                    model: searchesModel
+                    interactive: false
+
+                    delegate: Common.BoxedText {
+                        width: searchesGrid.cellWidth
+                        height: searchesGrid.cellHeight
+                        text: model.title
+                        margins: units.nailUnit
+                        color: '#FFFFFF'
+                        borderColor: 'transparent'
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                menuRect.closeMenu();
+                                annotations.searchString = model.terms;
+                            }
+                        }
+
+                    }
+
+                    Component.onCompleted: searchesModel.select()
+                }
+
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr('Desa la cerca')
+                    onClicked: {
+                        menuRect.closeMenu();
+                        var t = annotations.searchString;
+                        if (t !== '') {
+                            searchesModel.insertObject({title: t, terms: t, created: Storage.currentTime()});
+                        }
+                    }
+                }
+
+                Rectangle {
+                    // Menu separator
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.nailUnit
+                    color: 'gray'
+                }
+
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr('Mostra no finalitzats')
+                    onClicked: {
+                        menuRect.closeMenu();
+                        annotations.stateFilter = stateTypes.active;
+                    }
+                }
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr('Mostra només finalitzats')
+                    onClicked: {
+                        menuRect.closeMenu();
+                        annotations.stateFilter = stateTypes.done;
+                    }
+                }
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr('Mostra amb qualsevol estat')
+                    onClicked: {
+                        menuRect.closeMenu();
+                        annotations.stateFilter = stateTypes.all;
+                    }
+                }
+
+                Rectangle {
+                    // Menu separator
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.nailUnit
+                    color: 'gray'
+                }
+
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr('Desa la cerca')
+                    onClicked: {
+                        menuRect.closeMenu();
+                    }
+                }
+            }
+        }
+
     }
 }

@@ -9,4 +9,5 @@ SqlTableModel {
         'terms',
         'created'
     ]
+    primaryKey: 'id'
 }

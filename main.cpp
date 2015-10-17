@@ -6,8 +6,7 @@
 #include "xmlmodel.h"
 #include "imagedata.h"
 #include "teachingplanning.h"
-#include "SqlTableModel2/sqltablemodel2.h"
-#include "sqltablemodel.h"
+#include "SqlTableModel2/sqltablemodel.h"
 #include "databasebackup.h"
 #include "standardpaths.h"
 #include "MarkDownParser/markdownparser.h"
@@ -31,8 +30,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<ImageData>("PersonalTypes", 1, 0, "ImageData");
     qRegisterMetaType<XmlModel>("XmlModel");
     qmlRegisterType<DatabaseBackup>("PersonalTypes", 1, 0, "DatabaseBackup");
-    qmlRegisterType<SqlTableModel>("PersonalTypes", 1, 0, "SqlTableModel");
-    qmlRegisterType<SqlTableModel2>("PersonalTypes", 1, 0, "SqlTableModel2");
+    qmlRegisterType<SqlTableModel2>("PersonalTypes", 1, 0, "SqlTableModel");
     qmlRegisterType<StandardPaths>("PersonalTypes", 1, 0, "StandardPaths");
     qmlRegisterType<MarkDownParser>("PersonalTypes", 1, 0, "MarkDownParser");
 
@@ -48,13 +46,16 @@ int main(int argc, char *argv[])
     if (dir.cd(specificPath)) {
         db = QSqlDatabase::addDatabase("QSQLITE");
         db.setDatabaseName(dir.absolutePath() + "/mainDatabase.sqlite");
+        if (db.open()) {
+            qDebug() << "Database opened.!";
+        }
     }
 
-    SqlTableModel annotationsModel;
-    SqlTableModel scheduleModel;
-    SqlTableModel projectsModel;
-    SqlTableModel resourcesModel;
-    SqlTableModel resourcesAnnotationsModel;
+    SqlTableModel2 annotationsModel;
+    SqlTableModel2 scheduleModel;
+    SqlTableModel2 projectsModel;
+    SqlTableModel2 resourcesModel;
+    SqlTableModel2 resourcesAnnotationsModel;
 
     annotationsModel.setTableName("annotations");
     scheduleModel.setTableName("schedule");

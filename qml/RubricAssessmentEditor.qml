@@ -158,12 +158,11 @@ CollectionInspector {
         fieldNames: ['group']
         // fieldNames: ['id', 'group', 'name', 'surname']
         //groupBy: '"group"'
+        primaryKey: 'id'
     }
 
-    SqlTableModel {
+    Models.RubricsModel {
         id: rubricsModel
-        tableName: 'rubrics'
-        fieldNames: ['id','title','desc']
     }
 
     Models.ScheduleModel {

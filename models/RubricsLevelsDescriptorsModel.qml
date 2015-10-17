@@ -13,6 +13,7 @@ SqlTableModel {
         'desc',
         'score'
     ]
+    primaryKey: 'id'
 }
 
 

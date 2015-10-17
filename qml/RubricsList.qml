@@ -139,7 +139,7 @@ Rectangle {
                             Layout.fillHeight: true
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            text: model.group
+                            text: model["\"group\""]
                         }
                         Text {
                             Layout.preferredWidth: rubricsAssessmentList.width / 6
@@ -278,16 +278,14 @@ Rectangle {
         }
     }
 
-    SqlTableModel {
+    Models.RubricsModel {
         id: rubricsModel
-        tableName: 'rubrics'
-        fieldNames: ['id', 'title', 'desc']
+        Component.onCompleted: select()
     }
 
-    SqlTableModel {
+    Models.RubricsAssessmentModel {
         id: rubricsAssessmentModel
-        tableName: 'rubrics_assessment'
-        fieldNames: ['id', 'title', 'desc', 'rubric', 'group', 'event', 'annotation']
+        Component.onCompleted: select()
     }
 
     Models.ExtendedAnnotations {

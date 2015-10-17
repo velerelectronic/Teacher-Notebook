@@ -1,4 +1,4 @@
-#include "sqltablemodel2.h"
+#include "sqltablemodel.h"
 
 #include "sqltablemodel.h"
 
@@ -8,15 +8,19 @@
 #include <QSqlRecord>
 #include <QSqlQuery>
 #include <QMap>
+#include <QSqlDatabase>
 #include <QSqlError>
 
-SqlTableModel2::SqlTableModel2(QObject *parent) :
+SqlTableModel2::SqlTableModel2(QObject *parent, QSqlDatabase db) :
     QSqlQueryModel(parent)
 {
     innerLimit=0;
     connect(this,SIGNAL(rowsInserted(QModelIndex,int,int)),this,SLOT(select()));
     connect(this,SIGNAL(rowsInserted(QModelIndex,int,int)),this,SLOT(debug()));
     connect(this,SIGNAL(rowsInserted(QModelIndex,int,int)),this,SIGNAL(updated()));
+
+    QSqlQuery query(db);
+    QSqlQueryModel::setQuery(query);
 }
 
 void SqlTableModel2::debug() {
@@ -85,6 +89,10 @@ void SqlTableModel2::generateRoleNames() {
         roles[Qt::UserRole + i + 1] = innerFieldNames.at(i).toLocal8Bit();
     }
     roles[Qt::UserRole + nbCols + 1] = QByteArray("selected");
+}
+
+QString SqlTableModel2::getFieldNameByIndex(int index) {
+    return roles[Qt::UserRole + index + 1];
 }
 
 QVariantMap SqlTableModel2::getObject(QString key) const {
@@ -191,12 +199,16 @@ QString SqlTableModel2::reference() {
     return innerReference;
 }
 
-bool SqlTableModel2::removeObject(const QVariant &identifier) {
+int SqlTableModel2::removeObject(const QVariant &identifier) {
     QSqlQuery query;
-    query.prepare("DELETE FROM " + innerTableName + " WHERE id=?");
-    query.addBindValue(identifier);
-    updated();
-    return true;
+    if (innerPrimaryKey != "") {
+        query.prepare("DELETE FROM " + innerTableName + " WHERE " +  innerPrimaryKey + "=?");
+        query.addBindValue(identifier);
+        query.exec();
+        updated();
+        return query.numRowsAffected();
+    }
+    return 0;
 }
 
 int SqlTableModel2::removeSelectedObjects() {
@@ -252,30 +264,36 @@ bool SqlTableModel2::select() {
     QStringList filtersList;
 
     // Attach the common filters
-    if (filters().size()>0)
-        filtersList << filters().join(" AND ");
+    if (innerFilters.size()>0)
+        filtersList << "(" + innerFilters.join(" AND ") + ")";
 
     // Filter the search fields
     QStringList searchList;
-    QStringList::const_iterator i = innerSearchFields.constBegin();
-    while (i != innerSearchFields.constEnd()) {
-        searchList << "INSTR(UPPER(" + *i + "),UPPER(?))";
-        ++i;
+    if ((innerSearchString != "") && (innerSearchFields.size()>0)) {
+        QStringList::const_iterator i = innerSearchFields.constBegin();
+        while (i != innerSearchFields.constEnd()) {
+            searchList << "INSTR(UPPER(" + *i + "),UPPER(?))";
+            ++i;
+        }
+        filtersList << "(" + searchList.join(" OR ") + ")";
     }
-    filtersList << searchList.join(" OR ");
 
     QSqlQuery query;
-    query.prepare("SELECT " + fieldNames().join(", ") + " FROM " + innerTableName + ((filtersList.size()>0)?" WHERE " + filtersList.join(" AND "):""));
+    query.prepare("SELECT " + fieldNames().join(", ") + " FROM " + innerTableName + ((filtersList.size()>0)?" WHERE " + filtersList.join(" AND "):"") + ((innerSort != "")?" ORDER BY " + innerSort:""));
     qDebug() << "Last query 1" << query.lastQuery();
 
+    qDebug() << "Bindings" << innerBindValues.size();
     QStringList::const_iterator filtersValues = innerBindValues.constBegin();
     while (filtersValues != innerBindValues.constEnd()) {
         qDebug() << "Bind value" << *filtersValues;
         query.addBindValue(*filtersValues);
         ++filtersValues;
     }
-    for (int j=0; j<innerSearchFields.size(); j++) {
-        query.addBindValue(innerSearchString);
+
+    if (innerSearchString != "") {
+        for (int j=0; j<innerSearchFields.size(); j++) {
+            query.addBindValue(innerSearchString);
+        }
     }
 
     query.exec();
@@ -291,17 +309,10 @@ bool SqlTableModel2::selectUnique(QString field) {
 }
 
 QStringList SqlTableModel2::selectDistinct(QString field,QString order,QString filter,bool ascending) {
-/*
-    QSqlQueryModel::setQuery("SELECT DISTINCT " + field + " FROM " + this->innerTableName + " ORDER BY " + order + " DESC ");
-    qDebug() << "SDIST";
-    qDebug() << this->query().lastQuery();
-    countChanged();
-    return !query().lastError().isValid();
-*/
-
     QStringList vector;
     QSqlQuery query("SELECT DISTINCT " + field + " FROM " + this->innerTableName + ((filter != "")?(" WHERE " + filter):"") + " ORDER BY " + order + ((ascending)?" ASC":" DESC "));
 //    qDebug() << query.executedQuery();
+    query.exec();
     bool iter = query.first();
     while (iter) {
 //        qDebug() << ".";
@@ -326,9 +337,30 @@ void SqlTableModel2::setBindValues(const QStringList &bindValues) {
 }
 
 bool SqlTableModel2::setData(const QModelIndex &item, const QVariant &value, int role) {
+    QString fieldName = getFieldNameByIndex(item.column());
+
 //    query().prepare("UPDATE " + innerTableName)
     qDebug() << "Set data";
-    return true;
+
+    bool ok = false;
+
+    if (innerPrimaryKey != "") {
+        QSqlQuery query;
+        query.prepare("UPDATE " + innerTableName + " SET " + fieldName + " WHERE " + innerPrimaryKey + "=?");
+        query.addBindValue(value.toString());
+        ok = query.exec();
+
+        setQuery(query);
+
+        qDebug() << query.lastQuery();
+        int rows = query.numRowsAffected();
+        QVector<int> rolesVector;
+        rolesVector << role;
+        dataChanged(item,item,rolesVector);
+        updated();
+    }
+
+    return ok;
 }
 
 void SqlTableModel2::setFieldNames(const QStringList &fields) {
@@ -370,11 +402,20 @@ void SqlTableModel2::setSort(int column, Qt::SortOrder order) {
 //    QSqlTableModel::setSort(column,order);
 }
 
+void SqlTableModel2::setSort(const QString &sort) {
+    innerSort = sort;
+    sortChanged();
+}
+
 void SqlTableModel2::setTableName(const QString &tableName) {
     innerTableName = tableName;
     tableNameChanged();
 
     setSort(0,Qt::DescendingOrder);
+}
+
+QString SqlTableModel2::sort() {
+    return innerSort;
 }
 
 const QString &SqlTableModel2::tableName() {
@@ -388,7 +429,7 @@ int SqlTableModel2::updateObject(const QVariantMap &object) {
         QStringList keys;
         QVariantMap::const_iterator keysIterator = object.cbegin();
         while ( keysIterator != object.cend()) {
-            QString set = (*keysIterator).toString() + "=?";
+            QString set = (keysIterator.key()) + "=?";
             qDebug() << set;
             keys << set;
             ++keysIterator;

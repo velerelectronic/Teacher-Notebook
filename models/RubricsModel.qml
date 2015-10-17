@@ -7,6 +7,7 @@ SqlTableModel {
         'title',
         'desc'
     ]
+    primaryKey: 'id'
 }
 
 

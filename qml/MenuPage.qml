@@ -156,7 +156,7 @@ Rectangle {
             }
 
             Component.onCompleted: {
-                mainListModel.append({title: qsTr('Darreres anotacions'), color: '#F3F781', extraPage: 'ExtendedAnnotationsList', extraArguments: {}, component: lastAnnotationsComponent})
+                mainListModel.append({title: qsTr('Cerques desades'), color: '#F3F781', extraPage: 'ExtendedAnnotationsList', extraArguments: {}, component: lastAnnotationsComponent})
                 mainListModel.append({title: qsTr('Pròxims terminis'), color: '#F7BE81', extraPage: 'TasksSystem', extraArguments: {}, component: nextEventsComponent})
                 mainListModel.append({title: qsTr('Projectes'), color: '#FFAACC', extraPage: 'Projects', extraArguments: {}, component: projectsComponent})
             }
@@ -480,9 +480,8 @@ Rectangle {
             property int verticalCapacity: Math.floor(height / cellHeight)
             property int capacity: horizontalCapacity * verticalCapacity
 
-            model: SqlTableModel {
+            model: Models.ProjectsModel {
                 id: projectsModel
-                tableName: globalProjectsModel.tableName
 
                 Component.onCompleted: {
                     select();

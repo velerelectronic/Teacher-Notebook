@@ -19,5 +19,6 @@ SqlTableModel {
         'annotationDesc',
         'annotationLabels'
     ]
+    primaryKey: 'id'
 
 }

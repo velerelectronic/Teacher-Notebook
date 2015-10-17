@@ -14,4 +14,5 @@ SqlTableModel {
         'state',
         'ref'
     ]
+    primaryKey: 'id'
 }

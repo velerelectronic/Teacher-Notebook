@@ -7,4 +7,5 @@ SqlTableModel {
     fieldNames: ['id', 'resourceId', 'resourceTitle', 'resourceDesc', 'resourceType', 'resourceSource', 'resourceContents', 'annotationId']
 
     property SqlTableModel connectUpdatesTo
+    primaryKey: 'id'
 }

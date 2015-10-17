@@ -1,6 +1,6 @@
 import PersonalTypes 1.0
 
-SqlTableModel2 {
+SqlTableModel {
     tableName: 'extended_annotations'
     fieldNames: [
         'title',
@@ -12,5 +12,5 @@ SqlTableModel2 {
         'end',
         'state'
     ]
-    primaryKey: title
+    primaryKey: 'title'
 }

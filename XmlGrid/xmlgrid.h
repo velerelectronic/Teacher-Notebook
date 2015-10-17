@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QVariantMap>
-#include "sqltablemodel.h"
 #include "xmlmodel.h"
 
 class XmlGrid : public QObject

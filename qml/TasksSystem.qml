@@ -5,6 +5,7 @@ import PersonalTypes 1.0
 import "qrc:///javascript/NotebookEvent.js" as NotebookEvent
 import "qrc:///common/FormatDates.js" as FormatDates
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 
 Rectangle {
     id: tasksSystem
@@ -32,19 +33,19 @@ Rectangle {
     onOrderChanged: {
         switch(tasksSystem.order) {
         case 1:
-            scheduleModel.setSort(4,Qt.AscendingOrder);
+            scheduleModel.sort = "startDate ASC"
             break;
         case 2:
-            scheduleModel.setSort(6,Qt.AscendingOrder);
+            scheduleModel.sort = "endDate ASC"
             break;
         case 3:
-            scheduleModel.setSort(4,Qt.DescendingOrder);
+            scheduleModel.sort = "startDate DESC"
             break;
         case 4:
-            scheduleModel.setSort(6,Qt.DescendingOrder);
+            scheduleModel.sort = "endDate DESC"
             break;
         default:
-            scheduleModel.setSort(9,Qt.DescendingOrder);
+            scheduleModel.sort = "ref DESC"
         }
         scheduleModel.select();
         if ((tasksLoader.item !== null) && (typeof tasksLoader.item.order !== 'undefined'))
@@ -283,10 +284,8 @@ Rectangle {
         onClicked: createEvent()
     }
 
-    SqlTableModel {
+    Models.ProjectsModel {
         id: projectsModel
-        tableName: 'projects'
-        fieldNames: ['id', 'name', 'desc']
 
 //        filters: (tasksSystem.project !== -1)?["ref='" + tasksSystem.project + "'"]:[]
         Component.onCompleted: {
@@ -294,9 +293,8 @@ Rectangle {
         }
     }
 
-    SqlTableModel {
+    Models.ScheduleModel {
         id: scheduleModel
-        tableName: globalScheduleModel.tableName
         Component.onCompleted: select()
     }
 

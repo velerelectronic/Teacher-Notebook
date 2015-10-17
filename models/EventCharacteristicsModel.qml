@@ -8,4 +8,5 @@ SqlTableModel {
         'event',
         'comment'
     ]
+    primaryKey: 'id'
 }

@@ -10,6 +10,7 @@ SqlTableModel {
         'individual',
         'comment'
     ]
+    primaryKey: 'id'
 }
 
 

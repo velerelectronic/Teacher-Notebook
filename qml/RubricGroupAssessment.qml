@@ -420,8 +420,9 @@ Rectangle {
                         //fieldNames: ['assessment', 'individual', 'total']
                         fieldNames: ['assessment', 'individual', 'weight', 'score', 'points']
                         filters: ["assessment='" + idAssessment + "'"]
+                        primaryKey: 'id'
+                        sort: 'individual ASC'
                         Component.onCompleted: {
-                            setSort(1,Qt.AscendingOrder);
                             select();
                             console.log('TOTAL' + count);
                             Debug.printSqlModel(totalPointsModel);
@@ -436,24 +437,23 @@ Rectangle {
         id: rubricsCriteria
         tableName: 'rubrics_criteria'
         fieldNames: ['id', 'title', 'desc', 'rubric', 'ord', 'weight']
+        primaryKey: 'id'
+        sort: 'ord ASC'
     }
 
-    SqlTableModel {
+    Models.IndividualsModel {
         id: individualsModel
-        tableName: 'individuals_list'
-        fieldNames: ['id', 'group', 'name', 'surname']
-        filters: ['\"group\"=\'' + rubricRectangle.group + '\'']
+        filters: ['"group"=\'' + rubricRectangle.group + '\'']
+        sort: 'id ASC'
     }
 
     onGroupChanged: {
-        individualsModel.setSort(0, Qt.AscendingOrder);
         individualsModel.select();
     }
 
     Component.onCompleted: {
         var filter = ["rubric=\'" + rubricRectangle.rubric + "\'"];
         rubricsCriteria.filters = filter;
-        rubricsCriteria.setSort(4, Qt.AscendingOrder);
         rubricsCriteria.select();
 
         rubricsModel.select();

@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.2
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 
 Rectangle {
     id: groupsIndividuals
@@ -25,10 +26,8 @@ Rectangle {
         }
     }
 
-    SqlTableModel {
+    Models.IndividualsModel {
         id: individualsModel
-        tableName: 'individuals_list'
-        fieldNames: ['id', 'group', 'name', 'surname', 'faceImage']
         Component.onCompleted: select()
     }
 

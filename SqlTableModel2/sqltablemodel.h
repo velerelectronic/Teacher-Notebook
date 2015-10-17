@@ -22,43 +22,51 @@ class SqlTableModel2 : public QSqlQueryModel
     Q_PROPERTY(QStringList searchFields READ searchFields WRITE setSearchFields NOTIFY searchFieldsChanged)
     Q_PROPERTY(QString reference READ reference WRITE setReference NOTIFY referenceChanged)
     Q_PROPERTY(QString searchString READ searchString WRITE setSearchString NOTIFY searchStringChanged)
+    Q_PROPERTY(QString sort READ sort WRITE setSort NOTIFY sortChanged)
     Q_PROPERTY(QString tableName READ tableName WRITE setTableName NOTIFY tableNameChanged)
 
 public:
-    explicit SqlTableModel2(QObject *parent = 0);
+    explicit SqlTableModel2(QObject *parent = 0, QSqlDatabase db = QSqlDatabase());
 
-    int count();
-    QStringList             bindValues() const;
-    Q_INVOKABLE QVariant    data(const QModelIndex &index, int role) const;
-    const QStringList       &fieldNames();
-    QStringList             &filters();
-    QString                 &groupBy();
-    int                     limit();
-    QString                 primaryKey();
+    // Subclass
 
-    QString reference();
-    virtual QHash<int, QByteArray> roleNames() const;
-    QStringList searchFields();
-    QString searchString();
-    void setBindValues(const QStringList &bindValues);
-    void setFieldNames(const QStringList &fields);
-    void setFilters(const QStringList &);
-    void setGroupBy(const QString &);
-    void setLimit(int);
-    void setPrimaryKey(const QString &);
-    void setReference(const QString &);
-    void setSearchFields(const QStringList &);
-    void setSearchString(const QString &);
-    void setTableName(const QString &);
-    const QString &tableName();
+    QVariant                            data(const QModelIndex &index, int role) const;
+    virtual QHash<int, QByteArray>      roleNames() const;
+    bool                                setData(const QModelIndex &item,const QVariant &value,int role = Qt::EditRole);
 
-    Q_INVOKABLE bool setData(const QModelIndex &item,const QVariant &value,int role = Qt::EditRole);
+
+    // Own methods
+
+    QStringList         bindValues() const;
+    int                 count();
+    const QStringList   &fieldNames();
+    QStringList         &filters();
+    QString             getFieldNameByIndex(int index);
+    QString             &groupBy();
+    int                 limit();
+    QString             primaryKey();
+    QString             reference();
+    QStringList         searchFields();
+    QString             searchString();
+    void                setBindValues(const QStringList &bindValues);
+    void                setFieldNames(const QStringList &fields);
+    void                setFilters(const QStringList &);
+    void                setGroupBy(const QString &);
+    void                setLimit(int);
+    void                setPrimaryKey(const QString &);
+    void                setReference(const QString &);
+    void                setSearchFields(const QStringList &);
+    void                setSearchString(const QString &);
+    void                setSort(const QString &);
+    void                setTableName(const QString &);
+    QString             sort();
+    const QString       &tableName();
 
     Q_INVOKABLE QVariantMap getObject(QString key) const;
     Q_INVOKABLE QVariantMap getObject(QString primaryField, QString key) const;
     Q_INVOKABLE QVariantMap getObjectInRow(int row) const;
     Q_INVOKABLE QVariant insertObject(const QVariantMap &);
-    Q_INVOKABLE bool removeObject(const QVariant &);
+    Q_INVOKABLE int removeObject(const QVariant &);
     Q_INVOKABLE bool select();
     Q_INVOKABLE QStringList selectDistinct(QString field,QString order,QString filter,bool ascending);
     Q_INVOKABLE bool selectUnique(QString);
@@ -86,6 +94,7 @@ signals:
     void referenceChanged();
     void searchFieldsChanged();
     void searchStringChanged();
+    void sortChanged();
     void tableNameChanged();
     void updated();
 //    void countChanged();
@@ -95,23 +104,24 @@ public slots:
 
 
 private:
-    QString innerTableName;
-    QStringList innerFieldNames;
-    QStringList innerFilters;
-    QString innerGroupBy;
-    int innerLimit;
-    QStringList innerSearchFields;
-    QString innerSearchString;
-    QString innerReference;
-    QString innerPrimaryKey;
-    QHash<int, QByteArray> roles;
-    QMap<int,bool> subselectedRows;
+    QStringList             innerBindValues;
+    QStringList             innerFieldNames;
+    QStringList             innerFilters;
+    QString                 innerGroupBy;
+    int                     innerLimit;
+    QString                 innerPrimaryKey;
+    QString                 innerReference;
+    QHash<int, QByteArray>  roles;
+    QStringList             innerSearchFields;
+    QString                 innerSearchString;
+    QString                 innerSort;
+    QMap<int,bool>          subselectedRows;
+    QString                 innerTableName;
 
-    QSqlRecord buildRecord(const QVariantMap &,bool);
-    void generateRoleNames();
-    int searchRowWithKeyValue(const QVariant &);
+    QSqlRecord      buildRecord(const QVariantMap &,bool);
+    void            generateRoleNames();
+    int             searchRowWithKeyValue(const QVariant &);
 
-    QStringList innerBindValues;
 };
 
 #endif // SQLTABLEMODEL2_H

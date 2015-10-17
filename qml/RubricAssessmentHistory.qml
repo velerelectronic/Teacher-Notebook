@@ -34,16 +34,12 @@ Rectangle {
         Component.onCompleted: select()
     }
 
-    SqlTableModel {
+    Models.RubricsModel {
         id: rubricsModel
-        tableName: 'rubrics'
-        fieldNames: ['id', 'title', 'desc']
     }
 
-    SqlTableModel {
+    Models.RubricsAssessmentModel {
         id: rubricsAssessmentModel
-        tableName: 'rubrics_assessment'
-        fieldNames: ['id', 'title', 'desc', 'rubric', '"group"', 'event']
         Component.onCompleted: select()
         onCountChanged: {
             console.log('Count ' + count)
@@ -123,10 +119,11 @@ Rectangle {
                             tableName: 'rubrics_levels'
                             fieldNames: ['id', 'title', 'desc', 'rubric', 'score']
                             filters: ["rubric='" + rubricRow.rubric + "'"]
-                            Component.onCompleted: {
-                                setSort(4, Qt.AscendingOrder);
-                                select();
-                            }
+                            primaryKey: 'id'
+                            sort: 'score ASC'
+
+                            Component.onCompleted: select()
+
                             onCountChanged: {
                                 rubricRow.minValue = parseInt(getObjectInRow(0)['score']);
                                 rubricRow.maxValue = parseInt(getObjectInRow(count-1)['score']);
@@ -195,10 +192,10 @@ Rectangle {
                                             tableName: 'rubrics_criteria'
                                             fieldNames: ['id', 'title', 'desc', 'rubric', 'ord', 'weight']
                                             filters: ["rubric='" + rubricRow.rubric + "'"]
-                                            Component.onCompleted: {
-                                                setSort(5,Qt.AscendingOrder);
-                                                select();
-                                            }
+                                            primaryKey: 'id'
+
+                                            sort: 'weight ASC'
+                                            Component.onCompleted: select()
                                         }
 
                                         delegate: Rectangle {

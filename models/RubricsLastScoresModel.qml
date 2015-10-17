@@ -9,7 +9,7 @@ SqlTableModel {
         'individual',
         'name',
         'surname',
-        '\"group\"',
+        '"group"',
 
         'criterium',
         'criteriumTitle',
@@ -29,5 +29,6 @@ SqlTableModel {
         'definition',
         'score'
     ]
+    primaryKey: 'id'
 }
 

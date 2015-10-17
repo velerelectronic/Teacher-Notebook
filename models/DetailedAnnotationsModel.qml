@@ -15,4 +15,5 @@ SqlTableModel {
         'resourcesCount'
     ]
     searchFields: ['title','desc','projectName','labels']
+    primaryKey: 'id'
 }

@@ -57,6 +57,7 @@ CollectionInspector {
             created: Storage.currentTime()
         }
 
+        console.log("OBJECT",obj);
         res = annotationsModel.insertObject(obj);
 
         return res;
@@ -78,8 +79,14 @@ CollectionInspector {
             width: annotationEditor.width
             caption: qsTr('Títol')
             onSaveContents: {
-                if (save())
+                if (save()) {
                     notifySavedContents();
+                    fillValues();
+                } else {
+                    annotationEditor.title = editedContent;
+                    enableShowMode();
+                    fillValues();
+                }
             }
         }
         EditTextAreaInspector {
@@ -98,6 +105,13 @@ CollectionInspector {
             width: annotationEditor.width
             caption: qsTr('Projecte')
             onAddRow: newProject()
+            originalContent: {
+                'reference': project,
+                'valued': true,
+                'nameAttribute': 'name',
+                'model': projectsModel
+            }
+
             onPerformSearch: {
                 projectsModel.searchString = searchString;
             }
@@ -454,6 +468,8 @@ CollectionInspector {
     }
 
     function fillValues() {
+        console.log('Filling values');
+
         if (annotationEditor.title !== "") {
             var project = "";
 

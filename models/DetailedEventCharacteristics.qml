@@ -18,4 +18,5 @@ SqlTableModel {
         'eventState',
         'eventRef'
     ]
+    primaryKey: 'id'
 }
