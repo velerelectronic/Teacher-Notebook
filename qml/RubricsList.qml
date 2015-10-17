@@ -18,7 +18,7 @@ Rectangle {
     signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
     signal openRubricAssessmentDetails(int assessment, int rubric, string group, var rubricsModel, var rubricsAssessmentModel)
     signal openRubricHistory(string group)
-    signal editGroupIndividual(int individual, var groupsIndividualsModel)
+    signal editGroupIndividual(var parameters)
 
     property bool newIndividual: false
 
@@ -139,7 +139,7 @@ Rectangle {
                             Layout.fillHeight: true
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            text: model["\"group\""]
+                            text: model.group
                         }
                         Text {
                             Layout.preferredWidth: rubricsAssessmentList.width / 6
@@ -176,7 +176,10 @@ Rectangle {
                             Layout.fillHeight: true
                             Layout.preferredWidth: rubricsAssessmentList.width / 12
                             text: qsTr('Historial')
-                            onClicked: openRubricHistory(model.group)
+                            onClicked: {
+                                console.log("GRUP", model.group);
+                                openRubricHistory(model.group);
+                            }
                         }
 
                         Button {
@@ -264,7 +267,7 @@ Rectangle {
 
         GroupsIndividuals {
             id: groupsIndividuals
-            onEditGroupIndividual: rubricsListArea.editGroupIndividual(individual, groupsIndividualsModel)
+            onEditGroupIndividual: rubricsListArea.editGroupIndividual({individual: individual, groupsModel: groupsIndividualsModel})
 
             Connections {
                 target: rubricsListArea
@@ -285,6 +288,9 @@ Rectangle {
 
     Models.RubricsAssessmentModel {
         id: rubricsAssessmentModel
+
+        sort: 'id DESC'
+
         Component.onCompleted: select()
     }
 

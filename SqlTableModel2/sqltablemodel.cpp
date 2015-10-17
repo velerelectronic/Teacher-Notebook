@@ -227,7 +227,6 @@ int SqlTableModel2::removeSelectedObjects() {
 }
 
 QHash<int, QByteArray> SqlTableModel2::roleNames() const {
-    qDebug() << "Roles called" << roles;
     return roles;
 }
 
@@ -279,13 +278,12 @@ bool SqlTableModel2::select() {
     }
 
     QSqlQuery query;
-    query.prepare("SELECT " + fieldNames().join(", ") + " FROM " + innerTableName + ((filtersList.size()>0)?" WHERE " + filtersList.join(" AND "):"") + ((innerSort != "")?" ORDER BY " + innerSort:""));
+    query.prepare("SELECT \"" + fieldNames().join("\", \"") + "\" FROM " + innerTableName + ((filtersList.size()>0)?" WHERE " + filtersList.join(" AND "):"") + ((innerSort != "")?" ORDER BY " + innerSort:""));
     qDebug() << "Last query 1" << query.lastQuery();
 
     qDebug() << "Bindings" << innerBindValues.size();
     QStringList::const_iterator filtersValues = innerBindValues.constBegin();
     while (filtersValues != innerBindValues.constEnd()) {
-        qDebug() << "Bind value" << *filtersValues;
         query.addBindValue(*filtersValues);
         ++filtersValues;
     }
@@ -296,9 +294,10 @@ bool SqlTableModel2::select() {
         }
     }
 
+    qDebug() << "bound values " << query.boundValues();
     query.exec();
     setQuery(query);
-    qDebug() << "Last query 2" << query.lastQuery();
+    qDebug() << "Last query 2" << query.executedQuery();
     countChanged();
 }
 
@@ -419,7 +418,6 @@ QString SqlTableModel2::sort() {
 }
 
 const QString &SqlTableModel2::tableName() {
-//    qDebug() << "Returning innerTableName " << innerTableName;
     return innerTableName;
 }
 

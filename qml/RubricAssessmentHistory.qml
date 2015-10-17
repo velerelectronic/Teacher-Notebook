@@ -30,8 +30,12 @@ Rectangle {
 
     Models.IndividualsModel {
         id: individualsModel
-        filters: ["\"group\"='" + group + "'"]
-        Component.onCompleted: select()
+        filters: ["\"group\"=?"]
+        bindValues: [rubricAssessmentHistory.group]
+        Component.onCompleted: {
+            select();
+            console.log('Individuals',individualsModel.count);
+        }
     }
 
     Models.RubricsModel {
@@ -56,6 +60,16 @@ Rectangle {
         spacing: units.nailUnit
         clip: true
 
+        headerPositioning: ListView.OverlayHeader
+
+        header: Common.BoxedText {
+            width: individualsList.width
+            height: units.fingerUnit
+            margins: units.nailUnit
+            text: "<b>Grup:</b> " + rubricAssessmentHistory.group
+            z: 2
+        }
+
         delegate: Rectangle {
             id: individualRow
 
@@ -64,6 +78,7 @@ Rectangle {
             color: '#AAFFAA'
             width: individualsList.width
             height: individualsBox.height + rubricsListItem.height + units.nailUnit
+            z: 1
 
             Common.BoxedText {
                 id: individualsBox

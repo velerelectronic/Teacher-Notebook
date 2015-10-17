@@ -205,7 +205,7 @@ Item {
                                                           lastScoreId: lastScoreId
                                                       });
 
-        onEditGroupIndividual: openNewPage('GroupIndividualEditor', {individual: individual, groupsIndividualsModel: groupsIndividualsModel})
+        onEditGroupIndividual: openNewPage('GroupIndividualEditor', parameters)
         onEditRubricAssessmentByCriterium: openNewPage('ShowRubricGroupAssessmentByCriterium',{assessment: assessment,criterium: criterium})
         onEditRubricAssessmentByIndividual: openNewPage('ShowRubricGroupAssessmentByIndividual',{assessment: assessment,individual: individual})
 
