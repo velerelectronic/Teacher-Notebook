@@ -304,7 +304,7 @@ CollectionInspector {
                     notifySavedContents();
             }
         }
-        EditTextItemInspector {
+        EditStateItemInspector {
             id: stateComponent
             width: annotationEditor.width
             caption: qsTr('Estat')
@@ -486,6 +486,7 @@ CollectionInspector {
 
                 startComponent.originalContent = details.start;
                 endComponent.originalContent = details.end;
+                stateComponent.originalContent = details.state;
 
                 annotationEditor.setChanges(false);
 

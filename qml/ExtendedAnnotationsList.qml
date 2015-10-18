@@ -21,11 +21,22 @@ Rectangle {
 
     property var stateTypes: {
         'done': "state < 0",
-        'active': "state >= 0 OR state IS NULL",
+        'active': "(state >= 0 OR state IS NULL)",
         'specific': "state = 0",
+        'partial': "(state > 0 AND state < 10)",
         'all': ''
     }
+
     property string stateFilter: stateTypes.active
+
+    property var sortType: {
+        'start': 'start ASC',
+        'startRev': 'start DESC',
+        'end': 'end ASC',
+        'endRev': 'end DESC'
+    }
+
+    property string sortOption: sortType.end
 
     property var labelsFilter: []
 
@@ -214,7 +225,17 @@ Rectangle {
                     Text {
                         Layout.fillHeight: true
                         Layout.preferredWidth: parent.width / 4
-                        text: model.state
+                        text: {
+                            if (model.state<0) {
+                                return qsTr('Finalitzat');
+                            } else {
+                                if ((model.state>0) && (model.state<=10)) {
+                                    return (model.state * 10) + "%";
+                                } else {
+                                    return qsTr('Actiu');
+                                }
+                            }
+                        }
                     }
                 }
                 MouseArea {
@@ -332,19 +353,24 @@ Rectangle {
         id: annotationsModel
 
         searchFields: ['title', 'desc', 'project']
+        sort: sortOption
 
-        sort: 'created DESC'
-//        bindValues: ['2015-10-05']
+        onSortChanged: {
+            selectedAnnotationsModel.clear();
+            select();
+        }
 
         Component.onCompleted: select();
     }
 
     onStateFilterChanged: {
-        annotationsModel.filters = stateFilter.concat(labelsFilter);
+        annotationsModel.filters = [stateFilter].concat(labelsFilter);
+        selectedAnnotationsModel.clear();
         annotationsModel.select();
     }
     onLabelsFilterChanged: {
-        annotationsModel.filters = stateFilter.concat(labelsFilter);
+        annotationsModel.filters = [stateFilter].concat(labelsFilter);
+        selectedAnnotationsModel.clear();
         annotationsModel.select();
     }
 
@@ -441,6 +467,16 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: units.fingerUnit
                     fontSize: units.readUnit
+                    text: qsTr('Mostra amb algun progrés')
+                    onClicked: {
+                        menuRect.closeMenu();
+                        annotations.stateFilter = stateTypes.partial;
+                    }
+                }
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
                     text: qsTr('Mostra només finalitzats')
                     onClicked: {
                         menuRect.closeMenu();
@@ -469,11 +505,45 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: units.fingerUnit
                     fontSize: units.readUnit
-                    text: qsTr('Desa la cerca')
+                    text: qsTr("Ordena per moment d'inici: els més antics en primer lloc")
                     onClicked: {
                         menuRect.closeMenu();
+                        sortOption = sortType.start;
                     }
                 }
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr("Ordena per moment d'inici: els més antics en darrer lloc")
+                    onClicked: {
+                        menuRect.closeMenu();
+                        sortOption = sortType.startRev;
+                    }
+                }
+
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr("Ordena per moment final: els més recents en primer lloc")
+                    onClicked: {
+                        menuRect.closeMenu();
+                        sortOption = sortType.end;
+                    }
+                }
+
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr("Ordena per moment final: els més recents en darrer lloc")
+                    onClicked: {
+                        menuRect.closeMenu();
+                        sortOption = sortType.endRev;
+                    }
+                }
+
             }
         }
 

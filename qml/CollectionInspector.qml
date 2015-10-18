@@ -12,8 +12,6 @@ Common.AbstractEditor {
     property alias pageBackground: backgroundImage.source
     property alias model: inspectorGrid.model
 
-    property alias buttons: buttonsModel
-
     signal saveDataRequested
     signal copyDataRequested
     signal discardDataRequested(bool changes)
@@ -21,18 +19,6 @@ Common.AbstractEditor {
     signal openMenu(int initialHeight, var menu)
 
     color: 'white'
-
-    ListModel {
-        id: buttonsModel
-
-        /*
-        Component.onCompleted: {
-            append({image: 'floppy-35952', method: 'saveItem', title: qsTr('Desa els canvis')});
-            append({image: 'road-sign-147409', method: 'closeItem', title: qsTr('Tanca sense desar els canvis')});
-            append({image: 'clone-153447', method: 'duplicateItem', title: qsTr('Fes un duplicat de les dades')});
-        }
-        */
-    }
 
     function saveItem() {
         collapseEditors();
@@ -60,7 +46,6 @@ Common.AbstractEditor {
     ListView {
         id: inspectorGrid
         anchors.fill: parent
-        anchors.margins: units.nailUnit
         clip: true
 
         property int captionsWidth: units.fingerUnit
@@ -69,7 +54,7 @@ Common.AbstractEditor {
         highlightRangeMode: ListView.ApplyRange
         spacing: units.nailUnit
 
-        model: VisualItemModel { }
+        model: VisualItemModel { id: visualModel }
 
         function requestShowMode() {
             collapseEditors();
