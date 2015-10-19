@@ -22,6 +22,8 @@ CollectionInspector {
     property string comment: ''
     property string group: ''
 
+    property SqlTableModel lastScoresModel
+
     signal savedAssessmentDescriptor
 
     Common.UseUnits { id: units }
@@ -40,10 +42,12 @@ CollectionInspector {
             res = scoresModel.insertObject(obj);
             if (res !== '') {
                 newScoreId = parseInt(res);
+                lastScoresModel.select();
             }
         } else {
             obj['id'] = newScoreId;
             res = scoresModel.updateObject(obj);
+            lastScoresModel.select();
         }
 
         return res;
@@ -64,10 +68,7 @@ CollectionInspector {
         filters: [
             "criterium='" + criterium + "'"
         ]
-        Component.onCompleted: {
-            setSort(9,Qt.AscendingOrder);
-            select();
-        }
+        sort: 'score ASC'
     }
 
     Models.RubricsDetailedScoresModel {
@@ -78,8 +79,7 @@ CollectionInspector {
             "\"group\"='" + group + "'",
             "individual='" + individual + "'"
         ]
-
-        Component.onCompleted: select()
+        sort: 'moment DESC'
     }
 
     Models.RubricsScoresModel {
@@ -145,8 +145,11 @@ CollectionInspector {
             Connections {
                 target: assessmentDescriptorItem
                 onCriteriumChanged: {
+                    levelDescriptorsModel.select();
                     var criteriumObject = levelDescriptorsModel.getObject('criterium',criterium);
-                    criteriumComponent.originalContent = [criteriumObject['criteriumTitle'],criteriumObject['criteriumDesc']];
+                    criteriumComponent.originalContent = [];
+                    criteriumComponent.push(criteriumObject['criteriumTitle']);
+                    criteriumComponent.push(criteriumObject['criteriumDesc']);
                 }
             }
         }
@@ -271,8 +274,10 @@ CollectionInspector {
 
         console.log('Last scoreId ' + lastScoreId);
 
+        detailedScoresModel.select();
+
         var obj2 = detailedScoresModel.getObject('scoreId',lastScoreId);
-        descriptor = obj2['descriptor'];
+        assessmentDescriptorItem.descriptor = obj2['descriptor'];
 
         comment = (typeof obj2['comment'] !== 'undefined')?obj2['comment']:'';
     }

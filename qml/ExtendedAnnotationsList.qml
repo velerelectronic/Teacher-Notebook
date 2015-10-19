@@ -179,7 +179,7 @@ Rectangle {
                 id: annotationItem
                 width: annotationsList.width
                 height: units.fingerUnit * 2
-                border.color: 'black'
+                border.color: 'gray'
                 color: (model.state>=0)?'white':'#AAAAAA'
                 states: [
                     State {
@@ -340,6 +340,19 @@ Rectangle {
 
                     onOpenMenu: annotations.openMenu(initialHeight,menu)
                     onOpenRubricGroupAssessment: annotations.openRubricGroupAssessment(assessment, rubric, rubricsModel, rubricsAssessmentModel)
+                }
+            }
+            Common.SuperposedButton {
+                anchors {
+                    top: parent.top
+                    right: parent.right
+                }
+                margins: units.nailUnit
+                size: units.fingerUnit * 1.5
+                imageSource: 'road-sign-147409'
+                onClicked: {
+                    selectedAnnotationsModel.clear();
+                    annotationsModel.select();
                 }
             }
         }

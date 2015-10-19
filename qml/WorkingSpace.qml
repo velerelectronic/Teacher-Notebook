@@ -187,26 +187,12 @@ Item {
         // Rubrics
         onOpenRubricDetails: openNewPage('RubricDetailsEditor',{rubric: rubric, rubricsModel: rubricsModel})
         onOpenRubricEditor: openNewPage('Rubric',{rubric: id, rubricsModel: rubricsModel, state: 'edit'}, '')
-        onOpenRubricGroupAssessment: {
-            console.log('GROUP assessment');
-            openNewPage('RubricGroupAssessment', {idAssessment: assessment, rubric: rubric, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel})
-        }
         onOpenRubricHistory: openNewPage('RubricAssessmentHistory',{group: group})
-        onOpenRubricAssessmentDetails: openNewPage('RubricAssessmentEditor', {idAssessment: assessment, group: group, rubric: rubric, rubricsAssessmentModel: rubricsAssessmentModel})
         onEditCriterium: openNewPage('RubricCriteriumEditor',{idCriterium: idCriterium, rubric: rubric, title: title, desc: desc, ord: ord, weight: weight, criteriaModel: model})
         onEditLevel: openNewPage('RubricLevelEditor',{idLevel: idLevel, rubric: rubric, title: title, desc: desc, score: score, levelsModel: model})
-        onEditRubricDetails: openNewPage('RubricDetailsEditor',{idRubric: idRubric, rubricsModel: model})
         onEditDescriptor: openNewPage('RubricDescriptorEditor',{idDescriptor: idDescriptor, criterium: criterium, level: level, definition: definition, descriptorsModel: model})
-        onEditRubricAssessmentDescriptor: openNewPage('RubricAssessmentDescriptor',
-                                                      {
-                                                          assessment: idAssessment,
-                                                          criterium: criterium,
-                                                          individual: individual,
-                                                          lastScoreId: lastScoreId
-                                                      });
 
         onEditGroupIndividual: openNewPage('GroupIndividualEditor', parameters)
-        onEditRubricAssessmentByCriterium: openNewPage('ShowRubricGroupAssessmentByCriterium',{assessment: assessment,criterium: criterium})
         onEditRubricAssessmentByIndividual: openNewPage('ShowRubricGroupAssessmentByIndividual',{assessment: assessment,individual: individual})
 
         onSavedAssessmentDescriptor: {

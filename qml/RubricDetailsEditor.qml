@@ -4,68 +4,75 @@ import QtQml.Models 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
-CollectionInspector {
-    id: rubricDetailsItem
-    pageTitle: qsTr('Edita detalls de rúbrica')
+BasicPage {
+    id: rubricDetailsBasicPage
 
     property int idRubric: -1
-    property string title: ''
-    property string desc: ''
-    property SqlTableModel rubricsModel
 
-    signal savedRubricDetails
+    mainPage: CollectionInspector {
+        id: rubricDetailsItem
 
-    function saveOrUpdate(field, contents) {
-        var res = false;
-        var obj = {};
-        obj[field] = contents;
+        pageTitle: qsTr('Edita detalls de rúbrica')
 
-        if (idRubric == -1) {
-            res = rubricsModel.insertObject(obj);
-            console.log('Resultat', res);
-            if (res !== '') {
-                idRubric = res;
+        property string title: ''
+        property string desc: ''
+        property SqlTableModel rubricsModel
+
+        signal savedRubricDetails
+
+        function saveOrUpdate(field, contents) {
+            var res = false;
+            var obj = {};
+            obj[field] = contents;
+
+            if (idRubric == -1) {
+                res = rubricsModel.insertObject(obj);
+                console.log('Resultat', res);
+                if (res !== '') {
+                    idRubric = res;
+                }
+            } else {
+                obj['id'] = idRubric;
+                res = rubricsModel.updateObject(obj);
             }
-        } else {
-            obj['id'] = idRubric;
-            res = rubricsModel.updateObject(obj);
+            return res;
         }
-        return res;
+
+        model: ObjectModel {
+            EditTextItemInspector {
+                id: rubricTitle
+                width: rubricDetailsItem.width
+                caption: qsTr('Títol')
+                originalContent: rubricDetailsItem.title
+                onSaveContents: {
+                    if (saveOrUpdate('title',editedContent))
+                        notifySavedContents();
+                }
+            }
+            EditTextAreaInspector {
+                id: rubricDesc
+                width: rubricDetailsItem.width
+                caption: qsTr('Descripció')
+                originalContent: rubricDetailsItem.desc
+                onSaveContents: {
+                    if (saveOrUpdate('desc',editedContent))
+                        notifySavedContents();
+                }
+            }
+        }
+
+        Component.onCompleted: {
+            if (idRubric !== -1) {
+                var obj = rubricsModel.getObject(idRubric);
+
+                rubricDetailsItem.title = obj['title'];
+                rubricDetailsItem.desc = obj['desc'];
+            }
+        }
+
+
+        onCopyDataRequested: {}
+        onClosePageRequested: {}
     }
 
-    model: ObjectModel {
-        EditTextItemInspector {
-            id: rubricTitle
-            width: rubricDetailsItem.width
-            caption: qsTr('Títol')
-            originalContent: rubricDetailsItem.title
-            onSaveContents: {
-                if (saveOrUpdate('title',editedContent))
-                    notifySavedContents();
-            }
-        }
-        EditTextAreaInspector {
-            id: rubricDesc
-            width: rubricDetailsItem.width
-            caption: qsTr('Descripció')
-            originalContent: rubricDetailsItem.desc
-            onSaveContents: {
-                if (saveOrUpdate('desc',editedContent))
-                    notifySavedContents();
-            }
-        }
-    }
-
-    Component.onCompleted: {
-        if (idRubric !== -1) {
-            var obj = rubricsModel.getObject(idRubric);
-
-            rubricDetailsItem.title = obj['title'];
-            rubricDetailsItem.desc = obj['desc'];
-        }
-    }
-
-
-    onCopyDataRequested: {}
-    onClosePageRequested: {}
 }
