@@ -9,7 +9,6 @@ Rectangle {
     id: groupsIndividuals
 
     property string pageTitle: qsTr('Grups i individus')
-    property alias buttons: buttonsModel
 
     signal editGroupIndividual(int individual, var groupsIndividualsModel)
 
@@ -17,17 +16,10 @@ Rectangle {
         id: units
     }
 
-    ListModel {
-        id: buttonsModel
-
-        ListElement {
-            method: 'addIndividual'
-            image: 'plus-24844'
-        }
-    }
-
     Models.IndividualsModel {
         id: individualsModel
+
+        sort: 'id DESC'
         Component.onCompleted: select()
     }
 
@@ -96,7 +88,7 @@ Rectangle {
             }
             size: units.fingerUnit * 2
             imageSource: 'plus-24844'
-            onClicked: individualsModel.insertObject({group: qsTr('Nou grup'), name: qsTr('-'), surname: qsTr('-'), faceImage: ''});
+            onClicked: addIndividual()
         }
     }
 
@@ -110,13 +102,14 @@ Rectangle {
         standardButtons: StandardButton.Ok | StandardButton.Cancel
         onAccepted: {
             Qt.inputMethod.hide();
-            individualsModel.removeObjectWithKeyValue(individualId);
+            individualsModel.removeObject(individualId);
             individualsModel.select();
         }
     }
 
     function addIndividual() {
         individualsModel.insertObject({group: qsTr('Nou grup'), name: qsTr('-'), surname: qsTr('-'), faceImage: ''});
+        individualsModel.select();
     }
 }
 

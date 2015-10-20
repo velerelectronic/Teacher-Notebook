@@ -167,7 +167,7 @@ QVariant SqlTableModel2::insertObject(const QVariantMap &object) {
         placeHolders << "?";
 
     QSqlQuery query;
-    query.prepare("INSERT INTO " + innerTableName + " (" + keys.join(", ") + ") VALUES (" + placeHolders.join(",") + ")");
+    query.prepare("INSERT INTO " + innerTableName + " (\"" + keys.join("\", \"") + "\") VALUES (" + placeHolders.join(",") + ")");
 
     QVariantMap::const_iterator values = object.cbegin();
     while ( values != object.cend()) {
@@ -180,6 +180,8 @@ QVariant SqlTableModel2::insertObject(const QVariantMap &object) {
     setQuery(query);
 
     QVariant lastId = query.lastInsertId();
+
+    qDebug() << "INSERT" << query.lastQuery();
     updated();
     return lastId;
 }
@@ -427,7 +429,7 @@ int SqlTableModel2::updateObject(const QVariantMap &object) {
         QStringList keys;
         QVariantMap::const_iterator keysIterator = object.cbegin();
         while ( keysIterator != object.cend()) {
-            QString set = (keysIterator.key()) + "=?";
+            QString set = "\"" + (keysIterator.key()) + "\"=?";
             qDebug() << set;
             keys << set;
             ++keysIterator;
@@ -443,6 +445,7 @@ int SqlTableModel2::updateObject(const QVariantMap &object) {
             ++valuesIterator;
         }
         query.addBindValue(object[innerPrimaryKey]);
+        qDebug() << "updated values" << query.boundValues();
 
         query.exec();
 

@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.1
 import QtQml.Models 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 
 CollectionInspector {
     id: rubricCriteriumItem
@@ -18,6 +19,28 @@ CollectionInspector {
 
     signal savedCriterium
 
+    function saveOrUpdate() {
+        var object = {
+            rubric: rubric,
+            title: titleComponent.editedContent,
+            desc: descComponent.editedContent,
+            ord: orderComponent.editedContent,
+            weight: weightComponent.editedContent
+        }
+
+        var res;
+        if (idCriterium == -1) {
+            res = criteriaModel.insertObject(object);
+            idCriterium = res;
+        } else {
+            object['id'] = idCriterium;
+            res = criteriaModel.updateObject(object);
+        }
+        if (res)
+            criteriaModel.select();
+        return res;
+    }
+
     model: ObjectModel {
         EditFakeItemInspector {
             id: rubricComponent
@@ -28,27 +51,43 @@ CollectionInspector {
             id: titleComponent
             width: rubricCriteriumItem.width
             caption: qsTr('Títol')
+            onSaveContents: {
+                if (saveOrUpdate())
+                    notifySavedContents();
+            }
         }
         EditTextAreaInspector {
             id: descComponent
             width: rubricCriteriumItem.width
             caption: qsTr('Descripció')
+            onSaveContents: {
+                if (saveOrUpdate())
+                    notifySavedContents();
+            }
         }
         EditTextItemInspector {
             id: orderComponent
             width: rubricCriteriumItem.width
             caption: qsTr('Ordre')
+            onSaveContents: {
+                if (saveOrUpdate())
+                    notifySavedContents();
+            }
         }
         EditTextItemInspector {
             id: weightComponent
             width: rubricCriteriumItem.width
             caption: qsTr('Pes')
+            onSaveContents: {
+                if (saveOrUpdate())
+                    notifySavedContents();
+            }
         }
     }
 
     Component.onCompleted: {
         rubricsModel.select();
-        var rubricObj = rubricsModel.getObject(rubricCriteriumItem.rubric);
+        var rubricObj = rubricsModel.getObject(rubric);
         rubricComponent.originalContent = rubricObj['title'] + ((rubricObj['desc'] !== '')?'\n' + rubricObj['desc']:'');
         if (idCriterium !== -1) {
             var obj = criteriaModel.getObject(idCriterium);
@@ -81,10 +120,8 @@ CollectionInspector {
         rubricCriteriumItem.savedCriterium();
     }
 
-    SqlTableModel {
+    Models.RubricsModel {
         id: rubricsModel
-        tableName: 'rubrics'
-        fieldNames: ['id','title','desc']
     }
 
     onCopyDataRequested: {}

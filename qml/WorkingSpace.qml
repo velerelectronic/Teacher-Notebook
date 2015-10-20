@@ -185,14 +185,8 @@ Item {
         onRefusedCloseEditorRequest: messageBox.publishMessage(qsTr("Encara hi ha canvis sense desar! Desa'ls o descarta'ls abans."))
 
         // Rubrics
-        onOpenRubricDetails: openNewPage('RubricDetailsEditor',{rubric: rubric, rubricsModel: rubricsModel})
-        onOpenRubricEditor: openNewPage('Rubric',{rubric: id, rubricsModel: rubricsModel, state: 'edit'}, '')
         onOpenRubricHistory: openNewPage('RubricAssessmentHistory',{group: group})
-        onEditCriterium: openNewPage('RubricCriteriumEditor',{idCriterium: idCriterium, rubric: rubric, title: title, desc: desc, ord: ord, weight: weight, criteriaModel: model})
-        onEditLevel: openNewPage('RubricLevelEditor',{idLevel: idLevel, rubric: rubric, title: title, desc: desc, score: score, levelsModel: model})
-        onEditDescriptor: openNewPage('RubricDescriptorEditor',{idDescriptor: idDescriptor, criterium: criterium, level: level, definition: definition, descriptorsModel: model})
 
-        onEditGroupIndividual: openNewPage('GroupIndividualEditor', parameters)
         onEditRubricAssessmentByIndividual: openNewPage('ShowRubricGroupAssessmentByIndividual',{assessment: assessment,individual: individual})
 
         onSavedAssessmentDescriptor: {

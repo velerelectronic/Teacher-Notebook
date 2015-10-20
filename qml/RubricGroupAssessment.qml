@@ -357,7 +357,7 @@ BasicPage {
                                         onGroupChanged: console.log('individual group changed',rubricRectangle.group)
 
                                         orientation: ListView.Horizontal
-                                        interactive: true
+                                        interactive: false
 
                                         model: Models.RubricsLastScoresModel {
                                             id: rubricIndividualLastScoresModel

@@ -8,26 +8,28 @@ BasicPage {
     id: rubricDetailsBasicPage
 
     property int idRubric: -1
+    property SqlTableModel rubricsModel
+
+    pageTitle: qsTr('Edita detalls de rúbrica')
 
     mainPage: CollectionInspector {
         id: rubricDetailsItem
 
-        pageTitle: qsTr('Edita detalls de rúbrica')
 
         property string title: ''
         property string desc: ''
-        property SqlTableModel rubricsModel
 
         signal savedRubricDetails
 
-        function saveOrUpdate(field, contents) {
+        function saveOrUpdate() {
             var res = false;
-            var obj = {};
-            obj[field] = contents;
+            var obj = {
+                title: rubricTitle.editedContent,
+                desc: rubricDesc.editedContent
+            };
 
             if (idRubric == -1) {
                 res = rubricsModel.insertObject(obj);
-                console.log('Resultat', res);
                 if (res !== '') {
                     idRubric = res;
                 }
@@ -35,6 +37,7 @@ BasicPage {
                 obj['id'] = idRubric;
                 res = rubricsModel.updateObject(obj);
             }
+            rubricsModel.select();
             return res;
         }
 
@@ -45,7 +48,7 @@ BasicPage {
                 caption: qsTr('Títol')
                 originalContent: rubricDetailsItem.title
                 onSaveContents: {
-                    if (saveOrUpdate('title',editedContent))
+                    if (saveOrUpdate())
                         notifySavedContents();
                 }
             }
@@ -55,7 +58,7 @@ BasicPage {
                 caption: qsTr('Descripció')
                 originalContent: rubricDetailsItem.desc
                 onSaveContents: {
-                    if (saveOrUpdate('desc',editedContent))
+                    if (saveOrUpdate())
                         notifySavedContents();
                 }
             }
@@ -69,10 +72,6 @@ BasicPage {
                 rubricDetailsItem.desc = obj['desc'];
             }
         }
-
-
-        onCopyDataRequested: {}
-        onClosePageRequested: {}
     }
 
 }

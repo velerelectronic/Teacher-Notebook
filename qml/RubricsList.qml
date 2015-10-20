@@ -12,14 +12,16 @@ BasicPage {
     width: 100
     height: 62
 
-    signal editGroupIndividual(var parameters)
+    property string pageTitle: qsTr("Rúbriques");
+
+    signal editGroupIndividual(int individual, var groupsModel)
     signal openRubricAssessmentDetails(int assessment, int rubric, string group, var rubricsModel, var rubricsAssessmentModel)
     signal openRubricDetails(int rubric, var rubricsModel)
-    signal openRubricEditor(int id, var rubricsModel)
+    signal openRubricEditor(int rubric, var rubricsModel)
     signal openRubricGroupAssessment(int assessment)
     signal openRubricHistory(string group)
 
-    onEditGroupIndividual: openSubPage()
+    onEditGroupIndividual: openSubPage('GroupIndividualEditor', {individual: individual, groupsIndividualsModel: groupsModel}, units.fingerUnit)
     onOpenRubricAssessmentDetails: {
         openSubPage('RubricAssessmentEditor', {idAssessment: assessment, group: group, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel}, units.fingerUnit);
     }
@@ -27,13 +29,12 @@ BasicPage {
         console.log('VARS 4', assessment);
         openSubPage('RubricGroupAssessment', {assessment: assessment}, units.fingerUnit);
     }
-    onOpenRubricDetails: openSubPage('RubricDetailsEditor', {rubric: rubric, rubricsModel: rubricsModel})
-    onOpenRubricEditor: openSubPage('RubricEditor', {id: id, rubricsModel: rubricsModel})
+    onOpenRubricDetails: openSubPage('RubricDetailsEditor', {rubric: rubric, rubricsModel: rubricsModel}, units.fingerUnit)
+    onOpenRubricEditor: openSubPage('Rubric', {rubric: rubric, rubricsModel: rubricsModel}, units.fingerUnit)
     onOpenRubricHistory: openSubPage('RubricAssessmentHistory', {group: group})
 
     mainPage: Rectangle {
         id: rubricsListArea
-        property string pageTitle: qsTr("Rúbriques");
 
         property bool newIndividual: false
 
@@ -232,7 +233,7 @@ BasicPage {
                     border.color: 'black'
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: rubricsListArea.openRubricEditor(model.id,rubricsModel)
+                        onClicked: rubricsListBasicPage.openRubricEditor(model.id,rubricsModel)
                     }
                     RowLayout {
                         anchors.fill: parent
@@ -280,7 +281,7 @@ BasicPage {
 
             GroupsIndividuals {
                 id: groupsIndividuals
-                onEditGroupIndividual: rubricsListArea.editGroupIndividual({individual: individual, groupsModel: groupsIndividualsModel})
+                onEditGroupIndividual: rubricsListBasicPage.editGroupIndividual(individual, groupsIndividualsModel)
 
                 Connections {
                     target: rubricsListArea

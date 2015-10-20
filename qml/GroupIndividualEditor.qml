@@ -9,26 +9,63 @@ CollectionInspector {
 
     property SqlTableModel groupsIndividualsModel
 
-    property int individual
+    property int individual: -1
     property string group: ''
 
     signal savedGroupIndividual
+
+    function saveOrUpdate() {
+        console.log('INDIV', individual);
+        console.log(groupsIndividualsModel.tableName);
+
+        var object = {
+            name: nameComponent.editedContent,
+            surname: surnameComponent.editedContent,
+            group: groupComponent.editedContent
+        }
+
+        var res;
+        if (individual == -1) {
+            res = groupsIndividualsModel.insertObject(object);
+            individual = res;
+        } else {
+            object['id'] = individual;
+            res = groupsIndividualsModel.updateObject(object);
+        }
+        if (res)
+            groupsIndividualsModel.select();
+        savedGroupIndividual();
+
+        return res;
+    }
 
     model: ObjectModel {
         EditTextItemInspector {
             id: nameComponent
             width: groupIndividualEditor.width
             caption: qsTr('Nom')
+            onSaveContents: {
+                if (saveOrUpdate())
+                    notifySavedContents();
+            }
         }
         EditTextItemInspector {
             id: surnameComponent
             width: groupIndividualEditor.width
             caption: qsTr('Llinatges')
+            onSaveContents: {
+                if (saveOrUpdate())
+                    notifySavedContents();
+            }
         }
         EditTextItemInspector {
             id: groupComponent
             width: groupIndividualEditor.width
             caption: qsTr('Grup')
+            onSaveContents: {
+                if (saveOrUpdate())
+                    notifySavedContents();
+            }
         }
     }
 
@@ -40,29 +77,4 @@ CollectionInspector {
             groupComponent.originalContent = obj['group'];
         }
     }
-
-    onSaveDataRequested: {
-        var object = {
-            name: nameComponent.editedContent,
-            surname: surnameComponent.editedContent,
-            group: groupComponent.editedContent
-        }
-
-        if (individual == -1) {
-            groupsIndividualsModel.insertObject(object);
-        } else {
-            object['id'] = individual;
-            if (groupsIndividualsModel.updateObject(object))
-                console.log('DONE');
-            else
-                console.log('NOT Done');
-        }
-        setChanges(false);
-        savedGroupIndividual();
-    }
-
-    onCopyDataRequested: {}
-    onDiscardDataRequested: {}
-    onClosePageRequested: {}
-
 }

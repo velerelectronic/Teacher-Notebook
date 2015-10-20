@@ -28,6 +28,12 @@ GridLayout {
     property alias mainTabularItemWidth: tableItem.width
     property int highlightMoveDuration: 250
 
+    property int extraHorizontalSpace: 0
+    property int extraVerticalSpace: 0
+
+    property alias horizontalHeadingOptions: horizontalHeading.footer
+    property alias verticalHeadingOptions: verticalHeading.footer
+
     Item {
         id: crossItem
         Layout.preferredHeight: horizontalHeadingHeight
@@ -48,11 +54,15 @@ GridLayout {
         }
         highlightMoveDuration: mainGrid.highlightMoveDuration
 
+//        rightMargin: extraHorizontalSpace
+
         Rectangle {
             color: 'white'
             anchors.fill: horizontalHeading.contentItem
             z: -100
         }
+
+        footerPositioning: ListView.OverlayFooter
     }
 
     ListView {
@@ -61,6 +71,8 @@ GridLayout {
         Layout.preferredWidth: verticalHeadingWidth
         orientation: ListView.Vertical
         clip: true
+
+//        bottomMargin: extraVerticalSpace
 
         onContentYChanged: {
             if (movingVertically) {
@@ -74,6 +86,8 @@ GridLayout {
             anchors.fill: verticalHeading.contentItem
             z: -100
         }
+
+        footerPositioning: ListView.OverlayFooter
     }
     Flickable {
         id: tableItemFlickable
@@ -102,6 +116,9 @@ GridLayout {
                 verticalHeading.contentY = contentY;
             }
         }
+
+        //bottomMargin: extraVerticalSpace
+        //rightMargin: extraHorizontalSpace
     }
 
     function changeCurrentHorizontalIndex(index) {

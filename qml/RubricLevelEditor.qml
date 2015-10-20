@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
 import QtQml.Models 2.1
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 
 CollectionInspector {
     id: rubricLevelEditor
@@ -16,13 +17,33 @@ CollectionInspector {
 
     signal savedLevel
 
-    SqlTableModel {
+
+    Models.RubricsModel {
         id: rubricsModel
-        tableName: 'rubrics'
-        fieldNames: ['id', 'title', 'desc']
     }
 
     property SqlTableModel levelsModel
+
+    function saveOrUpdate() {
+        var object = {
+            rubric: rubric,
+            title: titleComponent.editedContent,
+            desc: descComponent.editedContent,
+            score: scoreComponent.editedContent
+        }
+
+        var res;
+        if (idLevel == -1) {
+            res = levelsModel.insertObject(object);
+            idLevel = res;
+        } else {
+            object['id'] = idLevel;
+            res = levelsModel.updateObject(object);
+        }
+        if (res)
+            levelsModel.select();
+        return res;
+    }
 
     model: ObjectModel {
         EditFakeItemInspector {
@@ -34,16 +55,31 @@ CollectionInspector {
             id: titleComponent
             width: rubricLevelEditor.width
             caption: qsTr('Títol')
+            originalContent: rubricLevelEditor.title
+            onSaveContents: {
+                if (saveOrUpdate())
+                    notifySavedContents();
+            }
         }
         EditTextAreaInspector {
             id: descComponent
             width: rubricLevelEditor.width
             caption: qsTr('Descripció')
+            originalContent: rubricLevelEditor.desc
+            onSaveContents: {
+                if (saveOrUpdate())
+                    notifySavedContents();
+            }
         }
         EditTextItemInspector {
             id: scoreComponent
             width: rubricLevelEditor.width
             caption: qsTr('Puntuació')
+            originalContent: rubricLevelEditor.score
+            onSaveContents: {
+                if (saveOrUpdate())
+                    notifySavedContents();
+            }
         }
     }
 
@@ -52,9 +88,11 @@ CollectionInspector {
         var obj = rubricsModel.getObject(rubricLevelEditor.rubric);
         rubricComponent.originalContent = obj['title'] + ((obj['desc'] !== '')?'\n' + obj['desc']:'');
 
-        titleComponent.originalContent = rubricLevelEditor.title;
-        descComponent.originalContent = rubricLevelEditor.desc;
-        scoreComponent.originalContent = rubricLevelEditor.score;
+        var obj2 = levelsModel.getObject(rubricLevelEditor.idLevel);
+
+        rubricLevelEditor.title = obj2['title'];
+        rubricLevelEditor.desc = obj2['desc'];
+        rubricLevelEditor.score = obj2['score'];
     }
 
     onSaveDataRequested: {

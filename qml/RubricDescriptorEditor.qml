@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.1
 import QtQml.Models 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 
 CollectionInspector {
     id: rubricDescriptorItem
@@ -17,23 +18,6 @@ CollectionInspector {
 
 
     signal savedDescriptor
-
-    function saveOrUpdate(field, contents) {
-        var res = false;
-        var obj = {};
-        obj[field] = contents;
-
-        if (idDescriptor == -1) {
-            res = descriptorsModel.insertObject(obj);
-            if (res !== '') {
-                idDescriptor = res;
-            }
-        } else {
-            obj['id'] = idDescriptor;
-            res = descriptorsModel.updateObject(obj);
-        }
-        return res;
-    }
 
     model: ObjectModel {
         EditFakeItemInspector {
@@ -50,6 +34,28 @@ CollectionInspector {
             id: definitionComponent
             width: rubricDescriptorItem.width
             caption: qsTr('Definició')
+            onSaveContents: {
+                var res = false;
+
+                var obj = {
+                    criterium: rubricDescriptorItem.criterium,
+                    level: rubricDescriptorItem.level,
+                    definition: definitionComponent.editedContent
+                };
+
+                if (rubricDescriptorItem.idDescriptor == -1) {
+                    res = descriptorsModel.insertObject(obj);
+                    if (res !== '') {
+                        rubricDescriptorItem.idDescriptor = res;
+                    }
+                } else {
+                    obj['id'] = rubricDescriptorItem.idDescriptor;
+                    res = descriptorsModel.updateObject(obj);
+                }
+                descriptorsModel.select();
+                if (res)
+                    notifySavedContents();
+            }
         }
     }
 
@@ -68,39 +74,16 @@ CollectionInspector {
         }
     }
 
-    onSaveDataRequested: {
-        var object = {
-            criterium: criterium,
-            level: rubricDescriptorItem.level,
-            definition: definitionComponent.editedContent
-        }
-
-        if (idDescriptor < 0) {
-            descriptorsModel.insertObject(object);
-        } else {
-            object['id'] = idDescriptor;
-
-            if (descriptorsModel.updateObject(object)) {
-                console.log('DONE');
-            } else
-                console.log('NOT Done');
-        }
-        rubricDescriptorItem.setChanges(false);
-        rubricDescriptorItem.savedDescriptor();
-    }
-
-    onCopyDataRequested: {}
-    onDiscardDataRequested: {}
-    onClosePageRequested: {}
-
     SqlTableModel {
         id: levelsModel
         tableName: 'rubrics_levels'
         fieldNames: ['id', 'title', 'desc', 'rubric', 'score']
+        primaryKey: 'id'
     }
     SqlTableModel {
         id: criteriaModel
         tableName: 'rubrics_criteria'
         fieldNames: ['id', 'title', 'desc', 'rubric', 'ord', 'weight']
+        primaryKey: 'id'
     }
 }
