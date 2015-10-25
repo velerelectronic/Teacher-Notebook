@@ -102,7 +102,7 @@ BasicPage {
                 }
 
                 onSaveContents: {
-                    if (saveOrUpdate('"group"',editedContent.reference))
+                    if (saveOrUpdate('group',editedContent.reference))
                         notifySavedContents();
                 }
             }
@@ -160,8 +160,6 @@ BasicPage {
             id: groupsModel
             tableName: 'individuals_groups'
             fieldNames: ['group']
-            // fieldNames: ['id', 'group', 'name', 'surname']
-            //groupBy: '"group"'
             primaryKey: 'id'
         }
 

@@ -124,13 +124,40 @@ CollectionInspector {
             id: labelsComponent
             width: annotationEditor.width
             caption: qsTr('Etiquetes')
-            visorComponent: Text {
+            visorComponent: Flow {
                 property string shownContent
-                property int requiredHeight: Math.max(contentHeight, units.fingerUnit)
-                font.pixelSize: units.readUnit
-                verticalAlignment: Text.AlignVCenter
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                text: shownContent
+                property int requiredHeight: Math.max(childrenRect.height, units.fingerUnit)
+
+                onShownContentChanged: {
+                    var newLabels = [];
+                    var labels = shownContent.split(' ');
+                    for (var i=0; i<labels.length; i++) {
+                        if (labels[i] !== '') {
+                            newLabels.push(labels[i]);
+                        }
+                    }
+                    flowRepeater.model = newLabels;
+                }
+
+                spacing: units.nailUnit
+
+                Repeater {
+                    id: flowRepeater
+
+                    Rectangle {
+                        color: '#AAFFAA'
+                        height: units.fingerUnit
+                        width: labelText.contentWidth + units.nailUnit * 2
+                        Text {
+                            id: labelText
+                            anchors.fill: parent
+                            anchors.margins: units.nailUnit
+                            font.pixelSize: units.readUnit
+                            verticalAlignment: Text.AlignVCenter
+                            text: modelData
+                        }
+                    }
+                }
             }
             editorComponent: ListView {
                 id: labelsListItem

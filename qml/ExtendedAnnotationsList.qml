@@ -19,6 +19,8 @@ Rectangle {
 
     property bool chooseMode: false
 
+    property string classifyVariable: 'end'
+
     property var stateTypes: {
         'done': "state < 0",
         'active': "(state >= 0 OR state IS NULL)",
@@ -33,7 +35,8 @@ Rectangle {
         'start': 'start ASC',
         'startRev': 'start DESC',
         'end': 'end ASC',
-        'endRev': 'end DESC'
+        'endRev': 'end DESC',
+        'state': 'state ASC'
     }
 
     property string sortOption: sortType.end
@@ -163,7 +166,7 @@ Rectangle {
             }
             headerPositioning: ListView.OverlayHeader
 
-            section.property: 'project'
+            section.property: annotations.classifyVariable
 
             section.delegate: Common.BoxedText {
                 color: 'green'
@@ -219,7 +222,7 @@ Rectangle {
                         Layout.preferredWidth: parent.width / 4
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         color: 'green'
-                        text: model.labels
+                        text: "<b>" + model.project + "</b> &nbsp;" + model.labels
                     }
 
                     Text {
@@ -522,6 +525,7 @@ Rectangle {
                     onClicked: {
                         menuRect.closeMenu();
                         sortOption = sortType.start;
+                        annotations.classifyVariable = 'start';
                     }
                 }
                 Common.TextButton {
@@ -532,6 +536,7 @@ Rectangle {
                     onClicked: {
                         menuRect.closeMenu();
                         sortOption = sortType.startRev;
+                        annotations.classifyVariable = 'start';
                     }
                 }
 
@@ -543,6 +548,7 @@ Rectangle {
                     onClicked: {
                         menuRect.closeMenu();
                         sortOption = sortType.end;
+                        annotations.classifyVariable = 'end';
                     }
                 }
 
@@ -554,9 +560,72 @@ Rectangle {
                     onClicked: {
                         menuRect.closeMenu();
                         sortOption = sortType.endRev;
+                        annotations.classifyVariable = 'end';
                     }
                 }
 
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr("Ordena per estat")
+                    onClicked: {
+                        menuRect.closeMenu();
+                        sortOption = sortType.state;
+                        annotations.classifyVariable = 'state';
+                    }
+                }
+
+                Rectangle {
+                    // Menu separator
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.nailUnit
+                    color: 'gray'
+                }
+
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr("Classifica per projecte")
+                    onClicked: {
+                        menuRect.closeMenu();
+                        annotations.classifyVariable = 'project';
+                    }
+                }
+
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr("Classifica per data d'inici")
+                    onClicked: {
+                        menuRect.closeMenu();
+                        annotations.classifyVariable = 'start';
+                    }
+                }
+
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr("Classifica per data de final")
+                    onClicked: {
+                        menuRect.closeMenu();
+                        annotations.classifyVariable = 'end';
+                    }
+                }
+
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr("Classifica per estat")
+                    onClicked: {
+                        menuRect.closeMenu();
+                        annotations.classifyVariable = 'state';
+                    }
+                }
             }
         }
 
