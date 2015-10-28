@@ -198,7 +198,6 @@ BasicPage {
                         Component {
                             id: rubricsAssessmentMenu
 
-
                             Rectangle {
                                 id: menuRect
 
@@ -345,59 +344,51 @@ BasicPage {
 
                     clip: true
 
-                    model: rubricsModel
-
-                    headerPositioning: ListView.OverlayHeader
-                    header: Rectangle {
-                        width: possibleList.width
-                        height: units.fingerUnit * 2
-                        z: 2
-
-                        Row {
-                            anchors.fill: parent
-                            Repeater {
-                                model: groupsModel
-                                Item {
-                                    width: parent.width / groupsModel.count
-                                    height: parent.height
-                                    Text {
-                                        anchors.fill: parent
-                                        anchors.margins: units.nailUnit
-                                        font.pixelSize: units.readUnit
-                                        font.bold: true
-                                        text: model.group
-                                        horizontalAlignment: Text.AlignHCenter
-                                        verticalAlignment: Text.AlignVCenter
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    model: groupsModel
 
                     delegate: Rectangle {
                         id: singleRubricXGroup
 
                         width: possibleList.width
-                        height: units.fingerUnit * 2
-                        property string title: model.title
-                        property int idRubric: model.id
+                        height: childrenRect.height
 
-                        z: 1
+                        property string group: model.group
 
-                        Row {
-                            anchors.fill: parent
-                            Repeater {
-                                model: groupsModel
-                                Common.BoxedText {
-                                    width: parent.width / groupsModel.count
-                                    height: parent.height
+                        ColumnLayout {
+                            anchors {
+                                top: parent.top
+                                left: parent.left
+                                right: parent.right
+                            }
+                            height: childrenRect.height
+
+                            Text {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: units.fingerUnit
+                                font.bold: true
+                                font.pixelSize: units.readUnit
+                                elide: Text.ElideRight
+                                text: qsTr('Grup') + " " + model.group
+                            }
+                            GridView {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: contentItem.height
+
+                                model: rubricsModel
+
+                                cellWidth: units.fingerUnit * 4
+                                cellHeight: cellWidth
+
+                                delegate: Common.BoxedText {
+                                    width: units.fingerUnit * 3
+                                    height: width
                                     margins: units.nailUnit
-                                    text: title
+                                    text: model.title
                                     MouseArea {
                                         anchors.fill: parent
                                         onClicked: {
                                             console.log('ID RUBRIC', singleRubricXGroup.idRubric);
-                                            openRubricAssessmentDetails(-1, singleRubricXGroup.idRubric, model.group, rubricsModel, rubricsAssessmentModel);
+                                            openRubricAssessmentDetails(-1, model.id, singleRubricXGroup.group, rubricsModel, rubricsAssessmentModel);
                                         }
                                     }
                                 }
