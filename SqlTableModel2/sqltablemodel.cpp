@@ -303,10 +303,14 @@ bool SqlTableModel2::select() {
     countChanged();
 }
 
-bool SqlTableModel2::selectUnique(QString field) {
-    QSqlQueryModel::setQuery("SELECT DISTINCT " + field + " FROM " + innerTableName + " GROUP BY " + field);
+bool SqlTableModel2::selectUnique(QString field) {    
+    QSqlQuery query;
+    query.prepare("SELECT DISTINCT \"" + field + "\" FROM " + innerTableName);
+    query.exec();
+    setQuery(query);
+
     countChanged();
-    return !query().lastError().isValid();
+    return !query.lastError().isValid();
 }
 
 QStringList SqlTableModel2::selectDistinct(QString field,QString order,QString filter,bool ascending) {

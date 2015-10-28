@@ -28,10 +28,16 @@ BasicPage {
 
         Common.UseUnits { id: units }
 
-        function saveOrUpdate(field, contents) {
+        function saveOrUpdate() {
             var res = false;
             var obj = {};
-            obj[field] = contents;
+            obj = {
+                title: titleComponent.editedContent,
+                desc: descComponent.editedContent,
+                rubric: rubricComponent.editedContent.reference,
+                group: groupComponent.editedContent.reference,
+                annotation: annotationComponent.editedContent
+            };
 
             if (idAssessment == -1) {
                 res = rubricsAssessmentModel.insertObject(obj);
@@ -55,7 +61,7 @@ BasicPage {
                 caption: qsTr('Títol')
                 originalContent: rubricAssessmentEditor.title
                 onSaveContents: {
-                    if (saveOrUpdate('title',editedContent))
+                    if (saveOrUpdate())
                         notifySavedContents();
                 }
             }
@@ -65,7 +71,7 @@ BasicPage {
                 caption: qsTr('Descripció')
                 originalContent: rubricAssessmentEditor.desc
                 onSaveContents: {
-                    if (saveOrUpdate('desc',editedContent))
+                    if (saveOrUpdate())
                         notifySavedContents();
                 }
             }
@@ -73,19 +79,16 @@ BasicPage {
                 id: rubricComponent
                 width: rubricAssessmentEditor.width
                 caption: qsTr('Rúbrica')
+
                 originalContent: {
-                    'reference': rubric,
+                    'reference': rubricAssessmentEditorBasicPage.rubric,
                     'valued': false,
                     'model': rubricsModel,
                     'nameAttribute': 'title'
                 }
 
-                onOriginalContentChanged: {
-                    console.log('New ORIGIAN content', originalContent.reference);
-                }
-
                 onSaveContents: {
-                    if (saveOrUpdate('rubric',editedContent.reference))
+                    if (saveOrUpdate())
                         notifySavedContents();
                 }
             }
@@ -102,7 +105,7 @@ BasicPage {
                 }
 
                 onSaveContents: {
-                    if (saveOrUpdate('group',editedContent.reference))
+                    if (saveOrUpdate())
                         notifySavedContents();
                 }
             }
@@ -131,7 +134,7 @@ BasicPage {
                 }
 
                 onSaveContents: {
-                    if (saveOrUpdate('annotation',editedContent))
+                    if (saveOrUpdate())
                         notifySavedContents();
                 }
             }

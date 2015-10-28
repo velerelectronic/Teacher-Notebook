@@ -23,7 +23,7 @@ BasicPage {
 
     onEditGroupIndividual: openSubPage('GroupIndividualEditor', {individual: individual, groupsIndividualsModel: groupsModel}, units.fingerUnit)
     onOpenRubricAssessmentDetails: {
-        openSubPage('RubricAssessmentEditor', {idAssessment: assessment, group: group, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel}, units.fingerUnit);
+        openSubPage('RubricAssessmentEditor', {idAssessment: assessment, rubric: rubric, group: group, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel}, units.fingerUnit);
     }
     onOpenRubricGroupAssessment: {
         console.log('VARS 4', assessment);
@@ -47,6 +47,7 @@ BasicPage {
                 tabbedView.widgets.append({title: qsTr('Avaluacions'), component: rubricsAssessmentComponent});
                 tabbedView.widgets.append({title: qsTr('Definicions'), component: rubricsListComponent});
                 tabbedView.widgets.append({title: qsTr('Grups'), component: rubricsGroupsComponent});
+                tabbedView.widgets.append({title: qsTr('Rúbriques x grups'), component: possibleRubricsComponent});
             }
         }
 
@@ -186,23 +187,62 @@ BasicPage {
                                 }
                             }
 
-                            Button {
+                            Common.ImageButton {
                                 Layout.fillHeight: true
-                                Layout.preferredWidth: rubricsAssessmentList.width / 12
-                                text: qsTr('Historial')
-                                onClicked: {
-                                    console.log("GRUP", model.group);
-                                    openRubricHistory(model.group);
+                                Layout.preferredWidth: height
+                                image: 'window-27140'
+                                onClicked: openMenu(units.fingerUnit * 4, rubricsAssessmentMenu)
+                            }
+                        }
+
+                        Component {
+                            id: rubricsAssessmentMenu
+
+
+                            Rectangle {
+                                id: menuRect
+
+                                property int requiredHeight: childrenRect.height + units.fingerUnit * 2
+
+                                signal closeMenu()
+
+                                color: 'white'
+
+                                ColumnLayout {
+                                    anchors {
+                                        top: parent.top
+                                        left: parent.left
+                                        right: parent.right
+                                    }
+                                    anchors.margins: units.fingerUnit
+
+                                    spacing: units.fingerUnit
+
+                                    Common.TextButton {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: units.fingerUnit
+                                        fontSize: units.readUnit
+                                        text: qsTr('Detalls')
+                                        onClicked: {
+                                            menuRect.closeMenu();
+                                            openRubricAssessmentDetails(model.id, model.rubric, model.group, rubricsModel, rubricsAssessmentModel)
+                                        }
+                                    }
+                                    Common.TextButton {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: units.fingerUnit
+                                        fontSize: units.readUnit
+                                        text: qsTr('Historial')
+                                        onClicked: {
+                                            menuRect.closeMenu();
+                                            openRubricHistory(model.group);
+                                        }
+                                    }
                                 }
                             }
 
-                            Button {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: rubricsAssessmentList.width / 12
-                                text: qsTr('Detalls')
-                                onClicked: openRubricAssessmentDetails(model.id, model.rubric, model.group, rubricsModel, rubricsAssessmentModel)
-                            }
                         }
+
                     }
                     Common.SuperposedButton {
                         anchors {
@@ -214,8 +254,8 @@ BasicPage {
                         onClicked: openRubricAssessmentDetails(-1, -1, -1, rubricsModel, rubricsAssessmentModel)
                     }
                 }
-            }
 
+            }
         }
 
         Component {
@@ -293,6 +333,90 @@ BasicPage {
                     }
                 }
             }
+        }
+
+        Component {
+            id: possibleRubricsComponent
+
+            Rectangle {
+                ListView {
+                    id: possibleList
+                    anchors.fill: parent
+
+                    clip: true
+
+                    model: rubricsModel
+
+                    headerPositioning: ListView.OverlayHeader
+                    header: Rectangle {
+                        width: possibleList.width
+                        height: units.fingerUnit * 2
+                        z: 2
+
+                        Row {
+                            anchors.fill: parent
+                            Repeater {
+                                model: groupsModel
+                                Item {
+                                    width: parent.width / groupsModel.count
+                                    height: parent.height
+                                    Text {
+                                        anchors.fill: parent
+                                        anchors.margins: units.nailUnit
+                                        font.pixelSize: units.readUnit
+                                        font.bold: true
+                                        text: model.group
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    delegate: Rectangle {
+                        id: singleRubricXGroup
+
+                        width: possibleList.width
+                        height: units.fingerUnit * 2
+                        property string title: model.title
+                        property int idRubric: model.id
+
+                        z: 1
+
+                        Row {
+                            anchors.fill: parent
+                            Repeater {
+                                model: groupsModel
+                                Common.BoxedText {
+                                    width: parent.width / groupsModel.count
+                                    height: parent.height
+                                    margins: units.nailUnit
+                                    text: title
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: {
+                                            console.log('ID RUBRIC', singleRubricXGroup.idRubric);
+                                            openRubricAssessmentDetails(-1, singleRubricXGroup.idRubric, model.group, rubricsModel, rubricsAssessmentModel);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Component.onCompleted: {
+                    groupsModel.selectUnique('group');
+                    console.log('COUNT', groupsModel.count)
+                }
+            }
+        }
+
+        Models.IndividualsModel {
+            id: groupsModel
+
+            fieldNames: ['group']
         }
 
         Models.RubricsModel {

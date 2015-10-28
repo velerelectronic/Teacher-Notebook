@@ -16,11 +16,12 @@ CollectionInspectorItem {
         id: emptyModel
     }
 
+    originalContent: {reference: -1; nameAttribute: ''; model: emptyModel}
 
     visorComponent: Text {
         id: textVisor
         property int requiredHeight: Math.max(contentHeight, units.fingerUnit)
-        property var shownContent: {reference: -1; nameAttribute: ''; model: emptyModel}
+        property var shownContent: editState.originalContent
 
         // reference: the specific code of the selected item in the model. The code refers to the column 'id'
         // valued: if true, the shown title for the item is the same as the reference
@@ -45,7 +46,8 @@ CollectionInspectorItem {
                     else {
                         console.log('model COUNT', s.model.count);
                         s.model.select();
-                        var obj = s.model.getObject('id',s.reference);
+                        console.log('Cercant',s.reference);
+                        var obj = s.model.getObject(s.reference);
                         textVisor.text = (typeof obj[s.nameAttribute] !== 'undefined')?obj[s.nameAttribute]:qsTr("No s'ha trobat el codi");
                     }
                 }

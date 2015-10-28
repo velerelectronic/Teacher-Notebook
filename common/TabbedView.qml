@@ -29,7 +29,7 @@ Item {
             orientation: ListView.Horizontal
             model: widgetsModel
             delegate: Item {
-                width: tabsWidth
+                width: Math.max(tabsWidth, labelText.contentWidth + labelText.anchors.margins * 2)
                 height: tabsHeight
 
                 Rectangle {
@@ -38,8 +38,10 @@ Item {
                     color: '#90ff90'
 
                     Text {
+                        id: labelText
                         anchors.fill: parent
                         anchors.margins: units.nailUnit
+
                         font.pixelSize: units.readUnit
                         fontSizeMode: Text.Fit
                         verticalAlignment: Text.AlignVCenter

@@ -92,11 +92,15 @@ Common.AbstractEditor {
 
     signal sendClick
 
-    onOriginalContentChanged: {
+    function sendOriginalContentToVisor() {
         if (mainVisor.status == Loader.Ready) {
             console.log("collection inspector item " + typeof originalContent);
             mainVisor.item.shownContent = originalContent;
         }
+    }
+
+    onOriginalContentChanged: {
+        sendOriginalContentToVisor();
         if (mainEditor.status == Loader.Ready) {
             mainEditor.item.editedContent = originalContent;
         }
@@ -270,9 +274,7 @@ Common.AbstractEditor {
                     id: mainVisor
                     anchors.fill: parent
                     onLoaded: {
-                        if (typeof originalContent !== 'undefined') {
-                            item.shownContent = originalContent;
-                        }
+                        sendOriginalContentToVisor();
                     }
                 }
                 ColumnLayout {
