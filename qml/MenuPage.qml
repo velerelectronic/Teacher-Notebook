@@ -213,6 +213,7 @@ Rectangle {
         id: widgetsModel
 
         Component.onCompleted: {
+            widgetsModel.append({title: qsTr('Anotacions esteses 2'), page: 'ExtendedAnnotationsList2'});
             widgetsModel.append({title: qsTr('Rúbriques'), page: 'RubricsList'});
             widgetsModel.append({title: qsTr('Espai de treball'), page: 'WorkSpace'});
             widgetsModel.append({title: qsTr('Projectes'), page: 'Projects'});

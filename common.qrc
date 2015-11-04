@@ -37,5 +37,6 @@
         <file>common/VerticalBoxDiagram.qml</file>
         <file>common/DownSlideMenu.qml</file>
         <file>common/TextButton.qml</file>
+        <file>common/ExpandableListView.qml</file>
     </qresource>
 </RCC>
