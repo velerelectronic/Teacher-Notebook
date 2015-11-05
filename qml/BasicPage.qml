@@ -14,7 +14,7 @@ Item {
     property int padding: 0
 
     signal closePage()
-    signal openMenu(int initialHeight, var menu)
+    signal openMenu(int initialHeight, var menu, var options)
 
     Rectangle {
         anchors.fill: parent
@@ -115,7 +115,7 @@ Item {
         // Slide menu
 
         onOpenMenu: {
-            openMenu(initialHeight, menu);
+            openMenu(initialHeight, menu, options);
         }
 
         // Page handling

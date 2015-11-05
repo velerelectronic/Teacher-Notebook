@@ -5,6 +5,7 @@ Item {
 
     property int initialHeight: 0
     property Component menu
+    property var options
 
     states: [
         State {
@@ -131,6 +132,13 @@ Item {
                     target: menuLoader.item
                     onCloseMenu: {
                         downSlideMenu.state = 'hidden';
+                    }
+                }
+
+                Connections {
+                    target: downSlideMenu
+                    onOptionsChanged: {
+                        menuLoader.item.options = options;
                     }
                 }
             }

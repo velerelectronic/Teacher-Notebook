@@ -191,7 +191,7 @@ BasicPage {
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: height
                                 image: 'window-27140'
-                                onClicked: openMenu(units.fingerUnit * 4, rubricsAssessmentMenu)
+                                onClicked: openMenu(units.fingerUnit * 4, rubricsAssessmentMenu, {})
                             }
                         }
 

@@ -172,6 +172,7 @@ Window {
                     slideMenu.initialHeight = initialHeight;
                     slideMenu.menu = menu;
                     slideMenu.state = 'showHeading';
+                    slideMenu.options = options;
                 }
             }
         }

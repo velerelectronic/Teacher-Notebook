@@ -13,7 +13,7 @@ Rectangle {
     property bool isVertical: width<height
 
     signal showExtendedAnnotation (var parameters)
-    signal openMenu(int initialHeight, var menu)
+    signal openMenu(int initialHeight, var menu, var options)
     signal chosenAnnotation(string annotation)
     signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
 
@@ -100,6 +100,23 @@ Rectangle {
                 }
             ]
             state: 'unselected'
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    if (annotationItem.state === 'unselected') {
+                        annotationItem.state = 'selected';
+                        if (chooseMode) {
+                            chosenAnnotation(model.title);
+                        } else {
+                            annotationsList.expandItem(annotationItem.model.index, {title: annotationItem.model.title});
+                        }
+                    } else {
+                        annotationItem.state = 'unselected';
+                    }
+                }
+            }
+
             RowLayout {
                 id: basicAnnotationInfo
 
@@ -114,6 +131,7 @@ Rectangle {
                 spacing: units.nailUnit
 
                 Text {
+                    id: titleText
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -135,7 +153,7 @@ Rectangle {
 
                 Text {
                     Layout.fillHeight: true
-                    Layout.preferredWidth: parent.width / 4
+                    Layout.preferredWidth: parent.width / 8
                     text: {
                         if (annotationItem.model.state<0) {
                             return qsTr('Finalitzat');
@@ -148,21 +166,12 @@ Rectangle {
                         }
                     }
                 }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    if (annotationItem.state === 'unselected') {
-                        annotationItem.state = 'selected';
-                        if (chooseMode) {
-                            chosenAnnotation(model.title);
-                        } else {
-                            annotationsList.expandItem(annotationItem.model.index, {title: annotationItem.model.title});
-                        }
-                    } else {
-                        annotationItem.state = 'unselected';
-                    }
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: units.fingerUnit * 2
+                    size: units.fingerUnit
+                    image: 'window-27140'
+                    onClicked: annotations.openMenu(units.fingerUnit * 4, singleAnnotationMenu, {labels: model.labels})
                 }
             }
 
@@ -177,6 +186,7 @@ Rectangle {
                     right: parent.right
                 }
 
+                leftMargin: titleText.width
                 orientation: ListView.Horizontal
 
                 model: rubricsAssessmentModel
@@ -204,7 +214,7 @@ Rectangle {
         }
 
         expandedComponent: ShowExtendedAnnotation {
-            onOpenMenu: annotations.openMenu(initialHeight, menu)
+            onOpenMenu: annotations.openMenu(initialHeight, menu, {})
 
             onOpenRubricGroupAssessment: {
                 console.log('Now')
@@ -261,7 +271,7 @@ Rectangle {
                 Common.TextButton {
                     Layout.fillHeight: true
                     text: qsTr('Opcions')
-                    onClicked: openMenu(units.fingerUnit * 4, annotationsMenu)
+                    onClicked: openMenu(units.fingerUnit * 4, annotationsMenu, {})
                 }
             }
         }
@@ -577,6 +587,98 @@ Rectangle {
         }
 
     }
+
+    Component {
+        id: singleAnnotationMenu
+
+        Rectangle {
+            id: menuRect
+
+            property int requiredHeight: childrenRect.height + units.fingerUnit * 2
+            property var options: {
+                'labels': ''
+            }
+
+            signal closeMenu()
+
+            color: 'white'
+            ColumnLayout {
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                }
+                anchors.margins: units.fingerUnit
+
+                spacing: units.fingerUnit
+
+                Text {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: contentHeight
+                    text: qsTr('Cerca similars:')
+                }
+
+                GridView {
+                    id: searchesGrid
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: contentItem.height
+
+                    cellWidth: units.fingerUnit * 4
+                    cellHeight: units.fingerUnit * 2
+
+                    model: options['labels'].split(' ')
+                    interactive: false
+
+                    delegate: Common.BoxedText {
+                        width: searchesGrid.cellWidth
+                        height: searchesGrid.cellHeight
+                        text: '#' + modelData
+                        margins: units.nailUnit
+                        color: '#FFFFFF'
+                        borderColor: 'transparent'
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                menuRect.closeMenu();
+                                annotations.searchString = '#' + modelData;
+                            }
+                        }
+
+                    }
+
+                    Component.onCompleted: searchesModel.select()
+                }
+
+                Rectangle {
+                    // Menu separator
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.nailUnit
+                    color: 'gray'
+                }
+
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr('Marca finalitzat')
+                    onClicked: {
+                        menuRect.closeMenu();
+                    }
+                }
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr('Duplica')
+                    onClicked: {
+                        menuRect.closeMenu();
+                    }
+                }
+            }
+        }
+    }
+
     Models.RubricsModel {
         id: rubricsModel
 

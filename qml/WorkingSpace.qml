@@ -12,7 +12,7 @@ Item {
     property var initialProperties
 
     signal closeWorkingSpace()
-    signal openMenu(int initialHeight, var menu)
+    signal openMenu(int initialHeight, var menu, var options)
 
     ColumnLayout {
         anchors.fill: parent
@@ -89,7 +89,7 @@ Item {
         // Slide menu
 
         onOpenMenu: {
-            openMenu(initialHeight, menu);
+            openMenu(initialHeight, menu, options);
         }
 
         // Page handling
