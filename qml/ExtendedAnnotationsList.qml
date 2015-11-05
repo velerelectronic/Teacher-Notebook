@@ -63,6 +63,8 @@ Rectangle {
 
     Common.UseUnits { id: units }
 
+    color: '#F2F2F2'
+
     Common.ExpandableListView {
         id: annotationsList
         anchors.fill: parent
@@ -228,8 +230,8 @@ Rectangle {
 
                 verticalAlignment: Text.AlignVCenter
                 font.pixelSize: units.readUnit
-                font.bold: true
-                color: '#AAAAAA'
+//                font.bold: true
+                color: 'black'
                 text: section
             }
         }

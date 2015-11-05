@@ -408,6 +408,8 @@ BasicPage {
             id: groupsModel
 
             fieldNames: ['group']
+
+            sort: ['id DESC']
         }
 
         Models.RubricsModel {
