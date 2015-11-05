@@ -266,7 +266,7 @@ bool SqlTableModel2::select() {
 
     // Attach the common filters
     if (innerFilters.size()>0)
-        filtersList << "(" + innerFilters.join(" AND ") + ")";
+        filtersList << "(" + innerFilters.join(") AND (") + ")";
 
     // Filter the search fields
     QStringList searchList;
@@ -280,7 +280,9 @@ bool SqlTableModel2::select() {
     }
 
     QSqlQuery query;
-    query.prepare("SELECT \"" + fieldNames().join("\", \"") + "\" FROM " + innerTableName + ((filtersList.size()>0)?" WHERE " + filtersList.join(" AND "):"") + ((innerSort != "")?" ORDER BY " + innerSort:""));
+    query.prepare("SELECT \"" + fieldNames().join("\", \"") + "\" FROM " + innerTableName +
+                  ((filtersList.size()>0)?(" WHERE " + filtersList.join(" AND ")):"") +
+                  ((innerSort != "")?" ORDER BY " + innerSort:""));
     qDebug() << "Last query 1" << query.lastQuery();
 
     qDebug() << "Bindings" << innerBindValues.size();

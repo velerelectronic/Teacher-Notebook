@@ -21,6 +21,7 @@ CollectionInspector {
     signal newEvent(var parameters)
     signal newResourceAttachment(var parameters)
     signal openingDocumentExternally(string document)
+    signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
     signal newProject()
 
     property alias title: titleComponent.originalContent // PRIMARY KEY
@@ -35,7 +36,6 @@ CollectionInspector {
 
     property var existingLabelsModel: []
 
-    signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
 
     Common.UseUnits { id: units }
 
@@ -449,17 +449,33 @@ CollectionInspector {
 
                 model: assessmentsModel
 
-                delegate: Common.BoxedText {
+                delegate: Rectangle {
                     width: rubricsList.width
                     height: units.fingerUnit * 2
-                    margins: units.nailUnit
-                    text: model.title + " " + model.desc
+                    border.color: 'grey'
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+                        spacing: units.nailUnit
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: "<b>" + model.title + "</b>&nbsp;" + model.desc
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: units.fingerUnit * 4
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: model.group
+                        }
+                    }
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {
-                            console.log('NOW');
-                            annotationEditor.openRubricGroupAssessment(model.id, model.rubric, rubricsModel, assessmentsModel);
-                        }
+                        onClicked: annotationEditor.openRubricGroupAssessment(model.id, model.rubric, rubricsModel, assessmentsModel)
                     }
                 }
             }
@@ -471,9 +487,9 @@ CollectionInspector {
             Models.RubricsAssessmentModel {
                 id: assessmentsModel
 
-                filters: [
-                    "annotation='" + annotationEditor.title.replace("'","''") + "'"
-                ]
+                filters: ["annotation = ?"]
+//                bindValues: [annotationEditor.title]
+
                 // There is a strong need to change the replace() in the previous line by a better solution.
                 // I need to use bind-values in the SqlTableModel inner class.
             }
@@ -528,8 +544,10 @@ CollectionInspector {
                 model: projectsModel
             }
 
+            assessmentsModel.bindValues = [annotationEditor.title];
+            assessmentsModel.select();
         }
-    }
+  }
 
     function requestClose() {
         closeItem();

@@ -186,6 +186,7 @@ Item {
 
         // Rubrics
         onOpenRubricHistory: openNewPage('RubricAssessmentHistory',{group: group})
+        onOpenRubricGroupAssessment: openNewPage('RubricGroupAssessment', {assessment: assessment, rubric: rubric, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel})
 
         onEditRubricAssessmentByIndividual: openNewPage('ShowRubricGroupAssessmentByIndividual',{assessment: assessment,individual: individual})
 

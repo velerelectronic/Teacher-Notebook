@@ -77,10 +77,13 @@ Rectangle {
             id: annotationItem
             border.color: 'gray'
 
-            property int requiredHeight: units.fingerUnit * 2
+            property int requiredHeight: units.fingerUnit * 2 + ((rubricsAssessmentModel.count>0)?(units.fingerUnit * 2.5):0)
             property var model: annotationsModel.fieldNames
+            property string title: annotationItem.model.title
 
             color: (annotationItem.model.state>=0)?'white':'#AAAAAA'
+            clip: true
+
             states: [
                 State {
                     name: 'unselected'
@@ -98,7 +101,15 @@ Rectangle {
             ]
             state: 'unselected'
             RowLayout {
-                anchors.fill: parent
+                id: basicAnnotationInfo
+
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                    bottom: (rubricsAssessmentModel.count>0)?parent.verticalCenter:parent.bottom
+                }
+
                 anchors.margins: units.nailUnit
                 spacing: units.nailUnit
 
@@ -138,26 +149,67 @@ Rectangle {
                     }
                 }
             }
+
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
                     if (annotationItem.state === 'unselected') {
                         annotationItem.state = 'selected';
                         if (chooseMode) {
-                            selectedAnnotationsModel.clear();
                             chosenAnnotation(model.title);
+                        } else {
+                            annotationsList.expandItem(annotationItem.model.index, {title: annotationItem.model.title});
                         }
-
-                        annotationsList.expandItem(annotationItem.model.index, {title: annotationItem.model.title});
                     } else {
                         annotationItem.state = 'unselected';
                     }
                 }
             }
+
+            ListView {
+                id: rubricsAnnotationInfo
+
+                anchors {
+                    margins: units.nailUnit
+                    top: basicAnnotationInfo.bottom
+                    bottom: parent.bottom
+                    left: parent.left
+                    right: parent.right
+                }
+
+                orientation: ListView.Horizontal
+
+                model: rubricsAssessmentModel
+                spacing: units.nailUnit
+                delegate: Common.BoxedText {
+                    height: units.fingerUnit * 2
+                    width: units.fingerUnit * 6
+                    text: model.title + " (" + model.group + ")"
+                    margins: units.nailUnit
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: openRubricGroupAssessment(model.id, model.rubric, rubricsModel, rubricsAssessmentModel)
+                    }
+                }
+            }
+            Models.RubricsAssessmentModel {
+                id: rubricsAssessmentModel
+                filters: ["annotation=?"]
+            }
+            onTitleChanged: {
+                rubricsAssessmentModel.bindValues = [annotationItem.title];
+                rubricsAssessmentModel.select();
+            }
+
         }
 
         expandedComponent: ShowExtendedAnnotation {
             onOpenMenu: annotations.openMenu(initialHeight, menu)
+
+            onOpenRubricGroupAssessment: {
+                console.log('Now')
+                annotations.openRubricGroupAssessment(assessment, rubric, rubricsModel, rubricsAssessmentModel);
+            }
         }
 
         header: Item {
@@ -524,5 +576,10 @@ Rectangle {
             }
         }
 
+    }
+    Models.RubricsModel {
+        id: rubricsModel
+
+        Component.onCompleted: select()
     }
 }
