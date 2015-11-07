@@ -10,8 +10,6 @@ Rectangle {
 
     property string pageTitle: qsTr('Grups i individus')
 
-    signal editGroupIndividual(int individual, var groupsIndividualsModel)
-
     Common.UseUnits {
         id: units
     }
@@ -23,16 +21,20 @@ Rectangle {
         Component.onCompleted: select()
     }
 
-    ListView {
+    Common.ExpandableListView {
         id: mainList
         anchors.fill: parent
 
         clip: true
         model: individualsModel
 
-        delegate: Rectangle {
+        itemComponent: Rectangle {
+            id: singleIndividualItem
+
             width: mainList.width
-            height: units.fingerUnit * 2
+            property int requiredHeight: units.fingerUnit * 2
+            property var model: individualsModel.fieldNames
+
             border.color: 'black'
             RowLayout {
                 id: row
@@ -45,7 +47,7 @@ Rectangle {
                     Layout.preferredWidth: row.width / 4
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: (model.index+1)
+                    text: (singleIndividualItem.model.index+1)
                 }
 
                 Text {
@@ -53,32 +55,39 @@ Rectangle {
                     Layout.preferredWidth: row.width / 4
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: model.group
+                    text: singleIndividualItem.model.group
                 }
                 Text {
                     Layout.fillHeight: true
                     Layout.preferredWidth: row.width / 4
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: model.name
+                    text: singleIndividualItem.model.name
                 }
                 Text {
                     Layout.fillHeight: true
                     Layout.preferredWidth: row.width / 4
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: model.surname
+                    text: singleIndividualItem.model.surname
                 }
             }
             MouseArea {
                 anchors.fill: row
-                onClicked: editGroupIndividual(model.id, individualsModel)
+                onClicked: {
+                    console.log('open individual',singleIndividualItem.model.individual);
+                    mainList.expandItem(singleIndividualItem.model.index, {individual: singleIndividualItem.model.id});
+                }
                 onPressAndHold: {
-                    individualDeletionAsk.individualName = model.name + " " + model.surname;
-                    individualDeletionAsk.individualId = model.id;
+                    individualDeletionAsk.individualName = singleIndividualItem.model.name + " " + singleIndividualItem.model.surname;
+                    individualDeletionAsk.individualId = singleIndividualItem.model.id;
                     individualDeletionAsk.open();
                 }
             }
+        }
+
+        expandedComponent: GroupIndividualEditor {
+            groupsIndividualsModel: individualsModel
         }
 
         Common.SuperposedButton {

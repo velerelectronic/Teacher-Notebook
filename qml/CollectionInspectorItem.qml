@@ -14,6 +14,8 @@ Common.AbstractEditor {
     property alias captionHeight: captionText.height
     signal saveContents()
 
+    property int totalCollectionHeight: 0
+
     states: [
         State {
             name: 'viewMode'
@@ -33,15 +35,9 @@ Common.AbstractEditor {
                 enabled: false
             }
             PropertyChanges {
-                target: glowEffect
-                visible: false
-            }
-        },
-        State {
-            name: 'savingMode'
-            PropertyChanges {
-                target: glowEffect
-                color: 'yellow'
+                target: editorItemLayout
+                visible: true
+                enabled: true
             }
         },
         State {
@@ -61,17 +57,15 @@ Common.AbstractEditor {
                 enabled: true
             }
             PropertyChanges {
-                target: mainEditorLoader
-                sourceComponent: editorComponent
-            }
-            PropertyChanges {
-                target: glowEffect
-                color: 'gray'
-                visible: true
+                target: editorItemLayout
+                visible: false
+                enabled: false
             }
         }
     ]
-    state: 'viewMode'
+    state: (ListView.isCurrentItem)?'editMode':'viewMode'
+
+    Component.onCompleted: console.log('This index', collectionInspectorItem.index)
 
     property ListView view: ListView.view
     property int index: ObjectModel.index
@@ -81,7 +75,7 @@ Common.AbstractEditor {
     property real maximumHeight: totalHeight
 
     property real requiredVisorHeight: (typeof mainVisor.item.requiredHeight === 'number')?mainVisor.item.requiredHeight:units.fingerUnit
-    property real requiredEditorHeight: units.fingerUnit + (((mainEditorLoader.item !== null) && (typeof mainEditorLoader.item.requiredHeight == 'number'))?mainEditorLoader.item.requiredHeight:0)
+    property real requiredEditorHeight: totalCollectionHeight // units.fingerUnit + (((mainEditorLoader.item !== null) && (typeof mainEditorLoader.item.requiredHeight == 'number'))?mainEditorLoader.item.requiredHeight:0)
 
     property alias visorComponent: mainVisor.sourceComponent
     property Component editorComponent: null
@@ -101,9 +95,6 @@ Common.AbstractEditor {
 
     onOriginalContentChanged: {
         sendOriginalContentToVisor();
-        if (mainEditor.status == Loader.Ready) {
-            mainEditor.item.editedContent = originalContent;
-        }
     }
 
     property var editedContent: originalContent
@@ -118,6 +109,21 @@ Common.AbstractEditor {
 
     signal editModeEntered
     signal viewModeEntered
+
+    function openEditMode() {
+        console.log('Current index', view.currentIndex);
+        if (view.currentIndex < 0) {
+            mainEditorLoader.sourceComponent = editorComponent;
+            editedContent = originalContent;
+            view.currentIndex = collectionInspectorItem.index;
+            editModeEntered();
+        }
+    }
+
+    function openViewMode() {
+        mainEditorLoader.sourceComponent = null; // <-------
+        view.currentIndex = -1;
+    }
 
     function askDiscardChanges() {
         if (state == 'editMode') {
@@ -142,44 +148,33 @@ Common.AbstractEditor {
 
     function saveChanges() {
         editedContent = mainEditorLoader.item.editedContent;
-        collectionInspectorItem.state = 'savingMode';
         collectionInspectorItem.saveContents();
     }
 
     function notifySavedContents() {
-        collectionInspectorItem.state = 'viewMode';
         mainVisor.item.shownContent = editedContent;
+        view.currentIndex = -1;
     }
 
     function discardChanges() {
-        collectionInspectorItem.state = 'viewMode';
         mainEditorLoader.sourceComponent = null;
-        viewModeEntered();
+        openViewMode();
     }
 
     function enableShowMode() {
         mainVisor.item.shownContent = mainEditorLoader.item.editedContent;
         editedContent = mainEditorLoader.item.editedContent;
-        collectionInspectorItem.state = 'viewMode';
         viewModeEntered();
     }
 
     function enableEditMode() {
-        collectionInspectorItem.state = 'editMode';
+        view.currentIndex = collectionInspectorItem.index;
         mainEditorLoader.item.editedContent = mainVisor.item.shownContent;
-        editModeEntered();
     }
 
     function showEditedContent(newContent) {
         mainVisor.item.shownContent = newContent;
         mainEditorLoader.item.editedContent = newContent;
-    }
-
-    RectangularGlow {
-        id: glowEffect
-        anchors.fill: editorItemRectangle
-        glowRadius: units.nailUnit
-        spread: 0.5
     }
 
     MouseArea {
@@ -190,18 +185,12 @@ Common.AbstractEditor {
                 sendClick();
             }
 
-            if (editorComponent !== null) {
-                if (collectionInspectorItem.state == 'viewMode') {
-                    view.requestShowMode();
-                    console.log(index);
-                    if (view.askEnableEditMode(index)) {
-                        enableEditMode();
-                    }
-                } else {
-                    // Do something more
-                    enableShowMode();
-                }
-
+            if (mainEditorLoader.sourceComponent !== null) {
+                console.log('open view mode');
+                openViewMode();
+            } else {
+                console.log('open edit mode');
+                openEditMode();
             }
         }
     }
@@ -277,59 +266,58 @@ Common.AbstractEditor {
                         sendOriginalContentToVisor();
                     }
                 }
-                ColumnLayout {
-                    id: mainEditor
+            }
+
+        }
+        ColumnLayout {
+            id: mainEditor
+            anchors.fill: parent
+            spacing: units.nailUnit
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: units.fingerUnit * 1.5
+                color: 'yellow'
+
+                RowLayout {
                     anchors.fill: parent
+                    anchors.margins: 0
                     spacing: units.nailUnit
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: units.fingerUnit
-                        color: 'yellow'
-
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.margins: 0
-                            spacing: units.nailUnit
-
-                            Common.ImageButton {
-                                Layout.preferredWidth: units.fingerUnit
-                                Layout.fillHeight: true
-                                image: 'floppy-35952'
-                                onClicked: saveChanges()
-                            }
-
-                            Common.ImageButton {
-                                Layout.preferredWidth: units.fingerUnit
-                                Layout.fillHeight: true
-                                image: 'road-sign-147409'
-                                onClicked: discardChanges()
-                            }
-                        }
-                    }
-
-                    Loader {
-                        id: mainEditorLoader
+                    Common.ImageButton {
+                        Layout.preferredWidth: units.fingerUnit
                         Layout.fillHeight: true
-                        Layout.fillWidth: true
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 100
-                            }
-                        }
-
-                        sourceComponent: null
-
-                        onLoaded: {
-                            if (typeof originalContent !== 'undefined') {
-                                item.editedContent = originalContent;
-                            }
-                        }
+                        image: 'floppy-35952'
+                        onClicked: saveChanges()
                     }
 
+                    Common.ImageButton {
+                        Layout.preferredWidth: units.fingerUnit
+                        Layout.fillHeight: true
+                        image: 'road-sign-147409'
+                        onClicked: discardChanges()
+                    }
+                }
+            }
+
+            Loader {
+                id: mainEditorLoader
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 100
+                    }
                 }
 
+                sourceComponent: null
+
+                onLoaded: {
+                    if (typeof originalContent !== 'undefined') {
+                        item.editedContent = editedContent;
+                    }
+                }
             }
 
         }

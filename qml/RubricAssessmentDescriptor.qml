@@ -90,18 +90,21 @@ CollectionInspector {
         EditFakeItemInspector {
             id: assessmentComponent
             width: assessmentDescriptorItem.width
+            totalCollectionHeight: assessmentDescriptorItem.totalCollectionHeight
             caption: qsTr('Avaluació')
             originalContent: assessment
         }
         EditFakeItemInspector {
             id: groupComponent
             width: assessmentDescriptorItem.width
+            totalCollectionHeight: assessmentDescriptorItem.totalCollectionHeight
             caption: qsTr('Grup')
             originalContent: assessmentDescriptorItem.group
         }
         EditFakeItemInspector {
             id: individualComponent
             width: assessmentDescriptorItem.width
+            totalCollectionHeight: assessmentDescriptorItem.totalCollectionHeight
             caption: qsTr('Individu')
             originalContent: individualName  + " " + individualSurname
 
@@ -109,6 +112,7 @@ CollectionInspector {
         CollectionInspectorItem {
             id: criteriumComponent
             width: assessmentDescriptorItem.width
+            totalCollectionHeight: assessmentDescriptorItem.totalCollectionHeight
             caption: qsTr('Criteri')
 
             visorComponent: Item {
@@ -157,6 +161,7 @@ CollectionInspector {
         EditListItemInspector {
             id: descriptorComponent
             width: assessmentDescriptorItem.width
+            totalCollectionHeight: assessmentDescriptorItem.totalCollectionHeight
             caption: qsTr('Puntuació')
             originalContent: {
                 'reference': descriptor,
@@ -177,6 +182,7 @@ CollectionInspector {
         EditTextAreaInspector {
             id: commentsComponent
             width: assessmentDescriptorItem.width
+            totalCollectionHeight: assessmentDescriptorItem.totalCollectionHeight
             caption: qsTr('Comentaris')
             originalContent: comment
             onSaveContents: {
@@ -193,6 +199,7 @@ CollectionInspector {
         CollectionInspectorItem {
             id: previousComponent
             width: assessmentDescriptorItem.width
+            totalCollectionHeight: assessmentDescriptorItem.totalCollectionHeight
             caption: qsTr('Històric')
             visorComponent: previousValues
             originalContent: detailedScoresModel

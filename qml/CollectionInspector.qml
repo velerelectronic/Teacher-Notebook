@@ -18,6 +18,8 @@ Common.AbstractEditor {
     signal closePageRequested()
     signal openMenu(int initialHeight, var menu)
 
+    property int totalCollectionHeight: inspectorGrid.height
+
     color: 'white'
 
     function saveItem() {
@@ -53,6 +55,9 @@ Common.AbstractEditor {
         highlightMoveDuration: 200
         highlightRangeMode: ListView.ApplyRange
         spacing: units.nailUnit
+        highlightFollowsCurrentItem: true
+
+        currentIndex: -1
 
         model: VisualItemModel { id: visualModel }
 
@@ -123,4 +128,5 @@ Common.AbstractEditor {
     function coalesce(value1,value2) {
         return (typeof value1 !== 'undefined')?value1:value2;
     }
+
 }

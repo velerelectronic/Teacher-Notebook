@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 175 175" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g transform="matrix(1.37033,0,0,1.37033,-347.6619,-242.23977)">
+<path d="m260.098,178.721c-2.527.232-4.5,2.189-4.5,4.555v113.89c0,2.524 2.23,4.556 5,4.556h90c2.77,0 5-2.032 5-4.556v-95.091l-23.437-23.354h-71.563c-.173,0-.331-.016-.5,0z" fill="#fff" stroke="#000" stroke-linejoin="round" stroke-width="1.5"/>
+<path d="m332.206,178.708v18.375c0,2.77 2.23,5 5,5h18.406l-23.406-23.375z" fill="#fff" stroke="#000" stroke-linejoin="round" stroke-width="1.5"/>
+<path d="m332.206,178.708v18.375c0,2.77 2.23,5 5,5h18.406l-23.406-23.375z" fill="#fff" stroke="#000" stroke-linejoin="round" stroke-width="1.5"/>
+<path d="m264.6051,200.21455h6a2,2 0 0,1 2,2v6a2,2 0 0,1 -2,2h-6a2,2 0 0,1 -2-2v-6a2,2 0 0,1 2-2" fill="#fff" id="imagebot_21" stroke="#000" stroke-linejoin="round" stroke-width="1.5"/>
+<use height="180" transform="translate(5.04485e-7,20)" width="180" xlink:href="#imagebot_21"/>
+<use height="180" transform="translate(5.04485e-7,40)" width="180" xlink:href="#imagebot_21"/>
+<use height="180" transform="translate(5.04485e-7,60)" width="180" xlink:href="#imagebot_21"/>
+<path d="m279.605,205.215h29" fill="none" id="imagebot_17" stroke="#000" stroke-width="3"/>
+<use height="180" transform="translate(5.04485e-7,20)" width="180" xlink:href="#imagebot_17"/>
+<use height="180" transform="translate(5.04485e-7,40)" width="180" xlink:href="#imagebot_17"/>
+<use height="180" transform="translate(5.04485e-7,60)" width="180" xlink:href="#imagebot_17"/>
+<path d="m264.249,198.255c.395.718.026.038.52.985 .136.262.292.516.414.785 .517,1.14.881,2.358 1.277,3.543 .311.667.678,2.502 1.243,2.999 .132.116.348.157.516.107 .262-.079.948-.472.675-.464-.462.013-.866.321-1.299.481 2.791-2.382 5.573-4.786 8.595-6.876 1.945-1.345 3.056-1.962 5.067-3.159 4.886-2.75 2.813-1.646 6.175-3.392l-2.005,1.607c-1.868.948-1.143.813-1.999.949-1.978,1.162-3.232,1.853-5.136,3.162-2.898,1.992-5.555,4.304-8.144,6.676-1.181.794-2.326,1.643-3.543,2.381-.27.164-.579.316-.895.313-.556-.006-.806-.796-.938-1.132-.295-.752-.451-1.555-.755-2.304-.629-1.779-1.241-3.608-2.472-5.076l2.704-1.585z" fill="#f00" id="imagebot_15"/>
+<use height="180" transform="translate(5.04485e-7,20)" width="180" xlink:href="#imagebot_15"/>
+<g transform="matrix(.97525,-.22111,.22111,.97525,145.666,216.373)">
+<path d="m156.393,104.427-.726-1.334-5.668,2.132-.049.069 6.443-.867z" fill="#a00" fill-rule="evenodd"/>
+<path d="m-171.01212,99.32365h4.45449v60h-4.45449z" fill="#a00" transform="matrix(-.47772,-.87851,.87851,-.47772,0,0)"/>
+<path d="m-166.55762,99.32365h4.45449v60h-4.45449z" fill="#d40000" transform="matrix(-.47772,-.87851,.87851,-.47772,0,0)"/>
+<path d="m-162.10313,99.32365h4.45449v60h-4.45449z" fill="#ff2a2a" transform="matrix(-.47772,-.87851,.87851,-.47772,0,0)"/>
+<path d="m155.667,103.093 11.271-4.2273 .07.0486-2.146-4.1053-.016.0515-9.904,6.8985 .725,1.334z" fill="#ffd42a" fill-rule="evenodd"/>
+<path d="m155.667,103.093-.725-1.334-4.943,3.466 5.668-2.132z" fill="#d40000" fill-rule="evenodd"/>
+<path d="m154.942,101.759-.689-1.267-4.254,4.733 4.943-3.466z" fill="#ff2a2a" fill-rule="evenodd"/>
+<path d="m154.942,101.759 9.904-6.8985 .016-.0515-2.053-3.8536-8.556,9.5366 .689,1.267z" fill="#fd5" fill-rule="evenodd"/>
+<path d="m156.393,104.427 12.667-1.659-2.052-3.8537-.07-.0486-11.271,4.2273 .726,1.334z" fill="#fc0" fill-rule="evenodd"/>
+</g>
+</g>
+<title>icon</title>
+</svg>

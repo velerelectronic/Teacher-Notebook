@@ -43,6 +43,7 @@ CollectionInspector {
         EditTextItemInspector {
             id: nameComponent
             width: groupIndividualEditor.width
+            totalCollectionHeight: groupIndividualEditor.height
             caption: qsTr('Nom')
             onSaveContents: {
                 if (saveOrUpdate())
@@ -52,6 +53,7 @@ CollectionInspector {
         EditTextItemInspector {
             id: surnameComponent
             width: groupIndividualEditor.width
+            totalCollectionHeight: groupIndividualEditor.height
             caption: qsTr('Llinatges')
             onSaveContents: {
                 if (saveOrUpdate())
@@ -61,6 +63,7 @@ CollectionInspector {
         EditTextItemInspector {
             id: groupComponent
             width: groupIndividualEditor.width
+            totalCollectionHeight: groupIndividualEditor.height
             caption: qsTr('Grup')
             onSaveContents: {
                 if (saveOrUpdate())
@@ -69,7 +72,7 @@ CollectionInspector {
         }
     }
 
-    Component.onCompleted: {
+    onIndividualChanged: {
         if (individual >= 0) {
             var obj = groupsIndividualsModel.getObject(individual);
             nameComponent.originalContent = obj['name'];

@@ -31,7 +31,7 @@ CollectionInspectorItem {
         text: deleteItem.dialogText
         standardButtons: StandardButton.Ok | StandardButton.Cancel
         onAccepted: {
-            if (model.removeObject(itemId))
+            if (model.removeObject(itemId) > 0)
                 deleteItem.deleted();
         }
     }

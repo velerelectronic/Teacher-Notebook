@@ -38,6 +38,7 @@ CollectionInspector {
         EditTextItemInspector {
             id: nameComponent
             width: projectEditor.width
+            totalCollectionHeight: projectEditor.height
             caption: qsTr('Títol')
             originalContent: projectEditor.name
             onSaveContents: {
@@ -48,6 +49,7 @@ CollectionInspector {
         EditTextAreaInspector {
             id: descComponent
             width: projectEditor.width
+            totalCollectionHeight: projectEditor.height
             caption: qsTr('Descripció')
             originalContent: projectEditor.desc
             onSaveContents: {
@@ -58,6 +60,7 @@ CollectionInspector {
         EditFakeItemInspector {
             id: characteristicsComponent
             width: projectEditor.width
+            totalCollectionHeight: projectEditor.height
             caption: qsTr('Característiques')
             originalContent: qsTr('Hi ha ' + characteristicsModel.count + ' característiques')
             enableSendClick: true
@@ -66,6 +69,7 @@ CollectionInspector {
         EditFakeItemInspector {
             id: eventsComponent
             width: projectEditor.width
+            totalCollectionHeight: projectEditor.height
             caption: qsTr('Esdeveniments')
             originalContent: qsTr('Hi ha ' + scheduleModel.count + ' esdeveniments')
             enableSendClick: true

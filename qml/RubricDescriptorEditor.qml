@@ -23,16 +23,19 @@ CollectionInspector {
         EditFakeItemInspector {
             id: criteriumComponent
             width: rubricDescriptorItem.width
+            totalCollectionHeight: rubricDescriptorItem.totalCollectionHeight
             caption: qsTr('Criteri')
         }
         EditFakeItemInspector {
             id: levelComponent
             width: rubricDescriptorItem.width
+            totalCollectionHeight: rubricDescriptorItem.totalCollectionHeight
             caption: qsTr('Nivell')
         }
         EditTextAreaInspector {
             id: definitionComponent
             width: rubricDescriptorItem.width
+            totalCollectionHeight: rubricDescriptorItem.totalCollectionHeight
             caption: qsTr('Definició')
             onSaveContents: {
                 var res = false;

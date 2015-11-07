@@ -58,6 +58,7 @@ BasicPage {
             EditTextItemInspector {
                 id: titleComponent
                 width: rubricAssessmentEditor.width
+                totalCollectionHeight: rubricAssessmentEditor.totalCollectionHeight
                 caption: qsTr('Títol')
                 originalContent: rubricAssessmentEditor.title
                 onSaveContents: {
@@ -68,6 +69,7 @@ BasicPage {
             EditTextAreaInspector {
                 id: descComponent
                 width: rubricAssessmentEditor.width
+                totalCollectionHeight: rubricAssessmentEditor.totalCollectionHeight
                 caption: qsTr('Descripció')
                 originalContent: rubricAssessmentEditor.desc
                 onSaveContents: {
@@ -78,6 +80,7 @@ BasicPage {
             EditListItemInspector {
                 id: rubricComponent
                 width: rubricAssessmentEditor.width
+                totalCollectionHeight: rubricAssessmentEditor.totalCollectionHeight
                 caption: qsTr('Rúbrica')
 
                 originalContent: {
@@ -95,6 +98,7 @@ BasicPage {
             EditListItemInspector {
                 id: groupComponent
                 width: rubricAssessmentEditor.width
+                totalCollectionHeight: rubricAssessmentEditor.totalCollectionHeight
                 caption: qsTr('Grup')
                 originalContent: {
                     'reference': group,
@@ -112,6 +116,7 @@ BasicPage {
             CollectionInspectorItem {
                 id: annotationComponent
                 width: rubricAssessmentEditor.width
+                totalCollectionHeight: rubricAssessmentEditor.totalCollectionHeight
                 caption: qsTr('Anotació')
                 originalContent: annotation
 

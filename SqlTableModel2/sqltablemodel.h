@@ -31,6 +31,7 @@ public:
     // Subclass
 
     QVariant                            data(const QModelIndex &index, int role) const;
+    Qt::ItemFlags                       flags(const QModelIndex &index) const;
     virtual QHash<int, QByteArray>      roleNames() const;
     bool                                setData(const QModelIndex &item,const QVariant &value,int role = Qt::EditRole);
 

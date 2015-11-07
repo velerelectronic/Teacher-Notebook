@@ -5,6 +5,7 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import "qrc:///javascript/Storage.js" as Storage
+import "qrc:///common/FormatDates.js" as FormatDates
 
 Rectangle {
     id: annotations
@@ -171,7 +172,7 @@ Rectangle {
                     Layout.preferredWidth: units.fingerUnit * 2
                     size: units.fingerUnit
                     image: 'window-27140'
-                    onClicked: annotations.openMenu(units.fingerUnit * 4, singleAnnotationMenu, {labels: model.labels})
+                    onClicked: annotations.openMenu(units.fingerUnit * 4, singleAnnotationMenu, {index: model.index, labels: model.labels})
                 }
             }
 
@@ -223,15 +224,18 @@ Rectangle {
         }
 
         header: Item {
+            id: annotationsListHeader
+
             z: 300
             width: annotationsList.width
-            height: units.fingerUnit * 1.5
+            height: units.fingerUnit * 2.5
             visible: annotationsList.currentIndex < 0
 
-            RowLayout {
+            GridLayout {
                 anchors.fill: parent
                 anchors.margins: units.nailUnit
-                spacing: units.nailUnit
+                columnSpacing: units.nailUnit
+                columns: 2
 
                 Common.SearchBox {
                     id: searchAnnotations
@@ -242,6 +246,8 @@ Rectangle {
 
                     onTextChanged: annotations.searchString = text
                     onPerformSearch: {
+                        annotationsListHeader.addSearchTerm(text);
+
                         var textArray = text.split(/\s+/i);
                         // text.split(/[$|\b+][#\B+][^|\b+]/i);
                         console.log(textArray);
@@ -273,9 +279,54 @@ Rectangle {
                     text: qsTr('Opcions')
                     onClicked: openMenu(units.fingerUnit * 4, annotationsMenu, {})
                 }
+                ListView {
+                    id: searchTermsList
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit * 1
+                    orientation: ListView.Horizontal
+                    model: ListModel { id: searchTermsModel }
+                    spacing: units.nailUnit
+                    clip: true
+
+                    delegate: Rectangle {
+                        height: searchTermsList.height
+                        width: searchTermText.width + radius * 2
+                        radius: height / 2
+                        color: '#81DAF5'
+                        Text {
+                            id: searchTermText
+                            anchors {
+                                left: parent.left
+                                verticalCenter: parent.verticalCenter
+                                margins: parent.radius
+                            }
+                            width: contentWidth
+                            text: model.terms
+                            font.pixelSize: units.readUnit
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                var newTerms = model.terms;
+                                searchTermsModel.move(model.index, 0, 1);
+                                searchAnnotations.text = newTerms;
+                            }
+                        }
+                    }
+                }
+            }
+
+            function addSearchTerm(searchTerm) {
+                if (searchTermsModel.count>0) {
+                    if (searchTerm !== searchTermsModel.get(0).terms)
+                        searchTermsModel.insert(0, {terms: searchTerm});
+                } else {
+                    searchTermsModel.insert(0, {terms: searchTerm});
+                }
             }
         }
-        headerPositioning: ListView.OverlayHeader
+        headerPositioning: ListView.PullBackHeader
 
         section.property: annotations.classifyVariable
 
@@ -308,7 +359,7 @@ Rectangle {
             }
             size: units.fingerUnit * 2
             imageSource: 'plus-24844'
-            onClicked: newAnnotation()
+            onClicked: annotations.openMenu(units.fingerUnit * 4, addAnnotationMenu, {})
             onPressAndHold: importAnnotations(['title','desc','image'],annotationsModel,[])
         }
         Common.SuperposedButton {
@@ -596,6 +647,7 @@ Rectangle {
 
             property int requiredHeight: childrenRect.height + units.fingerUnit * 2
             property var options: {
+                'index': -1,
                 'labels': ''
             }
 
@@ -664,6 +716,7 @@ Rectangle {
                     text: qsTr('Marca finalitzat')
                     onClicked: {
                         menuRect.closeMenu();
+                        annotationsList.setProperty(menuRect.options.index,'state',-1);
                     }
                 }
                 Common.TextButton {
@@ -674,6 +727,75 @@ Rectangle {
                     onClicked: {
                         menuRect.closeMenu();
                     }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: addAnnotationMenu
+
+        Rectangle {
+            id: menuRect
+
+            property int requiredHeight: childrenRect.height + units.fingerUnit * 2
+
+            signal closeMenu()
+
+            color: 'white'
+
+            Flow {
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                    margins: units.fingerUnit
+                }
+
+                spacing: units.fingerUnit
+
+                Common.ImageButton {
+                    Layout.preferredHeight: units.fingerUnit * 3
+                    Layout.preferredWidth: units.fingerUnit * 3
+                    image: 'questionnaire-158862'
+                    size: units.fingerUnit * 2
+                    onClicked: {
+                        menuRect.closeMenu();
+                        var date = new Date();
+                        annotationsModel.insertObject({
+                                                          title: qsTr('Anotació ' + date.toISOString()),
+                                                          desc: '',
+                                                          start: date.toYYYYMMDDFormat(),
+                                                          end: date.toYYYYMMDDFormat(),
+                                                          state: 0
+                                                      });
+                        annotationsModel.select();
+                    }
+                }
+
+                Common.ImageButton {
+                    Layout.preferredHeight: units.fingerUnit * 3
+                    Layout.preferredWidth: units.fingerUnit * 3
+                    image: 'homework-152957'
+                    size: units.fingerUnit * 2
+                    onClicked: {
+                        menuRect.closeMenu()
+                        newAnnotation();
+                    }
+                }
+
+                Common.ImageButton {
+                    Layout.preferredHeight: units.fingerUnit * 3
+                    Layout.preferredWidth: units.fingerUnit * 3
+                    image: ''
+                    size: units.fingerUnit * 2
+                }
+
+                Common.ImageButton {
+                    Layout.preferredHeight: units.fingerUnit * 3
+                    Layout.preferredWidth: units.fingerUnit * 3
+                    image: ''
+                    size: units.fingerUnit * 2
                 }
             }
         }

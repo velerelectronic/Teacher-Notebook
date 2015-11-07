@@ -14,14 +14,12 @@ BasicPage {
 
     property string pageTitle: qsTr("Rúbriques");
 
-    signal editGroupIndividual(int individual, var groupsModel)
     signal openRubricAssessmentDetails(int assessment, int rubric, string group, var rubricsModel, var rubricsAssessmentModel)
     signal openRubricDetails(int rubric, var rubricsModel)
     signal openRubricEditor(int rubric, var rubricsModel)
     signal openRubricGroupAssessment(int assessment)
     signal openRubricHistory(string group)
 
-    onEditGroupIndividual: openSubPage('GroupIndividualEditor', {individual: individual, groupsIndividualsModel: groupsModel}, units.fingerUnit)
     onOpenRubricAssessmentDetails: {
         openSubPage('RubricAssessmentEditor', {idAssessment: assessment, rubric: rubric, group: group, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel}, units.fingerUnit);
     }
@@ -320,17 +318,6 @@ BasicPage {
 
             GroupsIndividuals {
                 id: groupsIndividuals
-                onEditGroupIndividual: rubricsListBasicPage.editGroupIndividual(individual, groupsIndividualsModel)
-
-                Connections {
-                    target: rubricsListArea
-                    onNewIndividualChanged: {
-                        if (newIndividual == true) {
-                            newIndividual = false;
-                            groupsIndividuals.addIndividual();
-                        }
-                    }
-                }
             }
         }
 
@@ -429,19 +416,6 @@ BasicPage {
             id: annotationsModel
 
             Component.onCompleted: select();
-        }
-
-        function newButton() {
-            switch(tabbedView.selectedIndex) {
-            case 0:
-                break;
-            case 1:
-                openRubricDetails(-1, rubricsModel);
-                break;
-            case 2:
-                newIndividual = true;
-                break;
-            }
         }
 
         Component.onCompleted: {

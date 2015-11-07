@@ -77,6 +77,7 @@ CollectionInspector {
         EditTextItemInspector {
             id: titleComponent
             width: annotationEditor.width
+            totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Títol')
             onSaveContents: {
                 if (save()) {
@@ -92,6 +93,7 @@ CollectionInspector {
         EditTextAreaInspector {
             id: descComponent
             width: annotationEditor.width
+            totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Descripció')
             onSaveContents: {
                 if (updateRecord('desc',editedContent))
@@ -103,6 +105,7 @@ CollectionInspector {
         EditListItemInspector {
             id: projectComponent
             width: annotationEditor.width
+            totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Projecte')
             onAddRow: newProject()
             originalContent: {
@@ -123,6 +126,7 @@ CollectionInspector {
         CollectionInspectorItem {
             id: labelsComponent
             width: annotationEditor.width
+            totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Etiquetes')
             visorComponent: Flow {
                 property string shownContent
@@ -314,6 +318,7 @@ CollectionInspector {
             id: startComponent
 
             width: annotationEditor.width
+            totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Inici')
             onSaveContents: {
                 if (updateRecord('start',editedContent))
@@ -325,6 +330,7 @@ CollectionInspector {
             id: endComponent
 
             width: annotationEditor.width
+            totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Final')
             onSaveContents: {
                 if (updateRecord('end',editedContent))
@@ -334,6 +340,7 @@ CollectionInspector {
         EditStateItemInspector {
             id: stateComponent
             width: annotationEditor.width
+            totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Estat')
             onSaveContents: {
                 if (updateRecord('state', editedContent)) {
@@ -345,6 +352,7 @@ CollectionInspector {
         CollectionInspectorItem {
             id: resourcesComponent
             width: annotationEditor.width
+            totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Recursos')
 
             property bool enableDeletion: false
@@ -426,6 +434,7 @@ CollectionInspector {
             id: rubricsComponent
 
             width: annotationEditor.width
+            totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Rúbriques')
             property bool enableDeletion: assessmentsModel.count == 0
 
@@ -498,6 +507,7 @@ CollectionInspector {
         EditDeleteItemInspector {
             id: deleteButton
             width: annotationEditor.width
+            totalCollectionHeight: annotationEditor.totalCollectionHeight
 
             enableButton: annotationEditor.enableDeletion
             buttonCaption: qsTr('Esborrar anotació')
@@ -506,7 +516,10 @@ CollectionInspector {
 
             model: annotationsModel
             itemId: annotationEditor.title
-            onDeleted: closePage(qsTr("S'ha esborrat l'anotació"))
+            onDeleted: {
+                annotationsModel.select();
+                closePage(qsTr("S'ha esborrat l'anotació"));
+            }
         }
     }
 

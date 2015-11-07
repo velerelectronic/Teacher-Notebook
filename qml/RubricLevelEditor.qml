@@ -49,11 +49,13 @@ CollectionInspector {
         EditFakeItemInspector {
             id: rubricComponent
             width: rubricLevelEditor.width
+            totalCollectionHeight: rubricLevelEditor.totalCollectionHeight
             caption: qsTr('Rúbrica')
         }
         EditTextItemInspector {
             id: titleComponent
             width: rubricLevelEditor.width
+            totalCollectionHeight: rubricLevelEditor.totalCollectionHeight
             caption: qsTr('Títol')
             originalContent: rubricLevelEditor.title
             onSaveContents: {
@@ -64,6 +66,7 @@ CollectionInspector {
         EditTextAreaInspector {
             id: descComponent
             width: rubricLevelEditor.width
+            totalCollectionHeight: rubricLevelEditor.totalCollectionHeight
             caption: qsTr('Descripció')
             originalContent: rubricLevelEditor.desc
             onSaveContents: {
@@ -74,6 +77,7 @@ CollectionInspector {
         EditTextItemInspector {
             id: scoreComponent
             width: rubricLevelEditor.width
+            totalCollectionHeight: rubricLevelEditor.totalCollectionHeight
             caption: qsTr('Puntuació')
             originalContent: rubricLevelEditor.score
             onSaveContents: {

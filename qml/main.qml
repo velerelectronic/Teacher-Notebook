@@ -32,6 +32,8 @@
 
   * Outline select: https://pixabay.com/es/contorno-frontera-mesa-digitales-27146/#_=_
   * Tick mark: https://pixabay.com/es/marca-de-verificaci%C3%B3n-comprobar-296754/
+  * New empty annotation: https://pixabay.com/en/homework-paper-paperclip-paper-clip-152957/#_=_
+  * New auto-filled annotation: https://pixabay.com/en/questionnaire-questions-paper-158862/
 */
 
 import QtQuick 2.2

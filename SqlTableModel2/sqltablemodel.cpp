@@ -82,6 +82,12 @@ QStringList &SqlTableModel2::filters() {
     return innerFilters;
 }
 
+Qt::ItemFlags SqlTableModel2::flags(const QModelIndex &index) const {
+    Qt::ItemFlags flags = QSqlQueryModel::flags(index);
+    flags |= Qt::ItemIsEditable;
+    return flags;
+}
+
 void SqlTableModel2::generateRoleNames() {
     roles.clear();
     int nbCols = innerFieldNames.size();
@@ -206,6 +212,7 @@ int SqlTableModel2::removeObject(const QVariant &identifier) {
     if (innerPrimaryKey != "") {
         query.prepare("DELETE FROM " + innerTableName + " WHERE " +  innerPrimaryKey + "=?");
         query.addBindValue(identifier);
+        setQuery(query);
         query.exec();
         updated();
         return query.numRowsAffected();
@@ -260,7 +267,7 @@ void SqlTableModel2::setPrimaryKey(const QString &key) {
 }
 
 bool SqlTableModel2::select() {
-    deselectAllObjects();
+//    deselectAllObjects();
 
     QStringList filtersList;
 

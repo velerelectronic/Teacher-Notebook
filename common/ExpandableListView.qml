@@ -109,9 +109,14 @@ ListView {
 
     function closeItem() {
         currentIndex = -1;
+        forceLayout();
     }
 
     function getModelProperty(index, propertyName) {
 
+    }
+
+    function setProperty(index, prop, value) {
+        model.setProperty(index, prop, value);
     }
 }

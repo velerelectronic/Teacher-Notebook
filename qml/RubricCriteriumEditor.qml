@@ -45,11 +45,13 @@ CollectionInspector {
         EditFakeItemInspector {
             id: rubricComponent
             width: rubricCriteriumItem.width
+            totalCollectionHeight: rubricCriteriumItem.totalCollectionHeight
             caption: qsTr('Rúbrica')
         }
         EditTextItemInspector {
             id: titleComponent
             width: rubricCriteriumItem.width
+            totalCollectionHeight: rubricCriteriumItem.totalCollectionHeight
             caption: qsTr('Títol')
             onSaveContents: {
                 if (saveOrUpdate())
@@ -59,6 +61,7 @@ CollectionInspector {
         EditTextAreaInspector {
             id: descComponent
             width: rubricCriteriumItem.width
+            totalCollectionHeight: rubricCriteriumItem.totalCollectionHeight
             caption: qsTr('Descripció')
             onSaveContents: {
                 if (saveOrUpdate())
@@ -68,6 +71,7 @@ CollectionInspector {
         EditTextItemInspector {
             id: orderComponent
             width: rubricCriteriumItem.width
+            totalCollectionHeight: rubricCriteriumItem.totalCollectionHeight
             caption: qsTr('Ordre')
             onSaveContents: {
                 if (saveOrUpdate())
@@ -77,6 +81,7 @@ CollectionInspector {
         EditTextItemInspector {
             id: weightComponent
             width: rubricCriteriumItem.width
+            totalCollectionHeight: rubricCriteriumItem.totalCollectionHeight
             caption: qsTr('Pes')
             onSaveContents: {
                 if (saveOrUpdate())

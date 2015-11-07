@@ -45,6 +45,7 @@ BasicPage {
             EditTextItemInspector {
                 id: rubricTitle
                 width: rubricDetailsItem.width
+                totalCollectionHeight: rubricDetailsItem.totalCollectionHeight
                 caption: qsTr('Títol')
                 originalContent: rubricDetailsItem.title
                 onSaveContents: {
@@ -55,6 +56,7 @@ BasicPage {
             EditTextAreaInspector {
                 id: rubricDesc
                 width: rubricDetailsItem.width
+                totalCollectionHeight: rubricDetailsItem.totalCollectionHeight
                 caption: qsTr('Descripció')
                 originalContent: rubricDetailsItem.desc
                 onSaveContents: {
