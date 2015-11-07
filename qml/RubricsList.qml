@@ -18,11 +18,13 @@ BasicPage {
     signal openRubricDetails(int rubric, var rubricsModel)
     signal openRubricEditor(int rubric, var rubricsModel)
     signal openRubricHistory(string group)
+    signal openInternalRubricGroupAssessment(int assessment)
 
     onOpenRubricAssessmentDetails: {
         openSubPage('RubricAssessmentEditor', {idAssessment: assessment, rubric: rubric, group: group, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel}, units.fingerUnit);
     }
-    function openRubricGroupAssessment (assessment) {
+
+    onOpenInternalRubricGroupAssessment: {
         console.log('VARS 4', assessment);
         openSubPage('RubricGroupAssessment', {assessment: assessment}, units.fingerUnit);
     }
