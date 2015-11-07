@@ -43,12 +43,12 @@ Rectangle {
     property string sortOption: sortType.end
 
     property var labelsFilter: []
+    signal exportAnnotations(var fieldNames, var writeModel, var fieldConstants)
+    signal importAnnotations(var fieldNames, var writeModel, var fieldConstants)
 
     /*
     signal deletedAnnotations (int num)
 
-    signal importAnnotations(var fieldNames, var writeModel, var fieldConstants)
-    signal exportAnnotations(var fieldNames, var writeModel, var fieldConstants)
     signal openingDocumentExternally(string document)
     signal showEvent(var parameters)
 */
@@ -328,7 +328,7 @@ Rectangle {
         }
         headerPositioning: ListView.PullBackHeader
 
-        section.property: annotations.classifyVariable
+        section.property: (annotationsList.state == 'simple')?annotations.classifyVariable:''
 
         section.delegate: Item {
             width: annotationsList.width
@@ -358,18 +358,10 @@ Rectangle {
                 right: parent.right
             }
             size: units.fingerUnit * 2
+            enabled: annotationsList.state == 'simple'
+            visible: enabled
             imageSource: 'plus-24844'
             onClicked: annotations.openMenu(units.fingerUnit * 4, addAnnotationMenu, {})
-            onPressAndHold: importAnnotations(['title','desc','image'],annotationsModel,[])
-        }
-        Common.SuperposedButton {
-            anchors {
-                bottom: parent.bottom
-                left: parent.left
-            }
-            size: units.fingerUnit * 2
-            imageSource: 'box-24557'
-            onClicked: exportAnnotations(['title','desc','image'],annotationsModel,[])
         }
     }
 
@@ -634,6 +626,34 @@ Rectangle {
                         annotations.classifyVariable = 'state';
                     }
                 }
+
+                Rectangle {
+                    // Menu separator
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.nailUnit
+                    color: 'gray'
+                }
+
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr("Exporta...")
+                    onClicked: {
+                        menuRect.closeMenu();
+                        exportAnnotations(['title','desc','image'],annotationsModel,[]);
+                    }
+                }
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr("Importa...")
+                    onClicked: {
+                        menuRect.closeMenu();
+                        importAnnotations(['title','desc','image'],annotationsModel,[]);
+                    }
+                }
             }
         }
 
@@ -779,7 +799,7 @@ Rectangle {
                     image: 'homework-152957'
                     size: units.fingerUnit * 2
                     onClicked: {
-                        menuRect.closeMenu()
+                        menuRect.closeMenu();
                         newAnnotation();
                     }
                 }
@@ -787,8 +807,12 @@ Rectangle {
                 Common.ImageButton {
                     Layout.preferredHeight: units.fingerUnit * 3
                     Layout.preferredWidth: units.fingerUnit * 3
-                    image: ''
+                    image: 'upload-25068'
                     size: units.fingerUnit * 2
+                    onClicked: {
+                        menuRect.closeMenu();
+                        importAnnotations(['title','desc','image'],annotationsModel,[]);
+                    }
                 }
 
                 Common.ImageButton {

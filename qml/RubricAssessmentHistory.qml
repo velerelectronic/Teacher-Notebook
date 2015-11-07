@@ -22,6 +22,7 @@ Rectangle {
         int lastScoreId
         )
 
+    signal openRubricGroupAssessment(int assessment)
     signal showExtendedAnnotation(var parameters)
 
     Common.UseUnits {
@@ -187,158 +188,211 @@ Rectangle {
                                     id: criteriaListLoader
                                     anchors.fill: parent
 
-                                    property int requiredHeight: (sourceComponent == undefined)?(units.fingerUnit * 2):item.contentItem.height
+                                    property int requiredHeight: (sourceComponent == undefined)?(units.fingerUnit * 2):item.requiredHeight
                                     sourceComponent: undefined
                                 }
 
                                 Component {
                                     id: criteriaListComponent
 
-                                    ListView {
+                                    Item {
                                         id: criteriaList
 
-                                        anchors.fill: parent
-                                        anchors.margins: units.nailUnit
-                                        spacing: units.nailUnit
+                                        property int requiredHeight: units.fingerUnit * (rubricRow.maxValue - rubricRow.minValue + 10)
 
-                                        interactive: false
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: units.nailUnit
+                                            spacing: units.nailUnit
 
-                                        model: SqlTableModel {
-                                            tableName: 'rubrics_criteria'
-                                            fieldNames: ['id', 'title', 'desc', 'rubric', 'ord', 'weight']
-                                            filters: ["rubric='" + rubricRow.rubric + "'"]
-                                            primaryKey: 'id'
+                                            ListView {
+                                                id: criteriaTitlesList
 
-                                            sort: 'weight ASC'
-                                            Component.onCompleted: select()
-                                        }
+                                                Layout.fillHeight: true
+                                                Layout.preferredWidth: units.fingerUnit * 3
 
-                                        delegate: Rectangle {
-                                            id: criteriumRow
-                                            width: criteriaList.width
-                                            height: units.fingerUnit * (rubricRow.maxValue - rubricRow.minValue + 10)
+                                                interactive: false
+                                                model: rubricsCriteriaModel
+                                                delegate: Rectangle {
+                                                    id: criteriaTitlesItem
+                                                    width: criteriaTitlesList.width
+                                                    border.color: 'black'
+                                                    height: criteriaTitlesList.height / rubricsCriteriaModel.count
 
-                                            property int criterium: model.id
+                                                    states: [
+                                                        State {
+                                                            name: 'selected'
+                                                            PropertyChanges {
+                                                                target: criteriaTitlesItem
+                                                                color: 'yellow'
+                                                            }
+                                                        },
+                                                        State {
+                                                            name: 'unselected'
+                                                            PropertyChanges {
+                                                                target: criteriaTitlesItem
+                                                                color: 'white'
+                                                            }
+                                                        }
+                                                    ]
+                                                    state: 'selected'
+                                                    Text {
+                                                        anchors.fill: parent
+                                                        anchors.margins: units.nailUnit
+                                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                                        text: model.title
+                                                        elide: Text.ElideRight
+                                                    }
+                                                    MouseArea {
+                                                        anchors.fill: parent
+                                                        onClicked: {
+                                                            criteriaTitlesItem.state = (criteriaTitlesItem.state == 'selected')?'unselected':'selected';
+                                                        }
+                                                        onPressAndHold: {
+                                                            for (var i=0; i<criteriaTitlesList.contentItem.children.length; i++) {
+                                                                criteriaTitlesList.contentItem.children[i].state = 'unselected';
+                                                            }
+                                                            criteriaTitlesItem.state = 'selected';
+                                                        }
+                                                    }
+                                                }
+                                                SqlTableModel {
+                                                    id: rubricsCriteriaModel
+                                                    tableName: 'rubrics_criteria'
+                                                    fieldNames: ['id', 'title', 'desc', 'rubric', 'ord', 'weight']
+                                                    filters: ["rubric='" + rubricRow.rubric + "'"]
+                                                    primaryKey: 'id'
 
-                                            RowLayout {
-                                                anchors.fill: parent
-                                                spacing: 0
+                                                    sort: 'ord ASC'
+                                                    Component.onCompleted: select()
+                                                }
+                                            }
 
-                                                Common.BoxedText {
-                                                    Layout.fillHeight: true
-                                                    Layout.preferredWidth: units.fingerUnit * 3
-                                                    margins: units.nailUnit
-                                                    fontSize: units.readUnit
-                                                    text: model.title
+                                            ListView {
+                                                id: scoresList
+
+                                                Layout.fillHeight: true
+                                                Layout.fillWidth: true
+
+                                                orientation: ListView.Horizontal
+                                                layoutDirection: ListView.RightToLeft
+                                                clip: true
+
+                                                model: Models.RubricsLastScoresModel {
+                                                    id: scoresModel
+                                                    filters: [
+                                                        "individual='" + individualRow.individual + "'",
+                                                        "rubric='" + rubricRow.rubric + "'"
+                                                    ]
+                                                    groupBy: 'annotationTitle'
+                                                    sort: 'annotationStart DESC'
+                                                    Component.onCompleted: select()
                                                 }
 
-                                                Rectangle {
-                                                    Layout.fillHeight: true
-                                                    Layout.fillWidth: true
-                                                    border.color: 'black'
+                                                delegate: Rectangle {
+                                                    id: scoresOfASingleRubric
 
-                                                    ListView {
-                                                        id: scoresList
+                                                    border.color: 'grey'
+                                                    color: '#DDDDDD'
+                                                    border.width: 1
+                                                    width: units.fingerUnit
+                                                    height: scoresList.height
+
+                                                    property string title: model.annotationTitle
+                                                    property string start: model.annotationStart
+                                                    property int commentsNumber: 0
+
+                                                    MouseArea {
                                                         anchors.fill: parent
-                                                        orientation: ListView.Horizontal
-                                                        layoutDirection: ListView.RightToLeft
-                                                        clip: true
+                                                        onClicked: {
+                                                            rubricAssessmentHistory.editRubricAssessmentDescriptor(model.assessment, model.criterium, model.individual, model.lastScoreId)
+                                                        }
+                                                    }
 
-                                                        model: Models.RubricsLastScoresModel {
-                                                            id: scoresModel
-                                                            filters: [
-                                                                "individual='" + individualRow.individual + "'",
-                                                                "rubric='" + rubricRow.rubric + "'",
-                                                                "criterium='" + criteriumRow.criterium + "'"
-                                                            ]
-                                                            Component.onCompleted: {
-                                                                setSort(21, Qt.DescendingOrder);
-                                                                select();
+                                                    ColumnLayout {
+                                                        anchors.fill: parent
+                                                        spacing: 0
+
+                                                        Item {
+                                                            Layout.fillWidth: true
+                                                            Layout.preferredHeight: units.fingerUnit * 4
+
+                                                            clip: parent
+                                                            Text {
+                                                                anchors.centerIn: parent
+                                                                width: parent.height
+                                                                height: parent.width
+                                                                font.pixelSize: units.readUnit
+                                                                fontSizeMode: Text.Fit
+                                                                text: model.annotationStart + " " + model.annotationTitle
+                                                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                                                verticalAlignment: Text.AlignVCenter
+                                                                horizontalAlignment: Text.AlignHCenter
+                                                                transformOrigin: Item.Center
+                                                                rotation: 270
+                                                            }
+                                                            MouseArea {
+                                                                anchors.fill: parent
+                                                                onClicked: rubricAssessmentHistory.showExtendedAnnotation({title: model.annotationTitle})
                                                             }
                                                         }
 
-                                                        delegate: Rectangle {
-                                                            border.color: 'grey'
-                                                            color: '#DDDDDD'
-                                                            border.width: 1
-                                                            width: units.fingerUnit
-                                                            height: scoresList.height
+                                                        Rectangle {
+                                                            Layout.fillWidth: true
+                                                            Layout.fillHeight: true
 
-                                                            property string start: model.annotationStart
+                                                            border.color: 'gray'
+                                                            color: 'transparent'
 
-                                                            onStartChanged: console.log('Annotation start ' + start)
-
-                                                            Component.onCompleted: {
-                                                                console.log('SCORE: ' + model.score);
-                                                                /*
-                                                                for (var prop in model) {
-                                                                    console.log(prop + ">>>" + model[prop]);
-                                                                }
-                                                                */
-                                                            }
-
-                                                            MouseArea {
-                                                                anchors.fill: parent
-                                                                onClicked: {
-                                                                    rubricAssessmentHistory.editRubricAssessmentDescriptor(model.assessment, model.criterium, model.individual, model.lastScoreId)
+                                                            Models.RubricsLastScoresModel {
+                                                                id: rubricsScoresByDay
+                                                                filters: [
+                                                                    "individual='" + individualRow.individual + "'",
+                                                                    "rubric='" + rubricRow.rubric + "'",
+                                                                    "annotationTitle='" + scoresOfASingleRubric.title + "'"
+                                                                ]
+                                                                sort: 'criteriumOrder ASC'
+                                                                Component.onCompleted: {
+                                                                    select();
+                                                                    scoresOfASingleRubric.commentsNumber = 0;
+                                                                    for (var i=0; i<rubricsScoresByDay.count; i++) {
+                                                                        if (rubricsScoresByDay.getObjectInRow(i)['comment'] !== '')
+                                                                            scoresOfASingleRubric.commentsNumber = scoresOfASingleRubric.commentsNumber + 1;
+                                                                    }
                                                                 }
                                                             }
 
                                                             ColumnLayout {
+                                                                // Backgorund grid for the score of a single day in a single rubric
+
                                                                 anchors.fill: parent
                                                                 spacing: 0
+                                                                Repeater {
+                                                                    model: rubricRow.maxValue - rubricRow.minValue + 1
+                                                                    Rectangle {
+                                                                        Layout.fillWidth: true
+                                                                        Layout.fillHeight: true
 
-                                                                Item {
-                                                                    Layout.fillWidth: true
-                                                                    Layout.preferredHeight: units.fingerUnit * 4
-
-                                                                    clip: parent
-                                                                    Text {
-                                                                        anchors.centerIn: parent
-                                                                        width: parent.height
-                                                                        height: parent.width
-                                                                        font.pixelSize: units.readUnit
-                                                                        fontSizeMode: Text.Fit
-                                                                        text: model.annotationStart + " " + model.annotationTitle
-                                                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                                                        verticalAlignment: Text.AlignVCenter
-                                                                        horizontalAlignment: Text.AlignHCenter
-                                                                        transformOrigin: Item.Center
-                                                                        rotation: 270
-                                                                    }
-                                                                    MouseArea {
-                                                                        anchors.fill: parent
-                                                                        onClicked: rubricAssessmentHistory.showExtendedAnnotation({title: model.annotationTitle})
+                                                                        border.color: 'gray'
+                                                                        color: 'white'
                                                                     }
                                                                 }
+                                                            }
 
-                                                                Rectangle {
-                                                                    Layout.fillWidth: true
-                                                                    Layout.fillHeight: true
+                                                            Repeater {
+                                                                model: rubricsScoresByDay
+                                                                delegate: Item {
+                                                                    id: criteriumRow
 
-                                                                    border.color: 'gray'
-                                                                    ColumnLayout {
-                                                                        anchors.fill: parent
-                                                                        spacing: 0
-                                                                        Repeater {
-                                                                            model: rubricRow.maxValue - rubricRow.minValue + 1
-                                                                            Rectangle {
-                                                                                Layout.fillWidth: true
-                                                                                Layout.fillHeight: true
+                                                                    anchors.fill: parent
 
-                                                                                border.color: 'gray'
-                                                                            }
-                                                                        }
-                                                                    }
                                                                     Common.VerticalBoxDiagram {
                                                                         anchors.fill: parent
+                                                                        visible: criteriaTitlesList.contentItem.children[model.index].state == 'selected'
                                                                         minimum: rubricRow.minValue
                                                                         maximum: rubricRow.maxValue
                                                                         clip: true
                                                                         value: (model.score==='')?-1:parseInt(model.score)
-                                                                        onValueChanged: {
-                                                                            console.log("-->" + minimum + "--" + value + "--" + maximum);
-                                                                        }
                                                                         legend: Text {
                                                                             verticalAlignment: Text.AlignVCenter
                                                                             horizontalAlignment: Text.AlignHCenter
@@ -349,32 +403,39 @@ Rectangle {
                                                                         }
                                                                     }
                                                                 }
+                                                            }
 
-                                                                Item {
-                                                                    clip: true
-                                                                    Layout.fillWidth: true
-                                                                    Layout.preferredHeight: units.fingerUnit * 4
-                                                                    Text {
-                                                                        anchors.centerIn: parent
-                                                                        width: parent.height
-                                                                        height: parent.width
-                                                                        font.pixelSize: units.readUnit
-                                                                        fontSizeMode: Text.Fit
-                                                                        text: model.comment
-                                                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                                                        verticalAlignment: Text.AlignVCenter
-                                                                        horizontalAlignment: Text.AlignHCenter
-                                                                        transformOrigin: Item.Center
-                                                                        rotation: 270
-                                                                    }
-                                                                }
+                                                            MouseArea {
+                                                                anchors.fill: parent
+                                                                onClicked: rubricAssessmentHistory.openRubricGroupAssessment(model.assessment)
+                                                            }
+
+                                                        }
+
+                                                        Item {
+                                                            clip: true
+                                                            Layout.fillWidth: true
+                                                            Layout.preferredHeight: units.fingerUnit * 4
+                                                            Text {
+                                                                anchors.centerIn: parent
+                                                                width: parent.height
+                                                                height: parent.width
+                                                                font.pixelSize: units.readUnit
+                                                                fontSizeMode: Text.Fit
+                                                                text: (scoresOfASingleRubric.commentsNumber>0)?(scoresOfASingleRubric.commentsNumber + qsTr(" comentaris")):""
+                                                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                                                verticalAlignment: Text.AlignVCenter
+                                                                horizontalAlignment: Text.AlignHCenter
+                                                                transformOrigin: Item.Center
+                                                                rotation: 270
                                                             }
                                                         }
                                                     }
                                                 }
-
                                             }
+
                                         }
+
                                     }
                                 }
                             }

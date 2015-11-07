@@ -148,6 +148,7 @@ DatabaseBackup {
                     rc.id           AS criterium,
                     rc.title        AS criteriumTitle,
                     rc.desc         AS criteriumDesc,
+                    rc.ord          AS criteriumOrder,
                     rc.weight       AS weight,
 
                     lastScores.*,

@@ -17,16 +17,16 @@ BasicPage {
     signal openRubricAssessmentDetails(int assessment, int rubric, string group, var rubricsModel, var rubricsAssessmentModel)
     signal openRubricDetails(int rubric, var rubricsModel)
     signal openRubricEditor(int rubric, var rubricsModel)
-    signal openRubricGroupAssessment(int assessment)
     signal openRubricHistory(string group)
 
     onOpenRubricAssessmentDetails: {
         openSubPage('RubricAssessmentEditor', {idAssessment: assessment, rubric: rubric, group: group, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel}, units.fingerUnit);
     }
-    onOpenRubricGroupAssessment: {
+    function openRubricGroupAssessment (assessment) {
         console.log('VARS 4', assessment);
         openSubPage('RubricGroupAssessment', {assessment: assessment}, units.fingerUnit);
     }
+
     onOpenRubricDetails: openSubPage('RubricDetailsEditor', {rubric: rubric, rubricsModel: rubricsModel}, units.fingerUnit)
     onOpenRubricEditor: openSubPage('Rubric', {rubric: rubric, rubricsModel: rubricsModel}, units.fingerUnit)
     onOpenRubricHistory: openSubPage('RubricAssessmentHistory', {group: group})
@@ -219,7 +219,7 @@ BasicPage {
                                         Layout.fillWidth: true
                                         Layout.preferredHeight: units.fingerUnit
                                         fontSize: units.readUnit
-                                        text: qsTr('Detalls')
+                                        text: qsTr('Detalls...')
                                         onClicked: {
                                             menuRect.closeMenu();
                                             openRubricAssessmentDetails(model.id, model.rubric, model.group, rubricsModel, rubricsAssessmentModel)
@@ -229,7 +229,7 @@ BasicPage {
                                         Layout.fillWidth: true
                                         Layout.preferredHeight: units.fingerUnit
                                         fontSize: units.readUnit
-                                        text: qsTr('Historial')
+                                        text: qsTr('Historial...')
                                         onClicked: {
                                             menuRect.closeMenu();
                                             openRubricHistory(model.group);

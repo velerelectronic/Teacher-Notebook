@@ -289,6 +289,7 @@ bool SqlTableModel2::select() {
     QSqlQuery query;
     query.prepare("SELECT \"" + fieldNames().join("\", \"") + "\" FROM " + innerTableName +
                   ((filtersList.size()>0)?(" WHERE " + filtersList.join(" AND ")):"") +
+                  ((innerGroupBy != "")?" GROUP BY " + innerGroupBy:"") +
                   ((innerSort != "")?" ORDER BY " + innerSort:""));
     qDebug() << "Last query 1" << query.lastQuery();
 

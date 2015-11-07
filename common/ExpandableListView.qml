@@ -22,6 +22,7 @@ ListView {
             PropertyChanges {
                 target: expandableList
 //                highlightRangeMode: ListView.ApplyRange
+                interactive: true
             }
         },
         State {
@@ -29,6 +30,7 @@ ListView {
             PropertyChanges {
                 target: expandableList
 //                highlightRangeMode: ListView.ApplyRange
+                interactive: false
             }
         }
     ]
@@ -98,13 +100,15 @@ ListView {
                     }
                 }
             }
+            onHeightChanged: {
+                expandableList.positionViewAtIndex(currentIndex,ListView.Beginning);
+            }
         }
     }
 
     function expandItem(index, propertiesList) {
         currentIndex = index;
         itemProperties = propertiesList;
-        positionViewAtIndex(index,ListView.Beginning);
     }
 
     function closeItem() {

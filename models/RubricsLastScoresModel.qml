@@ -14,6 +14,7 @@ SqlTableModel {
         'criterium',
         'criteriumTitle',
         'criteriumDesc',
+        'criteriumOrder',
         'weight',
 
         'annotationTitle',
