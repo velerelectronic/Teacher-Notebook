@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient>
+<stop offset="0"/>
+<stop offset="1" stop-color="#fff"/>
+</linearGradient>
+<linearGradient>
+<stop offset="0" stop-color="#333"/>
+<stop offset="1" stop-color="#ccc"/>
+</linearGradient>
+</defs>
+<title>Day</title>
+<title>Layer 1</title>
+<path d="m9.37778,12.85418h37.56749a2,2 0 0,1 2,2v30.72955a2,2 0 0,1 -2,2h-37.56749a2,2 0 0,1 -2-2v-30.72955a2,2 0 0,1 2-2" fill="#b3b3b3" fill-rule="evenodd" transform="matrix(1.090460,.000000,.000000,1.261608,-.401956,-4.492066)"/>
+<path d="m8.42811,24.0585h44.34658" fill="none" stroke="#7f7f7f" stroke-width="1.1463"/>
+<path d="m7.64322,45.01526h45.72013" fill="none" stroke="#7f7f7f" stroke-width="1.1463"/>
+<path d="m8.42811,34.53689h44.34658" fill="none" stroke="#7f7f7f" stroke-width="1.1463"/>
+<path d="m18.79322,13.74431v41.9919" fill="none" stroke="#7f7f7f" stroke-width="1.1463"/>
+<path d="m30.13945,13.74431v41.9919" fill="none" stroke="#7f7f7f" stroke-width="1.1463"/>
+<path d="m41.48567,13.74431v41.9919" fill="none" stroke="#7f7f7f" stroke-width="1.1463"/>
+<path d="m10.26858,12.39155h40.96585a2.18092,2.18092 0 0,1 2.18092,2.18092v39.45326a2.18092,2.18092 0 0,1 -2.18092,2.18092h-40.96585a2.18092,2.18092 0 0,1 -2.18092-2.18092v-39.45326a2.18092,2.18092 0 0,1 2.18092-2.18092" fill="none" stroke="#7f7f7f" stroke-linejoin="round" stroke-width="1.875"/>
+<path d="m4.51924,5.65635h47.46452a2,2 0 0,1 2,2v7.51654a2,2 0 0,1 -2,2h-47.46452a2,2 0 0,1 -2-2v-7.51654a2,2 0 0,1 2-2" fill="#0f0" fill-rule="evenodd" stroke="#333" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.82782" transform="matrix(1.01937,0,0,.766729,1.4101,.381128)"/>
+<path d="m40.12554,32.1639" fill="none" stroke="#333" stroke-width="7.91034" transform="rotate(344.0469,27.3608,27.9789)"/>
+<path d="m34.88889,30a10.22222,8.22222 0 1,0 -20.44444,0 10.22222,8.22222 0 1,0 20.44444,0" fill="#fff" opacity=".8" stroke="#f00" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="round" stroke-width="1.875" transform="rotate(345.7355,24.6667,30)"/>
+<ellipse cx="18.66667" cy="18.88889" fill="#fff" rx=".44444" stroke="#f00" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="round" stroke-width="1.875"/>
+</svg>

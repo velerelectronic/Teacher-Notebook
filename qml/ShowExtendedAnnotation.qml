@@ -15,6 +15,7 @@ CollectionInspector {
 
     signal closePage(string message)
     signal savedAnnotation(int id,string annotation,string desc)
+    signal deletedAnnotation()
     signal duplicatedAnnotation(string annotation,string desc)
     signal openCamera(var receiver)
     signal showEvent(var parameters)
@@ -517,8 +518,8 @@ CollectionInspector {
             model: annotationsModel
             itemId: annotationEditor.title
             onDeleted: {
-                annotationsModel.select();
                 closePage(qsTr("S'ha esborrat l'anotació"));
+                annotationEditor.deletedAnnotation();
             }
         }
     }

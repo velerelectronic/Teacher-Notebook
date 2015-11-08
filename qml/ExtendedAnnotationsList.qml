@@ -61,6 +61,16 @@ Rectangle {
         annotations.showExtendedAnnotation({title: annotationsModel.searchString.replace('#',' ')});
     }
 
+    function refresh() {
+        annotationsModel.select();
+        if (annotationsList.lastSelected > -1)
+            annotationsList.positionViewAtIndex(annotationsList.lastSelected, ListView.Contain)
+    }
+
+    function refreshUp() {
+        annotationsList.lastSelected = -1;
+        annotationsModel.select();
+    }
 
     Common.UseUnits { id: units }
 
@@ -76,11 +86,15 @@ Rectangle {
 
         itemComponent: Rectangle {
             id: annotationItem
-            border.color: 'gray'
 
             property int requiredHeight: units.fingerUnit * 2 + ((rubricsAssessmentModel.count>0)?(units.fingerUnit * 2.5):0)
             property var model: annotationsModel.fieldNames
             property string title: annotationItem.model.title
+            property bool isLastSelected: annotationsList.lastSelected == annotationItem.model.index
+
+            onIsLastSelectedChanged: {
+                console.log('Last selected', isLastSelected);
+            }
 
             color: (annotationItem.model.state>=0)?'white':'#AAAAAA'
             clip: true
@@ -90,30 +104,32 @@ Rectangle {
                     name: 'unselected'
                     PropertyChanges {
                         target: annotationItem
+                        border.color: 'gray'
                     }
                 },
                 State {
                     name: 'selected'
                     PropertyChanges {
                         target: annotationItem
-                        color: 'yellow'
+                        border.color: 'green'
+                        border.width: units.nailUnit
                     }
                 }
             ]
-            state: 'unselected'
+            state: (isLastSelected)?'selected':'unselected'
 
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
                     if (annotationItem.state === 'unselected') {
-                        annotationItem.state = 'selected';
                         if (chooseMode) {
+                            annotationsList.lastSelected = annotationItem.model.index;
                             chosenAnnotation(model.title);
                         } else {
                             annotationsList.expandItem(annotationItem.model.index, {title: annotationItem.model.title});
                         }
                     } else {
-                        annotationItem.state = 'unselected';
+                        annotationsList.expandItem(annotationItem.model.index, {title: annotationItem.model.title});
                     }
                 }
             }
@@ -221,6 +237,11 @@ Rectangle {
                 console.log('Now')
                 annotations.openRubricGroupAssessment(assessment, rubric, rubricsModel, rubricsAssessmentModel);
             }
+
+            onDeletedAnnotation: {
+                annotationsList.closeItem();
+                refresh();
+            }
         }
 
         header: Item {
@@ -235,7 +256,7 @@ Rectangle {
                 anchors.fill: parent
                 anchors.margins: units.nailUnit
                 columnSpacing: units.nailUnit
-                columns: 2
+                columns: 3
 
                 Common.SearchBox {
                     id: searchAnnotations
@@ -274,6 +295,53 @@ Rectangle {
                         console.log('INTRO')
                     }
                 }
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: height
+                    image: 'day-42975'
+                    onClicked: {
+                        var row = 0;
+                        var today = new Date();
+                        var todayString = today.toYYYYMMDDFormat() + " " + today.toHHMMFormat();
+
+                        var field = '';
+                        var comparisonSign = 0;
+
+                        switch(sortOption) {
+                            case sortType.start:
+                                field = 'start';
+                                comparisonSign = -1;
+                                break;
+                            case sortType.end:
+                                field = 'end';
+                                comparisonSign = -1;
+                                break;
+                            case sortType.startRev:
+                                field = 'start';
+                                comparisonSign = 1;
+                                break;
+                            case sortType.endRev:
+                                field = 'end'
+                                comparisonSign = 1;
+                                break;
+                        }
+
+                        while (row < annotationsModel.count) {
+                            console.log('field',field);
+                            var date = annotationsModel.getObjectInRow(row)[field];
+                            if (todayString.localeCompare(date) === comparisonSign)
+                                break;
+                            else {
+                                row++;
+                            }
+                        }
+                        if (row == annotationsModel.count)
+                            row--;
+                        annotationsList.lastSelected = row;
+                        annotationsList.positionViewAtIndex(row, ListView.Center);
+                    }
+                }
+
                 Common.TextButton {
                     Layout.fillHeight: true
                     text: qsTr('Opcions')
@@ -371,23 +439,18 @@ Rectangle {
         searchFields: ['title', 'desc', 'project']
         sort: sortOption
 
-        onSortChanged: {
-            select();
-        }
+        onSortChanged: refreshUp()
 
-        Component.onCompleted: {
-            select();
-            console.log('count', count);
-        }
+        Component.onCompleted: select()
     }
 
     onStateFilterChanged: {
         annotationsModel.filters = [stateFilter].concat(labelsFilter);
-        annotationsModel.select();
+        refreshUp();
     }
     onLabelsFilterChanged: {
         annotationsModel.filters = [stateFilter].concat(labelsFilter);
-        annotationsModel.select();
+        refreshUp();
     }
 
     Models.SavedAnnotationsSearchesModel {
@@ -406,6 +469,7 @@ Rectangle {
             signal closeMenu()
 
             color: 'white'
+
             ColumnLayout {
                 anchors {
                     top: parent.top
@@ -782,14 +846,29 @@ Rectangle {
                     onClicked: {
                         menuRect.closeMenu();
                         var date = new Date();
+                        var newTitle = qsTr('Anotació ' + date.toISOString());
                         annotationsModel.insertObject({
-                                                          title: qsTr('Anotació ' + date.toISOString()),
+                                                          title: newTitle,
                                                           desc: '',
                                                           start: date.toYYYYMMDDFormat(),
                                                           end: date.toYYYYMMDDFormat(),
                                                           state: 0
                                                       });
-                        annotationsModel.select();
+                        refreshUp();
+
+                        var row = 0;
+                        while (row < annotationsModel.count) {
+                            if (annotationsModel.getObjectInRow(row)['title'] == newTitle) {
+                                break;
+                            } else {
+                                row++;
+                            }
+                        }
+                        if (row < annotationsModel.count) {
+                            annotationsList.lastSelected = row;
+                            console.log('Setting last selected', row);
+                            annotationsList.positionViewAtIndex(row, ListView.Center);
+                        }
                     }
                 }
 

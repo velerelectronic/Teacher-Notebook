@@ -35,6 +35,7 @@
   * New empty annotation: https://pixabay.com/en/homework-paper-paperclip-paper-clip-152957/#_=_
   * New auto-filled annotation: https://pixabay.com/en/questionnaire-questions-paper-158862/
   * Upload: https://pixabay.com/en/upload-uploading-documents-files-25068/
+  * Goto now: https://pixabay.com/en/day-calender-week-organizer-42975/
 */
 
 import QtQuick 2.2

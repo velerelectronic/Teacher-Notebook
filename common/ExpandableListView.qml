@@ -38,6 +38,13 @@ ListView {
     state: (currentIndex < 0)?'simple':'expanded'
 
     currentIndex: -1
+    property int lastSelected: -1
+
+    onCurrentIndexChanged: {
+        if (currentIndex >= 0)
+            lastSelected = currentIndex;
+    }
+
     delegate: Loader {
         id: simpleItemLoader
         height: (currentIndex === model.index)?expandableList.height:item.requiredHeight
@@ -113,7 +120,10 @@ ListView {
 
     function closeItem() {
         currentIndex = -1;
-        forceLayout();
+        if (lastSelected>-1) {
+            forceLayout();
+            positionViewAtIndex(lastSelected, ListView.Contain);
+        }
     }
 
     function getModelProperty(index, propertyName) {
