@@ -25,8 +25,9 @@ CollectionInspectorItem {
     }
 
     editorComponent: Rectangle {
+        id: mainEditor
         property int requiredHeight: childrenRect.height
-        property string editedContent
+        property string editedContent: ''
 
         property string editedDate
         property string editedTime
@@ -147,8 +148,11 @@ CollectionInspectorItem {
 
         onEditedContentChanged: {
             var split = editedContent.split(' ');
-            editedDate = split[0];
-            editedTime = split[1];
+            editedDate = (split.length>0)?(split[0]):'';
+            editedTime = (split.length>1)?(split[1]):'';
+
+            console.log(editedContent);
+            console.log('edited date', editedDate, 'time', editedTime);
 
             var refDate = new Date();
             limitDatePicker.selectedDate = (editedDate !== '')?refDate.fromYYYYMMDDFormat(editedDate):refDate;

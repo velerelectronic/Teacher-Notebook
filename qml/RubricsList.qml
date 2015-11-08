@@ -17,6 +17,7 @@ BasicPage {
     signal openRubricAssessmentDetails(int assessment, int rubric, string group, var rubricsModel, var rubricsAssessmentModel)
     signal openRubricDetails(int rubric, var rubricsModel)
     signal openRubricEditor(int rubric, var rubricsModel)
+    signal openRubricGroupAssessment(int assessment)
     signal openRubricHistory(string group)
     signal openInternalRubricGroupAssessment(int assessment)
 

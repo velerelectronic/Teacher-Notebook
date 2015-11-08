@@ -32,11 +32,11 @@ BasicPage {
             var res = false;
             var obj = {};
             obj = {
-                title: titleComponent.editedContent,
-                desc: descComponent.editedContent,
-                rubric: rubricComponent.editedContent.reference,
-                group: groupComponent.editedContent.reference,
-                annotation: annotationComponent.editedContent
+                title: titleComponent.originalContent,
+                desc: descComponent.originalContent,
+                rubric: rubricComponent.originalContent.reference,
+                group: groupComponent.originalContent.reference,
+                annotation: annotationComponent.originalContent
             };
 
             if (idAssessment == -1) {
@@ -47,7 +47,7 @@ BasicPage {
                 }
             } else {
                 obj['id'] = idAssessment;
-                res = rubricsAssessmentModel.updateObject(obj);
+                res = rubricsAssessmentModel.updateObject(idAssessment, obj);
                 rubricsAssessmentModel.select();
             }
             return res;

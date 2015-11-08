@@ -24,8 +24,9 @@ CollectionInspector {
     signal openingDocumentExternally(string document)
     signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
     signal newProject()
+    signal annotationTitleChanged(string title)
 
-    property alias title: titleComponent.originalContent // PRIMARY KEY
+    property alias title: titleComponent.originalContent
     property alias desc: descComponent.originalContent
     property alias labels: labelsComponent.originalContent
     property alias project: projectComponent.originalContent
@@ -42,36 +43,35 @@ CollectionInspector {
 
     onClosePageRequested: closePage('')
 
-    onTitleChanged: fillValues()
+    onIdentifierChanged: fillValues()
 
-    function save() {
-        var res = false;
-
+    function prepareSaveObject() {
         var obj = {
-            title: titleComponent.editedContent,
-            desc: descComponent.editedContent,
-            project: projectComponent.editedContent['reference'],
-            labels: labelsComponent.editedContent,
-            start: startComponent.translatedEditedContent,
-            end: endComponent.translatedEditedContent,
-            state: stateComponent.editedContent,
-            created: Storage.currentTime()
+            title: titleComponent.originalContent,
+            desc: descComponent.originalContent,
+            project: projectComponent.originalContent['reference'],
+            labels: labelsComponent.originalContent,
+            start: startComponent.originalContent,
+            end: endComponent.originalContent,
+            state: stateComponent.originalContent
         }
 
-        console.log("OBJECT",obj);
-        res = annotationsModel.insertObject(obj);
-
-        return res;
+        return obj;
     }
 
-    function updateRecord(field, contents) {
-        var obj = {
-            title: annotationEditor.title
-        };
+    function newRecord() {
+        var obj = prepareSaveObject();
+        obj['created'] = Storage.currentTime();
 
-        obj[field] = contents;
+        return (annotationsModel.insertObject(obj));
+    }
 
-        return annotationsModel.updateObject(obj);
+    function updateWithObject() {
+        var obj = prepareSaveObject();
+        console.log('Trying to update');
+        console.log('identifier',annotationEditor.identifier,'object',obj);
+
+        return annotationsModel.updateObject(annotationEditor.identifier, obj);
     }
 
     model: ObjectModel {
@@ -81,13 +81,11 @@ CollectionInspector {
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Títol')
             onSaveContents: {
-                if (save()) {
+                if (updateWithObject()) {
+                    annotationEditor.identifier = titleComponent.originalContent;
                     notifySavedContents();
-                    fillValues();
                 } else {
-                    annotationEditor.title = editedContent;
-                    enableShowMode();
-                    fillValues();
+                    console.log('not updated');
                 }
             }
         }
@@ -97,8 +95,11 @@ CollectionInspector {
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Descripció')
             onSaveContents: {
-                if (updateRecord('desc',editedContent))
+                console.log('Description');
+                if (updateWithObject()) {
+                    console.log('Certainly updated');
                     notifySavedContents();
+                }
             }
 
 //            onOpenMenu: annotationEditor.openMenu(initialHeight, menu)
@@ -120,7 +121,7 @@ CollectionInspector {
                 projectsModel.searchString = searchString;
             }
             onSaveContents: {
-                if (updateRecord('project',editedContent.reference))
+                if (updateWithObject())
                     notifySavedContents();
             }
         }
@@ -311,7 +312,7 @@ CollectionInspector {
                 }
             }
             onSaveContents: {
-                if (updateRecord('labels',editedContent))
+                if (updateWithObject())
                     notifySavedContents();
             }
         }
@@ -322,7 +323,7 @@ CollectionInspector {
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Inici')
             onSaveContents: {
-                if (updateRecord('start',editedContent))
+                if (updateWithObject())
                     notifySavedContents();
             }
 
@@ -334,7 +335,7 @@ CollectionInspector {
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Final')
             onSaveContents: {
-                if (updateRecord('end',editedContent))
+                if (updateWithObject())
                     notifySavedContents();
             }
         }
@@ -344,7 +345,7 @@ CollectionInspector {
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Estat')
             onSaveContents: {
-                if (updateRecord('state', editedContent)) {
+                if (updateWithObject()) {
                     notifySavedContents();
                 }
             }
@@ -527,14 +528,15 @@ CollectionInspector {
     function fillValues() {
         console.log('Filling values');
 
-        if (annotationEditor.title !== "") {
+        if (identifier !== "") {
             var project = "";
 
             annotationsModel.select();
 
-            var details = annotationsModel.getObject(annotationEditor.title);
+            var details = annotationsModel.getObject(identifier);
 
             if (details.title !== '') {
+                titleComponent.originalContent = details.title;
                 descComponent.originalContent = (details.desc == null)?'':details.desc;
 
                 project = details.project;
@@ -605,5 +607,9 @@ CollectionInspector {
         }
     }
 
-    Component.onCompleted: fillValues()
+    Component.onCompleted: {
+        console.log('new identifier', identifier);
+
+        fillValues();
+    }
 }

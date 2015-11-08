@@ -12,7 +12,6 @@ Common.AbstractEditor {
     color: 'white'
 
     property alias captionHeight: captionText.height
-    signal saveContents()
 
     property int totalCollectionHeight: 0
 
@@ -39,6 +38,10 @@ Common.AbstractEditor {
                 visible: true
                 enabled: true
             }
+            PropertyChanges {
+                target: mainEditorLoader
+                sourceComponent: undefined
+            }
         },
         State {
             name: 'editMode'
@@ -61,6 +64,10 @@ Common.AbstractEditor {
                 visible: false
                 enabled: false
             }
+            PropertyChanges {
+                target: mainEditorLoader
+                sourceComponent: editorComponent
+            }
         }
     ]
     state: (ListView.isCurrentItem)?'editMode':'viewMode'
@@ -70,17 +77,19 @@ Common.AbstractEditor {
     property ListView view: ListView.view
     property int index: ObjectModel.index
 
+    property var identifier
+
     property alias caption: captionText.text
     property real totalHeight
     property real maximumHeight: totalHeight
 
     property real requiredVisorHeight: (typeof mainVisor.item.requiredHeight === 'number')?mainVisor.item.requiredHeight:units.fingerUnit
-    property real requiredEditorHeight: totalCollectionHeight // units.fingerUnit + (((mainEditorLoader.item !== null) && (typeof mainEditorLoader.item.requiredHeight == 'number'))?mainEditorLoader.item.requiredHeight:0)
+    property real requiredEditorHeight: totalCollectionHeight
 
     property alias visorComponent: mainVisor.sourceComponent
     property Component editorComponent: null
 
-    property var originalContent
+    property var originalContent //: mainVisor.item.shownContent
 
     property bool enableSendClick: false
 
@@ -89,7 +98,8 @@ Common.AbstractEditor {
     function sendOriginalContentToVisor() {
         if (mainVisor.status == Loader.Ready) {
             console.log("collection inspector item " + typeof originalContent);
-            mainVisor.item.shownContent = originalContent;
+            if (typeof (mainVisor.item.shownContent) !== 'undefined')
+                mainVisor.item.shownContent = originalContent;
         }
     }
 
@@ -97,7 +107,7 @@ Common.AbstractEditor {
         sendOriginalContentToVisor();
     }
 
-    property var editedContent: originalContent
+    signal saveContents()
 
     height: captionHeight + totalHeight + units.nailUnit + editorItemRectangle.anchors.margins * 2 + editorItemLayout.anchors.margins * 2
 
@@ -111,26 +121,18 @@ Common.AbstractEditor {
     signal viewModeEntered
 
     function openEditMode() {
-        console.log('Current index', view.currentIndex);
         if (view.currentIndex < 0) {
-            mainEditorLoader.sourceComponent = editorComponent;
-            editedContent = originalContent;
             view.currentIndex = collectionInspectorItem.index;
             editModeEntered();
         }
     }
 
-    function openViewMode() {
-        mainEditorLoader.sourceComponent = null; // <-------
-        view.currentIndex = -1;
-    }
-
     function askDiscardChanges() {
         if (state == 'editMode') {
-            if (mainVisor.item.shownContent !== mainEditorLoader.item.editedContent)
+            if (originalContent !== mainEditorLoader.item.editedContent)
                 askDiscardDialog.open();
             else
-                discardChanges();
+                view.discardChanges();
         }
     }
 
@@ -143,38 +145,16 @@ Common.AbstractEditor {
         title: qsTr('Descartar els canvis?')
         text: title
         standardButtons: StandardButton.Ok | StandardButton.Cancel
-        onAccepted: discardChanges()
+        onAccepted: view.discardChanges()
     }
 
-    function saveChanges() {
-        editedContent = mainEditorLoader.item.editedContent;
+    function acceptChanges() {
+        originalContent = mainEditorLoader.item.editedContent;
         collectionInspectorItem.saveContents();
     }
 
     function notifySavedContents() {
-        mainVisor.item.shownContent = editedContent;
-        view.currentIndex = -1;
-    }
-
-    function discardChanges() {
-        mainEditorLoader.sourceComponent = null;
-        openViewMode();
-    }
-
-    function enableShowMode() {
-        mainVisor.item.shownContent = mainEditorLoader.item.editedContent;
-        editedContent = mainEditorLoader.item.editedContent;
-        viewModeEntered();
-    }
-
-    function enableEditMode() {
-        view.currentIndex = collectionInspectorItem.index;
-        mainEditorLoader.item.editedContent = mainVisor.item.shownContent;
-    }
-
-    function showEditedContent(newContent) {
-        mainVisor.item.shownContent = newContent;
-        mainEditorLoader.item.editedContent = newContent;
+        view.updatedContents();
     }
 
     MouseArea {
@@ -187,10 +167,10 @@ Common.AbstractEditor {
 
             if (mainEditorLoader.sourceComponent !== null) {
                 console.log('open view mode');
-                openViewMode();
+                view.openViewMode();
             } else {
                 console.log('open edit mode');
-                openEditMode();
+                view.openEditMode(index);
             }
         }
     }
@@ -288,14 +268,14 @@ Common.AbstractEditor {
                         Layout.preferredWidth: units.fingerUnit
                         Layout.fillHeight: true
                         image: 'floppy-35952'
-                        onClicked: saveChanges()
+                        onClicked: acceptChanges()
                     }
 
                     Common.ImageButton {
                         Layout.preferredWidth: units.fingerUnit
                         Layout.fillHeight: true
                         image: 'road-sign-147409'
-                        onClicked: discardChanges()
+                        onClicked: askDiscardChanges()
                     }
                 }
             }
@@ -314,8 +294,10 @@ Common.AbstractEditor {
                 sourceComponent: null
 
                 onLoaded: {
+                    console.log('Loaded editor', originalContent);
                     if (typeof originalContent !== 'undefined') {
-                        item.editedContent = editedContent;
+                        item.editedContent = originalContent;
+                        console.log('Loaded editor 2', item.editedContent);
                     }
                 }
             }

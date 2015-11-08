@@ -38,12 +38,7 @@ ListView {
     state: (currentIndex < 0)?'simple':'expanded'
 
     currentIndex: -1
-    property int lastSelected: -1
-
-    onCurrentIndexChanged: {
-        if (currentIndex >= 0)
-            lastSelected = currentIndex;
-    }
+    property var lastSelected: ""
 
     delegate: Loader {
         id: simpleItemLoader
@@ -55,6 +50,8 @@ ListView {
                 duration: 250
             }
         }
+
+        property var identifier
 
         sourceComponent: (currentIndex === model.index)?expandableComponent:itemComponent
 
@@ -68,6 +65,10 @@ ListView {
         id: expandableComponent
 
         Item {
+            id: expandableItem
+
+            property var identifier
+
             ColumnLayout {
                 anchors.fill: parent
                 Rectangle {
@@ -82,7 +83,7 @@ ListView {
                         Common.ImageButton {
                             image: 'road-sign-147409'
                             size: parent.height
-                            onClicked: expandableList.currentIndex = -1
+                            onClicked: expandableList.closeItem()
                         }
                     }
                 }
@@ -98,10 +99,13 @@ ListView {
                         }
                     }
 
+                    Connections {
+                        target: item
+                        onIdentifierChanged: lastSelected = item.identifier
+                    }
+
                     onLoaded: {
-                        console.log('new properties list');
                         for (var prop in itemProperties) {
-                            console.log(prop, itemProperties[prop]);
                             expandedLoader.item[prop] = itemProperties[prop];
                         }
                     }
@@ -113,17 +117,16 @@ ListView {
         }
     }
 
-    function expandItem(index, propertiesList) {
+    function expandItem(index, identifier, propertiesList) {
         currentIndex = index;
+        propertiesList['identifier'] = identifier;
         itemProperties = propertiesList;
+        console.log('Last selected', lastSelected);
     }
 
     function closeItem() {
+        console.log('identifier',currentItem.identifier);
         currentIndex = -1;
-        if (lastSelected>-1) {
-            forceLayout();
-            positionViewAtIndex(lastSelected, ListView.Contain);
-        }
     }
 
     function getModelProperty(index, propertyName) {

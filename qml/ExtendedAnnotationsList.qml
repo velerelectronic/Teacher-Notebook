@@ -32,6 +32,8 @@ Rectangle {
 
     property string stateFilter: stateTypes.active
 
+    property bool isDirty: false
+
     property var sortType: {
         'start': 'start ASC',
         'startRev': 'start DESC',
@@ -57,18 +59,35 @@ Rectangle {
 
     property string searchString: ''
 
-    function newAnnotation() {
-        annotations.showExtendedAnnotation({title: annotationsModel.searchString.replace('#',' ')});
+    function newAnnotation(newTitle, start, end, state) {
+        annotationsModel.insertObject({
+                                          title: newTitle,
+                                          desc: '',
+                                          start: start,
+                                          end: end,
+                                          state: state
+                                      });
+        return newTitle;
     }
 
     function refresh() {
         annotationsModel.select();
-        if (annotationsList.lastSelected > -1)
-            annotationsList.positionViewAtIndex(annotationsList.lastSelected, ListView.Contain)
+        var row = 0;
+        console.log('looking for', annotationsList.lastSelected);
+
+        while (row < annotationsModel.count) {
+            if (annotationsModel.getObjectInRow(row)['title'] == annotationsList.lastSelected)
+                break;
+            else
+                row++;
+        }
+
+        if (row < annotationsModel.count)
+            annotationsList.positionViewAtIndex(row, ListView.Contain);
     }
 
     function refreshUp() {
-        annotationsList.lastSelected = -1;
+        annotationsList.lastSelected = "";
         annotationsModel.select();
     }
 
@@ -84,19 +103,31 @@ Rectangle {
         bottomMargin: units.fingerUnit * 3
         clip: true
 
+        onStateChanged: {
+            if ((isDirty) && (state == 'simple')){
+                refresh();
+                isDirty = false;
+            }
+        }
+
         itemComponent: Rectangle {
             id: annotationItem
 
             property int requiredHeight: units.fingerUnit * 2 + ((rubricsAssessmentModel.count>0)?(units.fingerUnit * 2.5):0)
-            property var model: annotationsModel.fieldNames
-            property string title: annotationItem.model.title
-            property bool isLastSelected: annotationsList.lastSelected == annotationItem.model.index
-
-            onIsLastSelectedChanged: {
-                console.log('Last selected', isLastSelected);
+            property var model: {
+                'title': '',
+                'desc': '',
+                'project': '',
+                'labels': '',
+                'start': '',
+                'end': '',
+                'state': ''
             }
+            property string title: annotationItem.model['title']
+            property string identifier: annotationItem.title
+            property bool isLastSelected: (annotationsList.lastSelected != '') && (annotationItem.identifier == annotationsList.lastSelected)
 
-            color: (annotationItem.model.state>=0)?'white':'#AAAAAA'
+            color: (model.state>=0)?'white':'#AAAAAA'
             clip: true
 
             states: [
@@ -116,20 +147,20 @@ Rectangle {
                     }
                 }
             ]
-            state: (isLastSelected)?'selected':'unselected'
+            state: (annotationItem.isLastSelected)?'selected':'unselected'
 
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
                     if (annotationItem.state === 'unselected') {
                         if (chooseMode) {
-                            annotationsList.lastSelected = annotationItem.model.index;
+                            annotationsList.lastSelected = annotationItem.model.title;
                             chosenAnnotation(model.title);
                         } else {
-                            annotationsList.expandItem(annotationItem.model.index, {title: annotationItem.model.title});
+                            annotationsList.expandItem(annotationItem.model.index, annotationItem.identifier, {identifier: annotationItem.identifier});
                         }
                     } else {
-                        annotationsList.expandItem(annotationItem.model.index, {title: annotationItem.model.title});
+                        annotationsList.expandItem(annotationItem.model.index, annotationItem.identifier, {identifier: annotationItem.identifier});
                     }
                 }
             }
@@ -152,7 +183,7 @@ Rectangle {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: annotationItem.model.title
+                    text: annotationItem.model['title']
                 }
                 Text {
                     Layout.fillHeight: true
@@ -165,7 +196,7 @@ Rectangle {
                     Layout.preferredWidth: parent.width / 4
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     color: 'green'
-                    text: "<b>" + annotationItem.model.project + "</b> &nbsp;" + annotationItem.model.labels
+                    text: "<b>" + annotationItem.model['project'] + "</b> &nbsp;" + annotationItem.model['labels']
                 }
 
                 Text {
@@ -231,6 +262,8 @@ Rectangle {
         }
 
         expandedComponent: ShowExtendedAnnotation {
+            id: extendedAnnotationItem
+
             onOpenMenu: annotations.openMenu(initialHeight, menu, {})
 
             onOpenRubricGroupAssessment: {
@@ -240,14 +273,20 @@ Rectangle {
 
             onDeletedAnnotation: {
                 annotationsList.closeItem();
-                refresh();
+                annotations.refresh();
+            }
+
+            onUpdatedContents: {
+                annotationsList.lastSelected = identifier;
+                isDirty = true;
             }
         }
 
-        header: Item {
+        header: Rectangle {
             id: annotationsListHeader
 
             z: 300
+            color: annotations.color
             width: annotationsList.width
             height: units.fingerUnit * 2.5
             visible: annotationsList.currentIndex < 0
@@ -300,7 +339,6 @@ Rectangle {
                     Layout.preferredWidth: height
                     image: 'day-42975'
                     onClicked: {
-                        var row = 0;
                         var today = new Date();
                         var todayString = today.toYYYYMMDDFormat() + " " + today.toHHMMFormat();
 
@@ -326,6 +364,7 @@ Rectangle {
                                 break;
                         }
 
+                        var row = 0;
                         while (row < annotationsModel.count) {
                             console.log('field',field);
                             var date = annotationsModel.getObjectInRow(row)[field];
@@ -337,8 +376,8 @@ Rectangle {
                         }
                         if (row == annotationsModel.count)
                             row--;
-                        annotationsList.lastSelected = row;
-                        annotationsList.positionViewAtIndex(row, ListView.Center);
+                        annotationsList.lastSelected = annotationsModel.getObjectInRow(row)['title'];
+                        annotationsList.positionViewAtIndex(row, ListView.Contain);
                     }
                 }
 
@@ -394,7 +433,7 @@ Rectangle {
                 }
             }
         }
-        headerPositioning: ListView.PullBackHeader
+        headerPositioning: ListView.OverlayHeader
 
         section.property: (annotationsList.state == 'simple')?annotations.classifyVariable:''
 
@@ -846,29 +885,9 @@ Rectangle {
                     onClicked: {
                         menuRect.closeMenu();
                         var date = new Date();
-                        var newTitle = qsTr('Anotació ' + date.toISOString());
-                        annotationsModel.insertObject({
-                                                          title: newTitle,
-                                                          desc: '',
-                                                          start: date.toYYYYMMDDFormat(),
-                                                          end: date.toYYYYMMDDFormat(),
-                                                          state: 0
-                                                      });
-                        refreshUp();
-
-                        var row = 0;
-                        while (row < annotationsModel.count) {
-                            if (annotationsModel.getObjectInRow(row)['title'] == newTitle) {
-                                break;
-                            } else {
-                                row++;
-                            }
-                        }
-                        if (row < annotationsModel.count) {
-                            annotationsList.lastSelected = row;
-                            console.log('Setting last selected', row);
-                            annotationsList.positionViewAtIndex(row, ListView.Center);
-                        }
+                        var newTitle = newAnnotation(qsTr('Anotació ') + date.toISOString(), date.toYYYYMMDDFormat() + " " + date.toHHMMFormat(), date.toYYYYMMDDFormat() + " " + date.toHHMMFormat(), 0)
+                        annotationsList.lastSelected = newTitle;
+                        refresh();
                     }
                 }
 
@@ -879,7 +898,25 @@ Rectangle {
                     size: units.fingerUnit * 2
                     onClicked: {
                         menuRect.closeMenu();
-                        newAnnotation();
+                        var search = annotations.searchString;
+                        if (search == "") {
+                            search = qsTr('Nova anotació ' + annotationsModel.count);
+                        }
+
+                        var newTitle = newAnnotation(search, "", "", 0);
+
+                        annotationsModel.select();
+                        var row = 0;
+                        while (row < annotationsModel.count) {
+                            if (annotationsModel.getObjectInRow(row)['title'] == newTitle)
+                                break;
+                            else {
+                                row++;
+                            }
+                        }
+
+                        if (row < annotationsModel.count)
+                            annotationsList.expandItem(row, newTitle, {identifier: newTitle});
                     }
                 }
 

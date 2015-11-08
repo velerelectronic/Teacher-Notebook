@@ -17,10 +17,24 @@ Common.AbstractEditor {
     signal discardDataRequested(bool changes)
     signal closePageRequested()
     signal openMenu(int initialHeight, var menu)
+    signal updatedContents(var identifier)
 
     property int totalCollectionHeight: inspectorGrid.height
 
+    property var identifier
+
     color: 'white'
+
+    states: [
+        State {
+            name: 'show'
+        },
+        State {
+            name: 'edit'
+        }
+    ]
+
+    state: (inspectorGrid.currentIndex>=0)?'edit':'show'
 
     function saveItem() {
         collapseEditors();
@@ -28,7 +42,6 @@ Common.AbstractEditor {
     }
 
     function closeItem() {
-        collapseEditors();
         if (collectionInspector.changes)
             messageDiscard.open();
         else
@@ -55,23 +68,42 @@ Common.AbstractEditor {
         highlightMoveDuration: 200
         highlightRangeMode: ListView.ApplyRange
         spacing: units.nailUnit
-        highlightFollowsCurrentItem: true
 
         currentIndex: -1
+        interactive: currentIndex < 0
 
         model: VisualItemModel { id: visualModel }
-
-        function requestShowMode() {
-            collapseEditors();
-        }
 
         function askEnableEditMode(index) {
             currentIndex = index;
             return true;
         }
 
+        function discardChanges() {
+            currentIndex = -1;
+        }
+
         function openMenuFunction(initialHeight, menu) {
             collectionInspector.openMenu(initialHeight, menu);
+        }
+
+        function openEditMode(index) {
+            if (currentIndex<0) {
+                currentIndex = index;
+                inspectorGrid.forceLayout();
+                positionViewAtIndex(index,ListView.Beginning);
+            }
+        }
+
+        function openViewMode() {
+            currentIndex = -1;
+        }
+
+
+        function updatedContents() {
+            console.log('in collection inspector', collectionInspector.identifier);
+            openViewMode();
+            collectionInspector.updatedContents(collectionInspector.identifier);
         }
     }
 
@@ -113,17 +145,6 @@ Common.AbstractEditor {
         onAccepted: collectionInspector.copyDataRequested();
     }
 
-    function collapseEditors() {
-        Qt.inputMethod.hide();
-        for (var i=0; i<inspectorGrid.contentItem.children.length; i++) {
-            var widget = inspectorGrid.contentItem.children[i];
-            console.log(widget.objectName);
-            if (widget.objectName === 'collectionInspectorItem') {
-                if (widget.state === 'editMode')
-                    widget.askDiscardChanges();
-            }
-        }
-    }
 
     function coalesce(value1,value2) {
         return (typeof value1 !== 'undefined')?value1:value2;

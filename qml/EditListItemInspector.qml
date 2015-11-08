@@ -21,7 +21,7 @@ CollectionInspectorItem {
     visorComponent: Text {
         id: textVisor
         property int requiredHeight: Math.max(contentHeight, units.fingerUnit)
-        property var shownContent: editState.originalContent
+        property var shownContent: ''
 
         // reference: the specific code of the selected item in the model. The code refers to the column 'id'
         // valued: if true, the shown title for the item is the same as the reference

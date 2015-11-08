@@ -73,7 +73,7 @@ public:
     Q_INVOKABLE bool selectUnique(QString);
 
 //    Q_INVOKABLE bool setQuery(const QString query);
-    Q_INVOKABLE int updateObject(const QVariantMap &);
+    Q_INVOKABLE int updateObject(const QVariant &keyValue, const QVariantMap &);
 
     // Subselections
     Q_INVOKABLE void deselectAllObjects();

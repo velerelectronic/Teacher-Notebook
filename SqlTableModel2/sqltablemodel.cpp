@@ -437,7 +437,7 @@ const QString &SqlTableModel2::tableName() {
     return innerTableName;
 }
 
-int SqlTableModel2::updateObject(const QVariantMap &object) {
+int SqlTableModel2::updateObject(const QVariant &keyValue, const QVariantMap &object) {
     qDebug() << "Updating" << object;
     if (innerPrimaryKey != "") {
         QStringList keys;
@@ -458,16 +458,15 @@ int SqlTableModel2::updateObject(const QVariantMap &object) {
             query.addBindValue(*valuesIterator);
             ++valuesIterator;
         }
-        query.addBindValue(object[innerPrimaryKey]);
+        query.addBindValue(keyValue);
         qDebug() << "updated values" << query.boundValues();
 
         query.exec();
-
         setQuery(query);
 
         qDebug() << query.lastQuery();
-        int rows = query.numRowsAffected();
+
         updated();
-        return rows;
+        return !query.lastError().isValid();
     }
 }

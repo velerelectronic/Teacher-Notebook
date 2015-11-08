@@ -46,7 +46,7 @@ CollectionInspector {
             }
         } else {
             obj['id'] = newScoreId;
-            res = scoresModel.updateObject(obj);
+            res = scoresModel.updateObject(obj,newScoreId);
             lastScoresModel.select();
         }
 
@@ -170,7 +170,7 @@ CollectionInspector {
                 'nameAttribute': 'definition'
             }
             onSaveContents: {
-                descriptor = editedContent.reference;
+                descriptor = originalContent.reference;
                 var res = saveOrUpdate();
                 if (res) {
                     notifySavedContents();
@@ -186,7 +186,7 @@ CollectionInspector {
             caption: qsTr('Comentaris')
             originalContent: comment
             onSaveContents: {
-                comment = editedContent;
+                comment = originalContent;
                 var res = saveOrUpdate();
                 console.log('RES', res);
                 if (res) {
