@@ -347,10 +347,16 @@ Rectangle {
                                                             Models.RubricsLastScoresModel {
                                                                 id: rubricsScoresByDay
                                                                 filters: [
-                                                                    "individual='" + individualRow.individual + "'",
-                                                                    "rubric='" + rubricRow.rubric + "'",
-                                                                    "annotationTitle='" + scoresOfASingleRubric.title + "'"
+                                                                    "individual=?",
+                                                                    "rubric=?",
+                                                                    "annotationTitle=?"
                                                                 ]
+                                                                bindValues: [
+                                                                    individualRow.individual,
+                                                                    rubricRow.rubric,
+                                                                    scoresOfASingleRubric.title
+                                                                ]
+
                                                                 sort: 'criteriumOrder ASC'
                                                                 Component.onCompleted: {
                                                                     select();

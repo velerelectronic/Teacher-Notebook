@@ -49,6 +49,7 @@ BasicPage {
                 tabbedView.widgets.append({title: qsTr('Definicions'), component: rubricsListComponent});
                 tabbedView.widgets.append({title: qsTr('Grups'), component: rubricsGroupsComponent});
                 tabbedView.widgets.append({title: qsTr('Rúbriques x grups'), component: possibleRubricsComponent});
+                tabbedView.widgets.append({title: qsTr('Llistes'), component: historyComponent});
             }
         }
 
@@ -391,6 +392,313 @@ BasicPage {
                     groupsModel.selectUnique('group');
                     console.log('COUNT', groupsModel.count)
                 }
+            }
+        }
+
+        Component {
+            id: historyComponent
+
+            Rectangle {
+                id: historyItem
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: units.nailUnit
+                    Common.BoxedText {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
+                        text: qsTr('Llistes')
+                    }
+                    Common.BoxedText {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
+                        text: qsTr('Rúbrica:')
+                    }
+
+                    ListView {
+                        id: rubricsList
+
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit * 2
+                        model: rubricsModel
+
+                        orientation: ListView.Horizontal
+
+                        delegate: Common.BoxedText {
+                            height: rubricsList.height
+                            width: units.fingerUnit * 4
+
+                            property int rubric: model.id
+                            property string rubricTitle: model.title
+
+                            color: 'transparent'
+                            border.color: 'black'
+                            margins: units.nailUnit
+
+                            text: model.title
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: rubricsList.currentIndex = model.index;
+                            }
+
+                        }
+                        highlight: Rectangle {
+                            height: units.fingerUnit * 4
+                            width: units.fingerUnit * 4
+                            color: 'yellow'
+                        }
+                    }
+
+                    Common.BoxedText {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
+                        text: qsTr('Criteris:')
+                    }
+
+                    ListView {
+                        id: criteriaList
+
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit * 2
+
+                        model: criteriaModel
+                        orientation: ListView.Horizontal
+
+                        delegate: Common.BoxedText {
+                            id: singleCriterium
+
+                            height: criteriaList.height
+                            width: units.fingerUnit * 4
+
+                            property int criterium: model.id
+                            property string criteriumTitle: model.title
+
+                            states: [
+                                State {
+                                    name: 'selected'
+                                    PropertyChanges {
+                                        target: singleCriterium
+                                        color: 'yellow'
+                                    }
+                                },
+                                State {
+                                    name: 'unselected'
+                                    PropertyChanges {
+                                        target: singleCriterium
+                                        color: 'transparent'
+                                    }
+                                }
+                            ]
+
+                            state: 'unselected'
+
+                            color: 'transparent'
+                            border.color: 'black'
+                            margins: units.nailUnit
+
+                            text: model.title
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: singleCriterium.state = (singleCriterium.state == 'unselected')?'selected':'unselected'
+                            }
+
+                        }
+                    }
+                    Common.BoxedText {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
+                        text: qsTr('Grups:')
+                    }
+                    ListView {
+                        id: groupsList
+
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit * 2
+
+                        model: groupsModel
+                        orientation: ListView.Horizontal
+
+                        delegate: Common.BoxedText {
+                            id: singleGroup
+
+                            height: groupsList.height
+                            width: units.fingerUnit * 4
+
+                            property string group: model.group
+
+                            states: [
+                                State {
+                                    name: 'selected'
+                                    PropertyChanges {
+                                        target: singleGroup
+                                        color: 'yellow'
+                                    }
+                                },
+                                State {
+                                    name: 'unselected'
+                                    PropertyChanges {
+                                        target: singleGroup
+                                        color: 'transparent'
+                                    }
+                                }
+                            ]
+
+                            state: 'unselected'
+
+                            border.color: 'black'
+                            margins: units.nailUnit
+
+                            text: model.group
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: singleGroup.state = (singleGroup.state == 'unselected')?'selected':'unselected';
+                            }
+
+                        }
+                        Component.onCompleted: {
+                            groupsModel.selectUnique('group');
+                        }
+                    }
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        RowLayout {
+                            anchors.fill: parent
+                            spacing: units.nailUnit
+
+                            Calendar {
+                                id: historyStartDate
+
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                            }
+
+                            Calendar {
+                                id: historyEndDate
+
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                            }
+                        }
+                    }
+
+                    Button {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit * 2
+                        text: qsTr('Genera llista')
+                        onClicked: historyItem.generateList()
+                    }
+                }
+                Models.RubricsCriteriaModel {
+                    id: criteriaModel
+
+                    filters: ['rubric=?']
+                    bindValues: [(rubricsList.currentIndex>=0)?rubricsList.currentItem.rubric:-1]
+
+                }
+
+                Models.IndividualsModel {
+                    id: individualsModel
+                }
+
+                Connections {
+                    target: rubricsList
+                    onCurrentIndexChanged: criteriaModel.select()
+                }
+                function generateList() {
+                    historyListLayout.visible = true;
+                    var text = "<html>";
+                    text += "<head>";
+                    text += "<style text=\"text/css\">";
+                    text += "h1 { text-decoration: underline }";
+                    text += "</style>";
+                    text += "</head>";
+                    text += "<body>";
+                    text += "<h1>Llista</h1>"
+
+                    var rubricTitle = rubricsList.currentItem.rubricTitle;
+                    text += "<p>Rúbrica: " + rubricTitle + "</p>";
+
+                    for (var i=0; i < criteriaList.contentItem.children.length; i++) {
+                        var criteriumObj = criteriaList.contentItem.children[i];
+                        if (criteriumObj.state == 'selected') {
+                            text += "<h2>Criteri: " + criteriumObj.criteriumTitle + "</h2>";
+
+                            for (var j=0; j < groupsList.contentItem.children.length; j++) {
+                                var groupObj = groupsList.contentItem.children[j];
+                                text += "<h3>Grup: " + groupObj.group + "</h3>";
+
+//                                individualsModel.filters = ["\"group\"='" + groupObj.group + "'"];
+
+                                individualsModel.filters = ["\"group\"=?"];
+                                individualsModel.bindValues = [groupObj.group];
+                                individualsModel.select();
+
+                                text += "<table style=\"border: solid 1pt black\">";
+                                text += "<tr>";
+                                text += "<th>Data</th>";
+                                console.log('individuals count', individualsModel.count);
+                                for (var indiv = 0; indiv < individualsModel.count; indiv++) {
+                                    var indivObj = individualsModel.getObjectInRow(indiv);
+                                    text += "<th style=\"border: solid 1pt black\">" + indivObj.surname + ", " + indivObj.name + ":" + indivObj.group + "." + "</th>";
+                                }
+                                text += "</tr>";
+
+                                var day = historyStartDate.selectedDate;
+
+                                while (day <= historyEndDate.selectedDate) {
+                                    text += "<tr>";
+                                    text += "<td>" + day.toLongDate() + "</td>";
+                                    text += "</tr>";
+                                    day.setDate(day.getDate() + 1);
+                                }
+
+                                text += "</table>";
+                            }
+                        }
+                    }
+
+                    text += "</html>";
+                    htmlList.text = text;
+                }
+
+                Rectangle {
+                    id: historyListLayout
+
+                    anchors.fill: parent
+                    visible: false
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+                        spacing: units.nailUnit
+
+                        Text {
+                            id: htmlList
+
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        }
+                        Button {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: units.fingerUnit * 2
+                            text: qsTr('Envia...')
+                            onClicked: {}
+                        }
+                        Button {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: units.fingerUnit * 2
+                            text: qsTr('Tanca')
+                            onClicked: historyListLayout.visible = false;
+                        }
+                    }
+                }
+
             }
         }
 

@@ -20,5 +20,6 @@
         <file>models/ExtendedAnnotations.qml</file>
         <file>models/RubricsAssessmentModel.qml</file>
         <file>models/RubricsModel.qml</file>
+        <file>models/RubricsCriteriaModel.qml</file>
     </qresource>
 </RCC>
