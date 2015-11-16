@@ -33,7 +33,7 @@ Rectangle {
 
             width: mainList.width
             property int requiredHeight: units.fingerUnit * 2
-            property var model: individualsModel.fieldNames
+            property var model: {'id': -1, 'group': "", 'name': "", 'surname': "", 'faceImage': ""}
 
             border.color: 'black'
             RowLayout {
@@ -76,7 +76,7 @@ Rectangle {
                 anchors.fill: row
                 onClicked: {
                     console.log('open individual',singleIndividualItem.model.individual);
-                    mainList.expandItem(singleIndividualItem.model.index, {individual: singleIndividualItem.model.id});
+                    mainList.expandItem(singleIndividualItem.model.index, singleIndividualItem.model.id, {});
                 }
                 onPressAndHold: {
                     individualDeletionAsk.individualName = singleIndividualItem.model.name + " " + singleIndividualItem.model.surname;
@@ -88,6 +88,8 @@ Rectangle {
 
         expandedComponent: GroupIndividualEditor {
             groupsIndividualsModel: individualsModel
+
+            onUpdatedContents: individualsModel.select()
         }
 
         Common.SuperposedButton {

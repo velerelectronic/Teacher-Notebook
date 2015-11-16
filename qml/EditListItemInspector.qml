@@ -61,7 +61,9 @@ CollectionInspectorItem {
         property var editedContent: {reference: -1; valued: false; nameAttribute: ''; model: emptyModel }
         property int preselectedIndex: -1
 
-        interactive: false
+        interactive: true
+        clip: true
+
         highlightFollowsCurrentItem: true
         highlight: Rectangle {
             color: 'yellow'

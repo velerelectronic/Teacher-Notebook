@@ -9,28 +9,25 @@ CollectionInspector {
 
     property SqlTableModel groupsIndividualsModel
 
-    property int individual: -1
+    property int identifier: -1
     property string group: ''
 
     signal savedGroupIndividual
 
     function saveOrUpdate() {
-        console.log('INDIV', individual);
-        console.log(groupsIndividualsModel.tableName);
-
         var object = {
-            name: nameComponent.editedContent,
-            surname: surnameComponent.editedContent,
-            group: groupComponent.editedContent
+            name: nameComponent.originalContent,
+            surname: surnameComponent.originalContent,
+            group: groupComponent.originalContent
         }
 
         var res;
-        if (individual == -1) {
+        if (identifier == -1) {
             res = groupsIndividualsModel.insertObject(object);
-            individual = res;
+            identifier = res;
         } else {
-            object['id'] = individual;
-            res = groupsIndividualsModel.updateObject(object);
+            object['id'] = identifier;
+            res = groupsIndividualsModel.updateObject(identifier, object);
         }
         if (res)
             groupsIndividualsModel.select();
@@ -72,9 +69,9 @@ CollectionInspector {
         }
     }
 
-    onIndividualChanged: {
-        if (individual >= 0) {
-            var obj = groupsIndividualsModel.getObject(individual);
+    onIdentifierChanged: {
+        if (identifier >= 0) {
+            var obj = groupsIndividualsModel.getObject(identifier);
             nameComponent.originalContent = obj['name'];
             surnameComponent.originalContent = obj['surname'];
             groupComponent.originalContent = obj['group'];

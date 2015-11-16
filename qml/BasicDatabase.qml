@@ -119,6 +119,10 @@ DatabaseBackup {
         dataBck.createTable('resources','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, type TEXT, source TEXT, contents BLOB, hash TEXT');
         dataBck.createTable('resourcesAnnotations', 'id INTEGER PRIMARY KEY, resource INTEGER, annotation INTEGER');
 
+        dataBck.createTable('timetables', 'id INTEGER PRIMARY KEY, annotation TEXT, periodTime INTEGER NOT NULL, periodDay INTEGER NOT NULL, title TEXT NOT NULL, startTime TEXT, endTime TEXT');
+
+        // VIEWS
+
         dataBck.createView('detailedResourcesAnnotations',
                            "SELECT  resourcesAnnotations.id         AS  id,
                                     resourcesAnnotations.resource   AS  resourceId,

@@ -36,6 +36,7 @@
   * New auto-filled annotation: https://pixabay.com/en/questionnaire-questions-paper-158862/
   * Upload: https://pixabay.com/en/upload-uploading-documents-files-25068/
   * Goto now: https://pixabay.com/en/day-calender-week-organizer-42975/
+  * Next: https://pixabay.com/en/arrow-green-glossy-right-next-145766/
 */
 
 import QtQuick 2.2

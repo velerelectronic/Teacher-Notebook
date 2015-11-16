@@ -83,5 +83,6 @@
         <file>qml/EditDateTimeItemInspector2.qml</file>
         <file>qml/BasicPage.qml</file>
         <file>qml/ExtendedAnnotationsList.qml</file>
+        <file>qml/ShowTimeTable.qml</file>
     </qresource>
 </RCC>

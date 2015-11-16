@@ -1,6 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.2
+import QtWebView 1.0
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
@@ -48,7 +49,6 @@ BasicPage {
                 tabbedView.widgets.append({title: qsTr('Avaluacions'), component: rubricsAssessmentComponent});
                 tabbedView.widgets.append({title: qsTr('Definicions'), component: rubricsListComponent});
                 tabbedView.widgets.append({title: qsTr('Grups'), component: rubricsGroupsComponent});
-                tabbedView.widgets.append({title: qsTr('Rúbriques x grups'), component: possibleRubricsComponent});
                 tabbedView.widgets.append({title: qsTr('Llistes'), component: historyComponent});
             }
         }
@@ -252,7 +252,8 @@ BasicPage {
                         }
                         size: units.fingerUnit * 2
                         imageSource: 'plus-24844'
-                        onClicked: openRubricAssessmentDetails(-1, -1, -1, rubricsModel, rubricsAssessmentModel)
+                        onClicked: openMenu(units.fingerUnit * 2, addRubricAssessmentMenu, {})
+//                        onClicked: openRubricAssessmentDetails(-1, -1, -1, rubricsModel, rubricsAssessmentModel)
                     }
                 }
 
@@ -326,18 +327,29 @@ BasicPage {
         }
 
         Component {
-            id: possibleRubricsComponent
+            id: addRubricAssessmentMenu
 
             Rectangle {
+                property int requiredHeight: childrenRect.height + 4 * units.fingerUnit
+
+                signal closeMenu()
+
                 ListView {
                     id: possibleList
-                    anchors.fill: parent
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
+                        margins: units.fingerUnit
+                    }
+                    height: contentItem.height
 
                     clip: true
+                    interactive: false
 
                     model: groupsModel
 
-                    delegate: Rectangle {
+                    delegate: Item {
                         id: singleRubricXGroup
 
                         width: possibleList.width
@@ -351,7 +363,7 @@ BasicPage {
                                 left: parent.left
                                 right: parent.right
                             }
-                            height: childrenRect.height
+//                            height: childrenRect.height
 
                             Text {
                                 Layout.fillWidth: true
@@ -366,6 +378,7 @@ BasicPage {
                                 Layout.preferredHeight: contentItem.height
 
                                 model: rubricsModel
+                                interactive: false
 
                                 cellWidth: units.fingerUnit * 4
                                 cellHeight: cellWidth
@@ -378,12 +391,32 @@ BasicPage {
                                     MouseArea {
                                         anchors.fill: parent
                                         onClicked: {
-                                            console.log('ID RUBRIC', singleRubricXGroup.idRubric);
+                                            closeMenu();
                                             openRubricAssessmentDetails(-1, model.id, singleRubricXGroup.group, rubricsModel, rubricsAssessmentModel);
                                         }
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+                Text {
+                    anchors {
+                        top: possibleList.bottom
+                        left: parent.left
+                        right: parent.right
+                        margins: units.fingerUnit
+                    }
+                    height: units.fingerUnit
+                    text: qsTr('Avaluació de rúbrica buida')
+                    font.bold: true
+                    font.pixelSize: units.readUnit
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            closeMenu();
+                            openRubricAssessmentDetails(-1, -1, "", rubricsModel, rubricsAssessmentModel);
                         }
                     }
                 }
@@ -662,7 +695,7 @@ BasicPage {
                     }
 
                     text += "</html>";
-                    htmlList.text = text;
+                    htmlList.loadHtml(text, '');
                 }
 
                 Rectangle {
@@ -676,14 +709,18 @@ BasicPage {
                         anchors.margins: units.nailUnit
                         spacing: units.nailUnit
 
-                        Text {
-                            id: htmlList
-
+                        ScrollView {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
 
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            WebView {
+                                id: htmlList
+
+                                anchors.fill: parent
+                            }
+
                         }
+
                         Button {
                             Layout.fillWidth: true
                             Layout.preferredHeight: units.fingerUnit * 2
@@ -707,7 +744,7 @@ BasicPage {
 
             fieldNames: ['group']
 
-            sort: ['id DESC']
+            sort: 'id DESC'
         }
 
         Models.RubricsModel {

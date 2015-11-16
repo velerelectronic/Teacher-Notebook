@@ -37,10 +37,14 @@ Item {
                 target: shadow
                 opacity: 0.5
             }
+
+            /*
             PropertyChanges {
                 target: menuLoader
                 height: menuLoader.requiredHeight
             }
+            */
+
             PropertyChanges {
                 target: emptyArea
                 height: flickArea.height - downSlideMenu.initialHeight
@@ -126,7 +130,11 @@ Item {
                 }
                 height: ((item !== null) && (typeof item.requiredHeight === 'number'))?(item.requiredHeight):0
 
+                onHeightChanged: console.log('menuLoader Height', height)
+
                 sourceComponent: downSlideMenu.menu
+
+                onSourceComponentChanged: console.log('Source component changed to', sourceComponent)
 
                 Connections {
                     target: menuLoader.item

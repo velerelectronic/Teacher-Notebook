@@ -16,7 +16,7 @@ Common.AbstractEditor {
     signal copyDataRequested
     signal discardDataRequested(bool changes)
     signal closePageRequested()
-    signal openMenu(int initialHeight, var menu)
+    signal openMenu(int initialHeight, var menu, var options)
     signal updatedContents(var identifier)
 
     property int totalCollectionHeight: inspectorGrid.height
@@ -83,15 +83,13 @@ Common.AbstractEditor {
             currentIndex = -1;
         }
 
-        function openMenuFunction(initialHeight, menu) {
-            collectionInspector.openMenu(initialHeight, menu);
+        function openMenuFunction(initialHeight, menu, options) {
+            collectionInspector.openMenu(initialHeight, menu, options);
         }
 
         function openEditMode(index) {
             if (currentIndex<0) {
                 currentIndex = index;
-                inspectorGrid.forceLayout();
-                positionViewAtIndex(index,ListView.Beginning);
             }
         }
 
@@ -104,6 +102,10 @@ Common.AbstractEditor {
             console.log('in collection inspector', collectionInspector.identifier);
             openViewMode();
             collectionInspector.updatedContents(collectionInspector.identifier);
+        }
+
+        function editorCompletelyOpened(index) {
+            positionViewAtIndex(index,ListView.Beginning);
         }
     }
 

@@ -6,6 +6,8 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
 Item {
+    id: workingSpace
+
     property string pageTitle: pagesStack.pageTitle
 
     property string initialPage: ''
@@ -89,7 +91,7 @@ Item {
         // Slide menu
 
         onOpenMenu: {
-            openMenu(initialHeight, menu, options);
+            workingSpace.openMenu(initialHeight, menu, options);
         }
 
         // Page handling
@@ -243,6 +245,9 @@ Item {
 
         // Data import
         onImportData: openNewPage('ModelImporter',{fieldNames: fieldNames, fieldConstants: fieldConstants, writeModel: writeModel})
+
+        // TimeTable
+        onOpenTimeTable: openNewPage('ShowTimeTable', {identifier: annnotation})
     }
 
     Component {

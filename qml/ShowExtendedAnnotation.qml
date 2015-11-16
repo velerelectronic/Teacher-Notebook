@@ -110,15 +110,10 @@ CollectionInspector {
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Projecte')
             onAddRow: newProject()
-            originalContent: {
-                'reference': project,
-                'valued': true,
-                'nameAttribute': 'name',
-                'model': projectsModel
-            }
 
             onPerformSearch: {
                 projectsModel.searchString = searchString;
+                projectsModel.select();
             }
             onSaveContents: {
                 if (updateWithObject())
@@ -506,6 +501,134 @@ CollectionInspector {
             }
         }
 
+        CollectionInspectorItem {
+            id: timetableComponent
+            width: annotationEditor.width
+            totalCollectionHeight: annotationEditor.totalCollectionHeight
+
+            caption: qsTr('Horaris')
+
+            visorComponent: Rectangle {
+                property int requiredHeight: periodDays.height + 2 * units.nailUnit
+
+                color: 'grey'
+
+                ListView {
+                    id: periodDays
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
+                    }
+                    height: maxRowsHeight
+                    anchors.margins: units.nailUnit
+
+                    property int maxRowsHeight: 0
+
+                    orientation: ListView.Horizontal
+                    interactive: false
+                    model: ListModel {
+                        id: daysModel
+                    }
+
+                    spacing: units.nailUnit
+
+                    delegate: ListView {
+                        id: periodTimes
+
+                        width: (periodDays.width - periodDays.count * periodDays.spacing) / 7
+                        height: periodTimes.contentItem.height
+
+                        onHeightChanged: {
+                            if (periodTimes.height > periodDays.maxRowsHeight)
+                                periodDays.maxRowsHeight = periodTimes.height;
+
+                        }
+
+                        spacing: units.nailUnit
+
+                        property string dayName: name
+                        property int periodDay: index+1
+
+                        interactive: false
+                        model: timetablesModel
+
+                        Models.TimeTablesModel {
+                            id: timetablesModel
+                            filters: [
+                                'annotation=?',
+                                'periodDay=?'
+                            ]
+                            sort: 'periodTime ASC'
+                            Component.onCompleted: {
+                                bindValues = [
+                                    annotationEditor.identifier,
+                                    periodTimes.periodDay
+                                ];
+                                timetablesModel.select();
+                            }
+                        }
+
+                        header: Text {
+                            width: periodTimes.width
+                            height: units.fingerUnit
+                            text: periodTimes.dayName
+                        }
+
+                        delegate: Rectangle {
+                            color: 'white'
+                            width: periodTimes.width
+                            height: units.fingerUnit * 2
+                            Text {
+                                anchors.fill: parent
+                                clip: true
+
+                                text: model.title
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    var obj = {model: timetablesModel, identifier: model.id};
+                                    annotationEditor.openMenu(units.fingerUnit * 5, changeTimeTableFields, obj);
+                                }
+                            }
+                        }
+
+                        footer: Common.ImageButton {
+                            width: periodTimes.width
+                            height: units.fingerUnit
+                            image: 'plus-24844'
+                            onClicked: {
+                                var obj = {
+                                    annotation: annotationEditor.identifier,
+                                    periodTime: periodTimes.count + 1,
+                                    periodDay: periodTimes.periodDay,
+                                    title: 'Classe ' + periodTimes.periodDay + "//" + (periodTimes.count + 1),
+                                    startTime: '8:00',
+                                    endTime: '8:55'
+                                }
+
+                                timetablesModel.insertObject(obj);
+                                timetablesModel.select();
+                                if (periodTimes.height > periodDays.maxRowsHeight)
+                                    periodDays.maxRowsHeight = periodTimes.height;
+                            }
+                        }
+                    }
+                    Component.onCompleted: {
+                        daysModel.append({name: qsTr('Dilluns')});
+                        daysModel.append({name: qsTr('Dimarts')});
+                        daysModel.append({name: qsTr('Dimecres')});
+                        daysModel.append({name: qsTr('Dijous')});
+                        daysModel.append({name: qsTr('Divendres')});
+                        daysModel.append({name: qsTr('Dissabte')});
+                        daysModel.append({name: qsTr('Diumenge')});
+                    }
+                }
+            }
+        }
+
         EditDeleteItemInspector {
             id: deleteButton
             width: annotationEditor.width
@@ -604,6 +727,125 @@ CollectionInspector {
             }
 
             existingLabelsModel = uniqueLabelsArray;
+        }
+    }
+
+    Component {
+        id: changeTimeTableFields
+
+        Rectangle {
+            id: changeTimeTableRect
+
+            property var options: {
+                'model': null,
+                'identifier': -1
+            }
+
+            property int requiredHeight: childrenRect.height + units.fingerUnit * 2
+            signal closeMenu()
+
+            GridLayout {
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                    margins: units.fingerUnit
+                }
+
+                rows: 5
+                columns: 2
+
+                Text {
+                    text: qsTr('Període')
+                    Layout.preferredHeight: units.fingerUnit
+                    Layout.preferredWidth: units.fingerUnit * 2
+                }
+
+                Text {
+                    id: identificationData
+                    font.bold: true
+                    font.pixelSize: units.readUnit
+                    Layout.preferredHeight: units.fingerUnit
+                    Layout.fillWidth: true
+                }
+
+                Text {
+                    text: qsTr('Títol')
+                    Layout.preferredHeight: units.fingerUnit
+                    Layout.preferredWidth: units.fingerUnit * 2
+                }
+
+                TextField {
+                    id: titleField
+                    Layout.preferredHeight: units.fingerUnit
+                    Layout.fillWidth: true
+                }
+
+                Text {
+                    text: qsTr('Inici')
+                    Layout.preferredHeight: units.fingerUnit
+                    Layout.preferredWidth: units.fingerUnit * 2
+                }
+
+                TextField {
+                    id: startTimeField
+                    Layout.preferredHeight: units.fingerUnit
+                    Layout.fillWidth: true
+                }
+
+                Text {
+                    text: qsTr('Final')
+                    Layout.preferredHeight: units.fingerUnit
+                    Layout.preferredWidth: units.fingerUnit * 2
+                }
+
+                TextField {
+                    id: endTimeField
+                    Layout.preferredHeight: units.fingerUnit
+                    Layout.fillWidth: true
+                }
+                Common.TextButton {
+                    text: qsTr('Desa')
+                    onClicked: saveChanges()
+                }
+
+                Common.TextButton {
+                    Layout.alignment: Qt.AlignRight
+                    text: qsTr('Esborra')
+                    onClicked: removeField()
+                }
+
+            }
+
+            onOptionsChanged: {
+                if (changeTimeTableRect.options !== null) {
+                    var model = changeTimeTableRect.options['model'];
+                    var identifier = changeTimeTableRect.options['identifier'];
+                    var obj = model.getObject(identifier);
+                    identificationData.text = obj['periodDay'] + "//" + obj['periodTime'];
+                    titleField.text = obj['title'];
+                    startTimeField.text = obj['startTime'];
+                    endTimeField.text = obj['endTime'];
+                }
+            }
+
+            function saveChanges() {
+                var obj = {
+                    title: titleField.text,
+                    startTime: startTimeField.text,
+                    endTime: endTimeField.text
+                };
+
+                changeTimeTableRect.options['model'].updateObject(changeTimeTableRect.options['identifier'], obj);
+                changeTimeTableRect.options['model'].select();
+                closeMenu();
+            }
+
+            function removeField() {
+                changeTimeTableRect.options['model'].removeObject(changeTimeTableRect.options['identifier']);
+                changeTimeTableRect.options['model'].select();
+                closeMenu();
+            }
         }
     }
 

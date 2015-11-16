@@ -13,6 +13,8 @@ Common.AbstractEditor {
 
     property alias captionHeight: captionText.height
 
+    signal editorCompletelyOpened()
+
     property int totalCollectionHeight: 0
 
     states: [
@@ -112,8 +114,16 @@ Common.AbstractEditor {
     height: captionHeight + totalHeight + units.nailUnit + editorItemRectangle.anchors.margins * 2 + editorItemLayout.anchors.margins * 2
 
     Behavior on height {
-        PropertyAnimation {
-            duration: 200
+        SequentialAnimation {
+            PropertyAnimation {
+                duration: 200
+            }
+            ScriptAction {
+                script: {
+                    collectionInspectorItem.editorCompletelyOpened();
+                    view.editorCompletelyOpened(index);
+                }
+            }
         }
     }
 
@@ -136,8 +146,8 @@ Common.AbstractEditor {
         }
     }
 
-    function openMenu(initialHeight, menu) {
-        view.openMenuFunction(initialHeight, menu);
+    function openMenu(initialHeight, menu, options) {
+        view.openMenuFunction(initialHeight, menu, options);
     }
 
     MessageDialog {
