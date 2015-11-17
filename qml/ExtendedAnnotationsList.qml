@@ -92,6 +92,14 @@ Rectangle {
         annotationsModel.select();
     }
 
+    function requestClose() {
+        if (annotationsList.currentIndex>-1) {
+            annotationsList.closeItem();
+            return false;
+        } else
+            return true;
+    }
+
     Common.UseUnits { id: units }
 
     color: '#F2F2F2'
@@ -878,7 +886,7 @@ Rectangle {
 
             color: 'white'
 
-            Flow {
+            GridLayout {
                 anchors {
                     top: parent.top
                     left: parent.left
@@ -886,13 +894,15 @@ Rectangle {
                     margins: units.fingerUnit
                 }
 
-                spacing: units.fingerUnit
+                columns: 2
+                columnSpacing: units.fingerUnit
+                rowSpacing: columnSpacing
 
                 Common.ImageButton {
                     Layout.preferredHeight: units.fingerUnit * 3
                     Layout.preferredWidth: units.fingerUnit * 3
                     image: 'questionnaire-158862'
-                    size: units.fingerUnit * 2
+                    size: units.fingerUnit * 1.5
                     onClicked: {
                         menuRect.closeMenu();
                         var date = new Date();
@@ -901,12 +911,17 @@ Rectangle {
                         refresh();
                     }
                 }
+                Text {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    text: qsTr('Crea anotació intel·ligent')
+                }
 
                 Common.ImageButton {
                     Layout.preferredHeight: units.fingerUnit * 3
                     Layout.preferredWidth: units.fingerUnit * 3
                     image: 'homework-152957'
-                    size: units.fingerUnit * 2
+                    size: units.fingerUnit * 1.5
                     onClicked: {
                         menuRect.closeMenu();
                         var search = annotations.searchString;
@@ -931,34 +946,46 @@ Rectangle {
                     }
                 }
 
+                Text {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    text: qsTr('Crea anotació sense dades')
+                }
+
                 Common.ImageButton {
                     Layout.preferredHeight: units.fingerUnit * 3
                     Layout.preferredWidth: units.fingerUnit * 3
                     image: 'calendar-23684'
-                    size: units.fingerUnit * 2
+                    size: units.fingerUnit * 1.5
                     onClicked: {
                         menuRect.closeMenu();
                         annotations.openMenu(units.fingerUnit * 2, addTimetableAnnotationMenu, {})
                     }
                 }
 
+                Text {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    text: qsTr("Crea anotació a partir d'horari")
+                }
+
                 Common.ImageButton {
                     Layout.preferredHeight: units.fingerUnit * 3
                     Layout.preferredWidth: units.fingerUnit * 3
                     image: 'upload-25068'
-                    size: units.fingerUnit * 2
+                    size: units.fingerUnit * 1.5
                     onClicked: {
                         menuRect.closeMenu();
                         importAnnotations(['title','desc','image'],annotationsModel,[]);
                     }
                 }
 
-                Common.ImageButton {
-                    Layout.preferredHeight: units.fingerUnit * 3
-                    Layout.preferredWidth: units.fingerUnit * 3
-                    image: ''
-                    size: units.fingerUnit * 2
+                Text {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    text: qsTr("Carrega anotacions")
                 }
+
             }
         }
     }
@@ -987,7 +1014,6 @@ Rectangle {
                     right: parent.right
                     margins: units.fingerUnit
                 }
-//                height: childrenRect.height
 
                 GridView {
                     id: annotationsGrid
@@ -1184,7 +1210,7 @@ Rectangle {
             }
 
             onReferenceDateChanged: {
-                periodDay = (referenceDate.getDay() + 1);
+                periodDay = ((referenceDate.getDay() + 6) % 7) + 1;
                 timePeriodsModel.select();
             }
 

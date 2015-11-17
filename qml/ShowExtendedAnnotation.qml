@@ -34,7 +34,7 @@ CollectionInspector {
     property alias end: projectComponent.originalContent
     property alias state: projectComponent.originalContent
 
-    property bool enableDeletion: resourcesComponent.enableDeletion && rubricsComponent.enableDeletion
+    property bool enableDeletion: resourcesComponent.enableDeletion && rubricsComponent.enableDeletion && timetableComponent.enableDeletion
 
     property var existingLabelsModel: []
 
@@ -505,6 +505,7 @@ CollectionInspector {
             id: timetableComponent
             width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
+            property bool enableDeletion: false
 
             caption: qsTr('Horaris')
 
@@ -539,12 +540,6 @@ CollectionInspector {
                         width: (periodDays.width - periodDays.count * periodDays.spacing) / 7
                         height: periodTimes.contentItem.height
 
-                        onHeightChanged: {
-                            if (periodTimes.height > periodDays.maxRowsHeight)
-                                periodDays.maxRowsHeight = periodTimes.height;
-
-                        }
-
                         spacing: units.nailUnit
 
                         property string dayName: name
@@ -566,6 +561,7 @@ CollectionInspector {
                                     periodTimes.periodDay
                                 ];
                                 timetablesModel.select();
+                                periodDays.getInfo();
                             }
                         }
 
@@ -611,8 +607,7 @@ CollectionInspector {
 
                                 timetablesModel.insertObject(obj);
                                 timetablesModel.select();
-                                if (periodTimes.height > periodDays.maxRowsHeight)
-                                    periodDays.maxRowsHeight = periodTimes.height;
+                                periodDays.getInfo();
                             }
                         }
                     }
@@ -624,6 +619,22 @@ CollectionInspector {
                         daysModel.append({name: qsTr('Divendres')});
                         daysModel.append({name: qsTr('Dissabte')});
                         daysModel.append({name: qsTr('Diumenge')});
+
+                        periodDays.getInfo();
+                    }
+
+                    function getInfo() {
+                        timetableComponent.enableDeletion = true;
+                        var maxHeight = 0;
+                        for (var i=0; i<periodDays.contentItem.children.length; i++) {
+                            var obj = periodDays.contentItem.children[i];
+                            if (obj.count > 0) {
+                                timetableComponent.enableDeletion = false;
+                            }
+                            if (maxHeight < obj.height)
+                                maxHeight = obj.height;
+                        }
+                        periodDays.maxRowsHeight = maxHeight;
                     }
                 }
             }

@@ -365,15 +365,23 @@ Item {
     }
 
     function requestClosePage() {
+        console.log('request close page 1');
+        var item = pagesStack.currentItem;
         if (pagesStack.depth>1) {
-            var item = pagesStack.currentItem;
-            if (typeof item.requestClose == 'function') {
+            if (typeof (item.requestClose) == 'function') {
                 item.requestClose();
             } else {
                 closeCurrentPage();
             }
         } else {
-            closeWorkingPageDialog.open();
+            if (typeof (item.requestClose) == 'function') {
+                if (item.requestClose()) {
+                    closeWorkingPageDialog.open();
+
+                }
+            } else {
+                closeWorkingPageDialog.open();
+            }
         }
     }
 
