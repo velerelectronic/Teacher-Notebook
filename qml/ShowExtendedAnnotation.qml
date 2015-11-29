@@ -484,11 +484,10 @@ CollectionInspector {
                         onClicked: annotationEditor.openRubricGroupAssessment(model.id, model.rubric, rubricsModel, assessmentsModel)
                     }
                 }
-            }
-            Models.RubricsModel {
-                id: rubricsModel
-
-                Component.onCompleted: select()
+                footer: Common.ImageButton {
+                    image: 'plus-24844'
+                    onClicked: openMenu(units.fingerUnit, addRubricMenu, {})
+                }
             }
             Models.RubricsAssessmentModel {
                 id: assessmentsModel
@@ -859,6 +858,145 @@ CollectionInspector {
             }
         }
     }
+
+    Component {
+        id: addRubricMenu
+
+        Rectangle {
+            id: addRubricMenuRect
+
+            property int requiredHeight: childrenRect.height
+            property var options
+            signal closeMenu()
+
+            Models.IndividualsModel {
+                id: groupsModel
+
+                fieldNames: ['group']
+
+                sort: 'id DESC'
+            }
+
+            ListView {
+                id: possibleList
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                    margins: units.fingerUnit
+                }
+                height: contentItem.height
+
+                clip: true
+                interactive: false
+
+                model: groupsModel
+
+                delegate: Item {
+                    id: singleRubricXGroup
+
+                    width: possibleList.width
+                    height: childrenRect.height
+
+                    property string group: model.group
+                    property int rubric: model.rubric
+
+                    ColumnLayout {
+                        anchors {
+                            top: parent.top
+                            left: parent.left
+                            right: parent.right
+                        }
+//                            height: childrenRect.height
+
+                        Text {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: units.fingerUnit
+                            font.bold: true
+                            font.pixelSize: units.readUnit
+                            elide: Text.ElideRight
+                            text: qsTr('Grup') + " " + model.group
+                        }
+                        GridView {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: contentItem.height
+
+                            model: rubricsModel
+                            interactive: false
+
+                            cellWidth: units.fingerUnit * 4
+                            cellHeight: cellWidth
+
+                            delegate: Common.BoxedText {
+                                width: units.fingerUnit * 3
+                                height: width
+                                margins: units.nailUnit
+                                text: model.title
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        closeMenu();
+                                        addRubricMenuRect.newRubricAssessment(model.title, model.desc, singleRubricXGroup.rubric, singleRubricXGroup.group, annotationEditor.title);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Text {
+                anchors {
+                    top: possibleList.bottom
+                    left: parent.left
+                    right: parent.right
+                    margins: units.fingerUnit
+                }
+                height: units.fingerUnit
+                text: qsTr('Avaluació de rúbrica buida')
+                font.bold: true
+                font.pixelSize: units.readUnit
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        closeMenu();
+                        openRubricAssessmentDetails(-1, -1, "", rubricsModel, rubricsAssessmentModel);
+                    }
+                }
+            }
+
+            Component.onCompleted: {
+                groupsModel.selectUnique('group');
+                console.log('COUNT', groupsModel.count)
+            }
+
+            function newRubricAssessment(title, desc, rubric, group, annotation) {
+                var obj = {};
+                obj = {
+                    title: title,
+                    desc: desc,
+                    rubric: rubric,
+                    group: group,
+                    annotation: annotation
+                };
+
+                var res = rubricsAssessmentModel.insertObject(obj);
+                rubricsAssessmentModel.select();
+            }
+        }
+
+    }
+
+    Models.RubricsModel {
+        id: rubricsModel
+
+        Component.onCompleted: select()
+    }
+
+    Models.RubricsAssessmentModel {
+        id: rubricsAssessmentModel
+    }
+
 
     Component.onCompleted: {
         console.log('new identifier', identifier);
