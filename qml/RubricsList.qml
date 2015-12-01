@@ -1,8 +1,9 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.2
-import QtWebView 1.0
+//import QtWebKit 3.0
 import PersonalTypes 1.0
+import ClipboardAdapter 1.0
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 import 'qrc:///models' as Models
@@ -637,6 +638,17 @@ BasicPage {
                     id: individualsModel
                 }
 
+                Models.RubricsLastScoresModel {
+                    id: traverseRubricsLastScoresModel
+                    filters: [
+                        'INSTR(annotationStart,?)',
+                        'criterium=?',
+                        '\"group\"=?',
+                        'individual=?',
+                        'rubric=?'
+                    ]
+                }
+
                 Connections {
                     target: rubricsList
                     onCurrentIndexChanged: criteriaModel.select()
@@ -662,40 +674,69 @@ BasicPage {
 
                             for (var j=0; j < groupsList.contentItem.children.length; j++) {
                                 var groupObj = groupsList.contentItem.children[j];
-                                text += "<h3>Grup: " + groupObj.group + "</h3>";
+                                if (groupObj.state == 'selected') {
+                                    text += "<h3>Grup: " + groupObj.group + "</h3>";
 
-//                                individualsModel.filters = ["\"group\"='" + groupObj.group + "'"];
+                                    individualsModel.filters = ["\"group\"=?"];
+                                    individualsModel.bindValues = [groupObj.group];
+                                    individualsModel.select();
 
-                                individualsModel.filters = ["\"group\"=?"];
-                                individualsModel.bindValues = [groupObj.group];
-                                individualsModel.select();
-
-                                text += "<table style=\"border: solid 1pt black\">";
-                                text += "<tr>";
-                                text += "<th>Data</th>";
-                                console.log('individuals count', individualsModel.count);
-                                for (var indiv = 0; indiv < individualsModel.count; indiv++) {
-                                    var indivObj = individualsModel.getObjectInRow(indiv);
-                                    text += "<th style=\"border: solid 1pt black\">" + indivObj.surname + ", " + indivObj.name + ":" + indivObj.group + "." + "</th>";
-                                }
-                                text += "</tr>";
-
-                                var day = historyStartDate.selectedDate;
-
-                                while (day <= historyEndDate.selectedDate) {
+                                    text += "<table style=\"border: solid 1pt black; border-collapse: collapse\">";
                                     text += "<tr>";
-                                    text += "<td>" + day.toLongDate() + "</td>";
+                                    text += "<th>Data</th>";
+                                    console.log('individuals count', individualsModel.count);
+                                    for (var indiv = 0; indiv < individualsModel.count; indiv++) {
+                                        var indivObj = individualsModel.getObjectInRow(indiv);
+                                        text += "<th style=\"border: solid 1pt black; padding: 1ex\">" + indivObj.surname + ", " + indivObj.name + ":" + indivObj.group + "." + "</th>";
+                                    }
                                     text += "</tr>";
-                                    day.setDate(day.getDate() + 1);
+
+                                    var day = historyStartDate.selectedDate;
+
+                                    while (day <= historyEndDate.selectedDate) {
+                                        text += "<tr>";
+                                        text += "<td>" + day.toLongDate() + "</td>";
+
+                                        for (var indiv = 0; indiv < individualsModel.count; indiv++) {
+                                            var indivObj = individualsModel.getObjectInRow(indiv);
+                                            traverseRubricsLastScoresModel.bindValues = [
+                                                        day.toYYYYMMDDFormat(),
+                                                        criteriumObj.criterium,
+                                                        groupObj.group,
+                                                        indivObj.id,
+                                                        rubricsList.currentItem.rubric
+                                                    ];
+                                            traverseRubricsLastScoresModel.select();
+
+                                            var c = "";
+                                            for (var valuesRow = 0; valuesRow < traverseRubricsLastScoresModel.count; valuesRow++) {
+                                                c = "<p>";
+                                                var rowObj = traverseRubricsLastScoresModel.getObjectInRow(valuesRow);
+                                                c += rowObj['score'] + " " + rowObj['definition'];
+                                                c += "</p>";
+                                            }
+
+                                            text += "<td style=\"border: solid 1pt black; padding: 1ex\">" + c +  "</td>";
+                                        }
+
+                                        text += "</tr>";
+                                        day.setDate(day.getDate() + 1);
+                                    }
+
+                                    text += "</table>";
+
                                 }
 
-                                text += "</table>";
                             }
                         }
                     }
 
                     text += "</html>";
-                    htmlList.loadHtml(text, '');
+                    htmlList.htmlSource = text;
+                }
+
+                QClipboard {
+                    id: clipboard
                 }
 
                 Rectangle {
@@ -713,19 +754,20 @@ BasicPage {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
 
-                            WebView {
+                            Text {
                                 id: htmlList
-
-                                anchors.fill: parent
+                                property string htmlSource: ''
+                                onHtmlSourceChanged: text = htmlSource
                             }
-
                         }
 
                         Button {
                             Layout.fillWidth: true
                             Layout.preferredHeight: units.fingerUnit * 2
-                            text: qsTr('Envia...')
-                            onClicked: {}
+                            text: qsTr('Copia')
+                            onClicked: {
+                                clipboard.copia(htmlList.htmlSource)
+                            }
                         }
                         Button {
                             Layout.fillWidth: true

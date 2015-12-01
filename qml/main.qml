@@ -142,12 +142,32 @@ Window {
         id: workingPagesModel
     }
 
+    Rectangle {
+        id: sideBar
+        anchors {
+            top: header.bottom
+            left: parent.left
+            bottom: parent.bottom
+        }
+        width: units.fingerUnit * 10
+        MenuPage {
+            anchors.fill: parent
+
+            onOpenWorkingPage: {
+                // sidePanel.state = 'hidePanel';
+                workingPagesModel.append({page: page, parameters: parameters});
+                pagesView.currentIndex = workingPagesModel.count-1;
+            }
+        }
+    }
+
     ListView {
         id: pagesView
         anchors.top: header.bottom
-        anchors.left: parent.left
+        anchors.left: sideBar.right
         anchors.right: parent.right
         anchors.bottom: parent.bottom
+        clip: true
 
         property string pageTitle: ((workingPagesModel.count>0) && (currentItem !== null) && (typeof currentItem.item !== 'undefined'))?currentItem.item.pageTitle:qsTr('Teacher Notebook')
 
@@ -188,6 +208,7 @@ Window {
         }
     }
 
+    /*
     Common.SidePanel2 {
         id: sidePanel
 
@@ -196,7 +217,7 @@ Window {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
 
-        panelWidth: parent.width * 2 / 3
+        panelWidth: units.fingerUnit * 6
         panelHeight: height
         handleSize: units.fingerUnit
 
@@ -208,6 +229,7 @@ Window {
             }
         }
     }
+    */
 
     Common.DownSlideMenu {
         id: slideMenu
