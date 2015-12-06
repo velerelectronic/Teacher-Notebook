@@ -16,70 +16,49 @@ Item {
     signal closeWorkingSpace()
     signal openMenu(int initialHeight, var menu, var options)
 
-    ColumnLayout {
+    property ListModel buttonsModel: ListModel { }
+
+    ListModel {
+        id: newButtonsModel
+
+        dynamicRoles: true
+    }
+
+    StackView {
+        id: pagesStack
+
         anchors.fill: parent
-        spacing: 0
 
-        Rectangle {
-            id: mainBar
+        property string pageTitle: ((currentItem !== null) && (typeof currentItem.pageTitle !== 'undefined'))?currentItem.pageTitle:qsTr('Espai de treball')
 
-            Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit * 1.5
-            color: 'green'
+        initialItem: {'item': Qt.resolvedUrl(initialPage), 'properties': initialProperties}
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: units.nailUnit
-                spacing: units.nailUnit
-
-                Image {
-                    Layout.preferredWidth: height
-                    Layout.preferredHeight: parent.height
-
-                    source: (pagesStack.depth==1)?'qrc:///icons/road-sign-147409.svg':'qrc:///icons/arrow-145769.svg'
-                    fillMode: Image.PreserveAspectFit
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: requestClosePage()
-                    }
-                }
-
-                ListView {
-                    id: buttons
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    orientation: ListView.Horizontal
-                    clip: true
-
-                    LayoutMirroring.enabled: !interactive
-                    layoutDirection: (!interactive)?ListView.LeftToRight:ListView.RightToLeft
-
-                    spacing: units.nailUnit
-                    delegate: adjustableButton
-                }
-            }
-
-            ListModel {
-                id: emptyButtonsList
+        Connections {
+            target: pagesStack.currentItem
+            ignoreUnknownSignals: true
+            onButtonsModelChanged: {
+                pagesStack.copyButtonsModel();
             }
         }
 
-        StackView {
-            id: pagesStack
+        function invokeMethod(method) {
+            currentItem[method]();
+        }
 
-            Layout.fillHeight: true
-            Layout.fillWidth: true
+        onCurrentItemChanged: {
+            pagesStack.copyButtonsModel();
+        }
 
-            property string pageTitle: ((currentItem !== null) && (typeof currentItem.pageTitle !== 'undefined'))?currentItem.pageTitle:qsTr('Espai de treball')
-
-            initialItem: {'item': Qt.resolvedUrl(initialPage), 'properties': initialProperties}
-
-            onCurrentItemChanged: {
-                buttons.model = getButtonsList();
+        function copyButtonsModel() {
+            workingSpace.buttonsModel.clear();
+            if (typeof pagesStack.currentItem.buttonsModel !== 'undefined') {
+                var buttonsModel = pagesStack.currentItem.buttonsModel;
+                for (var i=0; i<buttonsModel.count; i++) {
+                    workingSpace.buttonsModel.append(buttonsModel.get(i));
+                }
             }
-
-            function invokeMethod(method) {
-                currentItem[method]();
+            if (pagesStack.depth>1) {
+                workingSpace.buttonsModel.append({icon: 'road-sign-147409', object: workingSpace, method: 'requestClosePage'});
             }
         }
     }
@@ -353,15 +332,6 @@ Item {
 
     function openNewPage(page,param) {
         pagesStack.push({item: Qt.resolvedUrl(page + '.qml'), properties: param});
-    }
-
-    function getButtonsList() {
-        var pageObj = pagesStack.currentItem;
-        if ((pageObj) && (typeof(pageObj.buttons) !== 'undefined')) {
-            return pageObj.buttons;
-        } else {
-            return undefined;
-        }
     }
 
     function requestClosePage() {

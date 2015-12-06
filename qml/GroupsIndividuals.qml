@@ -5,7 +5,7 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 
-Rectangle {
+Item {
     id: groupsIndividuals
 
     property string pageTitle: qsTr('Grups i individus')

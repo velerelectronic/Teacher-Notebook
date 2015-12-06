@@ -16,11 +16,9 @@ Item {
     signal closePage()
     signal openMenu(int initialHeight, var menu, var options)
 
-    Rectangle {
-        anchors.fill: parent
-        color: 'black'
-        opacity: 0.5
-    }
+    property ListModel buttonsModel: ListModel { dynamicRoles: true }
+
+    property bool pageClosable: false
 
     Loader {
         id: basicPageLoader
@@ -31,11 +29,6 @@ Item {
         property string pageTitle: ((item) && (item.pageTitle))?item.pageTitle:''
 
         sourceComponent: basicPageItem.mainPage
-
-        onLoaded: {
-            buttons.model = getButtonsList();
-        }
-
     }
 
     MouseArea {
@@ -103,6 +96,27 @@ Item {
                     leftMargin: anchors.bottomMargin
                     rightMargin: anchors.bottomMargin
                 }
+
+                Connections {
+                    target: subPageloader.item
+                    onButtonsModelChanged: subPageloader.copyButtonsModel()
+                }
+                onLoaded: {
+                    subPageloader.copyButtonsModel();
+                }
+
+                function copyButtonsModel() {
+                    console.log('copying buttons model');
+                    basicPageItem.buttonsModel.clear();
+                    if ((item !== null) && (typeof item.buttons !== 'undefined')) {
+                        var buttonsModel = item.buttonsModel;
+                        for (var i=0; i<buttonsModel.count; i++) {
+                            console.log(buttonsModel.count, i);
+                            basicPageItem.buttonsModel.append(buttonsModel.get(i));
+                        }
+                    }
+                    basicPageItem.buttonsModel.append({icon: 'road-sign-147409', object: workingSpace, method: 'requestClosePage'});
+                }
             }
 
         }
@@ -144,15 +158,6 @@ Item {
         subPageArea.enabled = true;
         subPageRect.anchors.margins = padding;
         subPageloader.setSource(Qt.resolvedUrl(page + '.qml'), param);
-    }
-
-    function getButtonsList() {
-        var pageObj = pagesStack.currentItem;
-        if ((pageObj) && (typeof(pageObj.buttons) !== 'undefined')) {
-            return pageObj.buttons;
-        } else {
-            return undefined;
-        }
     }
 
     function requestClosePage() {

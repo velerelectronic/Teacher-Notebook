@@ -15,14 +15,13 @@ import FileIO 1.0
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
-Rectangle {
-    width: 300
-    height: 200
-    property string pageTitle: 'Documents'
+BasicPage {
+    id: documentsListPage
+
+    pageTitle: 'Documents'
     property bool selectDirectory: false
     property bool selectFiles: false
     property string goBack: ''
-    property var buttons: buttonsModel
 
     property url initialDirectory: ''
 
@@ -33,7 +32,6 @@ Rectangle {
     signal notCreatedFile(string file)
 
     signal closePageRequested()
-    signal closePage(string message)
     signal openDirectoryWithPage(string directory, string page)
 
     property bool showDetails: false
@@ -44,14 +42,13 @@ Rectangle {
 
     Common.UseUnits { id: units }
 
-    ListModel {
-        id: buttonsModel
+    Component.onCompleted: {
+        buttonsModel.append({object: documentsListPage, method: 'gotoParentFolder', icon: 'computer-31223', title: qsTr('Pujar a la carpeta contenidora de la carpeta actual')});
+        buttonsModel.append({object: documentsListPage, method: 'toggleDetails', icon: 'info-147927', checkable: true, checked: false, title: qsTr('Mostra o amaga els detalls de cada document')});
 
-        Component.onCompleted: {
-            append({method: 'gotoParentFolder', image: 'computer-31223', title: qsTr('Pujar a la carpeta contenidora de la carpeta actual')});
-            append({method: 'toggleDetails', image: 'info-147927', checkable: true, checked: false, title: qsTr('Mostra o amaga els detalls de cada document')});
-        }
+        console.log('Documents list', 'change model');
     }
+
 
     function gotoParentFolder() {
         if (folderList.parentFolder != '')
@@ -66,166 +63,175 @@ Rectangle {
         showCreationItem = true;
     }
 
-    ColumnLayout {
-        anchors.fill: parent
+    mainPage: Item {
 
-        Item {
-            Layout.preferredHeight: units.fingerUnit
-            Layout.fillWidth: true
+        ColumnLayout {
+            anchors.fill: parent
 
-            RowLayout {
-                anchors.fill: parent
-                Text {
-                    text: folderList.folder
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                }
-                Button {
-                    id: selectButton
-                    visible: selectDirectory
-                    text: qsTr('Selecciona')
-                    onClicked: {
-                        closePageRequested();
-                        openDirectoryWithPage(folderList.folder,goBack);
-                    }
-                }
-            }
-        }
-
-        Item {
-            Layout.preferredHeight: (showCreationItem)?units.fingerUnit:0
-            Layout.fillWidth: true
-
-            clip: true
-            RowLayout {
-                anchors.fill: parent
-                spacing: units.nailUnit
-                Text {
-                    text: qsTr('Crea un nou element:')
-                }
-                TextField {
-                    id: newItem
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    inputMethodHints: Qt.ImhNoPredictiveText
-                }
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Fitxer')
-                    onClicked: {
-                        var newFile = folderList.folder + '/' + newItem.text;
-                        fileio.source = newFile;
-                        if (fileio.create()) {
-                            createdFile(newFile);
-                        } else {
-                            notCreatedFile(newFile);
-                        }
-                        showCreationItem = false;
-                    }
-                }
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Directori')
-                }
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Tanca')
-                    onClicked: showCreationItem = false
-                }
-            }
-        }
-
-        ListView {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            model: folderList
-            clip: true
-
-            delegate: Rectangle {
-                border.color: 'black'
-                width: parent.width
-                height: units.fingerUnit * 2
-
-                MouseArea {
-                    anchors.fill: parent
-                    function hasExtension(name,ext) {
-                        return (name.length - name.lastIndexOf(ext) === ext.length);
-                    }
-
-                    onClicked: {
-                        // Different actions whether it is a file or a folder
-                        if (fileIsDir) {
-                            if (hasExtension(model.fileURL.toString(),'.tbook')) {
-                                console.log('tbook');
-                                openTBook(fileURL);
-                            } else {
-                                folderList.folder = model.fileURL;
-                            }
-                        } else {
-                            processDocument(fileURL);
-                        }
-                    }
-                }
+            Item {
+                Layout.preferredHeight: units.fingerUnit * 1.5
+                Layout.fillWidth: true
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: units.nailUnit
-                    spacing: units.nailUnit
+                    spacing: 0
 
-                    Image {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: parent.height
-                        fillMode: Image.PreserveAspectFit
-                        source: 'qrc:///icons/' + (model.fileIsDir?'document-97576':'flat-28213') + '.svg'
-                    }
                     Text {
-                        Layout.fillHeight: true
+                        text: folderList.folder
                         Layout.fillWidth: true
+                        Layout.fillHeight: true
                         verticalAlignment: Text.AlignVCenter
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        maximumLineCount: 2
-                        elide: Text.ElideRight
-                        text: fileName
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: (showDetails)?contentWidth:0
-                        verticalAlignment: Text.AlignVCenter
-                        text: fileSize.toString() + " bytes"
-                        clip: true
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: (showDetails)?contentWidth:0
-                        verticalAlignment: Text.AlignVCenter
-                        text: fileModified
-                        clip: true
                     }
                     Button {
+                        id: selectButton
+                        visible: selectDirectory
+                        Layout.preferredWidth: units.fingerUnit * 5
                         Layout.fillHeight: true
-                        Layout.preferredWidth: (selectDocument)?units.fingerUnit * 3:0
                         text: qsTr('Selecciona')
                         onClicked: {
-                            if (documentReceiver !== null)
-                                documentReceiver.sendFile(fileURL)
-                            closePage(qsTr('Seleccionat ') + fileURL);
+                            closePageRequested();
+                            openDirectoryWithPage(folderList.folder,goBack);
                         }
                     }
                 }
-
             }
-            Common.SuperposedButton {
-                anchors {
-                    bottom: parent.bottom
-                    right: parent.right
+
+            Item {
+                Layout.preferredHeight: (showCreationItem)?units.fingerUnit:0
+                Layout.fillWidth: true
+
+                clip: true
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: units.nailUnit
+                    Text {
+                        text: qsTr('Crea un nou element:')
+                    }
+                    TextField {
+                        id: newItem
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        inputMethodHints: Qt.ImhNoPredictiveText
+                    }
+                    Button {
+                        Layout.fillHeight: true
+                        text: qsTr('Fitxer')
+                        onClicked: {
+                            var newFile = folderList.folder + '/' + newItem.text;
+                            fileio.source = newFile;
+                            if (fileio.create()) {
+                                createdFile(newFile);
+                            } else {
+                                notCreatedFile(newFile);
+                            }
+                            showCreationItem = false;
+                        }
+                    }
+                    Button {
+                        Layout.fillHeight: true
+                        text: qsTr('Directori')
+                    }
+                    Button {
+                        Layout.fillHeight: true
+                        text: qsTr('Tanca')
+                        onClicked: showCreationItem = false
+                    }
                 }
-                size: units.fingerUnit * 2
-                imageSource: 'plus-24844'
-                onClicked: createItem()
+            }
+
+            ListView {
+                id: filesList
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                model: folderList
+                clip: true
+
+                delegate: Rectangle {
+                    border.color: 'black'
+                    width: filesList.width
+                    height: units.fingerUnit * 2
+
+                    MouseArea {
+                        anchors.fill: parent
+                        function hasExtension(name,ext) {
+                            return (name.length - name.lastIndexOf(ext) === ext.length);
+                        }
+
+                        onClicked: {
+                            // Different actions whether it is a file or a folder
+                            if (fileIsDir) {
+                                if (hasExtension(model.fileURL.toString(),'.tbook')) {
+                                    console.log('tbook');
+                                    openTBook(fileURL);
+                                } else {
+                                    folderList.folder = model.fileURL;
+                                }
+                            } else {
+                                processDocument(fileURL);
+                            }
+                        }
+                    }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+                        spacing: units.nailUnit
+
+                        Image {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: parent.height
+                            fillMode: Image.PreserveAspectFit
+                            source: 'qrc:///icons/' + (model.fileIsDir?'document-97576':'flat-28213') + '.svg'
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            maximumLineCount: 2
+                            elide: Text.ElideRight
+                            text: fileName
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: (showDetails)?contentWidth:0
+                            verticalAlignment: Text.AlignVCenter
+                            text: fileSize.toString() + " bytes"
+                            clip: true
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: (showDetails)?contentWidth:0
+                            verticalAlignment: Text.AlignVCenter
+                            text: fileModified
+                            clip: true
+                        }
+                        Button {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: (selectDocument)?units.fingerUnit * 3:0
+                            text: qsTr('Selecciona')
+                            onClicked: {
+                                if (documentReceiver !== null)
+                                    documentReceiver.sendFile(fileURL)
+                                closePage(qsTr('Seleccionat ') + fileURL);
+                            }
+                        }
+                    }
+
+                }
+                Common.SuperposedButton {
+                    anchors {
+                        bottom: parent.bottom
+                        right: parent.right
+                    }
+                    size: units.fingerUnit * 2
+                    imageSource: 'plus-24844'
+                    onClicked: createItem()
+                }
             }
         }
+
     }
 
     StandardPaths {
@@ -325,3 +331,4 @@ Rectangle {
         }
     }
 }
+

@@ -7,7 +7,7 @@ import 'qrc:///models' as Models
 import "qrc:///javascript/Storage.js" as Storage
 import "qrc:///common/FormatDates.js" as FormatDates
 
-Rectangle {
+Item {
     id: annotations
     property string pageTitle: qsTr('Anotacions (esteses)');
 
@@ -102,12 +102,9 @@ Rectangle {
 
     Common.UseUnits { id: units }
 
-    color: '#F2F2F2'
-
     Common.ExpandableListView {
         id: annotationsList
         anchors.fill: parent
-        anchors.margins: units.nailUnit
 
         bottomMargin: units.fingerUnit * 3
         clip: true
@@ -295,7 +292,7 @@ Rectangle {
             id: annotationsListHeader
 
             z: 300
-            color: annotations.color
+            color: 'white'
             width: annotationsList.width
             height: units.fingerUnit * 2.5
             visible: annotationsList.currentIndex < 0

@@ -5,7 +5,7 @@ import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import "qrc:///common/FormatDates.js" as FormatDates
 
-Rectangle {
+Item {
     id: resourceManager
 
     Common.UseUnits { id: units }

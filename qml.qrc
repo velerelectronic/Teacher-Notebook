@@ -45,7 +45,6 @@
         <file>qml/AssessmentSystem.qml</file>
         <file>qml/TasksSystem.qml</file>
         <file>qml/Rubric.qml</file>
-        <file>qml/RubricsList.qml</file>
         <file>qml/RubricCriteriumEditor.qml</file>
         <file>qml/RubricLevelEditor.qml</file>
         <file>qml/RubricDetailsEditor.qml</file>
@@ -84,5 +83,9 @@
         <file>qml/BasicPage.qml</file>
         <file>qml/ExtendedAnnotationsList.qml</file>
         <file>qml/ShowTimeTable.qml</file>
+        <file>qml/RubricsAssessmentList.qml</file>
+        <file>qml/RubricsDefinitionsList.qml</file>
+        <file>qml/RubricsGroupsList.qml</file>
+        <file>qml/RubricsReportsList.qml</file>
     </qresource>
 </RCC>

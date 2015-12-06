@@ -63,173 +63,196 @@ Window {
 
     onClosing: {
         close.accepted = false;
-        pagesView.requestClosePage();
+        pagesLoader.requestClosePage();
     }
 
     Common.UseUnits { id: units }
 
     Rectangle {
-        id: header
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        height: units.fingerUnit * 1.5
+        color: '#F2F2F2'
+        anchors.fill: parent
 
-        color: "#009900"
-        visible: true
-        clip: true
-
-        RowLayout {
+        ColumnLayout {
             anchors.fill: parent
-            anchors.margins: units.nailUnit
+            spacing: 0
 
-            Image {
-                Layout.preferredWidth: height
-                Layout.preferredHeight: parent.height
-
-                source: 'qrc:///images/small-41255_150.png'
-                fillMode: Image.PreserveAspectFit
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: sidePanel.state = (sidePanel.state === 'showPanel')?'hidePanel':'showPanel'
-                }
-            }
-
-            Text {
-                id: title
+            Rectangle {
+                id: header
                 Layout.fillWidth: true
-                Layout.preferredHeight: parent.height
-                color: "#ffffff"
-                text: pagesView.pageTitle
-                font.italic: false
-                font.bold: true
-                font.pixelSize: units.readUnit
-                verticalAlignment: Text.AlignVCenter
-                font.family: "Tahoma"
-            }
+                Layout.preferredHeight: units.fingerUnit * 1.5
 
-            ListView {
-                id: pagesIcons
-
-                Layout.fillHeight: true
-                Layout.preferredWidth: contentItem.width
-                Layout.maximumWidth: parent.width / 2
-
+                color: "#009900"
+                visible: true
                 clip: true
 
-                highlightRangeMode: ListView.ApplyRange
-                model: workingPagesModel
-                orientation: ListView.Horizontal
-                spacing: units.nailUnit
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
 
-                delegate: Rectangle {
-                    width: units.fingerUnit
-                    height: units.fingerUnit
+                    Image {
+                        Layout.preferredWidth: height
+                        Layout.preferredHeight: parent.height
+
+                        source: 'qrc:///images/small-41255_150.png'
+                        fillMode: Image.PreserveAspectFit
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: sideBar.state = (sideBar.state === 'showPanel')?'hidePanel':'showPanel'
+                        }
+                    }
+
                     Text {
-                        anchors.fill: parent
-                        text: model.index
+                        id: title
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: parent.height
+                        color: "#ffffff"
+                        text: pagesLoader.pageTitle
+                        font.italic: false
+                        font.bold: true
+                        font.pixelSize: units.readUnit
+                        verticalAlignment: Text.AlignVCenter
+                        font.family: "Tahoma"
                     }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: pagesView.currentIndex = model.index
+
+                    ListView {
+                        id: buttonsList
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: contentItem.width
+                        spacing: units.nailUnit
+                        interactive: false
+                        orientation: ListView.Horizontal
+
+                        delegate: Common.ImageButton {
+                            width: size
+                            height: width
+                            size: units.fingerUnit
+                            image: model.icon
+                            onClicked: {
+                                model.object[model.method]();
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
 
-    ListModel {
-        id: workingPagesModel
-    }
+            Item {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
 
-    Rectangle {
-        id: sideBar
-        anchors {
-            top: header.bottom
-            left: parent.left
-            bottom: parent.bottom
-        }
-        width: units.fingerUnit * 10
-        MenuPage {
-            anchors.fill: parent
+                RowLayout {
+                    id: rowLayout
+                    property int margin: Math.min(parent.width / 50, units.fingerUnit * 2)
+                    anchors {
+                        fill: parent
+                        leftMargin: rowLayout.margin
+                        rightMargin: rowLayout.margin
+                        topMargin: 0
+                        bottomMargin: 0
+                    }
+                    spacing: margin
 
-            onOpenWorkingPage: {
-                // sidePanel.state = 'hidePanel';
-                workingPagesModel.append({page: page, parameters: parameters});
-                pagesView.currentIndex = workingPagesModel.count-1;
-            }
-        }
-    }
+                    Rectangle {
+                        id: sideBar
+                        Layout.preferredWidth: width
+                        Layout.fillHeight: true
 
-    ListView {
-        id: pagesView
-        anchors.top: header.bottom
-        anchors.left: sideBar.right
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        clip: true
+                        states: [
+                            State {
+                                name: 'showPanel'
+                                PropertyChanges {
+                                    target: sideBar
+                                    visible: true
+                                    width: Math.max(rowLayout.width / 4, units.fingerUnit * 5)
+                                }
+                            },
+                            State {
+                                name: 'hidePanel'
+                                PropertyChanges {
+                                    target: sideBar
+                                    visible: false
+                                    width: -rowLayout.margin
+                                }
+                            }
+                        ]
+                        state: 'showPanel'
+                        color: 'transparent'
+                        clip: true
 
-        property string pageTitle: ((workingPagesModel.count>0) && (currentItem !== null) && (typeof currentItem.item !== 'undefined'))?currentItem.item.pageTitle:qsTr('Teacher Notebook')
+                        transitions: [
+                            Transition {
+                                from: 'hidePanel'
+                                to: 'showPanel'
+                                PropertyAnimation {
+                                    property: 'width'
+                                    duration: 250
+                                }
+                            },
+                            Transition {
+                                from: 'showPanel'
+                                to: 'hidePanel'
+                                SequentialAnimation {
+                                    PropertyAnimation {
+                                        property: 'width'
+                                        duration: 250
+                                    }
+                                    PropertyAnimation {
+                                        property: 'visible'
+                                    }
+                                }
+                            }
+                        ]
 
-        highlightMoveDuration: 250
+                        MenuPage {
+                            anchors.fill: parent
+                            anchors.margins: units.nailUnit
 
-        orientation: ListView.Horizontal
-        interactive: false
+                            onOpenWorkingPage: {
+                                pagesLoader.loadPage(page,parameters);
+                            }
+                        }
+                    }
+                    Loader {
+                        id: pagesLoader
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        clip: true
+                        property string pageTitle: ((item !== null) && (typeof item.item !== 'undefined'))?item.item.pageTitle:qsTr('Teacher Notebook')
 
-        model: workingPagesModel
+                        Connections {
+                            target: pagesLoader.item
+                            onCloseWorkingSpace: {
+                            }
+                            onOpenMenu: {
+                                console.log('OPEN menu');
+                                console.log(menu);
+                                slideMenu.initialHeight = initialHeight;
+                                slideMenu.menu = menu;
+                                slideMenu.state = 'showHeading';
+                                slideMenu.options = options;
+                            }
+                            onButtonsModelChanged: {
+                                buttonsList.model = pagesLoader.item.buttonsModel;
+                            }
+                        }
 
-        delegate: Loader {
-            width: pagesView.width
-            height: pagesView.height
+                        function loadPage(page, parameters) {
+                            setSource(Qt.resolvedUrl('WorkingSpace.qml'),{initialPage: page, initialProperties: parameters});
+                            buttonsList.model = item.buttonsModel;
+                        }
 
-            Component.onCompleted: {
-                setSource(Qt.resolvedUrl('WorkingSpace.qml'),{initialPage: model.page, initialProperties: model.parameters});
-            }
+                        function requestClosePage() {
+                            if ((item !== null) && (typeof item.pageClosable !== 'function')) {
+                                if (item.requestClosePage())
+                                    return true;
+                            }
+                            return false;
+                        }
+                    }
 
-            Connections {
-                target: item
-                onCloseWorkingSpace: {
-                    workingPagesModel.remove(model.index);
                 }
-                onOpenMenu: {
-                    console.log('OPEN menu');
-                    console.log(menu);
-                    slideMenu.initialHeight = initialHeight;
-                    slideMenu.menu = menu;
-                    slideMenu.state = 'showHeading';
-                    slideMenu.options = options;
-                }
-            }
-        }
-
-        function requestClosePage() {
-            if ((currentItem !== null) && (currentItem.item !== null))
-                currentItem.item.requestClosePage();
-        }
-    }
-
-    /*
-    Common.SidePanel2 {
-        id: sidePanel
-
-        anchors.top: header.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-
-        panelWidth: units.fingerUnit * 6
-        panelHeight: height
-        handleSize: units.fingerUnit
-
-        mainItem: MenuPage {
-            onOpenWorkingPage: {
-                sidePanel.state = 'hidePanel';
-                workingPagesModel.append({page: page, parameters: parameters});
-                pagesView.currentIndex = workingPagesModel.count-1;
             }
         }
     }
-    */
 
     Common.DownSlideMenu {
         id: slideMenu
