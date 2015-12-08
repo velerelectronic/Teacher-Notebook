@@ -26,71 +26,89 @@ Item {
             id: menuModel
         }
 
-        delegate: Rectangle {
+        delegate: Item {
             id: menuItemRect
 
-            color: (ListView.isCurrentItem)?'yellow':'transparent'
             width: menuList.width
             height: units.fingerUnit * 2 + ((ListView.isCurrentItem)?subMenuList.height:0)
 
             property var submenu: subMenuElements
             property bool isCurrentItem: ListView.isCurrentItem
 
-            Text {
+            Rectangle {
                 id: captionText
                 anchors {
                     top: parent.top
                     left: parent.left
                     right: parent.right
-                    margins: units.nailUnit
                 }
-                height: (units.fingerUnit - anchors.margins) * 2
+                height: (units.fingerUnit) * 2
 
-                verticalAlignment: Text.AlignVCenter
-                text: model.caption
-            }
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    menuList.currentIndex = model.index;
+                color: (menuItemRect.isCurrentItem)?'yellow':'transparent'
+
+                Text {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
+                    maximumLineCount: 2
+                    text: model.caption
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        menuList.currentIndex = model.index;
+                    }
                 }
             }
-            ListView {
-                id: subMenuList
 
+            Rectangle {
                 anchors {
                     top: captionText.bottom
                     left: parent.left
                     right: parent.right
                     leftMargin: units.fingerUnit
                 }
-                height: contentItem.height
+                height: subMenuList.contentItem.height
+                color: '#D8D8D8'
 
-                interactive: false
-                model: (menuItemRect.isCurrentItem)?menuItemRect.submenu:[]
-                delegate: Rectangle {
-                    width: subMenuList.width
-                    height: units.fingerUnit
+                ListView {
+                    id: subMenuList
+                    anchors.fill: parent
 
-                    color: (ListView.isCurrentItem)?'orange':'transparent'
-                    Text {
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
-                        text: model.caption
+                    interactive: false
+                    model: (menuItemRect.isCurrentItem)?menuItemRect.submenu:[]
+                    delegate: Rectangle {
+                        width: subMenuList.width
+                        height: units.fingerUnit * 1.5
+
+                        color: (ListView.isCurrentItem)?'orange':'transparent'
+                        Text {
+                            anchors.fill: parent
+                            anchors.margins: units.nailUnit
+                            text: model.caption
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            elide: Text.ElideRight
+                            maximumLineCount: 2
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                subMenuList.currentIndex = model.index;
+                            }
+                        }
                     }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            subMenuList.currentIndex = model.index;
+                    onCurrentIndexChanged: {
+                        if (currentIndex>-1) {
+                            var itemObject = subMenuElements.get(currentIndex);
+                            openWorkingPage(itemObject.page + ".qml", itemObject.parameters);
                         }
                     }
                 }
-                onCurrentIndexChanged: {
-                    if (currentIndex>-1) {
-                        var itemObject = subMenuElements.get(currentIndex);
-                        openWorkingPage(itemObject.page + ".qml", itemObject.parameters);
-                    }
-                }
+
             }
         }
         onCurrentIndexChanged: {

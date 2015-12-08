@@ -130,11 +130,12 @@ Item {
                 }
                 height: ((item !== null) && (typeof item.requiredHeight === 'number'))?(item.requiredHeight):0
 
-                onHeightChanged: console.log('menuLoader Height', height)
-
                 sourceComponent: downSlideMenu.menu
 
-                onSourceComponentChanged: console.log('Source component changed to', sourceComponent)
+                onSourceComponentChanged: {
+                    if (menuLoader.item.options !== 'undefined')
+                        menuLoader.item.options = options;
+                }
 
                 Connections {
                     target: menuLoader.item
@@ -146,7 +147,8 @@ Item {
                 Connections {
                     target: downSlideMenu
                     onOptionsChanged: {
-                        menuLoader.item.options = options;
+                        if (menuLoader.item !== null)
+                            menuLoader.item.options = options;
                     }
                 }
             }

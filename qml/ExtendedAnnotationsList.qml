@@ -7,14 +7,14 @@ import 'qrc:///models' as Models
 import "qrc:///javascript/Storage.js" as Storage
 import "qrc:///common/FormatDates.js" as FormatDates
 
-Item {
+BasicPage {
     id: annotations
     property string pageTitle: qsTr('Anotacions (esteses)');
 
     property bool isVertical: width<height
 
     signal showExtendedAnnotation (var parameters)
-    signal openMenu(int initialHeight, var menu, var options)
+//    signal openMenu(int initialHeight, var menu, var options)
     signal chosenAnnotation(string annotation)
     signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
     signal openTimeTable(string annotation)
@@ -72,39 +72,14 @@ Item {
     }
 
     function refresh() {
-        annotationsModel.select();
-        var row = 0;
-        console.log('looking for', annotationsList.lastSelected);
-
-        while (row < annotationsModel.count) {
-            if (annotationsModel.getObjectInRow(row)['title'] == annotationsList.lastSelected)
-                break;
-            else
-                row++;
-        }
-
-        if (row < annotationsModel.count)
-            annotationsList.positionViewAtIndex(row, ListView.Contain);
-    }
-
-    function refreshUp() {
-        annotationsList.lastSelected = "";
-        annotationsModel.select();
-    }
-
-    function requestClose() {
-        if (annotationsList.currentIndex>-1) {
-            annotationsList.closeItem();
-            return false;
-        } else
-            return true;
+        annotations.invokeSubPageFunction('refreshWithLastSelected');
     }
 
     Common.UseUnits { id: units }
 
-    Common.ExpandableListView {
+    mainPage: Common.ExpandableListView {
         id: annotationsList
-        anchors.fill: parent
+        //anchors.fill: parent
 
         bottomMargin: units.fingerUnit * 3
         clip: true
@@ -114,6 +89,11 @@ Item {
                 refresh();
                 isDirty = false;
             }
+        }
+
+        onButtonsModelChanged: {
+            console.log('BUTTTONS');
+            annotations.buttonsModel = annotationsList.buttonsModel;
         }
 
         itemComponent: Rectangle {
@@ -476,26 +456,96 @@ Item {
             imageSource: 'plus-24844'
             onClicked: annotations.openMenu(units.fingerUnit * 4, addAnnotationMenu, {})
         }
+
+        function refreshUp() {
+            annotationsList.lastSelected = "";
+            annotationsModel.select();
+        }
+
+        function refreshWithLastSelected() {
+            annotationsModel.select();
+            var row = 0;
+            console.log('looking for', annotationsList.lastSelected);
+
+            while (row < annotationsModel.count) {
+                if (annotationsModel.getObjectInRow(row)['title'] == annotationsList.lastSelected)
+                    break;
+                else
+                    row++;
+            }
+
+            if (row < annotationsModel.count)
+                annotationsList.positionViewAtIndex(row, ListView.Contain);
+        }
+
+        function requestClose() {
+            if (annotationsList.currentIndex>-1) {
+                annotationsList.closeItem();
+                return false;
+            } else
+                return true;
+        }
+
+        Connections {
+            target: annotationsModel
+            onSortChanged: annotationsList.refreshUp()
+        }
+
+        Connections {
+            target: annotations
+            onStateFilterChanged: {
+                console.log('STATE filter CHANGED');
+                annotationsModel.filters = [annotations.stateFilter].concat(annotations.labelsFilter);
+                refreshUp();
+            }
+
+            onLabelsFilterChanged: {
+                annotationsModel.filters = [annotations.stateFilter].concat(annotations.labelsFilter);
+                refreshUp();
+            }
+
+        }
+
+        function newIntelligentAnnotation() {
+            var date = new Date();
+            var newTitle = newAnnotation(qsTr('Anotació ') + date.toISOString(), date.toYYYYMMDDFormat() + " " + date.toHHMMFormat(), date.toYYYYMMDDFormat() + " " + date.toHHMMFormat(), 0)
+            annotationsList.lastSelected = newTitle;
+            refresh();
+        }
+
+        function newEmptyAnnotation() {
+            var search = annotations.searchString;
+            if (search == "") {
+                search = qsTr('Nova anotació ' + annotationsModel.count);
+            }
+
+            var newTitle = newAnnotation(search, "", "", 0);
+
+            annotationsModel.select();
+            var row = 0;
+            while (row < annotationsModel.count) {
+                if (annotationsModel.getObjectInRow(row)['title'] == newTitle)
+                    break;
+                else {
+                    row++;
+                }
+            }
+
+            if (row < annotationsModel.count) {
+                annotationsList.expandItem(row, newTitle, {identifier: newTitle});
+            }
+        }
     }
+
 
     Models.ExtendedAnnotations {
         id: annotationsModel
 
         searchFields: ['title', 'desc', 'project']
+        filters: [annotations.stateFilter].concat(annotations.labelsFilter)
         sort: sortOption
 
-        onSortChanged: refreshUp()
-
         Component.onCompleted: select()
-    }
-
-    onStateFilterChanged: {
-        annotationsModel.filters = [stateFilter].concat(labelsFilter);
-        refreshUp();
-    }
-    onLabelsFilterChanged: {
-        annotationsModel.filters = [stateFilter].concat(labelsFilter);
-        refreshUp();
     }
 
     Models.SavedAnnotationsSearchesModel {
@@ -510,6 +560,7 @@ Item {
             id: menuRect
 
             property int requiredHeight: childrenRect.height + units.fingerUnit * 2
+            property var options
 
             signal closeMenu()
 
@@ -902,10 +953,7 @@ Item {
                     size: units.fingerUnit * 1.5
                     onClicked: {
                         menuRect.closeMenu();
-                        var date = new Date();
-                        var newTitle = newAnnotation(qsTr('Anotació ') + date.toISOString(), date.toYYYYMMDDFormat() + " " + date.toHHMMFormat(), date.toYYYYMMDDFormat() + " " + date.toHHMMFormat(), 0)
-                        annotationsList.lastSelected = newTitle;
-                        refresh();
+                        annotations.invokeSubPageFunction('newIntelligentAnnotation',[]);
                     }
                 }
                 Text {
@@ -921,25 +969,7 @@ Item {
                     size: units.fingerUnit * 1.5
                     onClicked: {
                         menuRect.closeMenu();
-                        var search = annotations.searchString;
-                        if (search == "") {
-                            search = qsTr('Nova anotació ' + annotationsModel.count);
-                        }
-
-                        var newTitle = newAnnotation(search, "", "", 0);
-
-                        annotationsModel.select();
-                        var row = 0;
-                        while (row < annotationsModel.count) {
-                            if (annotationsModel.getObjectInRow(row)['title'] == newTitle)
-                                break;
-                            else {
-                                row++;
-                            }
-                        }
-
-                        if (row < annotationsModel.count)
-                            annotationsList.expandItem(row, newTitle, {identifier: newTitle});
+                        annotations.invokeSubPageFunction('newEmptyAnnotation',[]);
                     }
                 }
 

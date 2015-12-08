@@ -20,6 +20,10 @@ Item {
 
     property bool pageClosable: false
 
+    function invokeSubPageFunction(method, parameters) {
+        return basicPageLoader.item[method](parameters);
+    }
+
     Loader {
         id: basicPageLoader
 

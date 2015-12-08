@@ -16,6 +16,16 @@ ListView {
 
     property int itemSize
 
+    property ListModel buttonsModel: ListModel { }
+
+    ListModel {
+        id: closeButtonsModel
+    }
+
+    ListModel {
+        id: openButtonsModel
+    }
+
     states: [
         State {
             name: 'simple'
@@ -64,51 +74,26 @@ ListView {
     Component {
         id: expandableComponent
 
-        Item {
-            id: expandableItem
+        Loader {
+            id: expandedLoader
 
             property var identifier
 
-            ColumnLayout {
-                anchors.fill: parent
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: units.fingerUnit * 1.5
-                    color: 'green'
-                    border.color: 'black'
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
-                        spacing: units.nailUnit
-                        Common.ImageButton {
-                            image: 'road-sign-147409'
-                            size: parent.height
-                            onClicked: expandableList.closeItem()
-                        }
-                    }
+            Connections {
+                target: expandableList
+                onItemPropertiesChanged: {
+                    expandedLoader.sourceComponent = expandedComponent;
                 }
-                Loader {
-                    id: expandedLoader
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+            }
 
-                    Connections {
-                        target: expandableList
-                        onItemPropertiesChanged: {
-                            expandedLoader.sourceComponent = expandedComponent;
-                        }
-                    }
+            Connections {
+                target: item
+                onIdentifierChanged: lastSelected = item.identifier
+            }
 
-                    Connections {
-                        target: item
-                        onIdentifierChanged: lastSelected = item.identifier
-                    }
-
-                    onLoaded: {
-                        for (var prop in itemProperties) {
-                            expandedLoader.item[prop] = itemProperties[prop];
-                        }
-                    }
+            onLoaded: {
+                for (var prop in itemProperties) {
+                    expandedLoader.item[prop] = itemProperties[prop];
                 }
             }
             onHeightChanged: {
@@ -122,11 +107,17 @@ ListView {
         propertiesList['identifier'] = identifier;
         itemProperties = propertiesList;
         console.log('Last selected', lastSelected);
+
+        openButtonsModel.clear();
+        openButtonsModel.append({icon: 'road-sign-147409', object: expandableList, method: 'closeItem'});
+        buttonsModel = openButtonsModel;
     }
 
     function closeItem() {
         console.log('identifier',currentItem.identifier);
         currentIndex = -1;
+        console.log('count', buttonsModel.count);
+        buttonsModel = closeButtonsModel;
     }
 
     function getModelProperty(index, propertyName) {
