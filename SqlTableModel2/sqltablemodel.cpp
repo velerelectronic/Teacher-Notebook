@@ -101,53 +101,32 @@ QString SqlTableModel2::getFieldNameByIndex(int index) {
     return roles[Qt::UserRole + index + 1];
 }
 
-QVariantMap SqlTableModel2::getObject(QString key) const {
-    QSqlRecord searchRecord;
-    bool found = false;
-    int row=0;
-
-    qDebug() << "Searching for "  << key << " in " << rowCount() << " rows.";
-    while ((!found) && (row<rowCount())) {
-        searchRecord = this->record(row);
-        qDebug() << searchRecord.value(innerPrimaryKey) << key;
-        if (searchRecord.value(innerPrimaryKey)==key)
-            found = true;
-        else
-            row++;
-    }
-
-    QVariantMap result;
-    if (found) {
-        for (int i=0; i<searchRecord.count(); i++) {
-            result.insert(searchRecord.fieldName(i),searchRecord.value(i));
-        }
-    } else {
-        qDebug() << "Not found";
-    }
-
-    return result;
+QVariantMap SqlTableModel2::getObject(QString key) {
+    return getObject(innerPrimaryKey, key);
 }
 
-QVariantMap SqlTableModel2::getObject(QString primaryField, QString key) const {
-    QSqlRecord searchRecord;
-    bool found = false;
-    int row=0;
-    while ((!found) && (row<rowCount())) {
-        searchRecord = this->record(row);
-        if (searchRecord.value(primaryField)==key)
-            found = true;
-        else
-            row++;
-    }
+QVariantMap SqlTableModel2::getObject(QString primaryField, QString key) {
+    QStringList auxFilters = innerFilters;
+    QStringList auxBoundValues = innerBindValues;
+
+    innerFilters.clear();
+    innerFilters << primaryField + "=?";
+
+    innerBindValues.clear();
+    innerBindValues << key;
+
+    SqlTableModel2::select();
 
     QVariantMap result;
-    if (found) {
+    if (rowCount() > 0) {
+        QSqlRecord searchRecord = this->record(0);
         for (int i=0; i<searchRecord.count(); i++) {
             result.insert(searchRecord.fieldName(i),searchRecord.value(i));
         }
-    } else {
-        qDebug() << "Not found";
     }
+
+    innerFilters = auxFilters;
+    innerBindValues = auxBoundValues;
 
     return result;
 }

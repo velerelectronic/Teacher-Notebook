@@ -661,15 +661,19 @@ CollectionInspector {
 
     function fillValues() {
         console.log('Filling values');
+        console.log(identifier);
 
         if (identifier !== "") {
+            console.log('With identifier');
             var project = "";
 
             annotationsModel.select();
 
             var details = annotationsModel.getObject(identifier);
 
+            console.log(details.title);
             if (details.title !== '') {
+                console.log(details.title);
                 titleComponent.originalContent = details.title;
                 descComponent.originalContent = (details.desc == null)?'':details.desc;
 
@@ -696,6 +700,8 @@ CollectionInspector {
 
             assessmentsModel.bindValues = [annotationEditor.title];
             assessmentsModel.select();
+        } else {
+            console.log('No identifer');
         }
   }
 

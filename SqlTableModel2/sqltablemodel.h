@@ -63,8 +63,8 @@ public:
     QString             sort();
     const QString       &tableName();
 
-    Q_INVOKABLE QVariantMap getObject(QString key) const;
-    Q_INVOKABLE QVariantMap getObject(QString primaryField, QString key) const;
+    Q_INVOKABLE QVariantMap getObject(QString key);
+    Q_INVOKABLE QVariantMap getObject(QString primaryField, QString key);
     Q_INVOKABLE QVariantMap getObjectInRow(int row) const;
     Q_INVOKABLE QVariant insertObject(const QVariantMap &);
     Q_INVOKABLE int removeObject(const QVariant &);
