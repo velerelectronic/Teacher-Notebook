@@ -32,6 +32,7 @@ BasicPage {
     }
 
     property string stateFilter: stateTypes.active
+    property string project: ''
 
     property bool isDirty: false
 
@@ -82,7 +83,6 @@ BasicPage {
         //anchors.fill: parent
 
         bottomMargin: units.fingerUnit * 3
-        clip: true
 
         onStateChanged: {
             if ((isDirty) && (state == 'simple')){
@@ -101,6 +101,7 @@ BasicPage {
 
             property int requiredHeight: units.fingerUnit * 2 + ((rubricsAssessmentModel.count>0)?(units.fingerUnit * 2.5):0)
             property var model: {
+
                 'title': '',
                 'desc': '',
                 'project': '',
@@ -109,12 +110,33 @@ BasicPage {
                 'end': '',
                 'state': ''
             }
-            property string title: annotationItem.model['title']
-            property string identifier: annotationItem.title
+
+            onModelChanged: {
+                modelTitle = coalesceModel(annotationItem.model, 'title', '');
+                modelDesc = coalesceModel(annotationItem.model, 'desc', '');
+                modelState = coalesceModel(annotationItem.model, 'state', '');
+                modelProject = coalesceModel(annotationItem.model, 'project', '');
+                modelLabels = coalesceModel(annotationItem.model, 'labels', '');
+                modelStart = coalesceModel(annotationItem.model, 'start', '');
+                modelEnd = coalesceModel(annotationItem.model, 'end', '');
+            }
+
+            function coalesceModel(model, var1, var2) {
+                return (model !== null)?model[var1]:var2;
+            }
+
+            property string modelTitle
+            property string modelDesc
+            property string modelState
+            property string modelProject
+            property string modelLabels
+            property string modelStart
+            property string modelEnd
+
+            property string identifier: annotationItem.modelTitle
             property bool isLastSelected: (annotationsList.lastSelected != '') && (annotationItem.identifier == annotationsList.lastSelected)
 
-            color: (model.state>=0)?'white':'#AAAAAA'
-            clip: true
+            color: (modelState>=0)?'white':'#AAAAAA'
 
             states: [
                 State {
@@ -140,8 +162,8 @@ BasicPage {
                 onClicked: {
                     if (annotationItem.state === 'unselected') {
                         if (chooseMode) {
-                            annotationsList.lastSelected = annotationItem.model.title;
-                            chosenAnnotation(model.title);
+                            annotationsList.lastSelected = annotationItem.modelTitle;
+                            chosenAnnotation(annotationItem.modelTitle);
                         } else {
                             annotationsList.expandItem(annotationItem.model.index, annotationItem.identifier, {identifier: annotationItem.identifier});
                         }
@@ -169,30 +191,30 @@ BasicPage {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: annotationItem.model['title']
+                    text: annotationItem.modelTitle
                 }
                 Text {
                     Layout.fillHeight: true
                     Layout.preferredWidth: parent.width / 4
                     color: 'red'
-                    text: annotationItem.model.start + "\n" + annotationItem.model.end
+                    text: annotationItem.modelStart + "\n" + annotationItem.modelEnd
                 }
                 Text {
                     Layout.fillHeight: true
                     Layout.preferredWidth: parent.width / 4
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     color: 'green'
-                    text: "<b>" + annotationItem.model['project'] + "</b> &nbsp;" + annotationItem.model['labels']
+                    text: "<b>" + annotationItem.modelProject + "</b> &nbsp;" + annotationItem.modelLabels
                 }
 
                 Text {
                     Layout.fillHeight: true
                     Layout.preferredWidth: parent.width / 8
                     text: {
-                        if (annotationItem.model.state<0) {
+                        if (annotationItem.modelState<0) {
                             return qsTr('Finalitzat');
                         } else {
-                            if ((annotationItem.model.state>0) && (annotationItem.model.state<=10)) {
+                            if ((annotationItem.modelState>0) && (annotationItem.modelState<=10)) {
                                 return (annotationItem.model.state * 10) + "%";
                             } else {
                                 return qsTr('Actiu');
@@ -240,8 +262,8 @@ BasicPage {
                 id: rubricsAssessmentModel
                 filters: ["annotation=?"]
             }
-            onTitleChanged: {
-                rubricsAssessmentModel.bindValues = [annotationItem.title];
+            onModelTitleChanged: {
+                rubricsAssessmentModel.bindValues = [annotationItem.modelTitle];
                 rubricsAssessmentModel.select();
             }
 
@@ -493,17 +515,26 @@ BasicPage {
 
         Connections {
             target: annotations
-            onStateFilterChanged: {
-                console.log('STATE filter CHANGED');
-                annotationsModel.filters = [annotations.stateFilter].concat(annotations.labelsFilter);
-                refreshUp();
+            onStateFilterChanged: annotationsList.setUpFilters()
+            onLabelsFilterChanged: annotationsList.setUpFilters()
+            onProjectChanged: {
+                console.log('PROJECT changed to', annotations.project);
+                annotationsList.setUpFilters();
             }
+        }
 
-            onLabelsFilterChanged: {
-                annotationsModel.filters = [annotations.stateFilter].concat(annotations.labelsFilter);
-                refreshUp();
+        function setUpFilters() {
+            var newFilters = annotations.labelsFilter;
+            if (annotations.stateFilter !== '')
+                newFilters = newFilters.concat(annotations.stateFilter);
+            if (annotations.project == '') {
+                annotationsModel.bindValues = [];
+            } else {
+                annotationsModel.bindValues = [annotations.project];
+                newFilters = newFilters.concat("project=?");
             }
-
+            annotationsModel.filters = newFilters;
+            refreshUp();
         }
 
         function newIntelligentAnnotation() {
@@ -535,6 +566,8 @@ BasicPage {
                 annotationsList.expandItem(row, newTitle, {identifier: newTitle});
             }
         }
+
+        Component.onCompleted: setUpFilters()
     }
 
 

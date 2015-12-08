@@ -75,7 +75,6 @@ Item {
 
         // Page handling
         onOpenPage: {
-            console.log('Opening page ' + page);
             openNewPage(page,{});
         }
         onOpenPageArgs: openNewPage(page,args)
@@ -335,7 +334,6 @@ Item {
     }
 
     function requestClosePage() {
-        console.log('request close page 1');
         var item = pagesStack.currentItem;
         if (pagesStack.depth>1) {
             if (typeof (item.requestClose) == 'function') {

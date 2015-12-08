@@ -35,6 +35,10 @@ Item {
             property var submenu: subMenuElements
             property bool isCurrentItem: ListView.isCurrentItem
 
+            function resetCurrentSubMenu() {
+                subMenuList.currentIndex = -1;
+            }
+
             Rectangle {
                 id: captionText
                 anchors {
@@ -69,7 +73,7 @@ Item {
                     top: captionText.bottom
                     left: parent.left
                     right: parent.right
-                    leftMargin: units.fingerUnit
+                    leftMargin: units.fingerUnit / 2
                 }
                 height: subMenuList.contentItem.height
                 color: '#D8D8D8'
@@ -104,6 +108,11 @@ Item {
                     onCurrentIndexChanged: {
                         if (currentIndex>-1) {
                             var itemObject = subMenuElements.get(currentIndex);
+                            console.log('Sub parameters', itemObject.parameters);
+                            for (var prop in itemObject.parameters) {
+                                console.log(prop, itemObject.parameters[prop]);
+                            }
+
                             openWorkingPage(itemObject.page + ".qml", itemObject.parameters);
                         }
                     }
@@ -113,7 +122,10 @@ Item {
         }
         onCurrentIndexChanged: {
             subMenuElements.clear();
+
             if (currentIndex>-1) {
+                menuList.currentItem.resetCurrentSubMenu();
+
                 var itemObject = menuModel.get(currentIndex);
                 menuPage.openWorkingPage(itemObject.page + ".qml", itemObject.parameters);
                 if (itemObject.submenu.method !== '') {
@@ -126,7 +138,7 @@ Item {
     Component.onCompleted: {
         menuModel.append({caption: qsTr('Anotacions'), page: 'ExtendedAnnotationsList', parameters: {}, submenu: {object: menuPage, method: 'getSavedSearches'}});
         menuModel.append({caption: qsTr('Rúbriques'), page: 'RubricsAssessmentList', parameters: {}, submenu: {object: menuPage, method: 'getRubricsOptions'}});
-        menuModel.append({caption: qsTr('Projectes'), page: 'Projects', parameters: {}, submenu: {object: menuPage, method: ''}});
+        menuModel.append({caption: qsTr('Projectes'), page: 'Projects', parameters: {}, submenu: {object: menuPage, method: 'getProjectsList'}});
 
         menuModel.append({caption: qsTr('Espai de treball'), page: 'WorkSpace', parameters: {}, submenu: {object: menuPage, method: ''}});
         menuModel.append({caption: qsTr('Pissarra'), page: 'Whiteboard', parameters: {}, submenu: {object: menuPage, method: ''}});
@@ -164,5 +176,19 @@ Item {
 
         subMenuElements.append({caption: qsTr('Antigues avaluacions'), page: 'AssessmentSystem', parameters: {}});
 
+    }
+
+    function getProjectsList() {
+        projectsModel.select();
+        for (var i=0; i<projectsModel.count; i++) {
+            var projectObj = projectsModel.getObjectInRow(i);
+            subMenuElements.append({caption: projectObj.name, page: 'ExtendedAnnotationsList', parameters: {project: projectObj.name}});
+        }
+    }
+
+    Models.ProjectsModel {
+        id: projectsModel
+        sort: 'name ASC'
+        filters: ["name <> ''"]
     }
 }

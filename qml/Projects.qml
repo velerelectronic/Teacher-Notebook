@@ -35,7 +35,6 @@ Item {
         id: projectsList
         z: 2
         anchors.fill: parent
-        clip: true
 
         model: projectsModel
 

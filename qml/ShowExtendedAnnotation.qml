@@ -486,6 +486,7 @@ CollectionInspector {
                 }
                 footer: Common.ImageButton {
                     image: 'plus-24844'
+                    size: units.fingerUnit
                     onClicked: openMenu(units.fingerUnit, addRubricMenu, {})
                 }
             }
@@ -899,7 +900,6 @@ CollectionInspector {
                     height: childrenRect.height
 
                     property string group: model.group
-                    property int rubric: model.rubric
 
                     ColumnLayout {
                         anchors {
@@ -936,7 +936,7 @@ CollectionInspector {
                                     anchors.fill: parent
                                     onClicked: {
                                         closeMenu();
-                                        addRubricMenuRect.newRubricAssessment(model.title, model.desc, singleRubricXGroup.rubric, singleRubricXGroup.group, annotationEditor.title);
+                                        addRubricMenuRect.newRubricAssessment(model.title, model.desc, model.id, singleRubricXGroup.group, annotationEditor.title);
                                     }
                                 }
                             }

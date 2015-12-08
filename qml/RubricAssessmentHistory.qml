@@ -5,7 +5,7 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 
-Rectangle {
+Item {
     id: rubricAssessmentHistory
 
     property string pageTitle: qsTr("Historial d'avaluació de rúbrica")
@@ -56,7 +56,6 @@ Rectangle {
     ListView {
         id: individualsList
         anchors.fill: parent
-        anchors.margins: units.nailUnit
         model: individualsModel
         spacing: units.nailUnit
         clip: true

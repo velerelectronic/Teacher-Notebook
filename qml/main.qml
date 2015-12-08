@@ -138,6 +138,7 @@ Window {
             Item {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
+                clip: true
 
                 RowLayout {
                     id: rowLayout
@@ -146,8 +147,8 @@ Window {
                         fill: parent
                         leftMargin: rowLayout.margin
                         rightMargin: rowLayout.margin
-                        topMargin: 0
-                        bottomMargin: 0
+                        topMargin: units.nailUnit
+                        bottomMargin: units.nailUnit
                     }
                     spacing: margin
 
@@ -155,6 +156,7 @@ Window {
                         id: sideBar
                         Layout.preferredWidth: width
                         Layout.fillHeight: true
+                        z: 2
 
                         states: [
                             State {
@@ -176,7 +178,6 @@ Window {
                         ]
                         state: 'showPanel'
                         color: 'transparent'
-                        clip: true
 
                         transitions: [
                             Transition {
@@ -215,7 +216,7 @@ Window {
                         id: pagesLoader
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-                        clip: true
+                        z: 1
                         property string pageTitle: ((item !== null) && (typeof item.item !== 'undefined'))?item.item.pageTitle:qsTr('Teacher Notebook')
 
                         Connections {

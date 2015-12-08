@@ -23,8 +23,6 @@ Common.AbstractEditor {
 
     property var identifier
 
-    color: 'white'
-
     states: [
         State {
             name: 'show'
@@ -61,7 +59,6 @@ Common.AbstractEditor {
     ListView {
         id: inspectorGrid
         anchors.fill: parent
-        clip: true
 
         property int captionsWidth: units.fingerUnit
 
