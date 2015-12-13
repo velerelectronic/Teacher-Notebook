@@ -5,6 +5,7 @@ import QtQuick.Controls 1.2
 import QtQml.Models 2.2
 import PersonalTypes 1.0
 import ClipboardAdapter 1.0
+import FileIO 1.0
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 import 'qrc:///models' as Models
@@ -280,6 +281,9 @@ BasicPage {
             text += "</head>";
             text += "<body>";
             text += "<h1>Llista</h1>"
+            var today = new Date();
+            text += "<p>Generat: " + (today.toISOString()) + "</p>";
+            text += "<p>" + today.toLocaleString() + "</p>";
 
             var rubricTitle = rubricsList.currentItem.rubricTitle;
             text += "<p>Rúbrica: " + rubricTitle + "</p>";
@@ -336,8 +340,10 @@ BasicPage {
                                         c += "</p>";
                                         var score = filterInt(rowObj['score']);
                                         if (score == score) {
-                                            valuesForCriteriaArray[indiv].sum += score;
-                                            valuesForCriteriaArray[indiv].count += 1;
+                                            if (score>0) {
+                                                valuesForCriteriaArray[indiv].sum += score;
+                                                valuesForCriteriaArray[indiv].count += 1;
+                                            }
                                         }
                                     }
 
@@ -383,6 +389,7 @@ BasicPage {
 
             text += "</html>";
             htmlList.htmlSource = text;
+            saveFile.htmlContents = text;
         }
 
         QClipboard {
@@ -411,14 +418,48 @@ BasicPage {
                     }
                 }
 
-                Button {
+                Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: units.fingerUnit * 2
-                    text: qsTr('Copia')
-                    onClicked: {
-                        clipboard.copia(htmlList.htmlSource)
+                    RowLayout {
+                        anchors.fill: parent
+                        Button {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: units.fingerUnit * 4
+
+                            text: qsTr('Copia')
+                            onClicked: {
+                                clipboard.copia(htmlList.htmlSource)
+                            }
+                        }
+                        TextField {
+                            id: fileNameField
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                        }
+                        Common.ImageButton {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: units.fingerUnit * 2
+                            image: 'paste-35946'
+                            onClicked: {
+                                fileNameField.paste();
+                            }
+                        }
+                        Common.ImageButton {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: units.fingerUnit * 2
+                            image: 'floppy-35952'
+                            onClicked: {
+                                console.log('saving contents to file');
+                                saveFile.setSource(fileNameField.text);
+                                if (saveFile.create()) {
+                                    saveFile.write(saveFile.htmlContents);
+                                }
+                            }
+                        }
                     }
                 }
+
                 Button {
                     Layout.fillWidth: true
                     Layout.preferredHeight: units.fingerUnit * 2
@@ -445,6 +486,12 @@ BasicPage {
             rubricsModel.select();
         }
 
+    }
+
+    FileIO {
+        id: saveFile
+
+        property string htmlContents: ''
     }
 
 }
