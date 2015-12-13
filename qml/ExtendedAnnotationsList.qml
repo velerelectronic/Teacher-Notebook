@@ -13,6 +13,8 @@ BasicPage {
 
     property bool isVertical: width<height
 
+    property bool onlyEmptyProjects: false
+
     signal showExtendedAnnotation (var parameters)
 //    signal openMenu(int initialHeight, var menu, var options)
     signal chosenAnnotation(string annotation)
@@ -34,6 +36,7 @@ BasicPage {
     property string stateFilter: stateTypes.active
     property string project: ''
 
+    property string emptyProjectFilter: "project IS null OR project = ''"
     property bool isDirty: false
 
     property var sortType: {
@@ -517,6 +520,10 @@ BasicPage {
             target: annotations
             onStateFilterChanged: annotationsList.setUpFilters()
             onLabelsFilterChanged: annotationsList.setUpFilters()
+            onOnlyEmptyProjectsChanged: {
+                console.log('only emptyProjects is', annotations.onlyEmptyProjects);
+                annotationsList.setUpFilters();
+            }
             onProjectChanged: {
                 console.log('PROJECT changed to', annotations.project);
                 annotationsList.setUpFilters();
@@ -527,6 +534,10 @@ BasicPage {
             var newFilters = annotations.labelsFilter;
             if (annotations.stateFilter !== '')
                 newFilters = newFilters.concat(annotations.stateFilter);
+            if (annotations.onlyEmptyProjects) {
+                console.log('Only empty projects');
+                newFilters = newFilters.concat(annotations.emptyProjectFilter);
+            }
             if (annotations.project == '') {
                 annotationsModel.bindValues = [];
             } else {
@@ -534,6 +545,8 @@ BasicPage {
                 newFilters = newFilters.concat("project=?");
             }
             annotationsModel.filters = newFilters;
+            console.log('FILTERS');
+            console.log(newFilters);
             refreshUp();
         }
 

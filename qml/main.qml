@@ -209,6 +209,10 @@ Window {
 
                             onOpenWorkingPage: {
                                 pagesLoader.loadPage(page,parameters);
+                                console.log('Open working page in menupage');
+                                for (var prop in parameters) {
+                                    console.log(prop, ",,,", parameters[prop]);
+                                }
                             }
                         }
                     }

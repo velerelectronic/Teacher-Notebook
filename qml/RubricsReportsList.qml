@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.2
 //import QtWebKit 3.0
+import QtQml.Models 2.2
 import PersonalTypes 1.0
 import ClipboardAdapter 1.0
 import 'qrc:///common' as Common
@@ -21,25 +22,31 @@ BasicPage {
     mainPage: Item {
         id: historyItem
 
-        ColumnLayout {
+        ListView {
+            id: reportItemsList
             anchors.fill: parent
+            model: reportItems
             spacing: units.nailUnit
+        }
+
+        ObjectModel {
+            id: reportItems
+
             Common.BoxedText {
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit
+                width: reportItemsList.width
+                height: units.fingerUnit
                 text: qsTr('Llistes')
             }
             Common.BoxedText {
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit
+                width: reportItemsList.width
+                height: units.fingerUnit
                 text: qsTr('Rúbrica:')
             }
-
             ListView {
                 id: rubricsList
 
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit * 2
+                width: reportItemsList.width
+                height: units.fingerUnit * 2
                 model: rubricsModel
 
                 orientation: ListView.Horizontal
@@ -69,27 +76,29 @@ BasicPage {
                     color: 'yellow'
                 }
             }
-
             Common.BoxedText {
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit
+                width: reportItemsList.width
+                height: units.fingerUnit
                 text: qsTr('Criteris:')
             }
-
-            ListView {
+            GridView {
                 id: criteriaList
 
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit * 2
+                width: reportItemsList.width
+                height: Math.max(units.fingerUnit * 2, contentItem.height)
 
                 model: criteriaModel
-                orientation: ListView.Horizontal
+
+                cellHeight: units.fingerUnit * 2
+                cellWidth: units.fingerUnit * 4
+
+                interactive: false
 
                 delegate: Common.BoxedText {
                     id: singleCriterium
 
-                    height: criteriaList.height
-                    width: units.fingerUnit * 4
+                    height: criteriaList.cellHeight
+                    width: criteriaList.cellWidth
 
                     property int criterium: model.id
                     property string criteriumTitle: model.title
@@ -127,24 +136,28 @@ BasicPage {
                 }
             }
             Common.BoxedText {
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit
+                width: reportItemsList.width
+                height: units.fingerUnit
                 text: qsTr('Grups:')
             }
-            ListView {
+            GridView {
                 id: groupsList
 
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit * 2
+                width: reportItemsList.width
+                height: Math.max(units.fingerUnit * 2, contentItem.height)
 
                 model: groupsModel
-                orientation: ListView.Horizontal
+
+                cellHeight: units.fingerUnit * 2
+                cellWidth: units.fingerUnit * 4
+
+                interactive: false
 
                 delegate: Common.BoxedText {
                     id: singleGroup
 
-                    height: groupsList.height
-                    width: units.fingerUnit * 4
+                    height: groupsList.cellHeight
+                    width: groupsList.cellWidth
 
                     property string group: model.group
 
@@ -183,8 +196,8 @@ BasicPage {
                 }
             }
             Item {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+                width: reportItemsList.width
+                height: units.fingerUnit * 10
                 RowLayout {
                     anchors.fill: parent
                     spacing: units.nailUnit
@@ -204,14 +217,25 @@ BasicPage {
                     }
                 }
             }
-
+            Common.BoxedText {
+                width: reportItemsList.width
+                height: units.fingerUnit
+                text: qsTr('Mitjanes:')
+            }
+            CheckBox {
+                id: criteriaMeansInclude
+                width: reportItemsList.width
+                height: units.fingerUnit * 2
+                text: qsTr('Incloure les mitjanes de cada criteri')
+            }
             Button {
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit * 2
+                width: reportItemsList.width
+                height: units.fingerUnit * 2
                 text: qsTr('Genera llista')
                 onClicked: historyItem.generateList()
             }
         }
+
         Models.RubricsCriteriaModel {
             id: criteriaModel
 
@@ -239,6 +263,13 @@ BasicPage {
             target: rubricsList
             onCurrentIndexChanged: criteriaModel.select()
         }
+
+        function filterInt(value) {
+            if(/^(\-|\+)?([0-9]+|Infinity)$/.test(value))
+              return Number(value);
+            return NaN;
+        }
+
         function generateList() {
             historyListLayout.visible = true;
             var text = "<html>";
@@ -263,6 +294,8 @@ BasicPage {
                         if (groupObj.state == 'selected') {
                             text += "<h3>Grup: " + groupObj.group + "</h3>";
 
+                            var valuesForCriteriaArray = [];
+
                             individualsModel.filters = ["\"group\"=?"];
                             individualsModel.bindValues = [groupObj.group];
                             individualsModel.select();
@@ -274,6 +307,7 @@ BasicPage {
                             for (var indiv = 0; indiv < individualsModel.count; indiv++) {
                                 var indivObj = individualsModel.getObjectInRow(indiv);
                                 text += "<th style=\"border: solid 1pt black; padding: 1ex\">" + indivObj.surname + ", " + indivObj.name + ":" + indivObj.group + "." + "</th>";
+                                valuesForCriteriaArray.push({sum: 0, count: 0});
                             }
                             text += "</tr>";
 
@@ -300,6 +334,11 @@ BasicPage {
                                         var rowObj = traverseRubricsLastScoresModel.getObjectInRow(valuesRow);
                                         c += rowObj['score'] + " " + rowObj['definition'];
                                         c += "</p>";
+                                        var score = filterInt(rowObj['score']);
+                                        if (score == score) {
+                                            valuesForCriteriaArray[indiv].sum += score;
+                                            valuesForCriteriaArray[indiv].count += 1;
+                                        }
                                     }
 
                                     text += "<td style=\"border: solid 1pt black; padding: 1ex\">" + c +  "</td>";
@@ -309,8 +348,33 @@ BasicPage {
                                 day.setDate(day.getDate() + 1);
                             }
 
+                            if (criteriaMeansInclude.checked) {
+                                text += "<tr>";
+                                text += "<td>Suma</td>";
+                                for (var indiv = 0; indiv < individualsModel.count; indiv++) {
+                                    text += "<td>";
+                                    text += valuesForCriteriaArray[indiv].sum;
+                                    text += "</td>";
+                                }
+                                text += "</tr>"
+                                text += "<tr>";
+                                text += "<td>Recompte</td>";
+                                for (var indiv = 0; indiv < individualsModel.count; indiv++) {
+                                    text += "<td>";
+                                    text += valuesForCriteriaArray[indiv].count;
+                                    text += "</td>";
+                                }
+                                text += "</tr>"
+                                text += "<tr>";
+                                text += "<td>Mitjana</td>";
+                                for (var indiv = 0; indiv < individualsModel.count; indiv++) {
+                                    text += "<td>";
+                                    text += Math.round(1000 * valuesForCriteriaArray[indiv].sum / valuesForCriteriaArray[indiv].count)/1000;
+                                    text += "</td>";
+                                }
+                                text += "</tr>"
+                            }
                             text += "</table>";
-
                         }
 
                     }

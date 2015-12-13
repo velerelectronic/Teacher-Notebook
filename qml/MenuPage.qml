@@ -180,6 +180,7 @@ Item {
 
     function getProjectsList() {
         projectsModel.select();
+        subMenuElements.append({caption: qsTr('Sense projecte'), page: 'ExtendedAnnotationsList', parameters: {onlyEmptyProjects: true}});
         for (var i=0; i<projectsModel.count; i++) {
             var projectObj = projectsModel.getObjectInRow(i);
             subMenuElements.append({caption: projectObj.name, page: 'ExtendedAnnotationsList', parameters: {project: projectObj.name}});
