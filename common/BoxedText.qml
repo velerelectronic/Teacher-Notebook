@@ -10,6 +10,8 @@ Rectangle {
     property int margins: 0
     property int contentHeight: mainText.contentHeight + 2 * margins
     property alias elide: mainText.elide
+    property bool boldFont: false
+    property alias wrapMode: mainText.wrapMode
 
     border.color: borderColor
     Text {
@@ -20,5 +22,6 @@ Rectangle {
         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
+        font.bold: boxedText.boldFont
     }
 }

@@ -87,5 +87,6 @@
         <file>qml/RubricsDefinitionsList.qml</file>
         <file>qml/RubricsGroupsList.qml</file>
         <file>qml/RubricsReportsList.qml</file>
+        <file>qml/CombinedAnnotationsTable.qml</file>
     </qresource>
 </RCC>

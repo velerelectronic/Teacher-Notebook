@@ -18,6 +18,7 @@ BasicPage {
     signal showExtendedAnnotation (var parameters)
 //    signal openMenu(int initialHeight, var menu, var options)
     signal chosenAnnotation(string annotation)
+    signal combineAnnotationsIntoTable(var annotationsModel)
     signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
     signal openTimeTable(string annotation)
 
@@ -830,6 +831,25 @@ BasicPage {
                     onClicked: {
                         menuRect.closeMenu();
                         annotations.classifyVariable = 'state';
+                    }
+                }
+
+                Rectangle {
+                    // Menu separator
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.nailUnit
+                    color: 'gray'
+                }
+
+                Common.TextButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    fontSize: units.readUnit
+                    text: qsTr("Combina a una taula...")
+                    onClicked: {
+                        menuRect.closeMenu();
+                        console.log('Compte', annotationsModel.count);
+                        annotations.combineAnnotationsIntoTable(annotationsModel)
                     }
                 }
 

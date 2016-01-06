@@ -85,6 +85,11 @@ Item {
         }
 
         // Annotations
+        onCombineAnnotationsIntoTable: {
+            console.log('Compte 2', annotationsModel.count);
+            openNewPage('CombinedAnnotationsTable', {annotationsModel: annotationsModel});
+        }
+
         onDeletedAnnotations: messageBox.publishMessage(qsTr("S'han esborrat ") + num + qsTr(' anotacions'))
         onSavedAnnotation: {
             messageBox.publishMessage(qsTr('Anotació desada: títol «') + annotation + '», descripció «' + desc + '»');
@@ -330,6 +335,11 @@ Item {
     }
 
     function openNewPage(page,param) {
+        console.log('param');
+        for (var prop in param) {
+            console.log(prop, param[prop]);
+        }
+
         pagesStack.push({item: Qt.resolvedUrl(page + '.qml'), properties: param});
     }
 

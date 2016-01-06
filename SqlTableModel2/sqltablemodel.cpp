@@ -49,6 +49,14 @@ QSqlRecord SqlTableModel2::buildRecord(const QVariantMap &object,bool autoValue)
     return record;
 }
 
+void SqlTableModel2::clear() {
+    QSqlQuery query;
+    query.prepare("DELETE FROM " + innerTableName);
+    setQuery(query);
+    query.exec();
+    updated();
+}
+
 int SqlTableModel2::count() {
     return QSqlQueryModel::rowCount();
 }

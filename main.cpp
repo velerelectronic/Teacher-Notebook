@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
         db = QSqlDatabase::addDatabase("QSQLITE");
         db.setDatabaseName(dir.absolutePath() + "/mainDatabase.sqlite");
         if (db.open()) {
-            qDebug() << "Database opened.!";
+            qDebug() << "Database opened!";
         }
     }
 

@@ -6,6 +6,7 @@ DatabaseBackup {
 
     function initEverything() {
         createTables();
+        createVolatileTables();
 
 //        globalAnnotationsModel.tableName = 'annotations';
         console.log("SELECTING in annotations")
@@ -286,4 +287,8 @@ DatabaseBackup {
         dataBck.createView('individuals_groups','SELECT "group" FROM individuals_list GROUP BY "group"');
     }
 
+    function createVolatileTables() {
+        dataBck.dropTable('combinedAnnotationsVolatileTable')
+        dataBck.createTable('combinedAnnotationsVolatileTable','id INTEGER PRIMARY KEY, annotation TEXT, heading TEXT, contents TEXT');
+    }
 }

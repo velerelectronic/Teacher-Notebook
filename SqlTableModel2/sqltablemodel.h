@@ -63,26 +63,27 @@ public:
     QString             sort();
     const QString       &tableName();
 
+    Q_INVOKABLE void        clear();
     Q_INVOKABLE QVariantMap getObject(QString key);
     Q_INVOKABLE QVariantMap getObject(QString primaryField, QString key);
     Q_INVOKABLE QVariantMap getObjectInRow(int row) const;
-    Q_INVOKABLE QVariant insertObject(const QVariantMap &);
-    Q_INVOKABLE int removeObject(const QVariant &);
-    Q_INVOKABLE bool select();
+    Q_INVOKABLE QVariant    insertObject(const QVariantMap &);
+    Q_INVOKABLE int         removeObject(const QVariant &);
+    Q_INVOKABLE bool        select();
     Q_INVOKABLE QStringList selectDistinct(QString field,QString order,QString filter,bool ascending);
-    Q_INVOKABLE bool selectUnique(QString);
+    Q_INVOKABLE bool        selectUnique(QString);
 
 //    Q_INVOKABLE bool setQuery(const QString query);
-    Q_INVOKABLE int updateObject(const QVariant &keyValue, const QVariantMap &);
+    Q_INVOKABLE int         updateObject(const QVariant &keyValue, const QVariantMap &);
 
     // Subselections
-    Q_INVOKABLE void deselectAllObjects();
-    Q_INVOKABLE bool isSelectedObject(const int &);
-    Q_INVOKABLE void selectObject(int, bool);
-    Q_INVOKABLE int removeSelectedObjects();
+    Q_INVOKABLE void        deselectAllObjects();
+    Q_INVOKABLE bool        isSelectedObject(const int &);
+    Q_INVOKABLE void        selectObject(int, bool);
+    Q_INVOKABLE int         removeSelectedObjects();
 
     // Filter
-    Q_INVOKABLE void setSort(int, Qt::SortOrder);
+    Q_INVOKABLE void        setSort(int, Qt::SortOrder);
 
 signals:
     void bindValuesChanged();
