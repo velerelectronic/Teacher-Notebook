@@ -9,8 +9,21 @@ BasicPage {
     id: combinedTable
 
     property string pageTitle: qsTr("Quadre d'anotacions");
+    signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
 
-    property SqlTableModel annotationsModel
+    property SqlTableModel annotationsModel: newAnnotationsModel
+    property string searchString
+
+    onSearchStringChanged: {
+        annotationsModel.select();
+        rebuildTable();
+    }
+
+    Models.ExtendedAnnotations {
+        id: newAnnotationsModel
+        searchFields: ['title', 'desc', 'project']
+        searchString: combinedTable.searchString
+    }
 
     onAnnotationsModelChanged: rebuildTable()
 
@@ -37,9 +50,10 @@ BasicPage {
             model: tableRowsModel
 
             property var extraHeaderData
-            property int rowNumberWidth: units.fingerUnit * 1.5
+            property int rowNumberWidth: units.fingerUnit * 1
             property int annotationFieldWidth: rowsListView.width / 8
             property int periodFieldWidth: rowsListView.width / 8
+            property int assessmentFieldWidth: units.fingerUnit * 2
 
             headerPositioning: ListView.OverlayHeader
             header: Rectangle {
@@ -94,6 +108,15 @@ BasicPage {
                             text: modelData
                         }
                     }
+                    Common.BoxedText {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: rowsListView.assessmentFieldWidth
+                        color: 'transparent'
+
+                        boldFont: true
+                        margins: units.nailUnit
+                        text: qsTr('Avaluació')
+                    }
                 }
             }
 
@@ -106,8 +129,21 @@ BasicPage {
                 border.color: 'black'
                 property string fields: model.fields
                 property var fieldsModel
+                property string annotation: model.annotation
+
                 onFieldsChanged: {
                     repeater.model = JSON.parse(singleContentsRow.fields);
+                }
+
+                Models.RubricsAssessmentModel {
+                    id: rubricsAssessmentModel
+                    filters: ["annotation=?"]
+                    bindValues: [model.annotation]
+                }
+
+                onAnnotationChanged: {
+                    rubricsAssessmentModel.bindValues = [singleContentsRow.annotation];
+                    rubricsAssessmentModel.select();
                 }
 
                 RowLayout {
@@ -160,7 +196,38 @@ BasicPage {
 
                         margins: units.nailUnit
                         elide: Text.ElideNone
-                        text: model.start + "\n" + model.end
+                        text: {
+                            var startSplit = model.start.trim().split(" ");
+                            var endSplit = model.end.trim().split(" ");
+
+                            var dateString = "";
+
+                            if (model.start !== "") {
+                                var start = new Date();
+                                start = start.fromYYYYMMDDFormat(startSplit[0]);
+                                dateString += qsTr("Des de ") + start.toShortReadableDate();
+
+                                if (startSplit.length >= 2) {
+                                    start = start.fromHHMMFormat(startSplit[1]);
+                                    dateString += qsTr(" a les ") + start.toHHMMFormat();
+                                }
+                            }
+
+                            if (model.end !== "") {
+                                if (dateString !== "")
+                                    dateString += "\n";
+
+                                var end = new Date();
+                                end = end.fromYYYYMMDDFormat(endSplit[0]);
+                                dateString += qsTr("Fins a ") + end.toShortReadableDate();
+
+                                if (endSplit.length >= 2) {
+                                    end = end.fromHHMMFormat(endSplit[1]);
+                                    dateString += qsTr(" a les ") + end.toHHMMFormat();
+                                }
+                            }
+                            return dateString;
+                        }
 
                         onContentHeightChanged: singleContentsRowLayout.recalculateMaxHeight()
                         onWidthChanged: singleContentsRowLayout.recalculateMaxHeight()
@@ -178,10 +245,44 @@ BasicPage {
 
                             margins: units.nailUnit
                             elide: Text.ElideNone
+                            fontSize: units.readUnit * 2 / 3
                             text: fieldText.contents
 
                             onContentHeightChanged: singleContentsRowLayout.recalculateMaxHeight()
                             onWidthChanged: singleContentsRowLayout.recalculateMaxHeight()
+                        }
+                    }
+                    Rectangle {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: rowsListView.assessmentFieldWidth
+                        border.color: 'black'
+                        property int requiredHeight: childrenRect.height + units.nailUnit * 2
+
+                        ColumnLayout {
+                            anchors {
+                                top: parent.top
+                                left: parent.left
+                                right: parent.right
+                            }
+
+                            anchors.margins: units.nailUnit
+                            spacing: units.nailUnit
+
+                            Repeater {
+                                model: rubricsAssessmentModel
+                                Common.BoxedText {
+                                    Layout.fillWidth: true
+                                    height: rowsListView.assessmentFieldWidth
+                                    margins: units.nailUnit
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                    fontSize: units.readUnit * 2 / 3
+                                    text: model.title
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: openRubricGroupAssessment(model.id, model.rubric, rubricsModel, rubricsAssessmentModel)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -194,6 +295,12 @@ BasicPage {
         id: tableRowsModel
 
         dynamicRoles: true
+    }
+
+    Models.RubricsModel {
+        id: rubricsModel
+
+        Component.onCompleted: select()
     }
 
     Models.CombinedAnnotationsVolatileModel {

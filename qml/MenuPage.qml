@@ -137,6 +137,7 @@ Item {
 
     Component.onCompleted: {
         menuModel.append({caption: qsTr('Anotacions'), page: 'ExtendedAnnotationsList', parameters: {}, submenu: {object: menuPage, method: 'getSavedSearches'}});
+        menuModel.append({caption: qsTr('Taules'), page: '', parameters: {}, submenu: {object: menuPage, method: 'getSavedSearchesForTables'}});
         menuModel.append({caption: qsTr('Rúbriques'), page: 'RubricsAssessmentList', parameters: {}, submenu: {object: menuPage, method: 'getRubricsOptions'}});
         menuModel.append({caption: qsTr('Projectes'), page: 'Projects', parameters: {}, submenu: {object: menuPage, method: 'getProjectsList'}});
 
@@ -166,6 +167,15 @@ Item {
             subMenuElements.append({caption: savedAnnotation.title, page: 'ExtendedAnnotationsList', parameters: {searchString: savedAnnotation.terms}});
         }
         subMenuElements.append({caption: qsTr('Anotacions (anterior)'), page: 'AnnotationsList', parameters: {}});
+    }
+
+    function getSavedSearchesForTables() {
+        console.log('get saved searcges');
+        savedAnnotationsModel.select();
+        for (var i=0; i<savedAnnotationsModel.count; i++) {
+            var savedAnnotation = savedAnnotationsModel.getObjectInRow(i);
+            subMenuElements.append({caption: savedAnnotation.title, page: 'CombinedAnnotationsTable', parameters: {searchString: savedAnnotation.terms}});
+        }
     }
 
     function getRubricsOptions() {
