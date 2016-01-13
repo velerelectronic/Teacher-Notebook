@@ -361,7 +361,7 @@ BasicPage {
                 for (var k=0; k<annotationsVolatileModel.count; k++) {
                     var fieldsObj = annotationsVolatileModel.getObjectInRow(k);
 
-                    fieldContents = fieldContents + "\n" + fieldsObj['contents'];
+                    fieldContents = fieldContents + "\n" + (fieldsObj['contents'].replace(/\n(?=[^\n])/g,' ').replace(/\n{2,}/g,'\n').replace(/[ |\t]{2,}/g,' '));
                 }
 
                 finalFields.push(fieldContents.substring(1));

@@ -36,7 +36,7 @@ CollectionInspector {
 
     property bool enableDeletion: resourcesComponent.enableDeletion && rubricsComponent.enableDeletion && timetableComponent.enableDeletion
 
-    property var existingLabelsModel: []
+    property string existingLabelsModel
 
 
     Common.UseUnits { id: units }
@@ -214,6 +214,41 @@ CollectionInspector {
                     id: footerItem
                     height: childrenRect.height
                     width: labelsListItem.width
+
+                    Models.ExtendedAnnotations {
+                        id: labelsModel
+
+                        Component.onCompleted: {
+                            select();
+                            labelsRepeater.model = labelsModel.getUniqueLabels();
+                        }
+
+                        function getUniqueLabels() {
+                            var labelsArray = [];
+                            for (var i=0; i<count; i++) {
+                                var labelsString = getObjectInRow(i)['labels'];
+                                var labels = labelsString.split(" ");
+                                for (var j=0; j<labels.length; j++) {
+                                    if (labels[j] !== '')
+                                        labelsArray.push(labels[j]);
+                                }
+                            }
+                            labelsArray.sort();
+
+                            // remove duplicates
+
+                            var uniqueLabelsArray = [];
+                            if (labelsArray.length>0) {
+                                uniqueLabelsArray.push(labelsArray[0]);
+                                for (var k=1; k<labelsArray.length; k++) {
+                                    if (labelsArray[k] !== labelsArray[k-1])
+                                        uniqueLabelsArray.push(labelsArray[k]);
+                                }
+                            }
+                            return uniqueLabelsArray;
+                        }
+                    }
+
                     ColumnLayout {
                         anchors.margins: units.nailUnit
                         anchors {
@@ -236,7 +271,8 @@ CollectionInspector {
                             spacing: units.nailUnit
 
                             Repeater {
-                                model: existingLabelsModel
+                                id: labelsRepeater
+
                                 Rectangle {
                                     border.color: 'black'
                                     radius: units.nailUnit * 2
@@ -719,32 +755,6 @@ CollectionInspector {
         id: annotationsModel
 
         Component.onCompleted: select()
-
-        onCountChanged: {
-            var labelsArray = [];
-            for (var i=0; i<count; i++) {
-                var labelsString = getObjectInRow(i)['labels'];
-                var labels = labelsString.split(" ");
-                for (var j=0; j<labels.length; j++) {
-                    if (labels[j] !== '')
-                        labelsArray.push(labels[j]);
-                }
-            }
-            labelsArray.sort();
-
-            // remove duplicates
-
-            var uniqueLabelsArray = [];
-            if (labelsArray.length>0) {
-                uniqueLabelsArray.push(labelsArray[0]);
-                for (var k=1; k<labelsArray.length; k++) {
-                    if (labelsArray[k] !== labelsArray[k-1])
-                        uniqueLabelsArray.push(labelsArray[k]);
-                }
-            }
-
-            existingLabelsModel = uniqueLabelsArray;
-        }
     }
 
     Component {

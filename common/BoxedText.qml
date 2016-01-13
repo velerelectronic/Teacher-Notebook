@@ -12,6 +12,8 @@ Rectangle {
     property alias elide: mainText.elide
     property bool boldFont: false
     property alias wrapMode: mainText.wrapMode
+    property alias verticalAlignment: mainText.verticalAlignment
+    property alias horizontalAlignment: mainText.horizontalAlignment
 
     border.color: borderColor
     Text {
