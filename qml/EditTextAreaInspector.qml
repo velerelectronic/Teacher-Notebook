@@ -120,7 +120,7 @@ CollectionInspectorItem {
     }
 
 
-    editorComponent: Editors.TextAreaEditor2 {
+    editorComponent: Editors.TextAreaEditor3 {
         id: textEditor
         property int requiredHeight: units.fingerUnit * 5
         property alias editedContent: textEditor.text
