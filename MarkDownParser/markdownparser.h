@@ -21,6 +21,7 @@ private:
     QString interText;
 
     QString parseToken(QRegExp suffix);
+    QString parseTokenAlt(QString suffix);
     QString parseAsParagraph(QString text);
 
     bool getNextChar();

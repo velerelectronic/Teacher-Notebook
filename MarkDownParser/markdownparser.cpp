@@ -20,10 +20,67 @@ bool MarkDownParser::getNextChar() {
 
 QString MarkDownParser::toHtml(QString text) {
     interText = text;
+    return parseTokenAlt(text);
     if (getNextChar())
         return "<p>" + parseToken(QRegExp("$")) + "</p>";
     else
         return "";
+}
+
+QString MarkDownParser::parseTokenAlt(QString infix) {
+    QString output = "";
+
+    int pos = 0;
+
+    QRegExp rx("(\\n*#\\s+([^\\n\\n]+)\\n{2,})|(\\*\\s+((?:[^\\n]|\\n[^\\n])+\\n{2,}))|(((?:\\n[^\\n]|[^\\n])+)\\n{2,})|(\\*{2}([^\\*]+)\\*{2})|(_{2}([^_]+)_{2})");
+    while (pos >= 0) {
+        int newPos = rx.indexIn(infix, pos);
+        qDebug() << "CAP";
+
+        if (newPos >= pos) {
+            output += infix.mid(pos,newPos-pos);
+
+            int n = 1;
+            if (rx.cap(n) != "") {
+                output += "<h1>" + parseTokenAlt(rx.cap(n+1)) + "</h1>";
+            }
+            n = n + 2;
+            if (rx.cap(n) != "") {
+                output += "<ul>";
+
+                QRegExp rxsub("^\\*(?:\\s*)([^\\n]+)(?:\\n|$)");
+                int posSub = 0;
+                while (posSub >= 0) {
+                    posSub = rxsub.indexIn(rx.cap(n),posSub,QRegExp::CaretAtOffset);
+                    if (posSub >= 0) {
+                        output += "<li>" + parseTokenAlt(rxsub.cap(1)) + "</li>";
+                        posSub = posSub + rxsub.matchedLength();
+                    }
+                }
+                output += "</ul>";
+            }
+            n = n + 2;
+            if (rx.cap(n) != "") {
+                output += "<p>" + parseTokenAlt(rx.cap(n+1)) + "</p><br/>";
+            }
+            n = n + 2;
+            if (rx.cap(n) != "") {
+                output += "<b>" + parseTokenAlt(rx.cap(n+1)) + "</b>";
+            }
+            n = n + 2;
+            if (rx.cap(n) != "") {
+                output += "<u>" + parseTokenAlt(rx.cap(n+1)) + "</u>";
+            }
+
+            pos = newPos + rx.matchedLength();
+        } else {
+            output += infix.mid(pos);
+            pos = -1;
+        }
+    }
+
+
+    return output;
 }
 
 QString MarkDownParser::parseToken(QRegExp suffix) {
