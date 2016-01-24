@@ -97,7 +97,7 @@ ListView {
 
         function expandItem(newState) {
             console.log('EXPANDING');
-            simpleItemLoader.requiredHeight = item.requiredHeight;
+            simpleItemLoader.requiredHeight = simpleItemLoader.item.requiredHeight;
             expandableList.sendState('minimized');
             item.sendState(newState);
 

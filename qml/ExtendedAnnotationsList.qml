@@ -13,7 +13,6 @@ BasicPage {
 
     property bool isVertical: width<height
 
-    property bool onlyEmptyProjects: false
     property bool hideHeader: false
     property bool subList: false
 
@@ -30,7 +29,7 @@ BasicPage {
 
     property string sortLabels: ''
 
-    property string firstLabelFilter: ''
+    property int firstLabelCodeFilter: 0
 
     property int requiredHeight
 
@@ -43,9 +42,7 @@ BasicPage {
     }
 
     property string stateFilter: stateTypes.active
-    property string project: ''
 
-    property string emptyProjectFilter: "project IS null OR project = ''"
     property bool isDirty: false
 
     property var sortType: {
@@ -94,7 +91,12 @@ BasicPage {
         id: annotationsList
         //anchors.fill: parent
 
-        onRequiredHeightChanged: annotations.requiredHeight = annotationsList.requiredHeight;
+        onRequiredHeightChanged: {
+            annotations.requiredHeight = annotationsList.requiredHeight;
+            console.log('Required height changed', requiredHeight);
+        }
+
+        property int firstLabelCodeFilter: annotations.firstLabelCodeFilter
 
         bottomMargin: units.fingerUnit * 3
 
@@ -115,7 +117,12 @@ BasicPage {
         itemComponent: Rectangle {
             id: annotationItem
 
-            property int requiredHeight: Math.max(units.fingerUnit, annotationSubLoader.requiredHeight + annotationSubLoader.anchors.margins * 2)
+            property int requiredHeight: units.fingerUnit
+
+            function calculateRequiredHeight() {
+                annotationItem.requiredHeight = Math.max(units.fingerUnit, annotationSubLoader.requiredHeight + annotationSubLoader.anchors.margins * 2);
+            }
+
             clip: true
             property var model: null
 
@@ -127,7 +134,6 @@ BasicPage {
                     name: 'expanded'
                     PropertyChanges {
                         target: annotationItem
-                        requiredHeight: annotationsList.height
                     }
                 }
             ]
@@ -177,7 +183,10 @@ BasicPage {
                     case 0:
                         break;
                     default:
-                        annotationSubLoader.sourceComponent = annotationGroupComponent;
+                        if (subList)
+                            annotationSubLoader.sourceComponent = singleAnnotationComponent;
+                        else
+                            annotationSubLoader.sourceComponent = annotationGroupComponent;
                         break;
                     }
                 } else {
@@ -188,7 +197,7 @@ BasicPage {
                     case 0:
                         break;
                     default:
-                        annotationSubLoader.setSource('ExtendedAnnotationsList.qml',{firstLabelFilter: modelFirstLabel, hideHeader: true, subList: true});
+                        annotationSubLoader.setSource('ExtendedAnnotationsList.qml',{firstLabelCodeFilter: annotationItem.modelLabelCode, hideHeader: true, subList: true, sortLabels: annotations.sortLabels});
                         break;
                     }
                 }
@@ -205,16 +214,22 @@ BasicPage {
 
                 property int requiredHeight: 0
 
+                onRequiredHeightChanged: annotationItem.calculateRequiredHeight()
+
                 Connections {
                     target: annotationSubLoader.item
-                    onRequiredHeightChanged: {
+                    ignoreUnknownSignals: true
+                    onRequiredHeightSignal: {
                         annotationSubLoader.getRequiredHeight();
                     }
                 }
 
                 function getRequiredHeight() {
-                    if (item !== null)
-                        annotationSubLoader.requiredHeight = item.requiredHeight;
+                    console.log('needed required height');
+                    if (annotationSubLoader.item !== null) {
+                        console.log('needed 2 required height');
+                        annotationSubLoader.requiredHeight = annotationSubLoader.item.requiredHeight;
+                    }
                 }
             }
 
@@ -222,7 +237,15 @@ BasicPage {
                 id: singleAnnotationComponent
 
                 Item {
+                    id: singleAnnotationItem
+
                     property int requiredHeight: units.fingerUnit * 2 + ((rubricsAssessmentModel.count>0)?(units.fingerUnit * 2.5):0)
+
+                    property string title: annotationItem.modelTitle
+
+                    onRequiredHeightChanged: {
+                        annotationSubLoader.getRequiredHeight();
+                    }
                     property Component expandedComponent: expandedSingleAnnotationComponent
 
                     RowLayout {
@@ -314,12 +337,10 @@ BasicPage {
                         id: rubricsAssessmentModel
                         filters: ["annotation=?"]
                     }
-                    Connections {
-                        target: annotationItem
-                        onModelTitleChanged: {
-                            rubricsAssessmentModel.bindValues = [annotationItem.modelTitle];
-                            rubricsAssessmentModel.select();
-                        }
+
+                    onTitleChanged: {
+                        rubricsAssessmentModel.bindValues = [annotationItem.modelTitle];
+                        rubricsAssessmentModel.select();
                     }
                 }
             }
@@ -635,38 +656,23 @@ BasicPage {
             onSortChanged: annotationsList.refreshUp()
         }
 
+        onFirstLabelCodeFilterChanged: annotationsList.setUpFilters()
+
         Connections {
             target: annotations
-            onFirstLabelFilterChanged: annotationsList.setUpFilters()
+
             onStateFilterChanged: annotationsList.setUpFilters()
             onLabelsFilterChanged: annotationsList.setUpFilters()
-            onOnlyEmptyProjectsChanged: {
-                console.log('only emptyProjects is', annotations.onlyEmptyProjects);
-                annotationsList.setUpFilters();
-            }
-            onProjectChanged: {
-                console.log('PROJECT changed to', annotations.project);
-                annotationsList.setUpFilters();
-            }
         }
 
         function setUpFilters() {
             var newFilters = annotations.labelsFilter;
             if (annotations.stateFilter !== '')
                 newFilters = newFilters.concat(annotations.stateFilter);
-            if (annotations.onlyEmptyProjects) {
-                console.log('Only empty projects');
-                newFilters = newFilters.concat(annotations.emptyProjectFilter);
-            }
-            if (annotations.project == '') {
-                annotationsModel.bindValues = [];
-            } else {
-                annotationsModel.bindValues = [annotations.project];
-                newFilters = newFilters.concat("project=?");
-            }
-            if (annotations.firstLabelFilter != '') {
-                newFilters = newFilters.concat("firstLabel=?");
-                annotationsModel.bindValues = [annotations.firstLabelFilter];
+            if (annotationsList.firstLabelCodeFilter !== 0) {
+                console.log("last before", annotationsList.firstLabelCodeFilter);
+                newFilters = newFilters.concat("labelCode=" + annotationsList.firstLabelCodeFilter + "");
+//                annotationsModel.bindValues = [annotationsList.firstLabelCodeFilter];
             }
 
             annotationsModel.filters = newFilters;
@@ -716,7 +722,7 @@ BasicPage {
         filters: [annotations.stateFilter].concat(annotations.labelsFilter)
         sort: 'labelCode ASC, start ASC, end ASC'
 
-        groupBy: 'labelGroup'
+        groupBy: (annotations.subList)?'title':'labelGroup'
 
         Component.onCompleted: select()
     }
@@ -914,17 +920,6 @@ BasicPage {
                     Layout.fillWidth: true
                     Layout.preferredHeight: units.nailUnit
                     color: 'gray'
-                }
-
-                Common.TextButton {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: units.fingerUnit
-                    fontSize: units.readUnit
-                    text: qsTr("Classifica per projecte")
-                    onClicked: {
-                        menuRect.closeMenu();
-                        annotations.classifyVariable = 'project';
-                    }
                 }
 
                 Common.TextButton {
