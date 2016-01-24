@@ -1469,29 +1469,48 @@ BasicPage {
     function setUpAnnotations() {
         // All labels are numbered starting at 1. Number 0 means no label assigned.
 
-        var firstLabelString = "CASE WHEN labels = '' OR labels IS NULL THEN '' WHEN instr(labels,' ')>1 THEN substr(labels,1,instr(labels,' ')-1) ELSE labels END";
+        var firstLabel = "";
+
+//        var firstLabelString = "CASE WHEN labels = '' OR labels IS NULL THEN '' WHEN instr(labels,' ')>1 THEN substr(labels,1,instr(labels,' ')-1) ELSE labels END";
         // First wildcard: position to start searching the first label. It is 1, but it should be changed to other positions.
         // Second wildcard: the labels separator is a single blank space.
         // Instr fins the position of the wildcard. If it is not found, instr returns 0.
 
         var labelCode = "";
         var groupingCode = "";
+        var groupLabel = "";
 
         if (sortLabels != '') {
             var labels = sortLabels.replace(/\s{2,}/,' ').split(' ');
-            labelCode = "CASE (SELECT " + firstLabelString + ") WHEN '' THEN 0";
+//            labelCode = "CASE (SELECT " + firstLabelString + ") WHEN '' THEN 0";
+
+            var detectFirstLabel = "CASE WHEN labels = '' OR labels IS NULL THEN ";
+            labelCode = detectFirstLabel + "0";
+            firstLabel = detectFirstLabel + "''";
+
             for (var i=0; i<labels.length; i++) {
-                labelCode += " WHEN '" + labels[i] + "' THEN " + (i+1);
+                // Check if the first label is between the record labels
+                var detectLabel = " WHEN instr(' '||labels||' ','" + labels[i] + "')>0 THEN "
+                labelCode += detectLabel + (i+1);
+                firstLabel += detectLabel + "'" + labels[i] + "'";
+                //                labelCode += " WHEN '" + labels[i] + "' THEN " + (i+1);
             }
             labelCode += " ELSE " + (labels.length+1) + " END";
-            groupingCode = "CASE WHEN " + firstLabelString + " IN ('" + labels.join("','") + "') THEN " + firstLabelString + " ELSE ROWID END";
+
+            groupLabel = firstLabel;
+            firstLabel += " ELSE labels END";
+            groupLabel += " ELSE '' END";
+
+            groupingCode = "CASE (" + groupLabel + ") WHEN '' THEN ROWID ELSE (" + groupLabel + ") END";
         } else {
             labelCode = "0";
+            firstLabel = "''";
             groupingCode = "ROWID";
         }
 
+        console.log('grouping code', groupingCode);
         annotationsModel.calculatedFieldNames = [
-            firstLabelString + " AS firstLabel",
+            firstLabel + " AS firstLabel",
             labelCode + " AS labelCode",
             groupingCode + " AS labelGroup",
             "COUNT(" + groupingCode + ") AS groupCount"
