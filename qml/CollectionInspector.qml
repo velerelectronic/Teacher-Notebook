@@ -12,6 +12,10 @@ Common.AbstractEditor {
     property alias pageBackground: backgroundImage.source
     property alias model: inspectorGrid.model
 
+    property bool embedded: false
+    property int requiredHeight: inspectorGrid.contentItem.height
+    onRequiredHeightChanged: console.log('collectioninspector required height', requiredHeight)
+
     signal saveDataRequested
     signal copyDataRequested
     signal discardDataRequested(bool changes)
@@ -67,7 +71,7 @@ Common.AbstractEditor {
         spacing: units.nailUnit
 
         currentIndex: -1
-        interactive: currentIndex < 0
+        interactive: (!embedded) && (currentIndex < 0)
 
         model: VisualItemModel { id: visualModel }
 

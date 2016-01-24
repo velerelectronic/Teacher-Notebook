@@ -331,50 +331,22 @@ Window {
         }
     }
 
+    Models.ExtendedAnnotations {
+        id: annotationsModelConv
+    }
+
     Component.onCompleted: {
 
         basicDatabase.initEverything();
 
-        /*
-        auditTable('rubrics_last_scores',[
-                       'assessment',
-                    'individual',
-                    'name',
-                    'surname',
-                    '\"group\"',
-                    'criteriumTitle',
-                    'criteriumDesc',
-                    'weight',
-                    'descriptor',
-                    'moment',
-                    'comment',
-                    'criterium',
-                    'level',
-                    'definition',
-                    'lastScoreId',
-                    'score']);
-*/
-        auditTable('rubrics_descriptors_scores',[
-                       'assessment',
-                       'rubric',
-                       'individual',
-                       'name',
-                       'surname',
-                       '\"group\"',
+        annotationsModelConv.select();
+        console.log("Recompte",annotationsModelConv.count);
+        annotationsModelConv.select();
+        console.log("Recompte",annotationsModelConv.count);
+        annotationsModelConv.select();
 
-                       'criterium',
-                       'criteriumTitle',
-                       'criteriumDesc',
-                       'weight',
+        console.log("Recompte",annotationsModelConv.count);
 
-                       'descriptor',
-                       'moment',
-                       'comment',
-
-                       'level',
-                       'definition',
-                       'scoreId'
-                   ]);
     }
 
 }

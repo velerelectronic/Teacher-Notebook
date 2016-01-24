@@ -136,7 +136,7 @@ Item {
     }
 
     Component.onCompleted: {
-        menuModel.append({caption: qsTr('Anotacions'), page: 'ExtendedAnnotationsList', parameters: {}, submenu: {object: menuPage, method: 'getSavedSearches'}});
+        menuModel.append({caption: qsTr('Anotacions'), page: 'ExtendedAnnotationsList', parameters: {}, submenu: {object: menuPage, method: 'getSortLabels'}});
         menuModel.append({caption: qsTr('Taules'), page: '', parameters: {}, submenu: {object: menuPage, method: 'getSavedSearchesForTables'}});
         menuModel.append({caption: qsTr('Rúbriques'), page: 'RubricsAssessmentList', parameters: {}, submenu: {object: menuPage, method: 'getRubricsOptions'}});
         menuModel.append({caption: qsTr('Projectes'), page: 'Projects', parameters: {}, submenu: {object: menuPage, method: 'getProjectsList'}});
@@ -159,12 +159,17 @@ Item {
         id: savedAnnotationsModel
     }
 
-    function getSavedSearches() {
+    Models.LabelsSortModel {
+        id: labelsSortModel
+    }
+
+    function getSortLabels() {
         console.log('get saved searcges');
-        savedAnnotationsModel.select();
-        for (var i=0; i<savedAnnotationsModel.count; i++) {
-            var savedAnnotation = savedAnnotationsModel.getObjectInRow(i);
-            subMenuElements.append({caption: savedAnnotation.title, page: 'ExtendedAnnotationsList', parameters: {searchString: savedAnnotation.terms}});
+        labelsSortModel.select();
+        subMenuElements.append({caption: qsTr('Ordenacions'), page: 'LabelsSort', parameters: {}});
+        for (var i=0; i<labelsSortModel.count; i++) {
+            var sortLabel = labelsSortModel.getObjectInRow(i);
+            subMenuElements.append({caption: sortLabel.title, page: 'ExtendedAnnotationsList', parameters: {sortLabels: sortLabel.labels}});
         }
         subMenuElements.append({caption: qsTr('Anotacions (anterior)'), page: 'AnnotationsList', parameters: {}});
     }

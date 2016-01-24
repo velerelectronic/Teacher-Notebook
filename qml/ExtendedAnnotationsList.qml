@@ -14,6 +14,8 @@ BasicPage {
     property bool isVertical: width<height
 
     property bool onlyEmptyProjects: false
+    property bool hideHeader: false
+    property bool subList: false
 
     signal showExtendedAnnotation (var parameters)
 //    signal openMenu(int initialHeight, var menu, var options)
@@ -25,6 +27,12 @@ BasicPage {
     property bool chooseMode: false
 
     property string classifyVariable: 'end'
+
+    property string sortLabels: ''
+
+    property string firstLabelFilter: ''
+
+    property int requiredHeight
 
     property var stateTypes: {
         'done': "state < 0",
@@ -86,7 +94,11 @@ BasicPage {
         id: annotationsList
         //anchors.fill: parent
 
+        onRequiredHeightChanged: annotations.requiredHeight = annotationsList.requiredHeight;
+
         bottomMargin: units.fingerUnit * 3
+
+        interactive: !annotations.subList
 
         onStateChanged: {
             if ((isDirty) && (state == 'simple')){
@@ -103,19 +115,42 @@ BasicPage {
         itemComponent: Rectangle {
             id: annotationItem
 
-            property int requiredHeight: units.fingerUnit * 2 + ((rubricsAssessmentModel.count>0)?(units.fingerUnit * 2.5):0)
-            property var model: {
+            property int requiredHeight: Math.max(units.fingerUnit, annotationSubLoader.requiredHeight + annotationSubLoader.anchors.margins * 2)
+            clip: true
+            property var model: null
 
-                'title': '',
-                'desc': '',
-                'project': '',
-                'labels': '',
-                'start': '',
-                'end': '',
-                'state': ''
+            states: [
+                State {
+                    name: 'minimized'
+                },
+                State {
+                    name: 'expanded'
+                    PropertyChanges {
+                        target: annotationItem
+                        requiredHeight: annotationsList.height
+                    }
+                }
+            ]
+            state: 'minimized'
+
+            function sendState(newState) {
+                if (newState == '') {
+                    annotationItem.state = (annotationItem.state == 'minimized')?'expanded':'minimized';
+                } else {
+                    annotationItem.state = newState;
+                }
+                loadContents();
             }
 
+            border.color: 'black'
+
             onModelChanged: {
+/*
+                console.log('Printing model');
+                for (var prop in model) {
+                    console.log(prop, ':', model[prop]);
+                }
+*/
                 modelTitle = coalesceModel(annotationItem.model, 'title', '');
                 modelDesc = coalesceModel(annotationItem.model, 'desc', '');
                 modelState = coalesceModel(annotationItem.model, 'state', '');
@@ -123,10 +158,240 @@ BasicPage {
                 modelLabels = coalesceModel(annotationItem.model, 'labels', '');
                 modelStart = coalesceModel(annotationItem.model, 'start', '');
                 modelEnd = coalesceModel(annotationItem.model, 'end', '');
+                modelFirstLabel = coalesceModel(annotationItem.model, 'firstLabel','');
+                modelLabelCode = coalesceModel(annotationItem.model, 'labelCode',-1);
+                modelLabelGroup = coalesceModel(annotationItem.model, 'labelGroup',-1);
+                modelGroupCount = coalesceModel(annotationItem.model, 'groupCount',0);
+
+                console.log('model group count', modelGroupCount);
+
+                loadContents();
             }
 
+            function loadContents() {
+                if (annotationItem.state == 'minimized') {
+                    switch(modelGroupCount) {
+                    case 1:
+                        annotationSubLoader.sourceComponent = singleAnnotationComponent;
+                        break;
+                    case 0:
+                        break;
+                    default:
+                        annotationSubLoader.sourceComponent = annotationGroupComponent;
+                        break;
+                    }
+                } else {
+                    switch(modelGroupCount) {
+                    case 1:
+                        annotationSubLoader.sourceComponent = expandedSingleAnnotationComponent;
+                        break;
+                    case 0:
+                        break;
+                    default:
+                        annotationSubLoader.setSource('ExtendedAnnotationsList.qml',{firstLabelFilter: modelFirstLabel, hideHeader: true, subList: true});
+                        break;
+                    }
+                }
+                annotationSubLoader.getRequiredHeight();
+            }
+
+            Loader {
+                id: annotationSubLoader
+
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+
+                onLoaded: getRequiredHeight()
+
+                property int requiredHeight: 0
+
+                Connections {
+                    target: annotationSubLoader.item
+                    onRequiredHeightChanged: {
+                        annotationSubLoader.getRequiredHeight();
+                    }
+                }
+
+                function getRequiredHeight() {
+                    if (item !== null)
+                        annotationSubLoader.requiredHeight = item.requiredHeight;
+                }
+            }
+
+            Component {
+                id: singleAnnotationComponent
+
+                Item {
+                    property int requiredHeight: units.fingerUnit * 2 + ((rubricsAssessmentModel.count>0)?(units.fingerUnit * 2.5):0)
+                    property Component expandedComponent: expandedSingleAnnotationComponent
+
+                    RowLayout {
+                        id: basicAnnotationInfo
+
+                        anchors {
+                            top: parent.top
+                            left: parent.left
+                            right: parent.right
+                            bottom: (rubricsAssessmentModel.count>0)?parent.verticalCenter:parent.bottom
+                        }
+
+                        anchors.margins: units.nailUnit
+                        spacing: units.nailUnit
+
+                        Text {
+                            id: titleText
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: annotationItem.modelTitle
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: parent.width / 4
+                            color: 'red'
+                            text: annotationItem.modelStart + "\n" + annotationItem.modelEnd
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: parent.width / 4
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            color: 'green'
+                            text: "<b>" + annotationItem.modelProject + "</b> &nbsp;" + annotationItem.modelLabels + "-->>" + annotationItem.modelLabelCode + annotationItem.modelFirstLabel + "//" + annotationItem.modelLabelGroup + annotationItem.modelGroupCount
+                        }
+
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: parent.width / 8
+                            text: {
+                                if (annotationItem.modelState<0) {
+                                    return qsTr('Finalitzat');
+                                } else {
+                                    if ((annotationItem.modelState>0) && (annotationItem.modelState<=10)) {
+                                        return (annotationItem.model.state * 10) + "%";
+                                    } else {
+                                        return qsTr('Actiu');
+                                    }
+                                }
+                            }
+                        }
+                        Common.ImageButton {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: units.fingerUnit * 2
+                            size: units.fingerUnit
+                            image: 'window-27140'
+                            onClicked: annotations.openMenu(units.fingerUnit * 4, singleAnnotationMenu, {index: model.index, labels: model.labels})
+                        }
+                    }
+
+                    ListView {
+                        id: rubricsAnnotationInfo
+
+                        anchors {
+                            margins: units.nailUnit
+                            top: basicAnnotationInfo.bottom
+                            bottom: parent.bottom
+                            left: parent.left
+                            right: parent.right
+                        }
+
+                        leftMargin: titleText.width
+                        orientation: ListView.Horizontal
+
+                        model: rubricsAssessmentModel
+                        spacing: units.nailUnit
+                        delegate: Common.BoxedText {
+                            height: units.fingerUnit * 2
+                            width: units.fingerUnit * 6
+                            text: model.title + " (" + model.group + ")"
+                            margins: units.nailUnit
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: openRubricGroupAssessment(model.id, model.rubric, rubricsModel, rubricsAssessmentModel)
+                            }
+                        }
+                    }
+                    Models.RubricsAssessmentModel {
+                        id: rubricsAssessmentModel
+                        filters: ["annotation=?"]
+                    }
+                    Connections {
+                        target: annotationItem
+                        onModelTitleChanged: {
+                            rubricsAssessmentModel.bindValues = [annotationItem.modelTitle];
+                            rubricsAssessmentModel.select();
+                        }
+                    }
+                }
+            }
+
+            Component {
+                id: expandedSingleAnnotationComponent
+
+                ShowExtendedAnnotation {
+                    id: extendedAnnotationItem
+
+                    property var model
+                    embedded: true
+
+                    identifier: annotationItem.modelTitle
+
+                    onRequiredHeightChanged: annotationItem.requiredHeight = extendedAnnotationItem.requiredHeight + 2 * units.nailUnit
+
+                    onOpenMenu: annotations.openMenu(initialHeight, menu, options)
+
+                    onOpenRubricGroupAssessment: {
+                        console.log('Now')
+                        annotations.openRubricGroupAssessment(assessment, rubric, rubricsModel, rubricsAssessmentModel);
+                    }
+
+                    onDeletedAnnotation: {
+                        annotationsList.closeItem();
+                        annotations.refresh();
+                    }
+
+                    onUpdatedContents: {
+                        annotationsList.lastSelected = identifier;
+                        isDirty = true;
+                    }
+                }
+
+            }
+
+            Component {
+                id: annotationGroupComponent
+                Item {
+                    property int requiredHeight: units.fingerUnit * 2
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+                        spacing: units.nailUnit
+
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignLeft
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            text: annotationItem.modelLabelGroup
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: units.fingerUnit
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            font.pixelSize: units.readUnit
+                            text: annotationItem.modelGroupCount
+                        }
+                    }
+
+                }
+            }
+
+
             function coalesceModel(model, var1, var2) {
-                return (model !== null)?model[var1]:var2;
+                return ((model !== null) && (typeof model[var1] !== 'undefined'))?model[var1]:var2;
             }
 
             property string modelTitle
@@ -136,335 +401,188 @@ BasicPage {
             property string modelLabels
             property string modelStart
             property string modelEnd
+            property string modelFirstLabel
+            property int modelLabelCode
+            property string modelLabelGroup
+            property int modelGroupCount: 0
 
             property string identifier: annotationItem.modelTitle
             property bool isLastSelected: (annotationsList.lastSelected != '') && (annotationItem.identifier == annotationsList.lastSelected)
 
             color: (modelState>=0)?'white':'#AAAAAA'
+        }
 
-            states: [
-                State {
-                    name: 'unselected'
-                    PropertyChanges {
-                        target: annotationItem
-                        border.color: 'gray'
+        header: (annotations.hideHeader)?null:headerComponent
+
+        Component {
+            id: headerComponent
+            Rectangle {
+                id: annotationsListHeader
+
+                z: 300
+                color: 'white'
+                width: annotationsList.width
+                height: units.fingerUnit * 2.5
+                visible: annotationsList.currentIndex < 0
+
+                GridLayout {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    columnSpacing: units.nailUnit
+                    columns: 3
+
+                    Common.SearchBox {
+                        id: searchAnnotations
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
+
+                        text: annotations.searchString
+
+                        onTextChanged: annotations.searchString = text
+                        onPerformSearch: {
+                            annotationsListHeader.addSearchTerm(text);
+
+                            var textArray = text.split(/\s+/i);
+                            // text.split(/[$|\b+][#\B+][^|\b+]/i);
+                            console.log(textArray);
+                            var descArray = [];
+                            var labelsArray = [];
+                            for (var i=0; i<textArray.length; i++) {
+                                if (textArray[i].indexOf('#') === 0) {
+                                    labelsArray.push(textArray[i].substr(1));
+                                } else {
+                                    descArray.push(textArray[i]);
+                                }
+                            }
+
+                            annotationsModel.searchString = descArray.join(' ');
+
+                            var filtersArray = [];
+                            for (var i=0; i<labelsArray.length; i++) {
+                                filtersArray.push("INSTR(UPPER(labels),UPPER('" + labelsArray[i] + "'))");
+                            }
+
+                            annotations.labelsFilter = filtersArray;
+                        }
+                        onIntroPressed: {
+                            console.log('INTRO')
+                        }
                     }
-                },
-                State {
-                    name: 'selected'
-                    PropertyChanges {
-                        target: annotationItem
-                        border.color: 'green'
-                        border.width: units.nailUnit
+
+                    Common.ImageButton {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: height
+                        image: 'day-42975'
+                        onClicked: {
+                            var today = new Date();
+                            var todayString = today.toYYYYMMDDFormat() + " " + today.toHHMMFormat();
+
+                            var field = '';
+                            var comparisonSign = 0;
+
+                            switch(sortOption) {
+                                case sortType.start:
+                                    field = 'start';
+                                    comparisonSign = -1;
+                                    break;
+                                case sortType.end:
+                                    field = 'end';
+                                    comparisonSign = -1;
+                                    break;
+                                case sortType.startRev:
+                                    field = 'start';
+                                    comparisonSign = 1;
+                                    break;
+                                case sortType.endRev:
+                                    field = 'end'
+                                    comparisonSign = 1;
+                                    break;
+                            }
+
+                            var row = 0;
+                            while (row < annotationsModel.count) {
+                                console.log('field',field);
+                                var date = annotationsModel.getObjectInRow(row)[field];
+                                if (todayString.localeCompare(date) === comparisonSign)
+                                    break;
+                                else {
+                                    row++;
+                                }
+                            }
+                            if (row == annotationsModel.count)
+                                row--;
+                            annotationsList.lastSelected = annotationsModel.getObjectInRow(row)['title'];
+                            annotationsList.positionViewAtIndex(row, ListView.Contain);
+                        }
+                    }
+
+                    Common.TextButton {
+                        Layout.fillHeight: true
+                        text: qsTr('Opcions')
+                        onClicked: openMenu(units.fingerUnit * 4, annotationsMenu, {})
+                    }
+                    ListView {
+                        id: searchTermsList
+
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit * 1
+                        orientation: ListView.Horizontal
+                        model: ListModel { id: searchTermsModel }
+                        spacing: units.nailUnit
+                        clip: true
+
+                        delegate: Rectangle {
+                            height: searchTermsList.height
+                            width: searchTermText.width + radius * 2
+                            radius: height / 2
+                            color: '#81DAF5'
+                            Text {
+                                id: searchTermText
+                                anchors {
+                                    left: parent.left
+                                    verticalCenter: parent.verticalCenter
+                                    margins: parent.radius
+                                }
+                                width: contentWidth
+                                text: model.terms
+                                font.pixelSize: units.readUnit
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    var newTerms = model.terms;
+                                    searchTermsModel.move(model.index, 0, 1);
+                                    searchAnnotations.text = newTerms;
+                                }
+                            }
+                        }
                     }
                 }
-            ]
-            state: (annotationItem.isLastSelected)?'selected':'unselected'
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    if (annotationItem.state === 'unselected') {
-                        if (chooseMode) {
-                            annotationsList.lastSelected = annotationItem.modelTitle;
-                            chosenAnnotation(annotationItem.modelTitle);
-                        } else {
-                            annotationsList.expandItem(annotationItem.model.index, annotationItem.identifier, {identifier: annotationItem.identifier});
-                        }
+                function addSearchTerm(searchTerm) {
+                    if (searchTermsModel.count>0) {
+                        if (searchTerm !== searchTermsModel.get(0).terms)
+                            searchTermsModel.insert(0, {terms: searchTerm});
                     } else {
-                        annotationsList.expandItem(annotationItem.model.index, annotationItem.identifier, {identifier: annotationItem.identifier});
-                    }
-                }
-            }
-
-            RowLayout {
-                id: basicAnnotationInfo
-
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                    bottom: (rubricsAssessmentModel.count>0)?parent.verticalCenter:parent.bottom
-                }
-
-                anchors.margins: units.nailUnit
-                spacing: units.nailUnit
-
-                Text {
-                    id: titleText
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: annotationItem.modelTitle
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: parent.width / 4
-                    color: 'red'
-                    text: annotationItem.modelStart + "\n" + annotationItem.modelEnd
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: parent.width / 4
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    color: 'green'
-                    text: "<b>" + annotationItem.modelProject + "</b> &nbsp;" + annotationItem.modelLabels
-                }
-
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: parent.width / 8
-                    text: {
-                        if (annotationItem.modelState<0) {
-                            return qsTr('Finalitzat');
-                        } else {
-                            if ((annotationItem.modelState>0) && (annotationItem.modelState<=10)) {
-                                return (annotationItem.model.state * 10) + "%";
-                            } else {
-                                return qsTr('Actiu');
-                            }
-                        }
-                    }
-                }
-                Common.ImageButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: units.fingerUnit * 2
-                    size: units.fingerUnit
-                    image: 'window-27140'
-                    onClicked: annotations.openMenu(units.fingerUnit * 4, singleAnnotationMenu, {index: model.index, labels: model.labels})
-                }
-            }
-
-            ListView {
-                id: rubricsAnnotationInfo
-
-                anchors {
-                    margins: units.nailUnit
-                    top: basicAnnotationInfo.bottom
-                    bottom: parent.bottom
-                    left: parent.left
-                    right: parent.right
-                }
-
-                leftMargin: titleText.width
-                orientation: ListView.Horizontal
-
-                model: rubricsAssessmentModel
-                spacing: units.nailUnit
-                delegate: Common.BoxedText {
-                    height: units.fingerUnit * 2
-                    width: units.fingerUnit * 6
-                    text: model.title + " (" + model.group + ")"
-                    margins: units.nailUnit
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: openRubricGroupAssessment(model.id, model.rubric, rubricsModel, rubricsAssessmentModel)
-                    }
-                }
-            }
-            Models.RubricsAssessmentModel {
-                id: rubricsAssessmentModel
-                filters: ["annotation=?"]
-            }
-            onModelTitleChanged: {
-                rubricsAssessmentModel.bindValues = [annotationItem.modelTitle];
-                rubricsAssessmentModel.select();
-            }
-
-        }
-
-        expandedComponent: ShowExtendedAnnotation {
-            id: extendedAnnotationItem
-
-            onOpenMenu: annotations.openMenu(initialHeight, menu, options)
-
-            onOpenRubricGroupAssessment: {
-                console.log('Now')
-                annotations.openRubricGroupAssessment(assessment, rubric, rubricsModel, rubricsAssessmentModel);
-            }
-
-            onDeletedAnnotation: {
-                annotationsList.closeItem();
-                annotations.refresh();
-            }
-
-            onUpdatedContents: {
-                annotationsList.lastSelected = identifier;
-                isDirty = true;
-            }
-        }
-
-        header: Rectangle {
-            id: annotationsListHeader
-
-            z: 300
-            color: 'white'
-            width: annotationsList.width
-            height: units.fingerUnit * 2.5
-            visible: annotationsList.currentIndex < 0
-
-            GridLayout {
-                anchors.fill: parent
-                anchors.margins: units.nailUnit
-                columnSpacing: units.nailUnit
-                columns: 3
-
-                Common.SearchBox {
-                    id: searchAnnotations
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: units.fingerUnit
-
-                    text: annotations.searchString
-
-                    onTextChanged: annotations.searchString = text
-                    onPerformSearch: {
-                        annotationsListHeader.addSearchTerm(text);
-
-                        var textArray = text.split(/\s+/i);
-                        // text.split(/[$|\b+][#\B+][^|\b+]/i);
-                        console.log(textArray);
-                        var descArray = [];
-                        var labelsArray = [];
-                        for (var i=0; i<textArray.length; i++) {
-                            if (textArray[i].indexOf('#') === 0) {
-                                labelsArray.push(textArray[i].substr(1));
-                            } else {
-                                descArray.push(textArray[i]);
-                            }
-                        }
-
-                        annotationsModel.searchString = descArray.join(' ');
-
-                        var filtersArray = [];
-                        for (var i=0; i<labelsArray.length; i++) {
-                            filtersArray.push("INSTR(UPPER(labels),UPPER('" + labelsArray[i] + "'))");
-                        }
-
-                        annotations.labelsFilter = filtersArray;
-                    }
-                    onIntroPressed: {
-                        console.log('INTRO')
-                    }
-                }
-                Common.ImageButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: height
-                    image: 'day-42975'
-                    onClicked: {
-                        var today = new Date();
-                        var todayString = today.toYYYYMMDDFormat() + " " + today.toHHMMFormat();
-
-                        var field = '';
-                        var comparisonSign = 0;
-
-                        switch(sortOption) {
-                            case sortType.start:
-                                field = 'start';
-                                comparisonSign = -1;
-                                break;
-                            case sortType.end:
-                                field = 'end';
-                                comparisonSign = -1;
-                                break;
-                            case sortType.startRev:
-                                field = 'start';
-                                comparisonSign = 1;
-                                break;
-                            case sortType.endRev:
-                                field = 'end'
-                                comparisonSign = 1;
-                                break;
-                        }
-
-                        var row = 0;
-                        while (row < annotationsModel.count) {
-                            console.log('field',field);
-                            var date = annotationsModel.getObjectInRow(row)[field];
-                            if (todayString.localeCompare(date) === comparisonSign)
-                                break;
-                            else {
-                                row++;
-                            }
-                        }
-                        if (row == annotationsModel.count)
-                            row--;
-                        annotationsList.lastSelected = annotationsModel.getObjectInRow(row)['title'];
-                        annotationsList.positionViewAtIndex(row, ListView.Contain);
-                    }
-                }
-
-                Common.TextButton {
-                    Layout.fillHeight: true
-                    text: qsTr('Opcions')
-                    onClicked: openMenu(units.fingerUnit * 4, annotationsMenu, {})
-                }
-                ListView {
-                    id: searchTermsList
-
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: units.fingerUnit * 1
-                    orientation: ListView.Horizontal
-                    model: ListModel { id: searchTermsModel }
-                    spacing: units.nailUnit
-                    clip: true
-
-                    delegate: Rectangle {
-                        height: searchTermsList.height
-                        width: searchTermText.width + radius * 2
-                        radius: height / 2
-                        color: '#81DAF5'
-                        Text {
-                            id: searchTermText
-                            anchors {
-                                left: parent.left
-                                verticalCenter: parent.verticalCenter
-                                margins: parent.radius
-                            }
-                            width: contentWidth
-                            text: model.terms
-                            font.pixelSize: units.readUnit
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                var newTerms = model.terms;
-                                searchTermsModel.move(model.index, 0, 1);
-                                searchAnnotations.text = newTerms;
-                            }
-                        }
-                    }
-                }
-            }
-
-            function addSearchTerm(searchTerm) {
-                if (searchTermsModel.count>0) {
-                    if (searchTerm !== searchTermsModel.get(0).terms)
                         searchTermsModel.insert(0, {terms: searchTerm});
-                } else {
-                    searchTermsModel.insert(0, {terms: searchTerm});
+                    }
                 }
             }
         }
+
         headerPositioning: ListView.OverlayHeader
 
-        section.property: (annotationsList.state == 'simple')?annotations.classifyVariable:''
-
+        section.property: 'firstLabel'
+        section.criteria: ViewSection.FullString
         section.delegate: Item {
             width: annotationsList.width
             height: units.fingerUnit * 2
             Text {
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    bottom: parent.bottom
-                }
-                height: units.fingerUnit
-
-                verticalAlignment: Text.AlignVCenter
-                font.pixelSize: units.readUnit
-//                font.bold: true
+                anchors.fill: parent
+                verticalAlignment: Text.AlignBottom
                 color: 'black'
-                text: section
+                font.pixelSize: units.readUnit
+                text: ((section != "")?section:qsTr('Sense classificar'))
             }
         }
 
@@ -519,6 +637,7 @@ BasicPage {
 
         Connections {
             target: annotations
+            onFirstLabelFilterChanged: annotationsList.setUpFilters()
             onStateFilterChanged: annotationsList.setUpFilters()
             onLabelsFilterChanged: annotationsList.setUpFilters()
             onOnlyEmptyProjectsChanged: {
@@ -545,6 +664,11 @@ BasicPage {
                 annotationsModel.bindValues = [annotations.project];
                 newFilters = newFilters.concat("project=?");
             }
+            if (annotations.firstLabelFilter != '') {
+                newFilters = newFilters.concat("firstLabel=?");
+                annotationsModel.bindValues = [annotations.firstLabelFilter];
+            }
+
             annotationsModel.filters = newFilters;
             console.log('FILTERS');
             console.log(newFilters);
@@ -590,7 +714,9 @@ BasicPage {
 
         searchFields: ['title', 'desc', 'project']
         filters: [annotations.stateFilter].concat(annotations.labelsFilter)
-        sort: sortOption
+        sort: 'labelCode ASC, start ASC, end ASC'
+
+        groupBy: 'labelGroup'
 
         Component.onCompleted: select()
     }
@@ -1333,5 +1459,43 @@ BasicPage {
         id: rubricsModel
 
         Component.onCompleted: select()
+    }
+
+
+    onSortLabelsChanged: setUpAnnotations()
+
+    Component.onCompleted: setUpAnnotations()
+
+    function setUpAnnotations() {
+        // All labels are numbered starting at 1. Number 0 means no label assigned.
+
+        var firstLabelString = "CASE WHEN labels = '' OR labels IS NULL THEN '' WHEN instr(labels,' ')>1 THEN substr(labels,1,instr(labels,' ')-1) ELSE labels END";
+        // First wildcard: position to start searching the first label. It is 1, but it should be changed to other positions.
+        // Second wildcard: the labels separator is a single blank space.
+        // Instr fins the position of the wildcard. If it is not found, instr returns 0.
+
+        var labelCode = "";
+        var groupingCode = "";
+
+        if (sortLabels != '') {
+            var labels = sortLabels.replace(/\s{2,}/,' ').split(' ');
+            labelCode = "CASE (SELECT " + firstLabelString + ") WHEN '' THEN 0";
+            for (var i=0; i<labels.length; i++) {
+                labelCode += " WHEN '" + labels[i] + "' THEN " + (i+1);
+            }
+            labelCode += " ELSE " + (labels.length+1) + " END";
+            groupingCode = "CASE WHEN " + firstLabelString + " IN ('" + labels.join("','") + "') THEN " + firstLabelString + " ELSE ROWID END";
+        } else {
+            labelCode = "0";
+            groupingCode = "ROWID";
+        }
+
+        annotationsModel.calculatedFieldNames = [
+            firstLabelString + " AS firstLabel",
+            labelCode + " AS labelCode",
+            groupingCode + " AS labelGroup",
+            "COUNT(" + groupingCode + ") AS groupCount"
+        ]
+        annotationsModel.select();
     }
 }

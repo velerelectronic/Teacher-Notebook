@@ -49,6 +49,10 @@ QSqlRecord SqlTableModel2::buildRecord(const QVariantMap &object,bool autoValue)
     return record;
 }
 
+QStringList SqlTableModel2::calculatedFieldNames() const {
+    return innerCalculatedFieldNames;
+}
+
 void SqlTableModel2::clear() {
     QSqlQuery query;
     query.prepare("DELETE FROM " + innerTableName);
@@ -102,7 +106,13 @@ void SqlTableModel2::generateRoleNames() {
     for (int i = 0; i < nbCols; i++) {
         roles[Qt::UserRole + i + 1] = innerFieldNames.at(i).toLocal8Bit();
     }
-    roles[Qt::UserRole + nbCols + 1] = QByteArray("selected");
+    int nbCols2 = innerCalculatedFieldNames.size();
+    QRegExp finalWord("\\w+$");
+    for (int i = 0; i < nbCols2; i++) {
+        QString fieldName = innerCalculatedFieldNames.at(i);
+        roles[Qt::UserRole + i + 1 + nbCols] = fieldName.mid(fieldName.indexOf(finalWord)).toLocal8Bit();
+    }
+    roles[Qt::UserRole + nbCols + nbCols2 + 1] = QByteArray("selected");
 }
 
 QString SqlTableModel2::getFieldNameByIndex(int index) {
@@ -274,7 +284,9 @@ bool SqlTableModel2::select() {
     }
 
     QSqlQuery query;
-    query.prepare("SELECT \"" + fieldNames().join("\", \"") + "\" FROM " + innerTableName +
+    query.prepare("SELECT \"" + fieldNames().join("\", \"") + "\"" +
+                  ((calculatedFieldNames().size()>0)?(", " + calculatedFieldNames().join(", ")):"") +
+                  " FROM " + innerTableName +
                   ((filtersList.size()>0)?(" WHERE " + filtersList.join(" AND ")):"") +
                   ((innerGroupBy != "")?" GROUP BY " + innerGroupBy:"") +
                   ((innerSort != "")?" ORDER BY " + innerSort:""));
@@ -338,6 +350,12 @@ void SqlTableModel2::setBindValues(const QStringList &bindValues) {
     innerBindValues = bindValues;
 }
 
+void SqlTableModel2::setCalculatedFieldNames(const QStringList &fields) {
+    innerCalculatedFieldNames = fields;
+    generateRoleNames();
+    calculatedFieldNamesChanged();
+}
+
 bool SqlTableModel2::setData(const QModelIndex &item, const QVariant &value, int role) {
     QString fieldName = getFieldNameByIndex(item.column());
 
@@ -368,6 +386,7 @@ bool SqlTableModel2::setData(const QModelIndex &item, const QVariant &value, int
 void SqlTableModel2::setFieldNames(const QStringList &fields) {
     innerFieldNames = fields;
     generateRoleNames();
+    fieldNamesChanged();
 }
 
 void SqlTableModel2::setFilters(const QStringList &filters) {

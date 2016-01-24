@@ -9,11 +9,10 @@ ListView {
         id: units
     }
 
+    property int requiredHeight: contentItem.height
     property Component itemComponent
-    property Component expandedComponent
 
     property var itemProperties
-
     property int itemSize
 
     property ListModel buttonsModel: ListModel { }
@@ -36,6 +35,9 @@ ListView {
             }
         },
         State {
+            name: 'selected'
+        },
+        State {
             name: 'expanded'
             PropertyChanges {
                 target: expandableList
@@ -45,15 +47,21 @@ ListView {
         }
     ]
 
-    state: (currentIndex < 0)?'simple':'expanded'
+    //state: (currentIndex < 0)?'simple':'expanded'
 
     currentIndex: -1
     property var lastSelected: ""
 
     delegate: Loader {
         id: simpleItemLoader
-        height: (currentIndex === model.index)?expandableList.height:item.requiredHeight
+        height: simpleItemLoader.requiredHeight
         width: expandableList.width
+
+        objectName: 'expandableItem'
+
+        property int requiredHeight: units.fingerUnit
+
+        onHeightChanged: { console.log('Loader height set to',simpleItemLoader.height) }
 
         Behavior on height {
             PropertyAnimation {
@@ -63,62 +71,61 @@ ListView {
 
         property var identifier
 
-        sourceComponent: (currentIndex === model.index)?expandableComponent:itemComponent
+        sourceComponent: itemComponent
 
         onLoaded: {
-            if (typeof simpleItemLoader.item.model !== 'undefined')
+            if (typeof simpleItemLoader.item.model !== 'undefined') {
                 simpleItemLoader.item.model = model;
+            }
+//            simpleItemLoader.requiredHeight = item.requiredHeight;
+        }
+        Connections {
+            target: simpleItemLoader.item
+            ignoreUnknownSignals: true
+            onRequiredHeightChanged: {
+                console.log('trying to change');
+                simpleItemLoader.requiredHeight = item.requiredHeight;
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                simpleItemLoader.expandItem('expanded');
+            }
+        }
+
+        function expandItem(newState) {
+            console.log('EXPANDING');
+            simpleItemLoader.requiredHeight = item.requiredHeight;
+            expandableList.sendState('minimized');
+            item.sendState(newState);
+
+            openButtonsModel.clear();
+            openButtonsModel.append({icon: 'road-sign-147409', object: expandableList, method: 'closeItems'});
+            buttonsModel = openButtonsModel;
+        }
+
+        function sendState(newState) {
+            simpleItemLoader.item.sendState(newState);
         }
     }
 
-    Component {
-        id: expandableComponent
-
-        Loader {
-            id: expandedLoader
-
-            property var identifier
-
-            Connections {
-                target: expandableList
-                onItemPropertiesChanged: {
-                    expandedLoader.sourceComponent = expandedComponent;
-                }
-            }
-
-            Connections {
-                target: item
-                onIdentifierChanged: lastSelected = item.identifier
-            }
-
-            onLoaded: {
-                for (var prop in itemProperties) {
-                    expandedLoader.item[prop] = itemProperties[prop];
-                }
-            }
-            onHeightChanged: {
-                expandableList.positionViewAtIndex(currentIndex,ListView.Beginning);
+    function sendState(newState) {
+        console.log('sending state');
+        for (var i=0; i<contentItem.children.length; i++) {
+            if (contentItem.children[i].objectName == 'expandableItem') {
+                contentItem.children[i].sendState(newState);
             }
         }
-    }
 
-    function expandItem(index, identifier, propertiesList) {
-        currentIndex = index;
-        propertiesList['identifier'] = identifier;
-        itemProperties = propertiesList;
-        console.log('Last selected', lastSelected);
-
-        openButtonsModel.clear();
-        openButtonsModel.append({icon: 'road-sign-147409', object: expandableList, method: 'closeItem'});
-        buttonsModel = openButtonsModel;
-    }
-
-    function closeItem() {
-        console.log('identifier',currentItem.identifier);
-        currentIndex = -1;
-        console.log('count', buttonsModel.count);
         buttonsModel = closeButtonsModel;
     }
+
+    function closeItems() {
+        expandableList.sendState('minimized');
+    }
+
 
     function getModelProperty(index, propertyName) {
 

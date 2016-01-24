@@ -19,7 +19,7 @@ CollectionInspectorItem {
 
     visorComponent: Item {
         id: itemVisor
-        property int requiredHeight: Math.max(textVisor.contentHeight, units.fingerUnit) + units.fingerUnit
+        property int requiredHeight: Math.max(textVisor.contentHeight, units.fingerUnit) // + units.fingerUnit
         property string shownContent: ''
 
         onShownContentChanged: textVisor.getReadableText()

@@ -5,6 +5,7 @@ import 'qrc:///common' as Common
 Common.AbstractEditor {
     id: editor
     property alias content: textline.text
+    signal accepted()
 
     Common.UseUnits { id: units }
 
@@ -23,6 +24,10 @@ Common.AbstractEditor {
             if (visible) {
                 forceActiveFocus();
             }
+        }
+        onAccepted: {
+            console.log('ACCEPTED1');
+            editor.accepted();
         }
     }
 }

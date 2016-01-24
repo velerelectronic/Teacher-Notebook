@@ -48,6 +48,8 @@ DatabaseBackup {
         dataBck.createTable('characteristics','id INTEGER PRIMARY KEY, title TEXT, desc TEXT, ref INTEGER');
         dataBck.createTable('eventCharacteristics', 'id INTEGER PRIMARY KEY, characteristic INTEGER, event INTEGER, comment TEXT');
 
+        dataBck.createTable('labelsSort', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT, labels TEXT');
+
         createView('detailedSchedule',
                    "SELECT  schedule.id         AS id,
                             schedule.created    AS created,

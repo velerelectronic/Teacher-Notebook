@@ -13,6 +13,7 @@ class SqlTableModel2 : public QSqlQueryModel
     Q_OBJECT
 
     Q_PROPERTY(QStringList bindValues READ bindValues WRITE setBindValues NOTIFY bindValuesChanged)
+    Q_PROPERTY(QStringList calculatedFieldNames READ calculatedFieldNames WRITE setCalculatedFieldNames NOTIFY calculatedFieldNamesChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QStringList fieldNames READ fieldNames WRITE setFieldNames NOTIFY fieldNamesChanged)
     Q_PROPERTY(QStringList filters READ filters WRITE setFilters NOTIFY filtersChanged)
@@ -39,6 +40,7 @@ public:
     // Own methods
 
     QStringList         bindValues() const;
+    QStringList         calculatedFieldNames() const;
     int                 count();
     const QStringList   &fieldNames();
     QStringList         &filters();
@@ -50,6 +52,7 @@ public:
     QStringList         searchFields();
     QString             searchString();
     void                setBindValues(const QStringList &bindValues);
+    void                setCalculatedFieldNames(const QStringList &fields);
     void                setFieldNames(const QStringList &fields);
     void                setFilters(const QStringList &);
     void                setGroupBy(const QString &);
@@ -87,6 +90,7 @@ public:
 
 signals:
     void bindValuesChanged();
+    void calculatedFieldNamesChanged();
     void countChanged();
     void fieldNamesChanged();
     void filtersChanged();
@@ -107,6 +111,7 @@ public slots:
 
 private:
     QStringList             innerBindValues;
+    QStringList             innerCalculatedFieldNames;
     QStringList             innerFieldNames;
     QStringList             innerFilters;
     QString                 innerGroupBy;

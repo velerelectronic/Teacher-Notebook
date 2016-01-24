@@ -23,5 +23,6 @@
         <file>models/RubricsCriteriaModel.qml</file>
         <file>models/TimeTablesModel.qml</file>
         <file>models/CombinedAnnotationsVolatileModel.qml</file>
+        <file>models/LabelsSortModel.qml</file>
     </qresource>
 </RCC>
