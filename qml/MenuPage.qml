@@ -127,7 +127,9 @@ Item {
                 menuList.currentItem.resetCurrentSubMenu();
 
                 var itemObject = menuModel.get(currentIndex);
-                menuPage.openWorkingPage(itemObject.page + ".qml", itemObject.parameters);
+                if (itemObject.page !== '') {
+                    menuPage.openWorkingPage(itemObject.page + ".qml", itemObject.parameters);
+                }
                 if (itemObject.submenu.method !== '') {
                     itemObject.submenu.object[itemObject.submenu.method]();
                 }
@@ -137,7 +139,7 @@ Item {
 
     Component.onCompleted: {
         menuModel.append({caption: qsTr('Anotacions'), page: 'ExtendedAnnotationsList', parameters: {}, submenu: {object: menuPage, method: 'getSortLabels'}});
-        menuModel.append({caption: qsTr('Taules'), page: '', parameters: {}, submenu: {object: menuPage, method: 'getSavedSearchesForTables'}});
+        menuModel.append({caption: qsTr('Taules'), page: '', parameters: {}, submenu: {object: menuPage, method: 'getSortLabelsForTables'}});
         menuModel.append({caption: qsTr('Rúbriques'), page: 'RubricsAssessmentList', parameters: {}, submenu: {object: menuPage, method: 'getRubricsOptions'}});
         menuModel.append({caption: qsTr('Projectes'), page: 'Projects', parameters: {}, submenu: {object: menuPage, method: 'getProjectsList'}});
 
@@ -174,12 +176,12 @@ Item {
         subMenuElements.append({caption: qsTr('Anotacions (anterior)'), page: 'AnnotationsList', parameters: {}});
     }
 
-    function getSavedSearchesForTables() {
+    function getSortLabelsForTables() {
         console.log('get saved searcges');
-        savedAnnotationsModel.select();
-        for (var i=0; i<savedAnnotationsModel.count; i++) {
-            var savedAnnotation = savedAnnotationsModel.getObjectInRow(i);
-            subMenuElements.append({caption: savedAnnotation.title, page: 'CombinedAnnotationsTable', parameters: {searchString: savedAnnotation.terms}});
+        labelsSortModel.select();
+        for (var i=0; i<labelsSortModel.count; i++) {
+            var sortLabel = labelsSortModel.getObjectInRow(i);
+            subMenuElements.append({caption: sortLabel.title, page: 'CombinedAnnotationsTable', parameters: {sortLabels: sortLabel.labels}});
         }
     }
 

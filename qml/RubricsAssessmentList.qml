@@ -348,6 +348,7 @@ BasicPage {
 
             sort: 'id DESC'
 
+            limit: 100
             Component.onCompleted: select()
         }
 

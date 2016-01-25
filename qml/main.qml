@@ -221,6 +221,7 @@ Window {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         z: 1
+                        clip: true
                         property string pageTitle: ((item !== null) && (typeof item.item !== 'undefined'))?item.item.pageTitle:qsTr('Teacher Notebook')
 
                         Connections {

@@ -15,6 +15,8 @@ ListView {
     property var itemProperties
     property int itemSize
 
+    signal itemSelected(int index)
+
     property ListModel buttonsModel: ListModel { }
 
     ListModel {
@@ -57,6 +59,9 @@ ListView {
         height: simpleItemLoader.requiredHeight
         width: expandableList.width
 
+        property bool isCurrentItem: ListView.isCurrentItem
+        onIsCurrentItemChanged: item.isCurrentItem = simpleItemLoader.isCurrentItem
+
         objectName: 'expandableItem'
 
         property int requiredHeight: units.fingerUnit
@@ -91,7 +96,11 @@ ListView {
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                simpleItemLoader.expandItem('expanded');
+                expandableList.currentIndex = model.index;
+                simpleItemLoader.item.itemSelected();
+            }
+            onPressAndHold: {
+                expandableList.currentIndex = model.index;
             }
         }
 

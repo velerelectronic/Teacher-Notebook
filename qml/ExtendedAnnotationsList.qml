@@ -22,6 +22,7 @@ BasicPage {
     signal combineAnnotationsIntoTable(var annotationsModel)
     signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
     signal openTimeTable(string annotation)
+    signal showExtendedAnnotationsList(var parameters)
 
     property bool chooseMode: false
 
@@ -100,8 +101,6 @@ BasicPage {
 
         bottomMargin: units.fingerUnit * 3
 
-        interactive: !annotations.subList
-
         onStateChanged: {
             if ((isDirty) && (state == 'simple')){
                 refresh();
@@ -117,10 +116,32 @@ BasicPage {
         itemComponent: Rectangle {
             id: annotationItem
 
+            border.color: (annotationItem.isCurrentItem)?'green':'black'
+            border.width: (annotationItem.isCurrentItem)?units.nailUnit:1
+
+            property bool isCurrentItem: false
             property int requiredHeight: units.fingerUnit
 
             function calculateRequiredHeight() {
                 annotationItem.requiredHeight = Math.max(units.fingerUnit, annotationSubLoader.requiredHeight + annotationSubLoader.anchors.margins * 2);
+            }
+
+            function itemSelected() {
+                switch(modelGroupCount) {
+                case 1:
+                    annotations.showExtendedAnnotation({identifier: modelTitle});
+                    break;
+                case 0:
+                    break;
+                default:
+                    if (subList) {
+                        annotations.showExtendedAnnotation({identifier: modelTitle});
+                    } else {
+                        annotations.showExtendedAnnotationsList({firstLabelCodeFilter: annotationItem.modelLabelCode, hideHeader: true, subList: true, sortLabels: annotations.sortLabels});
+                    }
+                    break;
+                }
+
             }
 
             clip: true
@@ -148,8 +169,6 @@ BasicPage {
                 loadContents();
             }
 
-            border.color: 'black'
-
             onModelChanged: {
 /*
                 console.log('Printing model');
@@ -175,31 +194,18 @@ BasicPage {
             }
 
             function loadContents() {
-                if (annotationItem.state == 'minimized') {
-                    switch(modelGroupCount) {
-                    case 1:
+                switch(modelGroupCount) {
+                case 1:
+                    annotationSubLoader.sourceComponent = singleAnnotationComponent;
+                    break;
+                case 0:
+                    break;
+                default:
+                    if (subList)
                         annotationSubLoader.sourceComponent = singleAnnotationComponent;
-                        break;
-                    case 0:
-                        break;
-                    default:
-                        if (subList)
-                            annotationSubLoader.sourceComponent = singleAnnotationComponent;
-                        else
-                            annotationSubLoader.sourceComponent = annotationGroupComponent;
-                        break;
-                    }
-                } else {
-                    switch(modelGroupCount) {
-                    case 1:
-                        annotationSubLoader.sourceComponent = expandedSingleAnnotationComponent;
-                        break;
-                    case 0:
-                        break;
-                    default:
-                        annotationSubLoader.setSource('ExtendedAnnotationsList.qml',{firstLabelCodeFilter: annotationItem.modelLabelCode, hideHeader: true, subList: true, sortLabels: annotations.sortLabels});
-                        break;
-                    }
+                    else
+                        annotationSubLoader.sourceComponent = annotationGroupComponent;
+                    break;
                 }
                 annotationSubLoader.getRequiredHeight();
             }
@@ -616,8 +622,6 @@ BasicPage {
                 right: parent.right
             }
             size: units.fingerUnit * 2
-            enabled: annotationsList.state == 'simple'
-            visible: enabled
             imageSource: 'plus-24844'
             onClicked: annotations.openMenu(units.fingerUnit * 4, addAnnotationMenu, {})
         }
@@ -1457,59 +1461,8 @@ BasicPage {
     }
 
 
-    onSortLabelsChanged: setUpAnnotations()
+    onSortLabelsChanged: annotationsModel.selectAnnotations(sortLabels)
 
-    Component.onCompleted: setUpAnnotations()
+    Component.onCompleted: annotationsModel.selectAnnotations(sortLabels)
 
-    function setUpAnnotations() {
-        // All labels are numbered starting at 1. Number 0 means no label assigned.
-
-        var firstLabel = "";
-
-//        var firstLabelString = "CASE WHEN labels = '' OR labels IS NULL THEN '' WHEN instr(labels,' ')>1 THEN substr(labels,1,instr(labels,' ')-1) ELSE labels END";
-        // First wildcard: position to start searching the first label. It is 1, but it should be changed to other positions.
-        // Second wildcard: the labels separator is a single blank space.
-        // Instr fins the position of the wildcard. If it is not found, instr returns 0.
-
-        var labelCode = "";
-        var groupingCode = "";
-        var groupLabel = "";
-
-        if (sortLabels != '') {
-            var labels = sortLabels.replace(/\s{2,}/,' ').split(' ');
-//            labelCode = "CASE (SELECT " + firstLabelString + ") WHEN '' THEN 0";
-
-            var detectFirstLabel = "CASE WHEN labels = '' OR labels IS NULL THEN ";
-            labelCode = detectFirstLabel + "0";
-            firstLabel = detectFirstLabel + "''";
-
-            for (var i=0; i<labels.length; i++) {
-                // Check if the first label is between the record labels
-                var detectLabel = " WHEN instr(' '||labels||' ','" + labels[i] + "')>0 THEN "
-                labelCode += detectLabel + (i+1);
-                firstLabel += detectLabel + "'" + labels[i] + "'";
-                //                labelCode += " WHEN '" + labels[i] + "' THEN " + (i+1);
-            }
-            labelCode += " ELSE " + (labels.length+1) + " END";
-
-            groupLabel = firstLabel;
-            firstLabel += " ELSE labels END";
-            groupLabel += " ELSE '' END";
-
-            groupingCode = "CASE (" + groupLabel + ") WHEN '' THEN ROWID ELSE (" + groupLabel + ") END";
-        } else {
-            labelCode = "0";
-            firstLabel = "''";
-            groupingCode = "ROWID";
-        }
-
-        console.log('grouping code', groupingCode);
-        annotationsModel.calculatedFieldNames = [
-            firstLabel + " AS firstLabel",
-            labelCode + " AS labelCode",
-            groupingCode + " AS labelGroup",
-            "COUNT(" + groupingCode + ") AS groupCount"
-        ]
-        annotationsModel.select();
-    }
 }

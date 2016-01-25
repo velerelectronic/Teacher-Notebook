@@ -103,6 +103,10 @@ Item {
             openNewPage('ShowExtendedAnnotation', parameters);
         }
 
+        onShowExtendedAnnotationsList: {
+            openNewPage('ExtendedAnnotationsList', parameters);
+        }
+
         onShowAnnotation: {
             openNewPage('ShowAnnotation',parameters);
         }

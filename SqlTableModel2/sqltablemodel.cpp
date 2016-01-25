@@ -289,7 +289,8 @@ bool SqlTableModel2::select() {
                   " FROM " + innerTableName +
                   ((filtersList.size()>0)?(" WHERE " + filtersList.join(" AND ")):"") +
                   ((innerGroupBy != "")?" GROUP BY " + innerGroupBy:"") +
-                  ((innerSort != "")?" ORDER BY " + innerSort:""));
+                  ((innerSort != "")?" ORDER BY " + innerSort:"") +
+                  ((innerLimit > 0)?QString(" LIMIT ") + QString().setNum(innerLimit):""));
     qDebug() << "Last query 1" << query.lastQuery();
 
     qDebug() << "Bindings" << innerBindValues.size();

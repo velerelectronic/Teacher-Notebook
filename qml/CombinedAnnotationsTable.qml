@@ -12,17 +12,16 @@ BasicPage {
     signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
 
     property SqlTableModel annotationsModel: newAnnotationsModel
-    property string searchString
+    property string sortLabels
 
-    onSearchStringChanged: {
-        annotationsModel.select();
+    onSortLabelsChanged: {
+        annotationsModel.selectAnnotations(sortLabels);
         rebuildTable();
     }
 
     Models.ExtendedAnnotations {
         id: newAnnotationsModel
         searchFields: ['title', 'desc', 'project']
-        searchString: combinedTable.searchString
     }
 
     onAnnotationsModelChanged: rebuildTable()
