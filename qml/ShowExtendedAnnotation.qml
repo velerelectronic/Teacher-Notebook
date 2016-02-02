@@ -53,6 +53,8 @@ CollectionInspector {
             labels: labelsComponent.originalContent,
             start: startComponent.originalContent,
             end: endComponent.originalContent,
+//            start: periodComponent.originalContent.start,
+//            end: periodComponent.originalContent.end,
             state: stateComponent.originalContent
         }
 
@@ -218,6 +220,8 @@ CollectionInspector {
                     Models.ExtendedAnnotations {
                         id: labelsModel
 
+                        // Incorporate this solution: http://stackoverflow.com/questions/24258878/how-to-split-comma-separated-value-in-sqlite
+
                         Component.onCompleted: {
                             select();
                             labelsRepeater.model = labelsModel.getUniqueLabels();
@@ -226,7 +230,7 @@ CollectionInspector {
                         function getUniqueLabels() {
                             var labelsArray = [];
                             for (var i=0; i<count; i++) {
-                                var labelsString = getObjectInRow(i)['labels'];
+                                var labelsString = getObjectInRow(i)['labels'].toLowerCase();
                                 var labels = labelsString.split(" ");
                                 for (var j=0; j<labels.length; j++) {
                                     if (labels[j] !== '')
@@ -347,6 +351,48 @@ CollectionInspector {
                     notifySavedContents();
             }
         }
+        CollectionInspectorItem {
+            id: periodComponent
+
+            width: annotationEditor.width
+            totalCollectionHeight: annotationEditor.totalCollectionHeight
+            caption: qsTr('Terminis')
+
+            onSaveContents: {
+                if (updateWithObject())
+                    notifySavedContents();
+            }
+
+            visorComponent: Text {
+                id: textVisor
+                property int requiredHeight: Math.max(contentHeight, units.fingerUnit)
+                property var shownContent: {start: ''; end: ''}
+
+                property var shownContent2
+
+                onShownContentChanged: {
+                    var startDate = new Date();
+                    startDate.fromYYYYMMDDHHMMFormat(shownContent.start);
+                    var endDate = new Date();
+                    endDate.fromYYYYMMDDHHMMFormat(shownContent.end);
+
+                    textVisor.text = "<ul><li>" + qsTr('Inici: ')
+                            + (startDate.hasDate()?startDate.toLongDate() + (startDate.hasTime()?qsTr(' a les ') + startDate.toTimeSpecificFormat():''):qsTr('no definit'))
+                            + "</li><li>" + qsTr('Final: ')
+                            + (endDate.hasDate()?endDate.toLongDate() + (endDate.hasTime()?qsTr(' a les ') + endDate.toTimeSpecificFormat():''):qsTr('no definit'))
+                            + "</li></ul>";
+                }
+
+                font.pixelSize: units.readUnit
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            }
+
+            editorComponent: {
+
+            }
+        }
+
         EditDateTimeItemInspector2 {
             id: startComponent
 
@@ -719,6 +765,12 @@ CollectionInspector {
 
                 startComponent.originalContent = details.start;
                 endComponent.originalContent = details.end;
+
+                periodComponent.originalContent = {
+                    start: details.start,
+                    end: details.end
+                }
+
                 stateComponent.originalContent = details.state;
 
                 annotationEditor.setChanges(false);

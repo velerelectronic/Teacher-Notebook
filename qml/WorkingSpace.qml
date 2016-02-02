@@ -18,6 +18,8 @@ Item {
 
     property ListModel buttonsModel: ListModel { }
 
+    property bool canClose: pagesStack.depth <= 1
+
     ListModel {
         id: newButtonsModel
 

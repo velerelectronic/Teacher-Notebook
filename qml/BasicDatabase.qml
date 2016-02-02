@@ -8,6 +8,8 @@ DatabaseBackup {
         createTables();
         createVolatileTables();
 
+        dataBck.createFunction('Split','@Sep char(1), @S varchar(512)','TABLE','WITH Pieces(pn, start, stop) AS (SELECT 1, 1, CHARINDEX(@Sep, @S) UNION ALL SELECT pn + 1, stop + 1, CHARINDEX(@Sep, @S, stop + 1) FROM Pieces WHERE stop > 0) SELECT pn, SUBSTR(@S, start, CASE WHEN stop > 0 THEN stop-start ELSE 512 END) AS S FROM Pieces');
+
 //        globalAnnotationsModel.tableName = 'annotations';
         console.log("SELECTING in annotations")
         globalAnnotationsModel.fieldNames =  ['created','id','title','desc','image','labels'];

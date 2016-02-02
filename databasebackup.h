@@ -17,6 +17,7 @@ signals:
     void homePathChanged();
 
 public slots:
+    Q_INVOKABLE bool createFunction(const QString &name, const QString &args, const QString &returnType, const QString &definition);
     Q_INVOKABLE bool createTable(const QString &, const QString &);
     Q_INVOKABLE bool createView(const QString &, const QString &);
     Q_INVOKABLE bool dropTable(const QString &);

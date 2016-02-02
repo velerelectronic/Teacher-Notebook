@@ -30,23 +30,52 @@ Date.prototype.fromYYYYMMDDFormat = function(text) {
     var year = param[0];
     var month = param[1]-1;
     var day = param[2];
-    this.setDate(day);
-    this.setMonth(month);
-    this.setFullYear(year);
+    if (param.length == 3) {
+        this.setDate(day);
+        this.setMonth(month);
+        this.setFullYear(year);
+        this.definedDate = true;
+    }
     return this;
+}
+
+Date.prototype.fromYYYYMMDDHHMMFormat = function(text) {
+    var param = ((typeof text == 'string')?text.trim():'').split(' ');
+    this.definedDate = false;
+    this.definedTime = false;
+    switch (param.length) {
+    case 2:
+        this.fromHHMMFormat(param[1]);
+    case 1:
+        this.fromYYYYMMDDFormat(param[0]);
+        break;
+    default:
+        break;
+    }
+}
+
+Date.prototype.hasDate = function() {
+    return (typeof this.definedDate !== 'undefined')?this.definedDate:false;
+}
+
+Date.prototype.hasTime = function() {
+    return (typeof this.definedTime !== 'undefined')?this.definedTime:false;
 }
 
 Date.prototype.fromHHMMFormat = function(text) {
     var param = text.split(':');
-    var hours = param[0];
-    var minutes = param[1];
-    this.setHours(hours);
-    this.setMinutes(minutes);
+    if (param.length == 2) {
+        var hours = param[0];
+        var minutes = param[1];
+        this.setHours(hours);
+        this.setMinutes(minutes);
+        this.definedTime = true;
+    }
     return this;
 }
 
 Date.prototype.toTimeSpecificFormat = function() {
-    return this.getHours() + ':' + this.getMinutes();
+    return this.getHours() + ':' + ((this.getMinutes()<10)?'0':'') + this.getMinutes();
 }
 
 

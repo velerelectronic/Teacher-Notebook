@@ -29,6 +29,13 @@ bool DatabaseBackup::alterTable(const QString &tableName, const QString &columnN
 }
 
 
+bool DatabaseBackup::createFunction(const QString &name, const QString &args, const QString &returnType, const QString &definition) {
+    QSqlQueryModel model(this);
+    model.setQuery(QSqlQuery("CREATE FUNCTION [dbo].[" + name + "] (" + args + ") RETURNS " + returnType + " AS RETURN (" + definition + ")"));
+    qDebug() << model.query().lastQuery();
+    qDebug() << model.lastError();
+}
+
 bool DatabaseBackup::createTable(const QString &table, const QString &fields) {
     QSqlQueryModel model(this);
     model.setQuery(QSqlQuery("CREATE TABLE IF NOT EXISTS " + table + " (" + fields + ")"));

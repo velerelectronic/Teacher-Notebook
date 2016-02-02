@@ -19,10 +19,13 @@ CollectionInspectorItem {
 
     visorComponent: Item {
         id: itemVisor
-        property int requiredHeight: Math.max(textVisor.contentHeight, units.fingerUnit) // + units.fingerUnit
+        property int requiredHeight: Math.max(textVisor.height, units.fingerUnit) // + units.fingerUnit
         property string shownContent: ''
 
-        onShownContentChanged: textVisor.getReadableText()
+        onRequiredHeightChanged: console.log('new required height2', itemVisor.requiredHeight)
+        onShownContentChanged: {
+            textVisor.getReadableText();
+        }
 
         RowLayout {
             id: buttonsLayout
@@ -61,6 +64,7 @@ CollectionInspectorItem {
             height: contentHeight
 
             text: textVisor.shownContent
+
             font.pixelSize: units.readUnit
             verticalAlignment: Text.AlignVCenter
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere

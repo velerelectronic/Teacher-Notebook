@@ -599,7 +599,7 @@ BasicPage {
 
         headerPositioning: ListView.OverlayHeader
 
-        section.property: 'firstLabel'
+        section.property: 'blockDate'
         section.criteria: ViewSection.FullString
         section.delegate: Item {
             width: annotationsList.width
@@ -609,7 +609,31 @@ BasicPage {
                 verticalAlignment: Text.AlignBottom
                 color: 'black'
                 font.pixelSize: units.readUnit
-                text: ((section != "")?section:qsTr('Sense classificar'))
+                text: {
+                    switch(parseInt(section)) {
+                    case -4:
+                        return qsTr("Fa més d'un any");
+                    case -3:
+                        return qsTr("L'any passat");
+                    case -2:
+                        return qsTr("El mes passat");
+                    case -1:
+                        return qsTr("La setmana passada");
+                    case 0:
+                        return qsTr('Avui');
+                    case 1:
+                        return qsTr("Aquesta setmana");
+                    case 2:
+                        return qsTr("Aquest mes");
+                    case 3:
+                        return qsTr("Aquest any");
+                    case 4:
+                        return qsTr("Molt més tard");
+                    default:
+                        return '';
+                    }
+                }
+
             }
         }
 
@@ -724,7 +748,7 @@ BasicPage {
 
         searchFields: ['title', 'desc', 'project']
         filters: [annotations.stateFilter].concat(annotations.labelsFilter)
-        sort: 'labelCode ASC, start ASC, end ASC'
+        sort: 'labelCode ASC, blockDate ASC, start ASC, end ASC'
 
         groupBy: (annotations.subList)?'title':'labelGroup'
 

@@ -100,8 +100,12 @@ Common.AbstractEditor {
     function sendOriginalContentToVisor() {
         if (mainVisor.status == Loader.Ready) {
             console.log("collection inspector item " + typeof originalContent);
-            if (typeof (mainVisor.item.shownContent) !== 'undefined')
+            if (typeof (mainVisor.item.shownContent) !== 'undefined') {
                 mainVisor.item.shownContent = originalContent;
+                console.log("Shown content is defined", originalContent.start, originalContent.end);
+            } else {
+                console.log('original content not defined');
+            }
         }
     }
 
@@ -254,6 +258,10 @@ Common.AbstractEditor {
                     anchors.fill: parent
                     onLoaded: {
                         sendOriginalContentToVisor();
+                    }
+                    Connections {
+                        target: mainVisor.item
+                        onRequiredHeightChanged: console.log('new required height', mainVisor.item.requiredHeight)
                     }
                 }
             }

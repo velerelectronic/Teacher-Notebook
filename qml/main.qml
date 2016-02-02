@@ -204,14 +204,15 @@ Window {
                         ]
 
                         MenuPage {
+                            id: sideMenu
                             anchors.fill: parent
                             anchors.margins: units.nailUnit
 
                             onOpenWorkingPage: {
-                                pagesLoader.loadPage(page,parameters);
-                                console.log('Open working page in menupage');
-                                for (var prop in parameters) {
-                                    console.log(prop, ",,,", parameters[prop]);
+                                if (pagesLoader.canClose) {
+                                    sideMenu.acceptNewChanges();
+                                    pagesLoader.loadPage(page,parameters);
+                                    console.log('Open working page in menupage');
                                 }
                             }
                         }
@@ -223,6 +224,7 @@ Window {
                         z: 1
                         clip: true
                         property string pageTitle: ((item !== null) && (typeof item.item !== 'undefined'))?item.item.pageTitle:qsTr('Teacher Notebook')
+                        property bool canClose: ((item !== null) && (typeof item.canClose !== 'undefined'))?item.canClose:true
 
                         Connections {
                             target: pagesLoader.item

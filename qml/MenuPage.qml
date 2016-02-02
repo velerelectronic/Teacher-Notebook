@@ -14,6 +14,13 @@ Item {
     signal openWorkingPage(string page, var parameters)
     signal sendOutputMessage(string message)
 
+    property bool acceptPageChange: false
+
+    function acceptNewChanges() {
+        acceptPageChange = true;
+        acceptPageChange = false;
+    }
+
     Common.UseUnits { id: units }
 
     ListView {
@@ -21,6 +28,19 @@ Item {
 
         anchors.fill: parent
         spacing: units.nailUnit
+
+        property int indexCandidate: -1
+
+        Connections {
+            target: menuPage
+            onAcceptPageChangeChanged: {
+                if (acceptPageChange) {
+                    if (menuList.indexCandidate > -1) {
+                        menuList.currentIndex = menuList.indexCandidate;
+                    }
+                }
+            }
+        }
 
         model: ListModel {
             id: menuModel
@@ -63,7 +83,10 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        menuList.currentIndex = model.index;
+                        menuList.indexCandidate = model.index;
+                        if (model.page !== '') {
+                            menuPage.openWorkingPage(model.page + ".qml", model.parameters);
+                        }
                     }
                 }
             }
@@ -81,6 +104,20 @@ Item {
                 ListView {
                     id: subMenuList
                     anchors.fill: parent
+
+                    property int subIndexCandidate: -1
+
+                    Connections {
+                        target: menuPage
+                        onAcceptPageChangeChanged: {
+                            if (acceptPageChange) {
+                                if (subMenuList.subIndexCandidate > -1) {
+                                    subMenuList.currentIndex = subMenuList.subIndexCandidate;
+                                    subMenuList.subIndexCandidate = -1;
+                                }
+                            }
+                        }
+                    }
 
                     interactive: false
                     model: (menuItemRect.isCurrentItem)?menuItemRect.submenu:[]
@@ -101,19 +138,13 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                subMenuList.currentIndex = model.index;
+                                subMenuList.subIndexCandidate = model.index;
+                                openWorkingPage(model.page + ".qml", model.parameters);
                             }
                         }
                     }
                     onCurrentIndexChanged: {
                         if (currentIndex>-1) {
-                            var itemObject = subMenuElements.get(currentIndex);
-                            console.log('Sub parameters', itemObject.parameters);
-                            for (var prop in itemObject.parameters) {
-                                console.log(prop, itemObject.parameters[prop]);
-                            }
-
-                            openWorkingPage(itemObject.page + ".qml", itemObject.parameters);
                         }
                     }
                 }
@@ -127,9 +158,6 @@ Item {
                 menuList.currentItem.resetCurrentSubMenu();
 
                 var itemObject = menuModel.get(currentIndex);
-                if (itemObject.page !== '') {
-                    menuPage.openWorkingPage(itemObject.page + ".qml", itemObject.parameters);
-                }
                 if (itemObject.submenu.method !== '') {
                     itemObject.submenu.object[itemObject.submenu.method]();
                 }
