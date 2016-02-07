@@ -39,6 +39,10 @@ Date.prototype.fromYYYYMMDDFormat = function(text) {
     return this;
 }
 
+Date.prototype.toYYYYMMDDHHMMFormat = function() {
+    return this.toYYYYMMDDFormat() + " " + this.toHHMMFormat();
+}
+
 Date.prototype.fromYYYYMMDDHHMMFormat = function(text) {
     var param = ((typeof text == 'string')?text.trim():'').split(' ');
     this.definedDate = false;

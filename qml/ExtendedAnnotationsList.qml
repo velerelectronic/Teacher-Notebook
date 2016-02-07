@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
+import 'qrc:///editors' as Editors
 import "qrc:///javascript/Storage.js" as Storage
 import "qrc:///common/FormatDates.js" as FormatDates
 
@@ -57,6 +58,9 @@ BasicPage {
     property string sortOption: sortType.end
 
     property var labelsFilter: []
+
+    property var acumulatedLabels: []
+
     signal exportAnnotations(var fieldNames, var writeModel, var fieldConstants)
     signal importAnnotations(var fieldNames, var writeModel, var fieldConstants)
 
@@ -137,7 +141,7 @@ BasicPage {
                     if (subList) {
                         annotations.showExtendedAnnotation({identifier: modelTitle});
                     } else {
-                        annotations.showExtendedAnnotationsList({firstLabelCodeFilter: annotationItem.modelLabelCode, hideHeader: true, subList: true, sortLabels: annotations.sortLabels});
+                        annotations.showExtendedAnnotationsList({firstLabelCodeFilter: annotationItem.modelLabelCode, hideHeader: true, subList: true, sortLabels: annotations.sortLabels, acumulatedLabels: [annotationItem.modelFirstLabel]});
                     }
                     break;
                 }
@@ -647,7 +651,7 @@ BasicPage {
             }
             size: units.fingerUnit * 2
             imageSource: 'plus-24844'
-            onClicked: annotations.openMenu(units.fingerUnit * 4, addAnnotationMenu, {})
+            onClicked: annotations.openMenu(units.fingerUnit * 4, addImmediateAnnotationMenu, {labels: acumulatedLabels})
         }
 
         function refreshUp() {
@@ -1138,96 +1142,134 @@ BasicPage {
     }
 
     Component {
-        id: addAnnotationMenu
+        id: addImmediateAnnotationMenu
 
-        Rectangle {
+        AboveMenu {
             id: menuRect
 
-            property int requiredHeight: childrenRect.height + units.fingerUnit * 2
-            property var options
-            signal closeMenu()
+            requiredHeight: units.fingerUnit * 10
 
-            color: 'white'
+//            onOptionsChanged:
 
-            GridLayout {
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                    margins: units.fingerUnit
-                }
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: units.fingerUnit
 
-                columns: 2
-                columnSpacing: units.fingerUnit
-                rowSpacing: columnSpacing
-
-                Common.ImageButton {
-                    Layout.preferredHeight: units.fingerUnit * 3
-                    Layout.preferredWidth: units.fingerUnit * 3
-                    image: 'questionnaire-158862'
-                    size: units.fingerUnit * 1.5
-                    onClicked: {
-                        menuRect.closeMenu();
-                        annotations.invokeSubPageFunction('newIntelligentAnnotation',[]);
-                    }
-                }
-                Text {
+                Editors.TextAreaEditor3 {
+                    id: newAnnotationEditor
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                    text: qsTr('Crea anotació intel·ligent')
+                    border.color: 'black'
                 }
-
-                Common.ImageButton {
-                    Layout.preferredHeight: units.fingerUnit * 3
-                    Layout.preferredWidth: units.fingerUnit * 3
-                    image: 'homework-152957'
-                    size: units.fingerUnit * 1.5
-                    onClicked: {
-                        menuRect.closeMenu();
-                        annotations.invokeSubPageFunction('newEmptyAnnotation',[]);
-                    }
-                }
-
-                Text {
-                    Layout.fillHeight: true
+                Flow {
+                    id: flow
                     Layout.fillWidth: true
-                    text: qsTr('Crea anotació sense dades')
-                }
+                    Layout.preferredHeight: flow.childrenRect.height
+                    spacing: units.nailUnit
 
-                Common.ImageButton {
-                    Layout.preferredHeight: units.fingerUnit * 3
-                    Layout.preferredWidth: units.fingerUnit * 3
-                    image: 'calendar-23684'
-                    size: units.fingerUnit * 1.5
-                    onClicked: {
-                        menuRect.closeMenu();
-                        annotations.openMenu(units.fingerUnit * 2, addTimetableAnnotationMenu, {})
+                    Text {
+                        text: qsTr('Etiquetes')
+                    }
+
+                    Repeater {
+                        id: flowRepeater
+
+                        model: {
+                            return menuRect.getOption('labels', []);
+                        }
+
+                        delegate: Rectangle {
+                            width: childrenRect.width + units.nailUnit
+                            height: units.fingerUnit
+                            color: '#AAFFAA'
+                            Text {
+                                anchors {
+                                    top: parent.top
+                                    bottom: parent.bottom
+                                    left: parent.left
+                                    margins: units.nailUnit
+                                }
+                                width: contentWidth
+                                verticalAlignment: Text.AlignVCenter
+
+                                text: modelData
+                            }
+                        }
                     }
                 }
 
-                Text {
-                    Layout.fillHeight: true
+                Flow {
                     Layout.fillWidth: true
-                    text: qsTr("Crea anotació a partir d'horari")
-                }
+                    Layout.preferredHeight: childrenRect.height
 
-                Common.ImageButton {
-                    Layout.preferredHeight: units.fingerUnit * 3
-                    Layout.preferredWidth: units.fingerUnit * 3
-                    image: 'upload-25068'
-                    size: units.fingerUnit * 1.5
-                    onClicked: {
-                        menuRect.closeMenu();
-                        importAnnotations(['title','desc','image'],annotationsModel,[]);
+                    spacing: units.fingerUnit
+
+                    Common.ImageButton {
+                        width: units.fingerUnit * 1.5
+                        height: width
+                        image: 'floppy-35952'
+                        onClicked: {
+                            var re = new RegExp("^(.+)\n+((?:.|\n|\r)*)$","g");
+                            console.log(newAnnotationEditor.content);
+                            var res = re.exec(newAnnotationEditor.content);
+                            var date = (new Date()).toYYYYMMDDHHMMFormat();
+                            var newObj = {
+                                labels: flowRepeater.model.join(' ').trim(),
+                                start: date,
+                                end: date
+                            }
+
+                            if (res != null) {
+                                newObj['title'] = res[1].trim();
+                                newObj['desc'] = res[2];
+                                if (annotationsModel.insertObject(newObj)) {
+                                    annotations.refresh();
+                                    menuRect.closeMenu();
+                                }
+                            } else {
+                                newObj['title'] = newAnnotationEditor.content;
+                                newObj['desc'] = '';
+                                if (annotationsModel.insertObject(newObj)) {
+                                    annotations.refresh();
+                                    menuRect.closeMenu();
+                                }
+                            }
+                        }
                     }
-                }
+                    Common.ImageButton {
+                        width: units.fingerUnit * 1.5
+                        height: width
+                        image: 'questionnaire-158862'
+                        size: units.fingerUnit * 1.5
+                        onClicked: {
+                            menuRect.closeMenu();
+                            annotations.invokeSubPageFunction('newIntelligentAnnotation',[]);
+                        }
+                    }
 
-                Text {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    text: qsTr("Carrega anotacions")
-                }
+                    Common.ImageButton {
+                        width: units.fingerUnit * 1.5
+                        height: width
+                        image: 'calendar-23684'
+                        size: units.fingerUnit * 1.5
+                        onClicked: {
+                            menuRect.closeMenu();
+                            annotations.openMenu(units.fingerUnit * 2, addTimetableAnnotationMenu, {})
+                        }
+                    }
 
+                    Common.ImageButton {
+                        width: units.fingerUnit * 1.5
+                        height: width
+                        image: 'upload-25068'
+                        size: units.fingerUnit * 1.5
+                        onClicked: {
+                            menuRect.closeMenu();
+                            importAnnotations(['title','desc','image'],annotationsModel,[]);
+                        }
+                    }
+
+                }
             }
         }
     }
