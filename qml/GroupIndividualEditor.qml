@@ -2,12 +2,16 @@ import QtQuick 2.3
 import QtQml.Models 2.1
 import PersonalTypes 1.0
 
+import 'qrc:///models' as Models
+
 CollectionInspector {
     id: groupIndividualEditor
 
     property string pageTitle: qsTr("Editor d'individus i grups")
 
-    property SqlTableModel groupsIndividualsModel
+    Models.IndividualsModel {
+        id: groupsIndividualsModel
+    }
 
     property int identifier: -1
     property string group: ''
@@ -71,7 +75,8 @@ CollectionInspector {
 
     onIdentifierChanged: {
         if (identifier >= 0) {
-            var obj = groupsIndividualsModel.getObject(identifier);
+            console.log(groupsIndividualsModel.fieldNames);
+            var obj = groupsIndividualsModel.getObject(groupIndividualEditor.identifier);
             nameComponent.originalContent = obj['name'];
             surnameComponent.originalContent = obj['surname'];
             groupComponent.originalContent = obj['group'];

@@ -79,7 +79,6 @@ CollectionInspector {
     model: ObjectModel {
         EditTextItemInspector {
             id: titleComponent
-            width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Títol')
             onSaveContents: {
@@ -93,7 +92,6 @@ CollectionInspector {
         }
         EditTextAreaInspector {
             id: descComponent
-            width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Descripció')
             onSaveContents: {
@@ -108,7 +106,6 @@ CollectionInspector {
         }
         EditListItemInspector {
             id: projectComponent
-            width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Projecte')
             onAddRow: newProject()
@@ -124,7 +121,6 @@ CollectionInspector {
         }
         CollectionInspectorItem {
             id: labelsComponent
-            width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Etiquetes')
             visorComponent: Flow {
@@ -354,7 +350,6 @@ CollectionInspector {
         CollectionInspectorItem {
             id: periodComponent
 
-            width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Terminis')
 
@@ -396,7 +391,6 @@ CollectionInspector {
         EditDateTimeItemInspector2 {
             id: startComponent
 
-            width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Inici')
             onSaveContents: {
@@ -408,7 +402,6 @@ CollectionInspector {
         EditDateTimeItemInspector2 {
             id: endComponent
 
-            width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Final')
             onSaveContents: {
@@ -418,7 +411,6 @@ CollectionInspector {
         }
         EditStateItemInspector {
             id: stateComponent
-            width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Estat')
             onSaveContents: {
@@ -430,7 +422,6 @@ CollectionInspector {
 
         CollectionInspectorItem {
             id: resourcesComponent
-            width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Recursos')
 
@@ -512,7 +503,6 @@ CollectionInspector {
         CollectionInspectorItem {
             id: rubricsComponent
 
-            width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Rúbriques')
             property bool enableDeletion: assessmentsModel.count == 0
@@ -585,7 +575,6 @@ CollectionInspector {
 
         CollectionInspectorItem {
             id: timetableComponent
-            width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             property bool enableDeletion: false
 
@@ -724,7 +713,6 @@ CollectionInspector {
 
         EditDeleteItemInspector {
             id: deleteButton
-            width: annotationEditor.width
             totalCollectionHeight: annotationEditor.totalCollectionHeight
 
             enableButton: annotationEditor.enableDeletion

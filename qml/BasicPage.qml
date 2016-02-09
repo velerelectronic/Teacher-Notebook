@@ -15,6 +15,7 @@ Item {
 
     signal closePage()
     signal openMenu(int initialHeight, var menu, var options)
+    signal openPageArgs(string page, var args)
 
     property ListModel buttonsModel: ListModel { dynamicRoles: true }
 

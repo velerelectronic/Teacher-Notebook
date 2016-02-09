@@ -24,6 +24,10 @@ BasicPage {
         GroupsIndividuals {
             id: groupsIndividuals
             anchors.fill: parent
+
+            onOpenGroupIndividualEditor: {
+                rubricsListBasicPage.openPageArgs('GroupIndividualEditor', {identifier: individual});
+            }
         }
     }
 

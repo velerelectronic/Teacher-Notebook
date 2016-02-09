@@ -10,6 +10,8 @@ Item {
 
     property string pageTitle: qsTr('Grups i individus')
 
+    signal openGroupIndividualEditor(int individual)
+
     Common.UseUnits {
         id: units
     }
@@ -34,6 +36,7 @@ Item {
             width: mainList.width
             property int requiredHeight: units.fingerUnit * 2
             property var model: {'id': -1, 'group': "", 'name': "", 'surname': "", 'faceImage': ""}
+            property bool isCurrentItem: false
 
             border.color: 'black'
             RowLayout {
@@ -73,24 +76,27 @@ Item {
                 }
             }
             MouseArea {
+                enabled: false
                 anchors.fill: row
-                onClicked: {
-                    console.log('open individual',singleIndividualItem.model.individual);
-                    mainList.expandItem(singleIndividualItem.model.index, singleIndividualItem.model.id, {});
-                }
                 onPressAndHold: {
                     individualDeletionAsk.individualName = singleIndividualItem.model.name + " " + singleIndividualItem.model.surname;
                     individualDeletionAsk.individualId = singleIndividualItem.model.id;
                     individualDeletionAsk.open();
                 }
             }
+
+            function itemSelected() {
+                groupsIndividuals.openGroupIndividualEditor(singleIndividualItem.model.id);
+            }
         }
 
+        /*
         expandedComponent: GroupIndividualEditor {
             groupsIndividualsModel: individualsModel
 
             onUpdatedContents: individualsModel.select()
         }
+        */
 
         Common.SuperposedButton {
             anchors {

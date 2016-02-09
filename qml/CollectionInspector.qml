@@ -108,6 +108,14 @@ Common.AbstractEditor {
         function editorCompletelyOpened(index) {
             positionViewAtIndex(index,ListView.Beginning);
         }
+
+    }
+
+    onModelChanged: {
+        for (var i=0; i<model.count; i++) {
+            var obj = model.children[i];
+            obj.width = Qt.binding(function () { return inspectorGrid.width; });
+        }
     }
 
     MouseArea {
