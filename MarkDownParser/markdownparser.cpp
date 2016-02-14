@@ -32,7 +32,14 @@ QString MarkDownParser::parseTokenAlt(QString infix) {
 
     int pos = 0;
 
-    QRegExp rx("(\\n*#\\s+([^\\n\\n]+)\\n{2,})|(\\*\\s+((?:[^\\n]|\\n[^\\n])+\\n{2,}))|(((?:\\n[^\\n]|[^\\n])+)\\n{2,})|(\\*{2}([^\\*]+)\\*{2})|(_{2}([^_]+)_{2})");
+    QRegExp rx(QString("(\\n*#\\s+([^\\n\\n]+)\\n{2,})")
+               + "|(\\*\\s+((?:[^\\n]|\\n[^\\n])+\\n{2,}))"
+               + "|(((?:\\n[^\\n]|[^\\n])+)\\n{2,})"
+               + "|(\\*{2}([^\\*]+)\\*{2})"
+               + "|(_{2}([^_]+)_{2})"
+               + "|(\\[\\[([^\\]]+)\\|(.+)\\]\\])"
+               + "|(\\[\\[([^\\]]+)\\]\\])"
+               );
     while (pos >= 0) {
         int newPos = rx.indexIn(infix, pos);
         qDebug() << "CAP";
@@ -71,6 +78,16 @@ QString MarkDownParser::parseTokenAlt(QString infix) {
             if (rx.cap(n) != "") {
                 output += "<u>" + parseTokenAlt(rx.cap(n+1)) + "</u>";
             }
+            n = n + 2;
+            if (rx.cap(n) != "") {
+                output += "<a href=\"" + parseTokenAlt(rx.cap(n+1)) + "\">" + parseTokenAlt(rx.cap(n+2)) + "</a>";
+            }
+            n = n + 3;
+            if (rx.cap(n) != "") {
+                QString link = parseTokenAlt(rx.cap(n+1));
+                output += "<a href=\"" + link + "\">" + link + "</a>";
+            }
+            n = n + 2;
 
             pos = newPos + rx.matchedLength();
         } else {

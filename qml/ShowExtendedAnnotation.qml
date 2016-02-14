@@ -22,6 +22,7 @@ CollectionInspector {
     signal newEvent(var parameters)
     signal newResourceAttachment(var parameters)
     signal openingDocumentExternally(string document)
+    signal openPageArgs(string page, var args)
     signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
     signal newProject()
     signal annotationTitleChanged(string title)
@@ -94,6 +95,9 @@ CollectionInspector {
             id: descComponent
             totalCollectionHeight: annotationEditor.totalCollectionHeight
             caption: qsTr('Descripció')
+
+            onLinkActivated: annotationEditor.openPageArgs('ShowExtendedAnnotation', {identifier: link})
+
             onSaveContents: {
                 console.log('Description');
                 if (updateWithObject()) {

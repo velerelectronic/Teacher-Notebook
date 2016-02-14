@@ -17,6 +17,8 @@ CollectionInspectorItem {
 
     clip: true
 
+    signal linkActivated(string link)
+
     visorComponent: Item {
         id: itemVisor
         property int requiredHeight: Math.max(textVisor.height, units.fingerUnit) // + units.fingerUnit
@@ -53,6 +55,11 @@ CollectionInspectorItem {
                 }
             }
         }
+        MouseArea {
+            anchors.fill: textVisor
+            onClicked: mouse.accepted = true
+        }
+
         Text {
             id: textVisor
 
@@ -77,6 +84,9 @@ CollectionInspectorItem {
             MarkDownParser {
                 id: parser
             }
+
+            onLinkActivated: editText.linkActivated(link)
+
         }
 
         Component {
