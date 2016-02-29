@@ -9,22 +9,27 @@ import 'qrc:///editors' as Editors
 BasicPage {
     id: rubricRectangleBasicPage
 
-    property string pageTitle: qsTr("Rúbrica");
+    pageTitle: qsTr("Rúbrica");
 
     property SqlTableModel rubricsModel
 
     property int rubric: -1
 
-    signal editCriterium(int idCriterium)
-    signal editDescriptor(int idDescriptor, int criterium, int level, var descriptorsModel)
-    signal editLevel(int idLevel)
-    signal editRubricDetails(int idRubric)
+    function editCriterium(idCriterium) {
+        openPageArgs('RubricCriteriumEditor',{idCriterium: idCriterium, rubric: rubric, criteriaModel: rubricsCriteria}, units.fingerUnit);
+    }
 
-    onEditCriterium: openSubPage('RubricCriteriumEditor',{idCriterium: idCriterium, rubric: rubric, criteriaModel: rubricsCriteria}, units.fingerUnit);
-    onEditLevel: openSubPage('RubricLevelEditor',{idLevel: idLevel, rubric: rubric, levelsModel: rubricsLevels}, units.fingerUnit)
-    onEditDescriptor: openSubPage('RubricDescriptorEditor',{idDescriptor: idDescriptor, criterium: criterium, level: level, descriptorsModel: descriptorsModel}, units.fingerUnit)
-    onEditRubricDetails: openSubPage('RubricDetailsEditor',{idRubric: rubric, rubricsModel: rubricsModel}, units.fingerUnit)
+    function editDescriptor(idDescriptor, criterium, level, descriptorsModel) {
+        openPageArgs('RubricDescriptorEditor',{idDescriptor: idDescriptor, criterium: criterium, level: level, descriptorsModel: descriptorsModel}, units.fingerUnit)
+    }
 
+    function editLevel(idLevel) {
+        openPageArgs('RubricLevelEditor',{idLevel: idLevel, rubric: rubric, levelsModel: rubricsLevels}, units.fingerUnit)
+    }
+
+    function editRubricDetails(idRubric) {
+        openPageArgs('RubricDetailsEditor',{idRubric: rubric, rubricsModel: rubricsModel}, units.fingerUnit)
+    }
 
     mainPage: Rectangle {
         id: rubricRectangle

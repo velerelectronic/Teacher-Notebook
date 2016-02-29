@@ -90,5 +90,6 @@
         <file>qml/CombinedAnnotationsTable.qml</file>
         <file>qml/LabelsSort.qml</file>
         <file>qml/AboveMenu.qml</file>
+        <file>qml/OmniboxSearch.qml</file>
     </qresource>
 </RCC>

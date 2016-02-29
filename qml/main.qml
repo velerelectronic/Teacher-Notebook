@@ -37,6 +37,9 @@
   * Upload: https://pixabay.com/en/upload-uploading-documents-files-25068/
   * Goto now: https://pixabay.com/en/day-calender-week-organizer-42975/
   * Next: https://pixabay.com/en/arrow-green-glossy-right-next-145766/
+
+  * Magnifying glass: https://pixabay.com/photo-481818/
+  * Config/settings/options: https://pixabay.com/photo-147414/
 */
 
 import QtQuick 2.2
@@ -63,203 +66,165 @@ Window {
 
     onClosing: {
         close.accepted = false;
-        pagesLoader.requestClosePage();
+//        pagesLoader.requestClosePage();
     }
 
     Common.UseUnits { id: units }
+
+    BasicDatabase {
+        id: basicDatabase
+
+        Component.onCompleted: {
+            basicDatabase.initEverything();
+        }
+    }
 
     Rectangle {
         color: '#F2F2F2'
         anchors.fill: parent
 
-        ColumnLayout {
-            anchors.fill: parent
-            spacing: 0
-
-            Rectangle {
-                id: header
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit * 1.5
-
-                color: "#009900"
-                visible: true
-                clip: true
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: units.nailUnit
-
-                    Image {
-                        Layout.preferredWidth: height
-                        Layout.preferredHeight: parent.height
-
-                        source: 'qrc:///images/small-41255_150.png'
-                        fillMode: Image.PreserveAspectFit
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: sideBar.state = (sideBar.state === 'showPanel')?'hidePanel':'showPanel'
-                        }
-                    }
-
-                    Text {
-                        id: title
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: parent.height
-                        color: "#ffffff"
-                        text: pagesLoader.pageTitle
-                        font.italic: false
-                        font.bold: true
-                        font.pixelSize: units.readUnit
-                        verticalAlignment: Text.AlignVCenter
-                        font.family: "Tahoma"
-                    }
-
-                    ListView {
-                        id: buttonsList
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: contentItem.width
-                        spacing: units.nailUnit
-                        interactive: false
-                        orientation: ListView.Horizontal
-
-                        delegate: Common.ImageButton {
-                            width: size
-                            height: width
-                            size: units.fingerUnit
-                            image: model.icon
-                            onClicked: {
-                                model.object[model.method]();
-                            }
-                        }
-                    }
-                }
+        Rectangle {
+            id: header
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
             }
 
-            Item {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                clip: true
+            height: units.fingerUnit * 1.5
 
-                RowLayout {
-                    id: rowLayout
-                    property int margin: Math.min(parent.width / 50, units.fingerUnit * 2)
-                    anchors {
-                        fill: parent
-                        leftMargin: rowLayout.margin
-                        rightMargin: rowLayout.margin
-                        topMargin: units.nailUnit
-                        bottomMargin: units.nailUnit
+            z: 1
+            color: "#009900"
+            visible: true
+            clip: true
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+
+                Image {
+                    Layout.preferredWidth: height
+                    Layout.preferredHeight: parent.height
+
+                    source: 'qrc:///images/small-41255_150.png'
+                    fillMode: Image.PreserveAspectFit
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: sideBar.state = (sideBar.state === 'showPanel')?'hidePanel':'showPanel'
                     }
-                    spacing: margin
+                }
 
-                    Rectangle {
-                        id: sideBar
-                        Layout.preferredWidth: width
-                        Layout.fillHeight: true
-                        z: 2
+            }
+        }
 
-                        states: [
-                            State {
-                                name: 'showPanel'
-                                PropertyChanges {
-                                    target: sideBar
-                                    visible: true
-                                    width: Math.max(rowLayout.width / 4, units.fingerUnit * 5)
-                                }
-                            },
-                            State {
-                                name: 'hidePanel'
-                                PropertyChanges {
-                                    target: sideBar
-                                    visible: false
-                                    width: -rowLayout.margin
-                                }
+        Item {
+            anchors.fill: parent
+
+            clip: true
+
+            z: 2
+            RowLayout {
+                id: rowLayout
+                property int margin: Math.min(parent.width / 50, units.fingerUnit * 2)
+                anchors {
+                    fill: parent
+                    leftMargin: rowLayout.margin
+                    rightMargin: rowLayout.margin
+                    topMargin: units.nailUnit
+                    bottomMargin: units.nailUnit
+                }
+                spacing: margin
+
+                Rectangle {
+                    id: sideBar
+                    Layout.preferredWidth: width
+                    Layout.fillHeight: true
+
+                    states: [
+                        State {
+                            name: 'showPanel'
+                            PropertyChanges {
+                                target: sideBar
+                                visible: true
+                                width: Math.max(rowLayout.width / 4, units.fingerUnit * 5)
                             }
-                        ]
-                        state: 'showPanel'
-                        color: 'transparent'
+                        },
+                        State {
+                            name: 'hidePanel'
+                            PropertyChanges {
+                                target: sideBar
+                                visible: false
+                                width: -rowLayout.margin
+                            }
+                        }
+                    ]
+                    state: 'showPanel'
+                    color: 'transparent'
 
-                        transitions: [
-                            Transition {
-                                from: 'hidePanel'
-                                to: 'showPanel'
+                    transitions: [
+                        Transition {
+                            from: 'hidePanel'
+                            to: 'showPanel'
+                            PropertyAnimation {
+                                property: 'width'
+                                duration: 250
+                            }
+                        },
+                        Transition {
+                            from: 'showPanel'
+                            to: 'hidePanel'
+                            SequentialAnimation {
                                 PropertyAnimation {
                                     property: 'width'
                                     duration: 250
                                 }
-                            },
-                            Transition {
-                                from: 'showPanel'
-                                to: 'hidePanel'
-                                SequentialAnimation {
-                                    PropertyAnimation {
-                                        property: 'width'
-                                        duration: 250
-                                    }
-                                    PropertyAnimation {
-                                        property: 'visible'
-                                    }
-                                }
-                            }
-                        ]
-
-                        MenuPage {
-                            id: sideMenu
-                            anchors.fill: parent
-                            anchors.margins: units.nailUnit
-
-                            onOpenWorkingPage: {
-                                if (pagesLoader.canClose) {
-                                    sideMenu.acceptNewChanges();
-                                    pagesLoader.loadPage(page,parameters);
-                                    console.log('Open working page in menupage');
+                                PropertyAnimation {
+                                    property: 'visible'
                                 }
                             }
                         }
-                    }
-                    Loader {
-                        id: pagesLoader
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        z: 1
+                    ]
+
+                    MenuPage {
+                        id: sideMenu
+                        anchors.fill: parent
+                        anchors.topMargin: units.fingerUnit * 1.5
+                        anchors.margins: units.nailUnit
                         clip: true
-                        property string pageTitle: ((item !== null) && (typeof item.item !== 'undefined'))?item.item.pageTitle:qsTr('Teacher Notebook')
-                        property bool canClose: ((item !== null) && (typeof item.canClose !== 'undefined'))?item.canClose:true
 
-                        Connections {
-                            target: pagesLoader.item
-                            onCloseWorkingSpace: {
+                        onOpenWorkingPage: {
+                            if (workingSpace.canClose) {
+                                sideMenu.acceptNewChanges();
+                                workingSpace.loadFirstPage(page,parameters);
                             }
-                            onOpenMenu: {
-                                console.log('OPEN menu');
-                                console.log(menu);
-                                slideMenu.initialHeight = initialHeight;
-                                slideMenu.menu = menu;
-                                slideMenu.state = 'showHeading';
-                                slideMenu.options = options;
-                            }
-                            onButtonsModelChanged: {
-                                buttonsList.model = pagesLoader.item.buttonsModel;
-                            }
-                        }
-
-                        function loadPage(page, parameters) {
-                            setSource(Qt.resolvedUrl('WorkingSpace.qml'),{initialPage: page, initialProperties: parameters});
-                            buttonsList.model = item.buttonsModel;
-                        }
-
-                        function requestClosePage() {
-                            if ((item !== null) && (typeof item.pageClosable !== 'function')) {
-                                if (item.requestClosePage())
-                                    return true;
-                            }
-                            return false;
                         }
                     }
-
                 }
+                WorkingSpace {
+                    id: workingSpace
+
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+
+                    clip: true
+
+                    onOpenMenu: {
+                        console.log('OPEN menu');
+                        console.log(menu);
+                        slideMenu.initialHeight = initialHeight;
+                        slideMenu.menu = menu;
+                        slideMenu.state = 'showHeading';
+                        slideMenu.options = options;
+                    }
+
+                    onShowMessage: {
+                        messageBox.publishMessage(message);
+                    }
+                }
+
             }
         }
+
     }
 
     Common.DownSlideMenu {
@@ -281,76 +246,5 @@ Window {
         fontSize: units.readUnit
         interval: 2000
     }
-
-
-    BasicDatabase {
-        id: basicDatabase
-    }
-
-    SqlTableModel {
-        id: nextEventsModel
-        tableName: globalScheduleModel.tableName
-        limit: 3
-        filters: ["ifnull(state,'') != 'done'"]
-        Component.onCompleted: {
-            setSort(1,Qt.DescendingOrder); // Order by last inclusion
-            select();
-        }
-    }
-
-    SqlTableModel {
-        id: lastAnnotationsModel
-        tableName: globalAnnotationsModel.tableName
-        limit: 3
-        Component.onCompleted: {
-            setSort(0,Qt.DescendingOrder);
-            select();
-        }
-    }
-
-    SqlTableModel {
-        id: auditModel
-    }
-
-    Models.ProjectsModel {
-        id: globalProjectsModel
-
-        Component.onCompleted: select()
-    }
-
-    function auditTable(tableName, fields) {
-        console.log('Audit table ' + tableName);
-
-        auditModel.tableName = tableName;
-        auditModel.fieldNames = fields;
-        auditModel.select();
-        console.log('# rows: ' + auditModel.count);
-        for (var i=0; i<auditModel.count; i++) {
-            console.log('Row ' + (i+1));
-            var obj = auditModel.getObjectInRow(i);
-            for (var prop in obj) {
-                console.log(i + " " + prop + " -> " + obj[prop]);
-            }
-        }
-    }
-
-    Models.ExtendedAnnotations {
-        id: annotationsModelConv
-    }
-
-    Component.onCompleted: {
-
-        basicDatabase.initEverything();
-
-        annotationsModelConv.select();
-        console.log("Recompte",annotationsModelConv.count);
-        annotationsModelConv.select();
-        console.log("Recompte",annotationsModelConv.count);
-        annotationsModelConv.select();
-
-        console.log("Recompte",annotationsModelConv.count);
-
-    }
-
 }
 

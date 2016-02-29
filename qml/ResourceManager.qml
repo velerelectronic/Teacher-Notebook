@@ -5,12 +5,12 @@ import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import "qrc:///common/FormatDates.js" as FormatDates
 
-Item {
+BasicPage {
     id: resourceManager
 
     Common.UseUnits { id: units }
 
-    property string pageTitle: qsTr('Recursos')
+    pageTitle: qsTr('Recursos')
 
     signal createResource(var model)
     signal showResource(int idResource,var model)
@@ -29,7 +29,7 @@ Item {
         }
     }
 
-    ListView {
+    mainPage: ListView {
         id: resourcesList
         anchors.fill: parent
 

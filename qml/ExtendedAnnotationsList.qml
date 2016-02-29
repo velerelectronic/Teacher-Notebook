@@ -10,20 +10,33 @@ import "qrc:///common/FormatDates.js" as FormatDates
 
 BasicPage {
     id: annotations
-    property string pageTitle: qsTr('Anotacions (esteses)');
+
+    pageTitle: qsTr('Anotacions (esteses)');
 
     property bool isVertical: width<height
 
     property bool hideHeader: false
+
+    onHideHeaderChanged: console.log('hide header has changed to', hideHeader)
+
     property bool subList: false
 
-    signal showExtendedAnnotation (var parameters)
+    function showExtendedAnnotation (parameters) {
+        annotations.openPageArgs('ShowExtendedAnnotation', parameters)
+    }
+
 //    signal openMenu(int initialHeight, var menu, var options)
     signal chosenAnnotation(string annotation)
     signal combineAnnotationsIntoTable(var annotationsModel)
-    signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
+
+    function openRubricGroupAssessment(assessment, rubric, rubricsModel, rubricsAssessmentModel) {
+        annotations.openPageArgs('RubricGroupAssessment',{assessment: assessment, rubric: rubric, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel});
+    }
+
     signal openTimeTable(string annotation)
-    signal showExtendedAnnotationsList(var parameters)
+    function showExtendedAnnotationsList(parameters) {
+        openPageArgs('ExtendedAnnotationsList', parameters);
+    }
 
     property bool chooseMode: false
 
@@ -75,6 +88,30 @@ BasicPage {
 
     property string searchString: ''
 
+    onSearchStringChanged: {
+        var textArray = searchString.split(/\s+/i);
+        // text.split(/[$|\b+][#\B+][^|\b+]/i);
+        console.log(textArray);
+        var descArray = [];
+        var labelsArray = [];
+        for (var i=0; i<textArray.length; i++) {
+            if (textArray[i].indexOf('#') === 0) {
+                labelsArray.push(textArray[i].substr(1));
+            } else {
+                descArray.push(textArray[i]);
+            }
+        }
+
+        annotationsModel.searchString = descArray.join(' ');
+
+        var filtersArray = [];
+        for (var i=0; i<labelsArray.length; i++) {
+            filtersArray.push("INSTR(UPPER(labels),UPPER('" + labelsArray[i] + "'))");
+        }
+
+        annotations.labelsFilter = filtersArray;
+    }
+
     function newAnnotation(newTitle, start, end, state) {
         annotationsModel.insertObject({
                                           title: newTitle,
@@ -110,11 +147,6 @@ BasicPage {
                 refresh();
                 isDirty = false;
             }
-        }
-
-        onButtonsModelChanged: {
-            console.log('BUTTTONS');
-            annotations.buttonsModel = annotationsList.buttonsModel;
         }
 
         itemComponent: Rectangle {
@@ -366,14 +398,9 @@ BasicPage {
 
                     identifier: annotationItem.modelTitle
 
-                    onRequiredHeightChanged: annotationItem.requiredHeight = extendedAnnotationItem.requiredHeight + 2 * units.nailUnit
-
                     onOpenMenu: annotations.openMenu(initialHeight, menu, options)
 
-                    onOpenRubricGroupAssessment: {
-                        console.log('Now')
-                        annotations.openRubricGroupAssessment(assessment, rubric, rubricsModel, rubricsAssessmentModel);
-                    }
+                    onOpenPageArgs: annotations.openPageArgs(page, args)
 
                     onDeletedAnnotation: {
                         annotationsList.closeItem();
@@ -443,160 +470,20 @@ BasicPage {
             color: (modelState>=0)?'white':'#AAAAAA'
         }
 
-        header: (annotations.hideHeader)?null:headerComponent
+        header: ((annotations.hideHeader) || (annotations.searchString == ''))?null:headerComponent
 
         Component {
             id: headerComponent
             Rectangle {
                 id: annotationsListHeader
 
-                z: 300
-                color: 'white'
+                z: 10
+                color: '#9999FF'
                 width: annotationsList.width
-                height: units.fingerUnit * 2.5
-                visible: annotationsList.currentIndex < 0
-
-                GridLayout {
+                height: units.fingerUnit * 2
+                Text {
                     anchors.fill: parent
-                    anchors.margins: units.nailUnit
-                    columnSpacing: units.nailUnit
-                    columns: 3
-
-                    Common.SearchBox {
-                        id: searchAnnotations
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: units.fingerUnit
-
-                        text: annotations.searchString
-
-                        onTextChanged: annotations.searchString = text
-                        onPerformSearch: {
-                            annotationsListHeader.addSearchTerm(text);
-
-                            var textArray = text.split(/\s+/i);
-                            // text.split(/[$|\b+][#\B+][^|\b+]/i);
-                            console.log(textArray);
-                            var descArray = [];
-                            var labelsArray = [];
-                            for (var i=0; i<textArray.length; i++) {
-                                if (textArray[i].indexOf('#') === 0) {
-                                    labelsArray.push(textArray[i].substr(1));
-                                } else {
-                                    descArray.push(textArray[i]);
-                                }
-                            }
-
-                            annotationsModel.searchString = descArray.join(' ');
-
-                            var filtersArray = [];
-                            for (var i=0; i<labelsArray.length; i++) {
-                                filtersArray.push("INSTR(UPPER(labels),UPPER('" + labelsArray[i] + "'))");
-                            }
-
-                            annotations.labelsFilter = filtersArray;
-                        }
-                        onIntroPressed: {
-                            console.log('INTRO')
-                        }
-                    }
-
-                    Common.ImageButton {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: height
-                        image: 'day-42975'
-                        onClicked: {
-                            var today = new Date();
-                            var todayString = today.toYYYYMMDDFormat() + " " + today.toHHMMFormat();
-
-                            var field = '';
-                            var comparisonSign = 0;
-
-                            switch(sortOption) {
-                                case sortType.start:
-                                    field = 'start';
-                                    comparisonSign = -1;
-                                    break;
-                                case sortType.end:
-                                    field = 'end';
-                                    comparisonSign = -1;
-                                    break;
-                                case sortType.startRev:
-                                    field = 'start';
-                                    comparisonSign = 1;
-                                    break;
-                                case sortType.endRev:
-                                    field = 'end'
-                                    comparisonSign = 1;
-                                    break;
-                            }
-
-                            var row = 0;
-                            while (row < annotationsModel.count) {
-                                console.log('field',field);
-                                var date = annotationsModel.getObjectInRow(row)[field];
-                                if (todayString.localeCompare(date) === comparisonSign)
-                                    break;
-                                else {
-                                    row++;
-                                }
-                            }
-                            if (row == annotationsModel.count)
-                                row--;
-                            annotationsList.lastSelected = annotationsModel.getObjectInRow(row)['title'];
-                            annotationsList.positionViewAtIndex(row, ListView.Contain);
-                        }
-                    }
-
-                    Common.TextButton {
-                        Layout.fillHeight: true
-                        text: qsTr('Opcions')
-                        onClicked: openMenu(units.fingerUnit * 4, annotationsMenu, {})
-                    }
-                    ListView {
-                        id: searchTermsList
-
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: units.fingerUnit * 1
-                        orientation: ListView.Horizontal
-                        model: ListModel { id: searchTermsModel }
-                        spacing: units.nailUnit
-                        clip: true
-
-                        delegate: Rectangle {
-                            height: searchTermsList.height
-                            width: searchTermText.width + radius * 2
-                            radius: height / 2
-                            color: '#81DAF5'
-                            Text {
-                                id: searchTermText
-                                anchors {
-                                    left: parent.left
-                                    verticalCenter: parent.verticalCenter
-                                    margins: parent.radius
-                                }
-                                width: contentWidth
-                                text: model.terms
-                                font.pixelSize: units.readUnit
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    var newTerms = model.terms;
-                                    searchTermsModel.move(model.index, 0, 1);
-                                    searchAnnotations.text = newTerms;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                function addSearchTerm(searchTerm) {
-                    if (searchTermsModel.count>0) {
-                        if (searchTerm !== searchTermsModel.get(0).terms)
-                            searchTermsModel.insert(0, {terms: searchTerm});
-                    } else {
-                        searchTermsModel.insert(0, {terms: searchTerm});
-                    }
+                    text: annotations.searchString
                 }
             }
         }
@@ -743,7 +630,14 @@ BasicPage {
             }
         }
 
-        Component.onCompleted: setUpFilters()
+        Component.onCompleted: {
+            setUpFilters();
+        }
+
+        onNewButtonsModel: {
+            console.log('new buttons model----',buttonsModel);
+            annotations.buttonsModel = buttonsModel;
+        }
     }
 
 
@@ -756,7 +650,11 @@ BasicPage {
 
         groupBy: (annotations.subList)?'title':'labelGroup'
 
-        Component.onCompleted: select()
+        Component.onCompleted: annotationsModel.refreshAnnotations()
+
+        function refreshAnnotations() {
+            annotationsModel.selectAnnotations(sortLabels);
+        }
     }
 
     Models.SavedAnnotationsSearchesModel {
@@ -1526,9 +1424,18 @@ BasicPage {
         Component.onCompleted: select()
     }
 
+//    onSortLabelsChanged: annotationsModel.refreshAnnotations()
 
-    onSortLabelsChanged: annotationsModel.selectAnnotations(sortLabels)
+    function openOmniboxSearch() {
+        annotations.openPageArgs('OmniboxSearch',{});
+    }
 
-    Component.onCompleted: annotationsModel.selectAnnotations(sortLabels)
+    function openOptions() {
+        annotations.openMenu(units.fingerUnit * 4, annotationsMenu, {})
+    }
 
+    Component.onCompleted: {
+        annotations.buttonsModel.append({icon: 'magnifying-glass-481818', object: annotations, method: 'openOmniboxSearch'});
+        annotations.buttonsModel.append({icon: 'cog-147414', object: annotations, method: 'openOptions'});
+    }
 }

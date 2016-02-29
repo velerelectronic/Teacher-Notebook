@@ -11,7 +11,7 @@ BasicPage {
 
     Common.UseUnits { id: units }
 
-    property string pageTitle: qsTr("Avaluació de rúbrica per criteris")
+    pageTitle: qsTr("Avaluació de rúbrica per criteris")
 
     property int assessment: -1
     property int group: -1
@@ -20,6 +20,8 @@ BasicPage {
     property SqlTableModel lastScoresModel
 
     signal editRubricAssessmentDescriptor(int individual, int lastScoreId)
+
+    pageClosable: true
 
     onEditRubricAssessmentDescriptor: {
         openSubPage('RubricAssessmentDescriptor', {assessment: assessment, criterium: criterium, individual: individual, lastScoreId: lastScoreId, lastScoresModel: lastScoresModel}, units.fingerUnit);

@@ -6,9 +6,9 @@ import PersonalTypes 1.0
 
 import 'qrc:///common' as Common
 
-Item {
+BasicPage {
     id: backup
-    property string pageTitle: qsTr('Gestor de dades')
+    pageTitle: qsTr('Gestor de dades')
     property string document: ''
     property string directory: ''
 
@@ -25,7 +25,7 @@ Item {
         id: fileDb
     }
 
-    ColumnLayout {
+    mainPage: ColumnLayout {
         anchors.fill: parent
         anchors.margins: units.nailUnit * 2
 

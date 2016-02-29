@@ -10,13 +10,16 @@ import 'qrc:///models' as Models
 import "qrc:///common/FormatDates.js" as FormatDates
 
 BasicPage {
-    id: rubricsListBasicPage
+    id: rubricsGroupsListBasicPage
     width: 100
     height: 62
 
-    pageTitle: qsTr("Rúbriques");
+    pageTitle: qsTr("Grups i individus");
 
     Common.UseUnits { id: units }
+
+    property string searchString: ''
+    property var searchFields: null
 
     mainPage: Item {
         id: rubricsListArea
@@ -25,7 +28,11 @@ BasicPage {
             id: groupsIndividuals
             anchors.fill: parent
 
+            searchString: rubricsGroupsListBasicPage.searchString
+            searchFields: rubricsGroupsListBasicPage.searchFields
+
             onOpenGroupIndividualEditor: {
+                console.log('individual', individual);
                 rubricsListBasicPage.openPageArgs('GroupIndividualEditor', {identifier: individual});
             }
         }

@@ -16,6 +16,7 @@ ListView {
     property int itemSize
 
     signal itemSelected(int index)
+    signal newButtonsModel(var buttonsModel)
 
     property ListModel buttonsModel: ListModel { }
 
@@ -113,6 +114,7 @@ ListView {
             openButtonsModel.clear();
             openButtonsModel.append({icon: 'road-sign-147409', object: expandableList, method: 'closeItems'});
             buttonsModel = openButtonsModel;
+            newButtonsModel(buttonsModel);
         }
 
         function sendState(newState) {
@@ -129,6 +131,7 @@ ListView {
         }
 
         buttonsModel = closeButtonsModel;
+        newButtonsModel(buttonsModel);
     }
 
     function closeItems() {
@@ -143,4 +146,6 @@ ListView {
     function setProperty(index, prop, value) {
         model.setProperty(index, prop, value);
     }
+
+    Component.onCompleted: newButtonsModel(buttonsModel)
 }

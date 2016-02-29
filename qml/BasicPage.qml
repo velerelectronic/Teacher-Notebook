@@ -8,7 +8,8 @@ import 'qrc:///common' as Common
 Item {
     id: basicPageItem
 
-    property string pageTitle: basicPageItem.pageTitle
+    property string pageTitle: ''
+
     property Component mainPage
 
     property int padding: 0
@@ -16,25 +17,78 @@ Item {
     signal closePage()
     signal openMenu(int initialHeight, var menu, var options)
     signal openPageArgs(string page, var args)
+    signal showMessage(string message)
 
     property ListModel buttonsModel: ListModel { dynamicRoles: true }
 
-    property bool pageClosable: false
+    property bool pageClosable: true
 
     function invokeSubPageFunction(method, parameters) {
         return basicPageLoader.item[method](parameters);
     }
 
-    Loader {
-        id: basicPageLoader
-
+    ColumnLayout {
         anchors.fill: parent
-        anchors.margins: basicPageItem.padding
+        anchors.bottomMargin: units.fingerUnit
 
-        property string pageTitle: ((item) && (item.pageTitle))?item.pageTitle:''
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit * 1.5
 
-        sourceComponent: basicPageItem.mainPage
+            RowLayout {
+                anchors.fill: parent
+                Text {
+                    id: title
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: parent.height
+                    color: "#ffffff"
+                    text: basicPageItem.pageTitle
+                    font.italic: false
+                    font.bold: true
+                    font.pixelSize: units.readUnit
+                    verticalAlignment: Text.AlignVCenter
+                    font.family: "Tahoma"
+                }
+
+                ListView {
+                    id: buttonsList
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: contentItem.width
+                    spacing: units.nailUnit
+                    interactive: false
+                    orientation: ListView.Horizontal
+
+                    model: buttonsModel
+
+                    delegate: Common.ImageButton {
+                        width: size
+                        height: width
+                        size: units.fingerUnit
+                        image: model.icon
+                        onClicked: {
+                            model.object[model.method]();
+                        }
+                    }
+                }
+            }
+        }
+        Loader {
+            id: basicPageLocation
+
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            sourceComponent: mainPage
+            clip: true
+
+            onLoaded: {
+                if (typeof basicPageLocation.item !== 'undefined') {
+                    basicPageLocation.item.width = basicPageLocation.width;
+                    basicPageLocation.item.height = basicPageLocation.height;
+                }
+            }            
+        }
     }
+
 
     MouseArea {
         id: subPageArea
@@ -127,28 +181,6 @@ Item {
         }
     }
 
-    Connections {
-        target: basicPageLoader.item
-        ignoreUnknownSignals: true
-
-        // Slide menu
-
-        onOpenMenu: {
-            openMenu(initialHeight, menu, options);
-        }
-
-        // Page handling
-        onOpenPage: {
-            console.log('Opening page ' + page);
-            openNewPage(page,{});
-        }
-        onClosePage: {
-            closeCurrentPage();
-            if (message != '')
-                messageBox.publishMessage(message);
-        }
-    }
-
     MessageDialog {
         id: closeWorkingPageDialog
 
@@ -173,6 +205,21 @@ Item {
 
     function closeSubPage() {
         subPageloader.source = undefined;
+    }
+
+    function closeThisPage() {
+        closePage();
+    }
+
+    onPageClosableChanged: {
+        console.log('PAGE closable');
+        if (pageClosable)
+            buttonsModel.append({icon: 'road-sign-147409', object: basicPageItem, method: 'closeThisPage'});
+    }
+
+    Component.onCompleted: {
+        if (pageClosable)
+            buttonsModel.append({icon: 'road-sign-147409', object: basicPageItem, method: 'closeThisPage'});
     }
 }
 

@@ -85,7 +85,7 @@ Item {
                     onClicked: {
                         menuList.indexCandidate = model.index;
                         if (model.page !== '') {
-                            menuPage.openWorkingPage(model.page + ".qml", model.parameters);
+                            menuPage.openWorkingPage(model.page, model.parameters);
                         }
                     }
                 }
@@ -139,7 +139,7 @@ Item {
                             anchors.fill: parent
                             onClicked: {
                                 subMenuList.subIndexCandidate = model.index;
-                                openWorkingPage(model.page + ".qml", model.parameters);
+                                openWorkingPage(model.page, model.parameters);
                             }
                         }
                     }

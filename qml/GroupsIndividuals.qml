@@ -12,6 +12,9 @@ Item {
 
     signal openGroupIndividualEditor(int individual)
 
+    property string searchString: ''
+    property var searchFields: null
+
     Common.UseUnits {
         id: units
     }
@@ -20,6 +23,10 @@ Item {
         id: individualsModel
 
         sort: 'id DESC'
+
+        searchString: groupsIndividuals.searchString
+        searchFields: groupsIndividuals.searchFields
+
         Component.onCompleted: select()
     }
 

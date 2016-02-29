@@ -6,17 +6,17 @@ import 'qrc:///common' as Common
 import "qrc:///javascript/Storage.js" as Storage
 
 
-Rectangle {
+BasicPage {
     id: whiteboard
 
-    property string pageTitle: qsTr('Pissarra')
+    pageTitle: qsTr('Pissarra')
     // Possible drawing actions ['Clear', 'Path']
     property string drawingAction: ''
     property string selectedDrawingTool: canvasPoint.typePolygon
 
     Common.UseUnits { id: units }
 
-    ColumnLayout {
+    mainPage: ColumnLayout {
         anchors.fill:parent
 
         Rectangle {

@@ -18,16 +18,17 @@ BasicPage {
 
     Common.UseUnits { id: units }
 
-    signal openRubricAssessmentDetails(int assessment, int rubric, string group, var rubricsModel, var rubricsAssessmentModel)
-    signal openRubricDetails(int rubric, var rubricsModel)
-    signal openRubricEditor(int rubric, var rubricsModel)
-
-    onOpenRubricAssessmentDetails: {
-        openSubPage('RubricAssessmentEditor', {idAssessment: assessment, rubric: rubric, group: group, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel}, units.fingerUnit);
+    function openRubricAssessmentDetails(assessment, rubric, group, rubricsModel, rubricsAssessmentModel) {
+        openPageArgs('RubricAssessmentEditor', {idAssessment: assessment, rubric: rubric, group: group, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel}, units.fingerUnit);
     }
 
-    onOpenRubricDetails: openSubPage('RubricDetailsEditor', {rubric: rubric, rubricsModel: rubricsModel}, units.fingerUnit)
-    onOpenRubricEditor: openSubPage('Rubric', {rubric: rubric, rubricsModel: rubricsModel}, units.fingerUnit)
+    function openRubricDetails(rubric, rubricsModel) {
+        openPageArgs('RubricDetailsEditor', {rubric: rubric, rubricsModel: rubricsModel}, units.fingerUnit)
+    }
+
+    function openRubricEditor(rubric, rubricsModel) {
+        openPageArgs('Rubric', {rubric: rubric, rubricsModel: rubricsModel}, units.fingerUnit)
+    }
 
     mainPage: Item {
         id: rubricsListArea

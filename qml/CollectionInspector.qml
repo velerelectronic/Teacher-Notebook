@@ -115,6 +115,7 @@ Common.AbstractEditor {
         for (var i=0; i<model.count; i++) {
             var obj = model.children[i];
             obj.width = Qt.binding(function () { return inspectorGrid.width; });
+            obj.totalCollectionHeight = Qt.binding(function () { return collectionInspector.totalCollectionHeight; });
         }
     }
 

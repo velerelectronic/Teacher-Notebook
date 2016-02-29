@@ -13,11 +13,13 @@ BasicPage {
     id: rubricRectangleBasicPage
 
     property int assessment: -1
-    property string pageTitle: qsTr("Avaluació de rúbrica per grups");
+    pageTitle: qsTr("Avaluació de rúbrica per grups");
     property int sectionsHeight: units.fingerUnit * 2
     property int sectionsWidth: units.fingerUnit * 3
     property int contentsHeight: units.fingerUnit * 2
     property int contentsWidth: units.fingerUnit * 2
+
+    pageClosable: true
 
     signal editRubricDetails(int idRubric, string title, string desc, var model)
     signal editRubricAssessmentDescriptor(
@@ -33,7 +35,7 @@ BasicPage {
 
 
     onEditRubricAssessmentByCriterium: {
-        openSubPage('ShowRubricGroupAssessmentByCriterium', {assessment: assessment, criterium: criterium, lastScoresModel: lastScoresModel}, units.fingerUnit)
+        openPageArgs('ShowRubricGroupAssessmentByCriterium', {assessment: assessment, criterium: criterium, lastScoresModel: lastScoresModel}, units.fingerUnit)
     }
 
     Common.UseUnits { id: units }

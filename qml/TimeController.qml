@@ -3,13 +3,12 @@ import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
 
 
-Rectangle {
-    property string pageTitle: qsTr('Rellotge');
-    property bool canClose: true
+BasicPage {
+    pageTitle: qsTr('Rellotge');
 
     Common.UseUnits { id: units }
 
-    ColumnLayout {
+    mainPage: ColumnLayout {
         anchors.fill: parent
 
         Item {

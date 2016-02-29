@@ -15,17 +15,22 @@ BasicPage {
 
     pageTitle: qsTr("Avaluació de rúbriques");
 
-    signal openRubricAssessmentDetails(int assessment, int rubric, string group, var rubricsModel, var rubricsAssessmentModel)
-    signal openRubricGroupAssessment(int assessment)
-    signal openRubricHistory(string group)
-
-    onOpenRubricAssessmentDetails: {
-        openSubPage('RubricAssessmentEditor', {idAssessment: assessment, rubric: rubric, group: group, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel}, units.fingerUnit);
+    function openRubricGroupAssessment(assessment) {
+        openPageArgs('RubricGroupAssessment', {assessment: assessment});
     }
 
-    onOpenRubricHistory: openSubPage('RubricAssessmentHistory', {group: group})
+    function openRubricHistory(group) {
+        openPageArgs('RubricAssessmentHistory',{group: group});
+    }
+
+    function openRubricAssessmentDetails(assessment, rubric, group, rubricsModel, rubricsAssessmentModel) {
+        openPageArgs('RubricAssessmentEditor', {idAssessment: assessment, rubric: rubric, group: group, rubricsModel: rubricsModel, rubricsAssessmentModel: rubricsAssessmentModel}, units.fingerUnit);
+    }
 
     Common.UseUnits { id: units }
+
+    property string searchString: ''
+    property var searchFields: null
 
     mainPage: Item {
         id: rubricsListArea
@@ -345,6 +350,9 @@ BasicPage {
 
         Models.RubricsAssessmentModel {
             id: rubricsAssessmentModel
+
+            searchString: (rubricsListBasicPage.searchString !== '')?rubricsListBasicPage.searchString:undefined
+            searchFields: rubricsListBasicPage.searchFields
 
             sort: 'id DESC'
 
