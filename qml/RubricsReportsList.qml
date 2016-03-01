@@ -16,7 +16,7 @@ BasicPage {
     width: 100
     height: 62
 
-    pageTitle: qsTr("Rúbriques");
+    pageTitle: qsTr("Informes de rúbriques");
 
     Common.UseUnits { id: units }
 

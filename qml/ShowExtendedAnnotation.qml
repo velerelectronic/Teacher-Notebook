@@ -46,6 +46,8 @@ BasicPage {
 
         embedded: annotationEditor.embedded
 
+        onOpenMenu: annotationEditor.openMenu(initialHeight, menu, options)
+
         property alias title: titleComponent.originalContent
         property alias desc: descComponent.originalContent
         property alias labels: labelsComponent.originalContent

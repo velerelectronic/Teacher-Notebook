@@ -30,7 +30,7 @@ BasicPage {
     Common.UseUnits { id: units }
 
     property string searchString: ''
-    property var searchFields: null
+    property var searchFields: []
 
     mainPage: Item {
         id: rubricsListArea

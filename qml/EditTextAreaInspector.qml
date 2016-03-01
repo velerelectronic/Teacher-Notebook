@@ -51,7 +51,7 @@ CollectionInspectorItem {
                 height: units.fingerUnit
                 text: qsTr('Més...')
                 onClicked: {
-                    editText.openMenu(units.fingerUnit * 2,menuComponent);
+                    editText.openMenu(units.fingerUnit * 2,menuComponent, {});
                 }
             }
         }

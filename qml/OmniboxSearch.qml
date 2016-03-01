@@ -20,7 +20,6 @@ BasicPage {
             focus: true
 
             onIntroPressed: {
-                Qt.inputMethod.hide();
                 resultsModel.clear();
 
                 // Look for annotations
@@ -91,7 +90,7 @@ BasicPage {
             }
         }
         Component.onCompleted: {
-//            searchBox.focus = true;
+            searchBox.forceActiveFocus();
         }
     }
 

@@ -133,7 +133,7 @@ Item {
                 sourceComponent: downSlideMenu.menu
 
                 onSourceComponentChanged: {
-                    if (menuLoader.item.options !== 'undefined')
+                    if (typeof menuLoader.item.options !== 'undefined')
                         menuLoader.item.options = options;
                 }
 
@@ -147,7 +147,7 @@ Item {
                 Connections {
                     target: downSlideMenu
                     onOptionsChanged: {
-                        if (menuLoader.item !== null)
+                        if ((menuLoader.item !== null) && (typeof menuLoader.item.options !== 'undefined'))
                             menuLoader.item.options = options;
                     }
                 }

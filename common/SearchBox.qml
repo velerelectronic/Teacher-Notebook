@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.5
 
 Rectangle {
     id: searchBox
@@ -11,6 +11,14 @@ Rectangle {
     radius: height / 2
     border.color: 'black'
     clip: true
+
+    onFocusChanged: {
+        if (focus) {
+            forceActiveFocus();
+            searchText.showPanel();
+        }
+    }
+
     TextInput {
         id: searchText
         anchors.left: parent.left
@@ -19,13 +27,23 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         text: ''
         font.pixelSize: units.readUnit
+        focus: searchBox.focus
         inputMethodHints: Qt.ImhNoPredictiveText
+        activeFocusOnPress: true
         onTextChanged: {
             waitTimer.restart();
         }
+
+        function showPanel() {
+            searchText.focus = true;
+            searchText.forceActiveFocus();
+            Qt.inputMethod.show();
+        }
+
         onAccepted: {
             waitTimer.stop();
             searchBox.performSearch(searchText.text);
+            Qt.inputMethod.hide();
             searchBox.introPressed();
         }
 

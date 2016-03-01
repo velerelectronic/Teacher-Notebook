@@ -10,7 +10,7 @@ import "qrc:///common/FormatDates.js" as FormatDates
 
 BasicPage {
     id: labelsSortPage
-    property string pageTitle: qsTr('Ordenacions');
+    pageTitle: qsTr('Ordenacions');
 
     Common.UseUnits { id: units }
 
@@ -27,7 +27,7 @@ BasicPage {
         Component.onCompleted: select();
     }
 
-    ListView {
+    mainPage: ListView {
         id: labelsList
         anchors.fill: parent
 

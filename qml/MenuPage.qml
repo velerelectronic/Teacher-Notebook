@@ -11,7 +11,7 @@ Item {
     id: menuPage
     property string pageTitle: qsTr('Teacher Notebook');
 
-    signal openWorkingPage(string page, var parameters)
+    signal openWorkingPage(string title, string page, var parameters)
     signal sendOutputMessage(string message)
 
     property bool acceptPageChange: false
@@ -85,7 +85,7 @@ Item {
                     onClicked: {
                         menuList.indexCandidate = model.index;
                         if (model.page !== '') {
-                            menuPage.openWorkingPage(model.page, model.parameters);
+                            menuPage.openWorkingPage(model.caption, model.page, model.parameters);
                         }
                     }
                 }
@@ -139,7 +139,7 @@ Item {
                             anchors.fill: parent
                             onClicked: {
                                 subMenuList.subIndexCandidate = model.index;
-                                openWorkingPage(model.page, model.parameters);
+                                openWorkingPage(model.title, model.page, model.parameters);
                             }
                         }
                     }
@@ -159,7 +159,7 @@ Item {
 
                 var itemObject = menuModel.get(currentIndex);
                 if (itemObject.submenu.method !== '') {
-                    itemObject.submenu.object[itemObject.submenu.method]();
+                    itemObject.submenu.object[itemObject.submenu.method](itemObject.caption);
                 }
             }
         }
@@ -193,33 +193,33 @@ Item {
         id: labelsSortModel
     }
 
-    function getSortLabels() {
+    function getSortLabels(title) {
         console.log('get saved searcges');
         labelsSortModel.select();
-        subMenuElements.append({caption: qsTr('Ordenacions'), page: 'LabelsSort', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Ordenacions'), page: 'LabelsSort', parameters: {}});
         for (var i=0; i<labelsSortModel.count; i++) {
             var sortLabel = labelsSortModel.getObjectInRow(i);
-            subMenuElements.append({caption: sortLabel.title, page: 'ExtendedAnnotationsList', parameters: {sortLabels: sortLabel.labels}});
+            subMenuElements.append({title: title, caption: sortLabel.title, page: 'ExtendedAnnotationsList', parameters: {sortLabels: sortLabel.labels}});
         }
-        subMenuElements.append({caption: qsTr('Anotacions (anterior)'), page: 'AnnotationsList', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Anotacions (anterior)'), page: 'AnnotationsList', parameters: {}});
     }
 
-    function getSortLabelsForTables() {
+    function getSortLabelsForTables(title) {
         console.log('get saved searcges');
         labelsSortModel.select();
         for (var i=0; i<labelsSortModel.count; i++) {
             var sortLabel = labelsSortModel.getObjectInRow(i);
-            subMenuElements.append({caption: sortLabel.title, page: 'CombinedAnnotationsTable', parameters: {sortLabels: sortLabel.labels}});
+            subMenuElements.append({title: title, caption: sortLabel.title, page: 'CombinedAnnotationsTable', parameters: {sortLabels: sortLabel.labels}});
         }
     }
 
-    function getRubricsOptions() {
-        subMenuElements.append({caption: qsTr('Avaluació'), page: 'RubricsAssessmentList', parameters: {}});
-        subMenuElements.append({caption: qsTr('Definicions'), page: 'RubricsDefinitionsList', parameters: {}});
-        subMenuElements.append({caption: qsTr('Grups'), page: 'RubricsGroupsList', parameters: {}});
-        subMenuElements.append({caption: qsTr('Informes'), page: 'RubricsReportsList', parameters: {}});
+    function getRubricsOptions(title) {
+        subMenuElements.append({title: title, caption: qsTr('Avaluació'), page: 'RubricsAssessmentList', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Definicions'), page: 'RubricsDefinitionsList', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Grups'), page: 'RubricsGroupsList', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Informes'), page: 'RubricsReportsList', parameters: {}});
 
-        subMenuElements.append({caption: qsTr('Antigues avaluacions'), page: 'AssessmentSystem', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Antigues avaluacions'), page: 'AssessmentSystem', parameters: {}});
 
     }
 

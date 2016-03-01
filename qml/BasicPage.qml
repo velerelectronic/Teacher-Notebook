@@ -41,13 +41,11 @@ Item {
                     id: title
                     Layout.fillWidth: true
                     Layout.preferredHeight: parent.height
-                    color: "#ffffff"
-                    text: basicPageItem.pageTitle
-                    font.italic: false
                     font.bold: true
-                    font.pixelSize: units.readUnit
+                    font.pixelSize: units.glanceUnit
                     verticalAlignment: Text.AlignVCenter
                     font.family: "Tahoma"
+                    text: basicPageItem.pageTitle
                 }
 
                 ListView {
