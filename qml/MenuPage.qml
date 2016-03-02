@@ -197,6 +197,7 @@ Item {
         console.log('get saved searcges');
         labelsSortModel.select();
         subMenuElements.append({title: title, caption: qsTr('Ordenacions'), page: 'LabelsSort', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Anotacions continues'), page: 'ContinuousAnnotationsList', parameters: {}});
         for (var i=0; i<labelsSortModel.count; i++) {
             var sortLabel = labelsSortModel.getObjectInRow(i);
             subMenuElements.append({title: title, caption: sortLabel.title, page: 'ExtendedAnnotationsList', parameters: {sortLabels: sortLabel.labels}});

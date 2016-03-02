@@ -407,7 +407,7 @@ BasicPage {
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 }
 
-                editorComponent: {
+                editorComponent: Item {
 
                 }
             }
