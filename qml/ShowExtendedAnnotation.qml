@@ -578,7 +578,10 @@ BasicPage {
                     footer: Common.ImageButton {
                         image: 'plus-24844'
                         size: units.fingerUnit
-                        onClicked: annotationEditor.openMenu(units.fingerUnit, addRubricMenu, {rubricsAssessmentModel: assessmentsModel});
+                        onClicked: {
+                            var obj = {rubricsAssessmentModel: assessmentsModel};
+                            annotationEditor.openMenu(units.fingerUnit, addRubricMenu, obj);
+                        }
                     }
                 }
                 Models.RubricsAssessmentModel {
@@ -951,6 +954,11 @@ BasicPage {
                 property var options
                 signal closeMenu()
 
+                onOptionsChanged: {
+                    console.log('opcions 2');
+                    console.log(options);
+                }
+
                 Models.IndividualsModel {
                     id: groupsModel
 
@@ -1027,6 +1035,8 @@ BasicPage {
                 }
 
                 Component.onCompleted: {
+                    console.log('opcions 1');
+                    console.log(options);
                     groupsModel.selectUnique('group');
                     console.log('COUNT', groupsModel.count)
                 }
@@ -1046,8 +1056,8 @@ BasicPage {
                         console.log(prop, obj[prop]);
                     }
 
-                    var res = options['rubricsAssessmentModel'].insertObject(obj);
-                    options['rubricsAssessmentModel'].select();
+                    var res = addRubricMenuRect.options['rubricsAssessmentModel'].insertObject(obj);
+                    addRubricMenuRect.options['rubricsAssessmentModel'].select();
                 }
             }
 

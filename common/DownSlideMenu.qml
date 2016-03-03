@@ -132,9 +132,20 @@ Item {
 
                 sourceComponent: downSlideMenu.menu
 
-                onSourceComponentChanged: {
-                    if (typeof menuLoader.item.options !== 'undefined')
+                function updateOptions() {
+                    console.log('options changed to', options);
+                    menuLoader.item.options = options;
+                    if ((typeof (menuLoader.item.options) !== 'undefined')) {
+                        console.log('updated options');
                         menuLoader.item.options = options;
+                    }
+                }
+
+                onSourceComponentChanged: updateOptions()
+
+                Connections {
+                    target: downSlideMenu
+                    onOptionsChanged: menuLoader.updateOptions()
                 }
 
                 Connections {

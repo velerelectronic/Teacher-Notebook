@@ -30,6 +30,8 @@ SqlTableModel {
         // -3: last year
         // -4: before last year
 
+        var elseValue = 0; // Value for annotations with no start date defined
+
         var firstLabel = "";
 
         var labelCode = "";
@@ -69,7 +71,7 @@ SqlTableModel {
         + " WHEN substr(start,1,10)<'" + lastMonth + "' THEN -3"
         + " WHEN substr(start,1,10)<'" + lastWeek + "' THEN -2"
         + " WHEN substr(start,1,10)<'" + today + "' THEN -1"
-        + " ELSE -1000 END";
+        + " ELSE " + elseValue + " END";
 
         if (sortLabels != '') {
             var labels = sortLabels.replace(/\s{2,}/,' ').toLowerCase().split(' ');

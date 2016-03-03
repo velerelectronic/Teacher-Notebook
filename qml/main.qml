@@ -40,6 +40,7 @@
 
   * Magnifying glass: https://pixabay.com/photo-481818/
   * Config/settings/options: https://pixabay.com/photo-147414/
+  * Open: https://pixabay.com/es/flecha-derecho-east-147175/
 */
 
 import QtQuick 2.2
@@ -250,9 +251,9 @@ Window {
                             console.log('OPEN menu');
                             console.log(menu);
                             slideMenu.initialHeight = initialHeight;
+                            slideMenu.options = options;
                             slideMenu.menu = menu;
                             slideMenu.state = 'showHeading';
-                            slideMenu.options = options;
                         }
 
                         onShowMessage: {
