@@ -714,6 +714,11 @@ BasicPage {
         }
     }
 
+    function newAnnotation(title, start, end, state) {
+        annotationsModel.insertObject({title: title, start: start, end: end, state: state});
+        annotationsModel.setupPeriod();
+    }
+
     Component.onCompleted: {
         periodStart.setDate(periodStart.getDate() - 7);
         periodEnd.setDate(periodEnd.getDate() + 30);
