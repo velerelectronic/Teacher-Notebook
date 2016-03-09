@@ -101,6 +101,9 @@ Item {
                     id: contentText
                     Layout.preferredHeight: Math.max(contentHeight, flickableText.height)
                     Layout.fillWidth: true
+                    font.pixelSize: units.readUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    onLinkActivated: openExternalViewer(link)
                 }
 
                 Text {
