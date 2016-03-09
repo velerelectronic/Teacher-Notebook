@@ -24,6 +24,9 @@ BasicPage {
     property string footerText: qsTr('Més envant')
 
     mainPage: Item {
+        id: mainContinuousView
+        property bool expanded: false
+
         ColumnLayout {
             anchors.fill: parent
             Common.SearchBox {
@@ -34,234 +37,261 @@ BasicPage {
                     annotationsModel.selectAnnotations('aaa');
                 }
             }
-            ListView {
-                id: annotationsList
+            Item {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                clip: true
 
-                model: annotationsModel
-
-                header: Item {
-                    width: annotationsList.width
-                    height: units.fingerUnit * 2
-                    Text {
-                        anchors.fill: parent
-                        font.pixelSize: units.readUnit
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        text: headerText
+                ListView {
+                    id: annotationsList
+                    clip: true
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        bottom: parent.bottom
                     }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            periodStart.setDate(periodStart.getDate() - 7);
-                            annotationsModel.setupPeriod();
-                            beforeAnnotationsModel.setupFilter();
+                    width: (mainContinuousView.expanded)?(units.fingerUnit * 3):parent.width
 
-                            headerText = qsTr('A partir de ') + periodStart.toLongDate() + ".\n";
+                    model: annotationsModel
 
-                            if (beforeAnnotationsModel.count == 0)
-                                headerText += qsTr('No hi ha anotacions més enrere.');
-                            else
-                                headerText += qsTr("Abans hi ha ") + beforeAnnotationsModel.count + qsTr(" anotacions.");
+                    header: Item {
+                        width: annotationsList.width
+                        height: units.fingerUnit * 2
+                        Text {
+                            anchors.fill: parent
+                            font.pixelSize: units.readUnit
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            text: headerText
                         }
-                    }
-                }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                periodStart.setDate(periodStart.getDate() - 7);
+                                annotationsModel.setupPeriod();
+                                beforeAnnotationsModel.setupFilter();
 
-                footer: Item {
-                    width: annotationsList.width
-                    height: units.fingerUnit * 2
-                    Text {
-                        anchors.fill: parent
-                        font.pixelSize: units.readUnit
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        text: footerText
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            var offset = annotationsList.contentY;
+                                headerText = qsTr('A partir de ') + periodStart.toLongDate() + ".\n";
 
-                            periodEnd.setDate(periodEnd.getDate() + 7);
-                            annotationsModel.setupPeriod();
-                            annotationsList.contentY = offset;
-                            afterAnnotationsModel.setupFilter();
-
-                            footerText = qsTr('Fins a ') + periodEnd.toLongDate() + ".\n";
-
-                            if (afterAnnotationsModel.count == 0)
-                                footerText += qsTr('No hi ha anotacions més envant.');
-                            else
-                                footerText += qsTr("Després hi ha ") + afterAnnotationsModel.count + qsTr(" anotacions.");
-                        }
-                    }
-                }
-
-                section.property: 'blockDate'
-                section.criteria: ViewSection.FullString
-                section.delegate: Item {
-                    width: annotationsList.width
-                    height: units.fingerUnit * 2
-                    Text {
-                        anchors.fill: parent
-                        verticalAlignment: Text.AlignBottom
-                        color: 'black'
-                        font.pixelSize: units.readUnit
-                        text: {
-                            switch(parseInt(section)) {
-                            case -4:
-                                return qsTr("Fa més d'un any");
-                            case -3:
-                                return qsTr("El darrer any");
-                            case -2:
-                                return qsTr("El darrer mes");
-                            case -1:
-                                return qsTr("La darrera setmana");
-                            case 0:
-                                return qsTr('Avui');
-                            case 1:
-                                return qsTr("Aquesta setmana");
-                            case 2:
-                                return qsTr("Aquest mes");
-                            case 3:
-                                return qsTr("Aquest any");
-                            case 4:
-                                return qsTr("Molt més tard");
-                            default:
-                                return '';
-                            }
-                        }
-
-                    }
-                }
-
-                delegate: Rectangle {
-                    id: singleAnnotationRectangle
-
-                    z: 1
-                    states: [
-                        State {
-                            name: 'hidden'
-                            PropertyChanges {
-                                target: singleAnnotationRectangle
-                                height: units.fingerUnit / 2
-                                color: 'gray'
-                            }
-                            PropertyChanges {
-                                target: annotationRowLayout
-                                visible: false
-                            }
-                        },
-                        State {
-                            name: 'minimized'
-                            PropertyChanges {
-                                target: singleAnnotationRectangle
-                                height: units.fingerUnit * 2
-                            }
-                        },
-                        State {
-                            name: 'expanded'
-                            PropertyChanges {
-                                target: singleAnnotationRectangle
-                                height: Math.max(contentsField.contentHeight + units.nailUnit * 2, units.fingerUnit * 2)
-                            }
-                        }
-
-                    ]
-                    transitions: [
-                        Transition {
-                            from: 'hidden'
-                            to: 'minimized'
-                            reversible: true
-                            PropertyAnimation {
-                                target: singleAnnotationRectangle
-                                property: 'height'
-                                duration: 500
-                            }
-                        },
-                        Transition {
-                            from: 'minimized'
-                            to: 'expanded'
-                            PropertyAnimation {
-                                target: singleAnnotationRectangle
-                                property: 'height'
-                                duration: 500
-                            }
-                        },
-                        Transition {
-                            from: 'expanded'
-                            to: 'minimized'
-                            PropertyAnimation {
-                                target: singleAnnotationRectangle
-                                property: 'height'
-                                duration: 500
-                            }
-                        }
-                    ]
-                    border.color: 'black'
-                    color: (model.state > -1)?'white':'#BBBBBB'
-                    width: annotationsList.width
-                    state: {
-                        if (model.state > -1) {
-                            return 'minimized';
-                        } else
-                            return 'hidden';
-                    }
-
-                    property string desc: model.desc
-                    property string htmlContents: ''
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            if (model.state > -1) {
-                                if (singleAnnotationRectangle.state == 'expanded')
-                                    singleAnnotationRectangle.state = 'minimized';
-                                else {
-                                    singleAnnotationRectangle.htmlContents = parser.toHtml(singleAnnotationRectangle.desc);
-                                    singleAnnotationRectangle.state = 'expanded';
-                                }
-                            } else {
-                                if (singleAnnotationRectangle.state == 'hidden')
-                                    singleAnnotationRectangle.state = 'minimized';
+                                if (beforeAnnotationsModel.count == 0)
+                                    headerText += qsTr('No hi ha anotacions més enrere.');
                                 else
-                                    singleAnnotationRectangle.state = 'hidden';
+                                    headerText += qsTr("Abans hi ha ") + beforeAnnotationsModel.count + qsTr(" anotacions.");
                             }
                         }
                     }
-                    RowLayout {
-                        id: annotationRowLayout
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
-                        spacing: units.nailUnit
 
-                        clip: true
+                    footer: Item {
+                        width: annotationsList.width
+                        height: units.fingerUnit * 2
+                        Text {
+                            anchors.fill: parent
+                            font.pixelSize: units.readUnit
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            text: footerText
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                var offset = annotationsList.contentY;
 
-                        Text {
-                            id: contentsField
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            text: "<b>" + model.title + "</b> <font color=\"green\">#" + model.labels + "</font><br>" + ((singleAnnotationRectangle.state == 'expanded')?singleAnnotationRectangle.htmlContents:singleAnnotationRectangle.desc)
-                            clip: true
+                                periodEnd.setDate(periodEnd.getDate() + 7);
+                                annotationsModel.setupPeriod();
+                                annotationsList.contentY = offset;
+                                afterAnnotationsModel.setupFilter();
+
+                                footerText = qsTr('Fins a ') + periodEnd.toLongDate() + ".\n";
+
+                                if (afterAnnotationsModel.count == 0)
+                                    footerText += qsTr('No hi ha anotacions més envant.');
+                                else
+                                    footerText += qsTr("Després hi ha ") + afterAnnotationsModel.count + qsTr(" anotacions.");
+                            }
                         }
+                    }
+
+                    section.property: 'blockDate'
+                    section.criteria: ViewSection.FullString
+                    section.delegate: Item {
+                        width: annotationsList.width
+                        height: units.fingerUnit * 2
                         Text {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: units.fingerUnit * 3
-                            text: model.start + "<br>" + model.end
-                            clip: true
+                            anchors.fill: parent
+                            verticalAlignment: Text.AlignBottom
+                            color: 'black'
+                            font.pixelSize: units.readUnit
+                            text: {
+                                switch(parseInt(section)) {
+                                case -4:
+                                    return qsTr("Fa més d'un any");
+                                case -3:
+                                    return qsTr("El darrer any");
+                                case -2:
+                                    return qsTr("El darrer mes");
+                                case -1:
+                                    return qsTr("La darrera setmana");
+                                case 0:
+                                    return qsTr('Avui');
+                                case 1:
+                                    return qsTr("Aquesta setmana");
+                                case 2:
+                                    return qsTr("Aquest mes");
+                                case 3:
+                                    return qsTr("Aquest any");
+                                case 4:
+                                    return qsTr("Molt més tard");
+                                default:
+                                    return '';
+                                }
+                            }
+
                         }
-                        Common.ImageButton {
-                            Layout.preferredWidth: units.fingerUnit
-                            Layout.preferredHeight: width
-                            image: 'arrow-147175'
-                            onClicked: annotations.openPageArgs('ShowExtendedAnnotation', {identifier: model.title});
+                    }
+
+                    delegate: Rectangle {
+                        id: singleAnnotationRectangle
+
+                        z: 1
+                        states: [
+                            State {
+                                name: 'hidden'
+                                PropertyChanges {
+                                    target: singleAnnotationRectangle
+                                    height: units.fingerUnit / 2
+                                    color: 'gray'
+                                }
+                                PropertyChanges {
+                                    target: annotationRowLayout
+                                    visible: false
+                                }
+                            },
+                            State {
+                                name: 'minimized'
+                                PropertyChanges {
+                                    target: singleAnnotationRectangle
+                                    height: units.fingerUnit * 2
+                                }
+                            }
+                        ]
+                        transitions: [
+                            Transition {
+                                from: 'hidden'
+                                to: 'minimized'
+                                reversible: true
+                                PropertyAnimation {
+                                    target: singleAnnotationRectangle
+                                    property: 'height'
+                                    duration: 500
+                                }
+                            }
+                        ]
+                        border.color: 'black'
+                        color: (ListView.isCurrentItem)?'yellow':((model.state > -1)?'white':'#BBBBBB')
+                        width: annotationsList.width
+                        state: {
+                            if (model.state > -1) {
+                                return 'minimized';
+                            } else
+                                return 'hidden';
+                        }
+
+                        property string desc: model.desc
+                        property string htmlContents: ''
+                        property bool isCurrentItem: ListView.isCurrentItem
+
+                        onIsCurrentItemChanged: {
+                            if (isCurrentItem) {
+                                if (singleAnnotationRectangle.state == 'minimized') {
+                                    singleAnnotationRectangle.contentsToExpandedView();
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                switch(singleAnnotationRectangle.state) {
+                                case 'hidden':
+                                    singleAnnotationRectangle.state = 'minimized';
+                                    break;
+                                case 'minimized':
+                                    annotationsList.currentIndex = model.index;
+                                    singleAnnotationRectangle.contentsToExpandedView();
+                                    break;
+                                }
+                            }
+                        }
+                        RowLayout {
+                            id: annotationRowLayout
+                            anchors.fill: parent
+                            anchors.margins: units.nailUnit
+                            spacing: units.nailUnit
+
+                            clip: true
+
+                            Text {
+                                id: contentsField
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                text: "<b>" + model.title + "</b> <font color=\"green\">#" + model.labels + "</font><br>" + ((singleAnnotationRectangle.state == 'expanded')?singleAnnotationRectangle.htmlContents:singleAnnotationRectangle.desc)
+                                clip: true
+                            }
+                            Text {
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: (!mainContinuousView.expanded)?(units.fingerUnit * 3):0
+                                text: model.start + "<br>" + model.end
+                                clip: true
+                            }
+                        }
+
+                        function contentsToExpandedView() {
+                            mainContinuousView.expanded = true;
+                            expandedAnnotation.getText(model.title, model.desc, model.start, model.end, model.labels);
                         }
                     }
                 }
 
+                Rectangle {
+                    anchors {
+                        top: parent.top
+                        left: annotationsList.right
+                        right: parent.right
+                        bottom: parent.bottom
+                    }
+                    clip: true
+                    radius: units.nailUnit
+                    border.color: 'black'
+                    color: 'white'
+
+                    InlineExpandedAnnotation {
+                        id: expandedAnnotation
+                        anchors {
+                            top: parent.top
+                            left: parent.left
+                            bottom: parent.bottom
+                            margins: units.fingerUnit
+                        }
+                        width: parent.width - 2 * anchors.margins
+
+                        onGotoPreviousAnnotation: {
+                            annotationsList.currentIndex = annotationsList.currentIndex - 1;
+                        }
+
+                        onGotoNextAnnotation: {
+                            annotationsList.currentIndex = annotationsList.currentIndex + 1;
+                        }
+
+                        onCloseView: {
+                            annotationsList.currentIndex = -1;
+                            mainContinuousView.expanded = false;
+                        }
+
+                        onOpenExternalViewer: {
+                            annotations.openPageArgs('ShowExtendedAnnotation', {identifier: identifier});
+                        }
+                    }
+                }
             }
         }
         Common.SuperposedButton {
@@ -654,10 +684,6 @@ BasicPage {
                     annotationsModel.select();
             }
         }
-    }
-
-    MarkDownParser {
-        id: parser
     }
 
     Models.ExtendedAnnotations {

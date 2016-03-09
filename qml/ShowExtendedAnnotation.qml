@@ -1074,4 +1074,5 @@ BasicPage {
         }
     }
 
+    onIdentifierChanged: { console.log('new identifier', identifier) }
 }

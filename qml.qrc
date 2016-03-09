@@ -92,5 +92,6 @@
         <file>qml/AboveMenu.qml</file>
         <file>qml/OmniboxSearch.qml</file>
         <file>qml/ContinuousAnnotationsList.qml</file>
+        <file>qml/InlineExpandedAnnotation.qml</file>
     </qresource>
 </RCC>
