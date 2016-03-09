@@ -7,6 +7,7 @@ import 'qrc:///models' as Models
 import 'qrc:///editors' as Editors
 import "qrc:///javascript/Storage.js" as Storage
 import "qrc:///common/FormatDates.js" as FormatDates
+import ClipboardAdapter 1.0
 
 BasicPage {
     id: annotations
@@ -26,6 +27,13 @@ BasicPage {
     mainPage: Item {
         id: mainContinuousView
         property bool expanded: false
+
+        function expand(value) {
+            mainContinuousView.expanded = value;
+            annotations.buttonsModel.clear();
+            annotations.buttonsModel.append({icon: 'copy-97584', object: mainContinuousView, method: 'copyAnnotationDescription'});
+            annotations.buttonsModel.append({icon: 'road-sign-147409', object: mainContinuousView, method: 'closeInlineAnnotation'});
+        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -246,7 +254,7 @@ BasicPage {
                         }
 
                         function contentsToExpandedView() {
-                            mainContinuousView.expanded = true;
+                            mainContinuousView.expand(true);
                             expandedAnnotation.getText(model.title, model.desc, model.start, model.end, model.labels);
                         }
                     }
@@ -283,8 +291,7 @@ BasicPage {
                         }
 
                         onCloseView: {
-                            annotationsList.currentIndex = -1;
-                            mainContinuousView.expanded = false;
+                            mainContinuousView.closeInlineAnnotation();
                         }
 
                         onOpenExternalViewer: {
@@ -303,6 +310,15 @@ BasicPage {
             size: units.fingerUnit * 2
             imageSource: 'plus-24844'
             onClicked: annotations.openMenu(units.fingerUnit * 4, addImmediateAnnotationMenu, {labels: ''})
+        }
+
+        function copyAnnotationDescription() {
+            clipboard.copia(expandedAnnotation.descText);
+        }
+
+        function closeInlineAnnotation() {
+            annotationsList.currentIndex = -1;
+            mainContinuousView.expanded = false;
         }
     }
 
@@ -738,6 +754,10 @@ BasicPage {
         Component.onCompleted: {
             setupFilter();
         }
+    }
+
+    QClipboard {
+        id: clipboard
     }
 
     function newAnnotation(title, start, end, state) {

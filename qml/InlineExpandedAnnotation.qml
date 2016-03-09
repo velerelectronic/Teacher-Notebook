@@ -13,6 +13,7 @@ Item {
     signal closeView()
 
     property string identifier: ''
+    property string descText: ''
 
 //    color: 'yellow'
 
@@ -25,23 +26,20 @@ Item {
             margins: units.nailUnit
         }
         width: parent.width - 2 * anchors.margins
-        contentHeight: groupAnnotationItem.height + units.nailUnit * 2
+        contentHeight: groupAnnotationItem.height
         contentWidth: groupAnnotationItem.width
         clip: true
 
         Item {
             id: groupAnnotationItem
 
+            property int interspacing: units.nailUnit
             width: flickableText.width
-            height: gotoPreviousText.height + headerData.height + contentText.height + gotoNextText.height
+            height: Math.max(gotoPreviousText.height + headerData.height + titleRect.height + contentText.requiredHeight + gotoNextText.height + 4 * groupAnnotationItem.interspacing, flickableText.height)
 
             ColumnLayout {
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                }
-                spacing: units.nailUnit
+                anchors.fill: parent
+                spacing: groupAnnotationItem.interspacing
 
                 Text {
                     id: gotoPreviousText
@@ -97,9 +95,42 @@ Item {
                     }
                 }
 
+                Item {
+                    id: titleRect
+
+                    Layout.preferredHeight: titleText.height + 2
+                    Layout.fillWidth: true
+
+                    Text {
+                        id: titleText
+                        anchors {
+                            top: parent.top
+                            left: parent.left
+                            right: parent.right
+                        }
+
+                        height: Math.max(contentHeight, units.fingerUnit)
+                        font.pixelSize: units.glanceUnit
+                        font.bold: true
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    }
+                    Rectangle {
+                        anchors {
+                            top: titleText.bottom
+                            left: parent.left
+                            right: parent.right
+                        }
+                        height: 2
+                        color: 'black'
+                    }
+
+                }
+
                 Text {
                     id: contentText
-                    Layout.preferredHeight: Math.max(contentHeight, flickableText.height)
+                    property int requiredHeight: Math.max(contentHeight, units.fingerUnit)
+
+                    Layout.fillHeight: true
                     Layout.fillWidth: true
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -125,24 +156,15 @@ Item {
 
     }
 
-    Common.ImageButton {
-        anchors {
-            top: parent.top
-            right: parent.right
-        }
-
-        size: units.fingerUnit
-        image: 'road-sign-147409'
-        onClicked: inlineExpandedAnnotation.closeView()
-    }
-
     function getText(newTitle,newDesc,start,end, labels) {
         identifier = newTitle;
         flickableText.contentY = gotoPreviousText.height;
         startText.text = qsTr('Inici: ') + start;
         endText.text = qsTr('Final: ') + end;
         labelsText.text = '# ' + labels;
-        contentText.text = "<h1>" + newTitle + "</h1>" + parser.toHtml(newDesc);
+        titleText.text = newTitle;
+        descText = newDesc;
+        contentText.text = parser.toHtml(newDesc);
     }
 
     MarkDownParser {
