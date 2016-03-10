@@ -25,7 +25,7 @@ BasicPage {
                 // Look for annotations
                 annotationsModel.searchString = text;
                 annotationsModel.select();
-                resultsModel.append({title: qsTr('Anotacions'), desc: annotationsModel.count + qsTr(' resultats'), page: 'ExtendedAnnotationsList', options: {searchString: text}});
+                resultsModel.append({title: qsTr('Anotacions'), desc: annotationsModel.count + qsTr(' resultats'), page: 'ContinuousAnnotationsList', options: {searchString: text}});
 
                 // Look for resources
                 resourcesModel.searchString = text;

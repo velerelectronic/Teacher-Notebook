@@ -3,6 +3,7 @@ import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///editors' as Editors
 
 Item {
     id: inlineExpandedAnnotation
@@ -11,6 +12,14 @@ Item {
     signal gotoNextAnnotation()
     signal openExternalViewer(string identifier)
     signal closeView()
+
+    signal closeEditor()
+    signal openTitleEditor()
+    signal openDescriptionEditor()
+    signal openPeriodEditor()
+    signal openLabelsEditor()
+
+    signal requestSaveDescription(string content)
 
     property string identifier: ''
     property string descText: ''
@@ -29,6 +38,9 @@ Item {
         contentHeight: groupAnnotationItem.height
         contentWidth: groupAnnotationItem.width
         clip: true
+
+        visible: flickableText.enabled
+        enabled: !editorLoader.enabled
 
         Item {
             id: groupAnnotationItem
@@ -135,6 +147,16 @@ Item {
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     onLinkActivated: openExternalViewer(link)
+                    Common.ImageButton {
+                        anchors {
+                            top: parent.top
+                            right: parent.right
+                        }
+
+                        size: units.fingerUnit
+                        image: 'edit-153612'
+                        onClicked: editorLoader.changeEditor('descEditor', inlineExpandedAnnotation.descText)
+                    }
                 }
 
                 Text {
@@ -156,6 +178,75 @@ Item {
 
     }
 
+    Loader {
+        id: editorLoader
+
+        anchors.fill: flickableText
+
+        property string newContent: ''
+        visible: editorLoader.enabled
+
+        states: [
+            State {
+                name: 'viewer'
+                PropertyChanges {
+                    target: editorLoader
+                    enabled: false
+                }
+            },
+            State {
+                name: 'titleEditor'
+            },
+            State {
+                name: 'descEditor'
+                PropertyChanges {
+                    target: editorLoader
+                    sourceComponent: descEditorComponent
+                }
+            },
+            State {
+                name: 'periodEditor'
+            },
+            State {
+                name: 'labelsEditor'
+            }
+        ]
+        state: 'viewer'
+
+        transitions: [
+            Transition {
+                to: "descEditor"
+                ScriptAction {
+                    script: inlineExpandedAnnotation.openDescriptionEditor()
+                }
+            }
+        ]
+
+        onLoaded: {
+            item.content = editorLoader.newContent;
+        }
+
+        function changeEditor(newEditor, newContent) {
+            if (editorLoader.state == 'viewer') {
+                editorLoader.newContent = newContent;
+                editorLoader.state = newEditor;
+                editorLoader.enabled = true;
+            }
+        }
+
+        function getEditedContent() {
+            return item.content;
+        }
+    }
+
+    Component {
+        id: descEditorComponent
+
+        Editors.TextAreaEditor3 {
+
+        }
+    }
+
     function getText(newTitle,newDesc,start,end, labels) {
         identifier = newTitle;
         flickableText.contentY = gotoPreviousText.height;
@@ -165,6 +256,20 @@ Item {
         titleText.text = newTitle;
         descText = newDesc;
         contentText.text = parser.toHtml(newDesc);
+    }
+
+    function saveDescriptionContent() {
+        saveEditorContents();
+    }
+
+    function saveEditorContents() {
+        switch(editorLoader.state) {
+        case 'descEditor':
+            inlineExpandedAnnotation.requestSaveDescription(editorLoader.getEditedContent());
+            break;
+        }
+
+        inlineExpandedAnnotation.closeEditor();
     }
 
     MarkDownParser {

@@ -21,6 +21,8 @@ BasicPage {
     property var periodStart: new Date();
     property var periodEnd: new Date();
 
+    property string searchString: ''
+
     property string headerText: qsTr('Més enrere')
     property string footerText: qsTr('Més envant')
 
@@ -30,21 +32,36 @@ BasicPage {
 
         function expand(value) {
             mainContinuousView.expanded = value;
-            annotations.buttonsModel.clear();
-            annotations.buttonsModel.append({icon: 'copy-97584', object: mainContinuousView, method: 'copyAnnotationDescription'});
-            annotations.buttonsModel.append({icon: 'road-sign-147409', object: mainContinuousView, method: 'closeInlineAnnotation'});
+            if (value) {
+                annotations.pushButtonsModel();
+                annotations.buttonsModel.append({icon: 'copy-97584', object: mainContinuousView, method: 'copyAnnotationDescription'});
+                annotations.buttonsModel.append({icon: 'road-sign-147409', object: mainContinuousView, method: 'closeInlineAnnotation'});
+            }
+        }
+
+        Connections {
+            target: annotations
+            onSearchStringChanged: {
+                annotationsModel.searchString = annotations.searchString;
+                annotationsModel.selectAnnotations('');
+            }
         }
 
         ColumnLayout {
             anchors.fill: parent
-            Common.SearchBox {
+            Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: units.fingerUnit
-                onIntroPressed: {
-                    annotationsModel.searchString = text;
-                    annotationsModel.selectAnnotations('aaa');
+                color: '#DDDDFF'
+                Text {
+                    anchors.fill: parent
+                    font.pixelSize: units.readUnit
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    text: qsTr('Paraules de cerca: ') + annotationsModel.searchString
                 }
             }
+
             Item {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
@@ -297,6 +314,21 @@ BasicPage {
                         onOpenExternalViewer: {
                             annotations.openPageArgs('ShowExtendedAnnotation', {identifier: identifier});
                         }
+
+                        onOpenDescriptionEditor: {
+                            console.log('pushing');
+                            annotations.pushButtonsModel();
+                            annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
+                        }
+
+                        onRequestSaveDescription: {
+                            annotationsModel.updateObject(expandedAnnotation.identifier, {desc: content});
+                            annotationsModel.selectAnnotations('');
+                        }
+
+                        onCloseEditor: {
+                            annotations.popButtonsModel();
+                        }
                     }
                 }
             }
@@ -319,6 +351,7 @@ BasicPage {
         function closeInlineAnnotation() {
             annotationsList.currentIndex = -1;
             mainContinuousView.expanded = false;
+            annotations.popButtonsModel();
         }
     }
 
@@ -712,7 +745,8 @@ BasicPage {
 
         function setupPeriod() {
             annotationsModel.bindValues = [periodStart.toYYYYMMDDFormat(), periodEnd.toYYYYMMDDFormat()];
-            selectAnnotations('aaa');
+            annotationsModel.searchString = annotations.searchString;
+            selectAnnotations('');
         }
 
         Component.onCompleted: {

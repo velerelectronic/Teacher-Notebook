@@ -21,10 +21,25 @@ Item {
 
     property ListModel buttonsModel: ListModel { dynamicRoles: true }
 
+    property var buttonsModelStack: []
+
     property bool pageClosable: true
 
     function invokeSubPageFunction(method, parameters) {
         return basicPageLoader.item[method](parameters);
+    }
+
+    function pushButtonsModel() {
+        var oldModel = basicPageItem.buttonsModel;
+        buttonsModelStack.push(oldModel);
+        basicPageItem.buttonsModel.clear();
+    }
+
+    function popButtonsModel() {
+        if (basicPageItem.buttonsModel.count == 0)
+            basicPageItem.buttonsModel.clear();
+        else
+            basicPageItem.buttonsModel = basicPageItem.buttonsModelStack.pop();
     }
 
     ColumnLayout {
