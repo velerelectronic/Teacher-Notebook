@@ -217,7 +217,7 @@ Item {
             Transition {
                 to: "descEditor"
                 ScriptAction {
-                    script: inlineExpandedAnnotation.openDescriptionEditor()
+                    script: { inlineExpandedAnnotation.openDescriptionEditor(); console.log('now'); }
                 }
             }
         ]
@@ -268,12 +268,19 @@ Item {
             inlineExpandedAnnotation.requestSaveDescription(editorLoader.getEditedContent());
             break;
         }
+    }
 
+    function openViewer() {
+        editorLoader.state = 'viewer';
         inlineExpandedAnnotation.closeEditor();
     }
 
     MarkDownParser {
         id: parser
+    }
+
+    Component.onDestruction: {
+        inlineExpandedAnnotation.closeView();
     }
 }
 

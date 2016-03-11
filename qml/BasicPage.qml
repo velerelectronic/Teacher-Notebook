@@ -12,8 +12,11 @@ Item {
 
     property Component mainPage
 
+    property bool isSubPage: false
+
     property int padding: 0
 
+    signal openMainPage()
     signal closePage()
     signal openMenu(int initialHeight, var menu, var options)
     signal openPageArgs(string page, var args)
@@ -30,16 +33,26 @@ Item {
     }
 
     function pushButtonsModel() {
-        var oldModel = basicPageItem.buttonsModel;
-        buttonsModelStack.push(oldModel);
+        console.log('In the stack before pushing', buttonsModelStack.length);
+        var newListModel = Qt.createQmlObject("import QtQuick 2.5; ListModel {}", basicPageItem);
+        console.log(newListModel);
+        for (var i=0; i<basicPageItem.buttonsModel.count; i++) {
+            newListModel.append(buttonsModel.get(i));
+        }
+
+        buttonsModelStack.push(newListModel);
         basicPageItem.buttonsModel.clear();
+        console.log('In the stack after pushing', buttonsModelStack.length);
     }
 
     function popButtonsModel() {
-        if (basicPageItem.buttonsModel.count == 0)
-            basicPageItem.buttonsModel.clear();
-        else
-            basicPageItem.buttonsModel = basicPageItem.buttonsModelStack.pop();
+        console.log('pop: ', buttonsModelStack.length);
+        if (buttonsModelStack.length == 0)
+            buttonsModel.clear();
+        else {
+            buttonsModel = buttonsModelStack.pop();
+            console.log(buttonsModelStack.length);
+        }
     }
 
     ColumnLayout {
@@ -52,6 +65,21 @@ Item {
 
             RowLayout {
                 anchors.fill: parent
+                Common.ImageButton {
+                    Layout.preferredWidth: units.fingerUnit
+                    Layout.preferredHeight: units.fingerUnit
+
+                    size: units.fingerUnit
+
+                    image: (basicPageItem.isSubPage)?'arrow-145769':'small-41255'
+                    onClicked: {
+                        if (basicPageItem.isSubPage)
+                            closePage();
+                        else
+                            basicPageItem.openMainPage();
+                    }
+                }
+
                 Text {
                     id: title
                     Layout.fillWidth: true
@@ -148,12 +176,6 @@ Item {
                         text: ((subPageloader.item) && (subPageloader.item.pageTitle))?subPageloader.item.pageTitle:''
                         color: 'white'
                     }
-                    Common.ImageButton {
-                        Layout.fillHeight: true
-                        size: units.fingerUnit
-                        image: 'road-sign-147409'
-                        onClicked: requestClosePage()
-                    }
                 }
             }
 
@@ -187,7 +209,6 @@ Item {
                             basicPageItem.buttonsModel.append(buttonsModel.get(i));
                         }
                     }
-                    basicPageItem.buttonsModel.append({icon: 'road-sign-147409', object: workingSpace, method: 'requestClosePage'});
                 }
             }
 
@@ -224,15 +245,12 @@ Item {
         closePage();
     }
 
-    onPageClosableChanged: {
-        console.log('PAGE closable');
-        if (pageClosable)
-            buttonsModel.append({icon: 'road-sign-147409', object: basicPageItem, method: 'closeThisPage'});
+    function lookFor() {
+        basicPageItem.openPageArgs('OmniboxSearch',{});
     }
 
     Component.onCompleted: {
-        if (pageClosable)
-            buttonsModel.append({icon: 'road-sign-147409', object: basicPageItem, method: 'closeThisPage'});
+        buttonsModel.append({icon: 'magnifying-glass-481818', object: basicPageItem, method: 'lookFor'});
     }
 }
 

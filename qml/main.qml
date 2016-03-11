@@ -50,7 +50,6 @@ import QtQuick.Window 2.1
 import QtQuick.Dialogs 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
-import 'qrc:///models' as Models
 
 Window {
     id: mainApp
@@ -62,12 +61,9 @@ Window {
     height: Screen.desktopAvailableHeight
     visible: true
 
-
-    property string currentPageTitle: ''
-
     onClosing: {
         close.accepted = false;
-//        pagesLoader.requestClosePage();
+        workingSpace.requestClosePage();
     }
 
     Common.UseUnits { id: units }
@@ -84,211 +80,45 @@ Window {
         color: '#F2F2F2'
         anchors.fill: parent
 
-        ColumnLayout {
+        WorkingSpace {
+            id: workingSpace
+
             anchors.fill: parent
-            spacing: 0
-            Rectangle {
-                id: header
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                }
+            anchors.margins: units.nailUnit * 2
 
-                height: units.fingerUnit * 1.5
+            mainPage: 'MenuPage'
 
-                z: 1
-                color: "#009900"
-                visible: true
-                clip: true
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: units.nailUnit
-
-                    Image {
-                        Layout.preferredWidth: height
-                        Layout.preferredHeight: parent.height
-
-                        source: 'qrc:///images/small-41255_150.png'
-                        fillMode: Image.PreserveAspectFit
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: sideBar.state = (sideBar.state === 'showPanel')?'hidePanel':'showPanel'
-                        }
-                    }
-
-                    Text {
-                        id: mainTitle
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        font.bold: true
-                        font.pixelSize: units.readUnit
-                        verticalAlignment: Text.AlignVCenter
-                        text: qsTr('Teacher Notebook')
-                        color: 'white'
-                    }
-
-                    ListView {
-                        id: mainButtonsList
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: Math.min(contentItem.width, header.width / 2)
-
-                        model: mainButtonsModel
-
-                        spacing: units.nailUnit
-                        orientation: ListView.Horizontal
-                        LayoutMirroring.enabled: true
-
-                        delegate: Common.ImageButton {
-                            height: mainButtonsList.height
-                            width: height
-                            image: model.image
-                            onClicked: model.object[model.method]()
-                        }
-                    }
-
-                    ListModel {
-                        id: mainButtonsModel
-
-                        Component.onCompleted: {
-                            append({image: 'magnifying-glass-481818', object: mainApp, method: 'lookFor'});
-                        }
-                    }
-                }
-            }
-            Item {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-
-                clip: true
-
-                RowLayout {
-                    id: rowLayout
-                    property int margin: Math.min(parent.width / 50, units.fingerUnit * 2)
-                    anchors {
-                        fill: parent
-                        leftMargin: rowLayout.margin
-                        rightMargin: rowLayout.margin
-                        topMargin: units.nailUnit
-                        bottomMargin: units.nailUnit
-                    }
-                    spacing: margin
-
-                    Rectangle {
-                        id: sideBar
-                        Layout.preferredWidth: width
-                        Layout.fillHeight: true
-
-                        states: [
-                            State {
-                                name: 'showPanel'
-                                PropertyChanges {
-                                    target: sideBar
-                                    visible: true
-                                    width: Math.max(rowLayout.width / 4, units.fingerUnit * 5)
-                                }
-                            },
-                            State {
-                                name: 'hidePanel'
-                                PropertyChanges {
-                                    target: sideBar
-                                    visible: false
-                                    width: -rowLayout.margin
-                                }
-                            }
-                        ]
-                        state: 'showPanel'
-                        color: 'transparent'
-
-                        transitions: [
-                            Transition {
-                                from: 'hidePanel'
-                                to: 'showPanel'
-                                PropertyAnimation {
-                                    property: 'width'
-                                    duration: 250
-                                }
-                            },
-                            Transition {
-                                from: 'showPanel'
-                                to: 'hidePanel'
-                                SequentialAnimation {
-                                    PropertyAnimation {
-                                        property: 'width'
-                                        duration: 250
-                                    }
-                                    PropertyAnimation {
-                                        property: 'visible'
-                                    }
-                                }
-                            }
-                        ]
-
-                        MenuPage {
-                            id: sideMenu
-                            anchors.fill: parent
-                            anchors.margins: units.nailUnit
-
-                            onOpenWorkingPage: {
-                                if (workingSpace.canClose) {
-                                    sideMenu.acceptNewChanges();
-                                    mainTitle.text = title;
-                                    workingSpace.loadFirstPage(page,parameters);
-                                }
-                            }
-                        }
-                    }
-                    WorkingSpace {
-                        id: workingSpace
-
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-
-                        clip: true
-
-                        onOpenMenu: {
-                            console.log('OPEN menu');
-                            console.log(menu);
-                            slideMenu.initialHeight = initialHeight;
-                            slideMenu.options = options;
-                            slideMenu.menu = menu;
-                            slideMenu.state = 'showHeading';
-                        }
-
-                        onShowMessage: {
-                            messageBox.publishMessage(message);
-                        }
-                    }
-
-                }
+            onOpenMenu: {
+                slideMenu.initialHeight = initialHeight;
+                slideMenu.options = options;
+                slideMenu.menu = menu;
+                slideMenu.state = 'showHeading';
             }
 
+            onShowMessage: {
+                messageBox.publishMessage(message);
+            }
         }
-    }
 
-    function lookFor() {
-        workingSpace.loadSubPage('OmniboxSearch', {});
-    }
+        Common.DownSlideMenu {
+            id: slideMenu
+            anchors.fill: parent
+        }
 
-    Common.DownSlideMenu {
-        id: slideMenu
-        anchors.fill: parent
-    }
+        Common.MessageBox {
+            id: messageBox
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.margins: units.nailUnit
 
-    Common.MessageBox {
-        id: messageBox
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.margins: units.nailUnit
-
-        color: 'yellow'
-        border.color: 'black'
-        radius: units.nailUnit
-        internalMargins: units.nailUnit
-        fontSize: units.readUnit
-        interval: 2000
+            color: 'yellow'
+            border.color: 'black'
+            radius: units.nailUnit
+            internalMargins: units.nailUnit
+            fontSize: units.readUnit
+            interval: 2000
+        }
     }
 }
 

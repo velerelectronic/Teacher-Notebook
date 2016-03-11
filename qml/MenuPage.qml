@@ -14,8 +14,6 @@ Item {
     signal openWorkingPage(string title, string page, var parameters)
     signal sendOutputMessage(string message)
 
-    property bool acceptPageChange: false
-
     function acceptNewChanges() {
         acceptPageChange = true;
         acceptPageChange = false;
@@ -23,109 +21,93 @@ Item {
 
     Common.UseUnits { id: units }
 
-    ListView {
-        id: menuList
-
+    ColumnLayout {
         anchors.fill: parent
-        spacing: units.nailUnit
-
-        property int indexCandidate: -1
-
-        Connections {
-            target: menuPage
-            onAcceptPageChangeChanged: {
-                if (acceptPageChange) {
-                    if (menuList.indexCandidate > -1) {
-                        menuList.currentIndex = menuList.indexCandidate;
-                    }
-                }
-            }
+        Text {
+            Layout.preferredHeight: contentHeight
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            font.pixelSize: units.glanceUnit
+            font.bold: true
+            text: 'Teacher Notebook'
         }
 
-        model: ListModel {
-            id: menuModel
-        }
+        ListView {
+            id: menuList
 
-        delegate: Item {
-            id: menuItemRect
+            Layout.fillWidth: true
+            Layout.fillHeight: true
 
-            width: menuList.width
-            height: units.fingerUnit * 2 + ((ListView.isCurrentItem)?subMenuList.height:0)
+            spacing: units.nailUnit
+            clip: true
 
-            property var submenu: subMenuElements
-            property bool isCurrentItem: ListView.isCurrentItem
+            orientation: ListView.Vertical
 
-            function resetCurrentSubMenu() {
-                subMenuList.currentIndex = -1;
+            model: ListModel {
+                id: menuModel
             }
 
-            Rectangle {
-                id: captionText
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                }
-                height: (units.fingerUnit) * 2
+            delegate: Rectangle {
+                id: menuItemRect
 
-                color: (menuItemRect.isCurrentItem)?'yellow':'transparent'
+                width: menuList.width
+                height: captionText.height + subMenuList.height + 2 * captionText.anchors.margins
+
+                color: (isCurrentItem)?'#D8F6CE':'white'
+
+                property var submenu: subMenuElements
+                property bool isCurrentItem: ListView.isCurrentItem
+
+                function resetCurrentSubMenu() {
+                    subMenuList.currentIndex = -1;
+                }
 
                 Text {
-                    anchors.fill: parent
+                    id: captionText
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
+                    }
                     anchors.margins: units.nailUnit
+                    height: units.fingerUnit
+
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     elide: Text.ElideRight
                     maximumLineCount: 2
+                    font.bold: menuItemRect.isCurrentItem
                     text: model.caption
-                }
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        menuList.indexCandidate = model.index;
-                        if (model.page !== '') {
-                            menuPage.openWorkingPage(model.caption, model.page, model.parameters);
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            menuList.currentIndex = model.index;
                         }
                     }
                 }
-            }
-
-            Rectangle {
-                anchors {
-                    top: captionText.bottom
-                    left: parent.left
-                    right: parent.right
-                    leftMargin: units.fingerUnit / 2
-                }
-                height: subMenuList.contentItem.height
-                color: '#D8D8D8'
 
                 ListView {
                     id: subMenuList
-                    anchors.fill: parent
+                    anchors {
+                        top: captionText.bottom
+                        left: parent.left
+                        right: parent.right
+                    }
+                    height: (menuItemRect.isCurrentItem)?units.fingerUnit * 3:0
 
                     property int subIndexCandidate: -1
+                    orientation: ListView.Horizontal
 
-                    Connections {
-                        target: menuPage
-                        onAcceptPageChangeChanged: {
-                            if (acceptPageChange) {
-                                if (subMenuList.subIndexCandidate > -1) {
-                                    subMenuList.currentIndex = subMenuList.subIndexCandidate;
-                                    subMenuList.subIndexCandidate = -1;
-                                }
-                            }
-                        }
-                    }
+                    spacing: units.nailUnit
 
-                    interactive: false
                     model: (menuItemRect.isCurrentItem)?menuItemRect.submenu:[]
                     delegate: Rectangle {
-                        width: subMenuList.width
-                        height: units.fingerUnit * 1.5
+                        width: units.fingerUnit * 4
+                        height: units.fingerUnit * 2
 
-                        color: (ListView.isCurrentItem)?'orange':'transparent'
+                        border.color: 'black'
                         Text {
                             anchors.fill: parent
                             anchors.margins: units.nailUnit
@@ -138,47 +120,39 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                subMenuList.subIndexCandidate = model.index;
                                 openWorkingPage(model.title, model.page, model.parameters);
                             }
                         }
                     }
-                    onCurrentIndexChanged: {
-                        if (currentIndex>-1) {
-                        }
-                    }
                 }
-
             }
-        }
-        onCurrentIndexChanged: {
-            subMenuElements.clear();
+            onCurrentIndexChanged: {
+                subMenuElements.clear();
 
-            if (currentIndex>-1) {
-                menuList.currentItem.resetCurrentSubMenu();
+                if (currentIndex>-1) {
+                    menuList.currentItem.resetCurrentSubMenu();
 
-                var itemObject = menuModel.get(currentIndex);
-                if (itemObject.submenu.method !== '') {
-                    itemObject.submenu.object[itemObject.submenu.method](itemObject.caption);
+                    var itemObject = menuModel.get(currentIndex);
+                    if (itemObject.submenu.method !== '') {
+                        itemObject.submenu.object[itemObject.submenu.method](itemObject.caption);
+                    }
                 }
             }
         }
     }
 
+
     Component.onCompleted: {
-        menuModel.append({caption: qsTr('Anotacions'), page: 'ExtendedAnnotationsList', parameters: {}, submenu: {object: menuPage, method: 'getSortLabels'}});
-        menuModel.append({caption: qsTr('Taules'), page: '', parameters: {}, submenu: {object: menuPage, method: 'getSortLabelsForTables'}});
-        menuModel.append({caption: qsTr('Rúbriques'), page: 'RubricsAssessmentList', parameters: {}, submenu: {object: menuPage, method: 'getRubricsOptions'}});
-        menuModel.append({caption: qsTr('Projectes'), page: 'Projects', parameters: {}, submenu: {object: menuPage, method: 'getProjectsList'}});
+        menuModel.append({caption: qsTr('Anotacions'), submenu: {object: menuPage, method: 'getSortLabels'}});
+        menuModel.append({caption: qsTr('Taules'), submenu: {object: menuPage, method: 'getSortLabelsForTables'}});
+        menuModel.append({caption: qsTr('Rúbriques'), submenu: {object: menuPage, method: 'getRubricsOptions'}});
+        menuModel.append({caption: qsTr('Projectes'), submenu: {object: menuPage, method: 'getProjectsList'}});
+        menuModel.append({caption: qsTr('Altres eines'), submenu: {object: menuPage, method: 'getOtherToolsList'}});
 
         menuModel.append({caption: qsTr('Espai de treball'), page: 'WorkSpace', parameters: {}, submenu: {object: menuPage, method: ''}});
         menuModel.append({caption: qsTr('Pissarra'), page: 'Whiteboard', parameters: {}, submenu: {object: menuPage, method: ''}});
         menuModel.append({caption: qsTr('Documents'), page: 'DocumentsList', parameters: {}, submenu: {object: menuPage, method: ''}});
         menuModel.append({caption: qsTr('Recursos'), page: 'ResourceManager', parameters: {}, submenu: {object: menuPage, method: ''}});
-        menuModel.append({caption: qsTr('! Recerca de coneixement'), page: 'Researcher', parameters: {}, submenu: {object: menuPage, method: ''}});
-        menuModel.append({caption: qsTr('Feeds'), page: 'FeedWEIB', parameters: {}, submenu: {object: menuPage, method: ''}});
-        menuModel.append({caption: qsTr('Rellotge'), page: 'TimeController', parameters: {}, submenu: {object: menuPage, method: ''}});
-        menuModel.append({caption: qsTr('Gestor de dades'), page: 'DataMan', parameters: {}, submenu: {object: menuPage, method: ''}});
     }
 
     ListModel {
@@ -231,6 +205,13 @@ Item {
             var projectObj = projectsModel.getObjectInRow(i);
             subMenuElements.append({caption: projectObj.name, page: 'ExtendedAnnotationsList', parameters: {project: projectObj.name}});
         }
+    }
+
+    function getOtherToolsList() {
+        subMenuElements.append({caption: qsTr('Gestor de dades'), page: 'DataMan', parameters: {}});
+        subMenuElements.append({caption: qsTr('! Recerca de coneixement'), page: 'Researcher', parameters: {}, submenu: {object: menuPage, method: ''}});
+        subMenuElements.append({caption: qsTr('Feeds'), page: 'FeedWEIB', parameters: {}});
+        subMenuElements.append({caption: qsTr('Rellotge'), page: 'TimeController', parameters: {}});
     }
 
     Models.ProjectsModel {

@@ -180,6 +180,7 @@ BasicPage {
                         states: [
                             State {
                                 name: 'hidden'
+                                when: (!singleAnnotationRectangle.isCurrentItem) && (model.state <= -1)
                                 PropertyChanges {
                                     target: singleAnnotationRectangle
                                     height: units.fingerUnit / 2
@@ -192,11 +193,27 @@ BasicPage {
                             },
                             State {
                                 name: 'minimized'
+                                when: (!singleAnnotationRectangle.isCurrentItem) && (model.state > -1)
                                 PropertyChanges {
                                     target: singleAnnotationRectangle
                                     height: units.fingerUnit * 2
                                 }
+                            },
+                            State {
+                                name: 'lastSelected'
+                                extend: 'minimized'
+                                when: (singleAnnotationRectangle.isCurrentItem) && (!mainContinuousView.expanded)
+                            },
+
+                            State {
+                                name: 'expanded'
+                                extend: 'minimized'
+                                when: (singleAnnotationRectangle.isCurrentItem) && (mainContinuousView.expanded)
+                                PropertyChanges {
+                                    target: singleAnnotationRectangle
+                                }
                             }
+
                         ]
                         transitions: [
                             Transition {
@@ -208,29 +225,22 @@ BasicPage {
                                     property: 'height'
                                     duration: 500
                                 }
+                            },
+                            Transition {
+                                from: 'expanded'
+                                ScriptAction {
+                                    script: annotations.popButtonsModel();
+                                }
                             }
+
                         ]
                         border.color: 'black'
                         color: (ListView.isCurrentItem)?'yellow':((model.state > -1)?'white':'#BBBBBB')
                         width: annotationsList.width
-                        state: {
-                            if (model.state > -1) {
-                                return 'minimized';
-                            } else
-                                return 'hidden';
-                        }
 
                         property string desc: model.desc
                         property string htmlContents: ''
                         property bool isCurrentItem: ListView.isCurrentItem
-
-                        onIsCurrentItemChanged: {
-                            if (isCurrentItem) {
-                                if (singleAnnotationRectangle.state == 'minimized') {
-                                    singleAnnotationRectangle.contentsToExpandedView();
-                                }
-                            }
-                        }
 
                         MouseArea {
                             anchors.fill: parent
@@ -238,6 +248,9 @@ BasicPage {
                                 switch(singleAnnotationRectangle.state) {
                                 case 'hidden':
                                     singleAnnotationRectangle.state = 'minimized';
+                                    break;
+                                case 'lastSelected':
+                                    singleAnnotationRectangle.contentsToExpandedView();
                                     break;
                                 case 'minimized':
                                     annotationsList.currentIndex = model.index;
@@ -301,10 +314,12 @@ BasicPage {
 
                         onGotoPreviousAnnotation: {
                             annotationsList.currentIndex = annotationsList.currentIndex - 1;
+                            annotationsList.currentItem.contentsToExpandedView();
                         }
 
                         onGotoNextAnnotation: {
                             annotationsList.currentIndex = annotationsList.currentIndex + 1;
+                            annotationsList.currentItem.contentsToExpandedView();
                         }
 
                         onCloseView: {
@@ -324,6 +339,7 @@ BasicPage {
                         onRequestSaveDescription: {
                             annotationsModel.updateObject(expandedAnnotation.identifier, {desc: content});
                             annotationsModel.selectAnnotations('');
+                            expandedAnnotation.openViewer();
                         }
 
                         onCloseEditor: {
@@ -349,7 +365,6 @@ BasicPage {
         }
 
         function closeInlineAnnotation() {
-            annotationsList.currentIndex = -1;
             mainContinuousView.expanded = false;
             annotations.popButtonsModel();
         }

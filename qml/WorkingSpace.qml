@@ -13,6 +13,7 @@ Item {
     property string initialPage: ''
     property var initialProperties
     property bool canClose: true
+    property string mainPage: ''
 
     signal closeWorkingSpace()
     signal openMenu(int initialHeight, var menu, var options)
@@ -103,6 +104,13 @@ Item {
 //                                basicList.currentIndex = model.index - 1;
                             }
                         }
+
+                        onOpenWorkingPage: {
+                            loadFirstPage(page,parameters);
+                        }
+
+                        onOpenMainPage: loadFirstPage(mainPage, {})
+
                         // Slide menu
                         onOpenMenu: {
                             workingSpace.openMenu(initialHeight, menu, options);
@@ -404,33 +412,23 @@ Item {
 
     function loadSubPage(page, param) {
         console.log('opening', page, param);
+        if (pagesModel.count>0)
+            param['isSubPage'] = true;
         pagesModel.append({page: Qt.resolvedUrl(page + '.qml'), parameters: param});
         basicList.currentIndex = pagesModel.count-1;
     }
 
     function requestClosePage() {
-        var item = pagesStack.currentItem;
-        if (pagesStack.depth>1) {
-            if (typeof (item.requestClose) == 'function') {
-                item.requestClose();
-            } else {
-                closeCurrentPage();
-            }
-        } else {
-            if (typeof (item.requestClose) == 'function') {
-                if (item.requestClose()) {
-                    closeWorkingPageDialog.open();
-
-                }
-            } else {
-                closeWorkingPageDialog.open();
-            }
-        }
+        if (pagesModel.count>1)
+            pagesModel.remove(pagesModel.count-1);
     }
 
     function closeCurrentPage() {
         // Erase this function
     }
 
+    Component.onCompleted: {
+        loadFirstPage(mainPage, {});
+    }
 }
 
