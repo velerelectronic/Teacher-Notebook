@@ -95,7 +95,7 @@ Item {
                     id: buttonsList
                     Layout.fillHeight: true
                     Layout.preferredWidth: contentItem.width
-                    spacing: units.nailUnit
+                    spacing: units.nailUnit * 2
                     interactive: false
                     orientation: ListView.Horizontal
 

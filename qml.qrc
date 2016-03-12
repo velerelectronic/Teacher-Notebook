@@ -37,7 +37,7 @@
         <file>qml/JsonViewer.qml</file>
         <file>qml/MarkDownViewer.qml</file>
         <file>qml/WorkSpace.qml</file>
-        <file>qml/Calendar.qml</file>
+        <file>qml/Calendar-ant.qml</file>
         <file>qml/GanttDiagram.qml</file>
         <file>qml/Planning2.qml</file>
         <file>qml/PlanningCollector.qml</file>

@@ -26,6 +26,8 @@ BasicPage {
     property string headerText: qsTr('Més enrere')
     property string footerText: qsTr('Més envant')
 
+    property alias annotationsModel2: annotationsModel
+
     mainPage: Item {
         id: mainContinuousView
         property bool expanded: false
@@ -36,6 +38,8 @@ BasicPage {
                 annotations.pushButtonsModel();
                 annotations.buttonsModel.append({icon: 'copy-97584', object: mainContinuousView, method: 'copyAnnotationDescription'});
                 annotations.buttonsModel.append({icon: 'road-sign-147409', object: mainContinuousView, method: 'closeInlineAnnotation'});
+            } else {
+                annotations.popButtonsModel();
             }
         }
 
@@ -225,14 +229,7 @@ BasicPage {
                                     property: 'height'
                                     duration: 500
                                 }
-                            },
-                            Transition {
-                                from: 'expanded'
-                                ScriptAction {
-                                    script: annotations.popButtonsModel();
-                                }
                             }
-
                         ]
                         border.color: 'black'
                         color: (ListView.isCurrentItem)?'yellow':((model.state > -1)?'white':'#BBBBBB')
@@ -285,7 +282,7 @@ BasicPage {
 
                         function contentsToExpandedView() {
                             mainContinuousView.expand(true);
-                            expandedAnnotation.getText(model.title, model.desc, model.start, model.end, model.labels);
+                            expandedAnnotation.getText(model.title, model.desc, model.start, model.end, model.labels, model.start, model.end, model.state);
                         }
                     }
                 }
@@ -312,6 +309,8 @@ BasicPage {
                         }
                         width: parent.width - 2 * anchors.margins
 
+                        annotationsModel: annotationsModel2
+
                         onGotoPreviousAnnotation: {
                             annotationsList.currentIndex = annotationsList.currentIndex - 1;
                             annotationsList.currentItem.contentsToExpandedView();
@@ -330,20 +329,37 @@ BasicPage {
                             annotations.openPageArgs('ShowExtendedAnnotation', {identifier: identifier});
                         }
 
-                        onOpenDescriptionEditor: {
-                            console.log('pushing');
+                        onOpenTitleEditor: {
                             annotations.pushButtonsModel();
                             annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
                         }
 
-                        onRequestSaveDescription: {
-                            annotationsModel.updateObject(expandedAnnotation.identifier, {desc: content});
-                            annotationsModel.selectAnnotations('');
-                            expandedAnnotation.openViewer();
+                        onOpenDescriptionEditor: {
+                            annotations.pushButtonsModel();
+                            annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
+                        }
+
+                        onOpenLabelsEditor: {
+                            annotations.pushButtonsModel();
+                            annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
+                        }
+
+                        onOpenPeriodEditor: {
+                            annotations.pushButtonsModel();
+                            annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
+                        }
+
+                        onOpenStateEditor: {
+                            annotations.pushButtonsModel();
+                            annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
                         }
 
                         onCloseEditor: {
                             annotations.popButtonsModel();
+                        }
+
+                        onOpenRubricGroupAssessment: {
+                            annotations.openPageArgs('RubricGroupAssessment',{assessment: assessment});
                         }
                     }
                 }
@@ -365,8 +381,7 @@ BasicPage {
         }
 
         function closeInlineAnnotation() {
-            mainContinuousView.expanded = false;
-            annotations.popButtonsModel();
+            mainContinuousView.expand(false);
         }
     }
 
