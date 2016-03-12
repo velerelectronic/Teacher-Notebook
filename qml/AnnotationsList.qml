@@ -6,9 +6,9 @@ import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import "qrc:///javascript/Storage.js" as Storage
 
-Rectangle {
+BasicPage {
     id: annotations
-    property string pageTitle: qsTr('Anotacions');
+    pageTitle: qsTr('Anotacions (antigues)');
 
     width: 300
     height: 200
@@ -31,7 +31,7 @@ Rectangle {
 
     Common.UseUnits { id: units }
 
-    ColumnLayout {
+    mainPage: ColumnLayout {
         anchors.fill: parent
         anchors.margins: units.nailUnit
 

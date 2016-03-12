@@ -3,11 +3,11 @@ import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
-Rectangle {
+BasicPage {
     width: 100
     height: 62
 
-    property string pageTitle: qsTr("Avaluació");
+    pageTitle: qsTr("Avaluació");
     property var buttons: buttonsModel
     signal exportedContents()
     signal emitSignal(string name, var param)
@@ -41,7 +41,7 @@ Rectangle {
         fieldNames: gridModel.fieldNames
     }
 
-    ColumnLayout {
+    mainPage: ColumnLayout {
         anchors.fill: parent
         Item {
             Layout.fillWidth: true
@@ -100,6 +100,10 @@ Rectangle {
                 ignoreUnknownSignals: true
                 onAddValue: emitSignal('openTabularEditor',{group: group, individual: individual, variable: variable})
             }
+        }
+        Component.onCompleted: {
+            var groups = gridModel.selectDistinct('\"group\"', 'id', '', false);
+            groupList.model = groups;
         }
     }
 
@@ -183,9 +187,5 @@ Rectangle {
         fieldNames: gridModel.fieldNames
     }
 
-    Component.onCompleted: {
-        var groups = gridModel.selectDistinct('\"group\"', 'id', '', false);
-        groupList.model = groups;
-    }
 }
 

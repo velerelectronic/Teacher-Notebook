@@ -50,4 +50,5 @@ OTHER_FILES += \
     android/AndroidManifest.xml
 
 DISTFILES += \
-    Versions/TeacherNotebook 69.apk
+    Versions/TeacherNotebook 69.apk \
+    Versions/TeacherNotebook 70.apk

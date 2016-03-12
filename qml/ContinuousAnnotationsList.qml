@@ -458,8 +458,14 @@ BasicPage {
                             console.log(newAnnotationEditor.content);
                             var res = re.exec(newAnnotationEditor.content);
                             var date = (new Date()).toYYYYMMDDHHMMFormat();
+                            var labels = "";
+                            console.log('typeof', typeof flowRepeater.model);
+                            if (typeof flowRepeater.model == 'string')
+                                labels = flowRepeater.model.trim();
+                            else
+                                labels = flowRepeater.model.join(' ').trim();
                             var newObj = {
-                                labels: flowRepeater.model.join(' ').trim(),
+                                labels: labels,
                                 start: date,
                                 end: date
                             }
@@ -468,14 +474,14 @@ BasicPage {
                                 newObj['title'] = res[1].trim();
                                 newObj['desc'] = res[2];
                                 if (annotationsModel.insertObject(newObj)) {
-                                    annotations.refresh();
+                                    annotationsModel.selectAnnotations('');
                                     menuRect.closeMenu();
                                 }
                             } else {
                                 newObj['title'] = newAnnotationEditor.content;
                                 newObj['desc'] = '';
                                 if (annotationsModel.insertObject(newObj)) {
-                                    annotations.refresh();
+                                    annotationsModel.selectAnnotations('');
                                     menuRect.closeMenu();
                                 }
                             }

@@ -8,7 +8,8 @@ import 'qrc:///models' as Models
 BasicPage {
     id: combinedTable
 
-    property string pageTitle: qsTr("Quadre d'anotacions");
+    pageTitle: qsTr("Quadre d'anotacions")
+
     signal openRubricGroupAssessment(int assessment, int rubric, var rubricsModel, var rubricsAssessmentModel)
 
     property SqlTableModel annotationsModel: newAnnotationsModel
@@ -30,7 +31,7 @@ BasicPage {
         id: units
     }
 
-    ColumnLayout {
+    mainPage: ColumnLayout {
         anchors.fill: parent
 
         Common.BoxedText {

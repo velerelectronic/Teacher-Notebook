@@ -14,11 +14,11 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 
-Rectangle {
+BasicPage {
     id: assessmentGrid
     width: 100
     height: 62
-    property string pageTitle: qsTr("Graella d'avaluació");
+    pageTitle: qsTr("Graella d'avaluació");
     property var buttons: buttonsModel
 
     property string groupFilter: ''
@@ -109,146 +109,149 @@ Rectangle {
         title: qsTr('Filtra comentari')
     }
 
-    Rectangle {
-        id: assessmentHeader
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        height: units.fingerUnit
-        border.color: 'black'
-
-        property real commonWidth: (width - 5 * units.nailUnit) / 6
-
-        RowLayout {
-            anchors.fill: parent
-            spacing: units.nailUnit
-
-            Text {
-                Layout.preferredWidth: assessmentHeader.commonWidth
-                Layout.fillHeight: true
-                font.pixelSize: units.readUnit
-                font.bold: true
-                text: qsTr('Moment')
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: momentFilterMenu.popup()
-                }
-            }
-            Text {
-                Layout.preferredWidth: assessmentHeader.commonWidth
-                Layout.fillHeight: true
-                font.pixelSize: units.readUnit
-                font.bold: true
-                text: qsTr('Grup') + ((groupFilter != '')?": " + groupFilter:"")
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: groupFilterMenu.popup()
-                }
-            }
-            Text {
-                Layout.preferredWidth: assessmentHeader.commonWidth
-                Layout.fillHeight: true
-                font.pixelSize: units.readUnit
-                font.bold: true
-                text: qsTr('Individu') + ((individualFilter != '')?": " + individualFilter:"")
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: individualFilterMenu.popup()
-                }
-            }
-            Text {
-                Layout.preferredWidth: assessmentHeader.commonWidth
-                Layout.fillHeight: true
-                font.pixelSize: units.readUnit
-                font.bold: true
-                text: qsTr('Variable') + ((variableFilter != '')?": " + variableFilter:"")
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: variableFilterMenu.popup()
-                }
-            }
-            Text {
-                Layout.preferredWidth: assessmentHeader.commonWidth
-                Layout.fillHeight: true
-                font.pixelSize: units.readUnit
-                font.bold: true
-                text: qsTr('Valor') + ((valueFilter != '')?": " + valueFilter:"")
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: valueFilterMenu.popup()
-                }
-            }
-            Text {
-                Layout.preferredWidth: assessmentHeader.commonWidth
-                Layout.fillHeight: true
-                font.pixelSize: units.readUnit
-                font.bold: true
-                text: qsTr('Comentari')  + ((commentFilter != '')?": " + commentFilter:"")
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: commentFilterMenu.popup()
-                }
-            }
-        }
-    }
-
-    ListView {
-        id: assessmentList
-
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: assessmentHeader.bottom
-        anchors.bottom: parent.bottom
-
-        clip: true
-
-        model: gridModel
-        delegate: Rectangle {
-            width: assessmentList.width
-            height: units.fingerUnit * 2
+    mainPage: Item {
+        Rectangle {
+            id: assessmentHeader
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: units.fingerUnit
             border.color: 'black'
-            Row {
-                id: assessmentRow
-                anchors.fill: parent
 
-                property real commonWidth: width / 6
-                Editors.TableCell {
-                    width: assessmentRow.commonWidth
-                    height: parent.height
-                    text: model.id + '-' + model.moment
-                }
+            property real commonWidth: (width - 5 * units.nailUnit) / 6
 
-                Editors.TableCell {
-                    width: assessmentRow.commonWidth
-                    height: parent.height
-                    text: model.group
-                }
-                Editors.TableCell {
-                    width: assessmentRow.commonWidth
-                    height: parent.height
-                    text: model.individual
-                }
-                Editors.TableCell {
-                    width: assessmentRow.commonWidth
-                    height: parent.height
-                    text: model.variable
-                }
-                Editors.TableCell {
-                    width: assessmentRow.commonWidth
-                    height: parent.height
-                    text: model.value
-                }
-                Editors.TableCell {
-                    width: assessmentRow.commonWidth
-                    height: parent.height
-                    text: model.comment
-                }
-            }
-            MouseArea {
+            RowLayout {
                 anchors.fill: parent
-                onPressAndHold: deleteDialog.confirmDeletion(model.id, model.moment)
+                spacing: units.nailUnit
+
+                Text {
+                    Layout.preferredWidth: assessmentHeader.commonWidth
+                    Layout.fillHeight: true
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Moment')
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: momentFilterMenu.popup()
+                    }
+                }
+                Text {
+                    Layout.preferredWidth: assessmentHeader.commonWidth
+                    Layout.fillHeight: true
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Grup') + ((groupFilter != '')?": " + groupFilter:"")
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: groupFilterMenu.popup()
+                    }
+                }
+                Text {
+                    Layout.preferredWidth: assessmentHeader.commonWidth
+                    Layout.fillHeight: true
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Individu') + ((individualFilter != '')?": " + individualFilter:"")
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: individualFilterMenu.popup()
+                    }
+                }
+                Text {
+                    Layout.preferredWidth: assessmentHeader.commonWidth
+                    Layout.fillHeight: true
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Variable') + ((variableFilter != '')?": " + variableFilter:"")
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: variableFilterMenu.popup()
+                    }
+                }
+                Text {
+                    Layout.preferredWidth: assessmentHeader.commonWidth
+                    Layout.fillHeight: true
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Valor') + ((valueFilter != '')?": " + valueFilter:"")
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: valueFilterMenu.popup()
+                    }
+                }
+                Text {
+                    Layout.preferredWidth: assessmentHeader.commonWidth
+                    Layout.fillHeight: true
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Comentari')  + ((commentFilter != '')?": " + commentFilter:"")
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: commentFilterMenu.popup()
+                    }
+                }
             }
         }
+
+        ListView {
+            id: assessmentList
+
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: assessmentHeader.bottom
+            anchors.bottom: parent.bottom
+
+            clip: true
+
+            model: gridModel
+            delegate: Rectangle {
+                width: assessmentList.width
+                height: units.fingerUnit * 2
+                border.color: 'black'
+                Row {
+                    id: assessmentRow
+                    anchors.fill: parent
+
+                    property real commonWidth: width / 6
+                    Editors.TableCell {
+                        width: assessmentRow.commonWidth
+                        height: parent.height
+                        text: model.id + '-' + model.moment
+                    }
+
+                    Editors.TableCell {
+                        width: assessmentRow.commonWidth
+                        height: parent.height
+                        text: model.group
+                    }
+                    Editors.TableCell {
+                        width: assessmentRow.commonWidth
+                        height: parent.height
+                        text: model.individual
+                    }
+                    Editors.TableCell {
+                        width: assessmentRow.commonWidth
+                        height: parent.height
+                        text: model.variable
+                    }
+                    Editors.TableCell {
+                        width: assessmentRow.commonWidth
+                        height: parent.height
+                        text: model.value
+                    }
+                    Editors.TableCell {
+                        width: assessmentRow.commonWidth
+                        height: parent.height
+                        text: model.comment
+                    }
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onPressAndHold: deleteDialog.confirmDeletion(model.id, model.moment)
+                }
+            }
+        }
+
     }
 
     ListModel {
