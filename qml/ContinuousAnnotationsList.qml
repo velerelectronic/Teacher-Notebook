@@ -37,6 +37,7 @@ BasicPage {
             if (value) {
                 annotations.pushButtonsModel();
                 annotations.buttonsModel.append({icon: 'copy-97584', object: mainContinuousView, method: 'copyAnnotationDescription'});
+                annotations.buttonsModel.append({icon: 'questionnaire-158862', object: mainContinuousView, method: 'openRubricAssessmentMenu'});
                 annotations.buttonsModel.append({icon: 'road-sign-147409', object: mainContinuousView, method: 'closeInlineAnnotation'});
             } else {
                 annotations.popButtonsModel();
@@ -380,11 +381,123 @@ BasicPage {
             clipboard.copia(expandedAnnotation.descText);
         }
 
+        function openRubricAssessmentMenu() {
+            console.log('open menu')
+            annotations.openMenu(units.fingerUnit * 2, addRubricMenu, {})
+        }
+
         function closeInlineAnnotation() {
             mainContinuousView.expand(false);
         }
-    }
 
+        Component {
+            id: addRubricMenu
+
+            Rectangle {
+                id: addRubricMenuRect
+
+                property int requiredHeight: childrenRect.height
+                property var options
+                signal closeMenu()
+
+                onOptionsChanged: {
+                    console.log('opcions 2');
+                    console.log(options);
+                }
+
+                Models.IndividualsModel {
+                    id: groupsModel
+
+                    fieldNames: ['group']
+
+                    sort: 'id DESC'
+                }
+
+                Models.RubricsModel {
+                    id: rubricsModel
+
+                    Component.onCompleted: select();
+                }
+
+                ListView {
+                    id: possibleList
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
+                        margins: units.fingerUnit
+                    }
+                    height: contentItem.height
+
+                    clip: true
+                    interactive: false
+
+                    model: groupsModel
+
+                    delegate: Item {
+                        id: singleRubricXGroup
+
+                        width: possibleList.width
+                        height: childrenRect.height
+
+                        property string group: model.group
+
+                        ColumnLayout {
+                            anchors {
+                                top: parent.top
+                                left: parent.left
+                                right: parent.right
+                            }
+    //                            height: childrenRect.height
+
+                            Text {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: units.fingerUnit
+                                font.bold: true
+                                font.pixelSize: units.readUnit
+                                elide: Text.ElideRight
+                                text: qsTr('Grup') + " " + model.group
+                            }
+                            GridView {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: contentItem.height
+
+                                model: rubricsModel
+                                interactive: false
+
+                                cellWidth: units.fingerUnit * 4
+                                cellHeight: cellWidth
+
+                                delegate: Common.BoxedText {
+                                    width: units.fingerUnit * 3
+                                    height: width
+                                    margins: units.nailUnit
+                                    text: model.title
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: {
+                                            closeMenu();
+                                            expandedAnnotation.newRubricAssessment(model.title, model.desc, model.id, singleRubricXGroup.group)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Component.onCompleted: {
+                    console.log('opcions 1');
+                    console.log(options);
+                    groupsModel.selectUnique('group');
+                    console.log('COUNT', groupsModel.count)
+                }
+
+            }
+
+        }
+
+    }
 
     Component {
         id: addImmediateAnnotationMenu
@@ -770,6 +883,7 @@ BasicPage {
             }
         }
     }
+
 
     Models.ExtendedAnnotations {
         id: annotationsModel

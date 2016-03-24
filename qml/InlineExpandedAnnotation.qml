@@ -21,6 +21,7 @@ Item {
     signal openPeriodEditor()
     signal openStateEditor()
     signal openTitleEditor()
+    signal openNewRubricAssessmentMenu()
 
     signal openRubricGroupAssessment(int assessment)
 
@@ -40,251 +41,297 @@ Item {
         rubricsAssessmentModel.select();
     }
 
-    Flickable {
-        id: flickableText
-        anchors {
-            top: parent.top
-            left: parent.left
-            bottom: rubricsArea.top
-            margins: units.nailUnit
-        }
-        width: parent.width - 2 * anchors.margins
-        contentHeight: groupAnnotationItem.height
-        contentWidth: groupAnnotationItem.width
-        clip: true
-
-        visible: flickableText.enabled
-        enabled: !editorArea.enabled
-
-        Item {
-            id: groupAnnotationItem
-
-            property int interspacing: units.nailUnit
-            width: flickableText.width
-            height: Math.max(gotoPreviousText.height + headerData.height + titleRect.height + contentText.requiredHeight + gotoNextText.height + 4 * groupAnnotationItem.interspacing, flickableText.height)
-
-            ColumnLayout {
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: units.nailUnit
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit
+            Text {
                 anchors.fill: parent
-                spacing: groupAnnotationItem.interspacing
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: units.readUnit
+                text: inlineExpandedAnnotation.identifier
+                elide: Text.ElideRight
+            }
+        }
 
-                Text {
-                    id: gotoPreviousText
+        Flickable {
+            id: flickableText
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            contentHeight: groupAnnotationItem.height
+            contentWidth: groupAnnotationItem.width
+            clip: true
 
-                    Layout.preferredHeight: units.fingerUnit
-                    Layout.fillWidth: true
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    color: 'gray'
-                    font.pixelSize: units.glanceUnit
-                    text: qsTr('Anterior')
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: gotoPreviousAnnotation()
-                    }
-                }
+            visible: flickableText.enabled
+            enabled: !editorArea.enabled
 
-                Rectangle {
-                    id: headerData
-                    Layout.preferredHeight: Math.max(startText.height, endText.height, labelsText.height, stateItem.height, units.fingerUnit) + 2 * units.nailUnit
-                    Layout.fillWidth: true
-                    border.color: 'black'
+            Item {
+                id: groupAnnotationItem
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: inlineExpandedAnnotation.openExternalViewer(identifier)
-                    }
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
-                        spacing: units.nailUnit
-                        Text {
-                            id: startText
-                            Layout.preferredHeight: contentHeight
-                            Layout.preferredWidth: parent.width / 3
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            font.pixelSize: units.readUnit
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: editorArea.changeEditor('periodEditor', {start: inlineExpandedAnnotation.periodStart, end: inlineExpandedAnnotation.periodEnd})
-                            }
+                property int interspacing: units.nailUnit
+                width: flickableText.width
+                height: Math.max(gotoPreviousText.height + headerData.height + titleRect.height + contentText.requiredHeight + gotoNextText.height + 4 * groupAnnotationItem.interspacing, flickableText.height)
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: groupAnnotationItem.interspacing
+
+                    Text {
+                        id: gotoPreviousText
+
+                        Layout.preferredHeight: units.fingerUnit
+                        Layout.fillWidth: true
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        color: 'gray'
+                        font.pixelSize: units.glanceUnit
+                        text: qsTr('Anterior')
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: gotoPreviousAnnotation()
                         }
-                        Text {
-                            id: endText
-                            Layout.preferredHeight: contentHeight
-                            Layout.preferredWidth: parent.width / 3
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            font.pixelSize: units.readUnit
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: editorArea.changeEditor('periodEditor', {start: inlineExpandedAnnotation.periodStart, end: inlineExpandedAnnotation.periodEnd})
-                            }
+                    }
+
+                    Rectangle {
+                        id: headerData
+                        Layout.preferredHeight: Math.max(startText.height, endText.height, labelsText.height, stateItem.height, units.fingerUnit) + 2 * units.nailUnit
+                        Layout.fillWidth: true
+                        border.color: 'black'
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: inlineExpandedAnnotation.openExternalViewer(identifier)
                         }
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: units.nailUnit
+                            spacing: units.nailUnit
+                            Text {
+                                id: startText
+                                Layout.preferredHeight: contentHeight
+                                Layout.preferredWidth: parent.width / 3
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                font.pixelSize: units.readUnit
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: editorArea.changeEditor('periodEditor', {start: inlineExpandedAnnotation.periodStart, end: inlineExpandedAnnotation.periodEnd})
+                                }
+                            }
+                            Text {
+                                id: endText
+                                Layout.preferredHeight: contentHeight
+                                Layout.preferredWidth: parent.width / 3
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                font.pixelSize: units.readUnit
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: editorArea.changeEditor('periodEditor', {start: inlineExpandedAnnotation.periodStart, end: inlineExpandedAnnotation.periodEnd})
+                                }
+                            }
+                            Text {
+                                id: labelsText
+                                Layout.preferredHeight: contentHeight
+                                Layout.fillWidth: true
+                                color: 'green'
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                font.pixelSize: units.readUnit
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: editorArea.changeEditor('labelsEditor', inlineExpandedAnnotation.labels)
+                                }
+                            }
+                            Rectangle {
+                                id: stateItem
+                                Layout.preferredWidth: units.fingerUnit * 2
+                                Layout.preferredHeight: stateText.contentHeight + 2 * units.nailUnit
+
+                                Rectangle {
+                                    anchors {
+                                        bottom: parent.bottom
+                                        left: parent.left
+                                        right: parent.right
+                                    }
+                                    color: 'orange'
+                                    height: {
+                                        var value = parseInt(stateValue);
+                                        if ((value>0) && (value<=10)) {
+                                            return stateItem.height * value / 10;
+                                        } else {
+                                            if (value<0)
+                                                return stateItem.height;
+                                            else
+                                                return 0;
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    id: stateText
+                                    anchors.fill: parent
+                                    anchors.margins: units.nailUnit
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                    verticalAlignment: Text.AlignVCenter
+                                    horizontalAlignment: Text.AlignHCenter
+                                    font.pixelSize: units.readUnit
+                                    text: {
+                                        switch(stateValue) {
+                                        case '-1':
+                                            return qsTr('Finalitzat');
+                                        case '1':
+                                            return qsTr('10%');
+                                        case '2':
+                                            return qsTr('20%');
+                                        case '3':
+                                            return qsTr('30%');
+                                        case '4':
+                                            return qsTr('40%');
+                                        case '5':
+                                            return qsTr('50%');
+                                        case '6':
+                                            return qsTr('60%');
+                                        case '7':
+                                            return qsTr('70%');
+                                        case '8':
+                                            return qsTr('80%');
+                                        case '9':
+                                            return qsTr('90%');
+                                        case '10':
+                                            return qsTr('100%');
+                                        default:
+                                            return qsTr('Actiu');
+                                        }
+                                    }
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: editorArea.changeEditor('stateEditor', inlineExpandedAnnotation.identifier)
+                                }
+                            }
+
+                        }
+                    }
+
+                    Item {
+                        id: titleRect
+
+                        Layout.preferredHeight: titleText.height + 2
+                        Layout.fillWidth: true
+
                         Text {
-                            id: labelsText
-                            Layout.preferredHeight: contentHeight
-                            Layout.fillWidth: true
-                            color: 'green'
+                            id: titleText
+                            anchors {
+                                top: parent.top
+                                left: parent.left
+                                right: parent.right
+                            }
+
+                            height: Math.max(contentHeight, units.fingerUnit)
+                            font.pixelSize: units.glanceUnit
+                            font.bold: true
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            font.pixelSize: units.readUnit
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: editorArea.changeEditor('labelsEditor', inlineExpandedAnnotation.labels)
+                            Common.ImageButton {
+                                anchors {
+                                    top: parent.top
+                                    right: parent.right
+                                }
+                                size: units.fingerUnit
+                                image: 'edit-153612'
+                                onClicked: editorArea.changeEditor('titleEditor', inlineExpandedAnnotation.identifier)
                             }
                         }
                         Rectangle {
-                            id: stateItem
-                            Layout.preferredWidth: units.fingerUnit * 2
-                            Layout.preferredHeight: stateText.contentHeight + 2 * units.nailUnit
-
-                            Rectangle {
-                                anchors {
-                                    bottom: parent.bottom
-                                    left: parent.left
-                                    right: parent.right
-                                }
-                                color: 'orange'
-                                height: {
-                                    var value = parseInt(stateValue);
-                                    if ((value>0) && (value<=10)) {
-                                        return stateItem.height * value / 10;
-                                    } else {
-                                        if (value<0)
-                                            return stateItem.height;
-                                        else
-                                            return 0;
-                                    }
-                                }
+                            anchors {
+                                top: titleText.bottom
+                                left: parent.left
+                                right: parent.right
                             }
-
-                            Text {
-                                id: stateText
-                                anchors.fill: parent
-                                anchors.margins: units.nailUnit
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                verticalAlignment: Text.AlignVCenter
-                                horizontalAlignment: Text.AlignHCenter
-                                font.pixelSize: units.readUnit
-                                text: {
-                                    switch(stateValue) {
-                                    case '-1':
-                                        return qsTr('Finalitzat');
-                                    case '1':
-                                        return qsTr('10%');
-                                    case '2':
-                                        return qsTr('20%');
-                                    case '3':
-                                        return qsTr('30%');
-                                    case '4':
-                                        return qsTr('40%');
-                                    case '5':
-                                        return qsTr('50%');
-                                    case '6':
-                                        return qsTr('60%');
-                                    case '7':
-                                        return qsTr('70%');
-                                    case '8':
-                                        return qsTr('80%');
-                                    case '9':
-                                        return qsTr('90%');
-                                    case '10':
-                                        return qsTr('100%');
-                                    default:
-                                        return qsTr('Actiu');
-                                    }
-                                }
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: editorArea.changeEditor('stateEditor', inlineExpandedAnnotation.identifier)
-                            }
+                            height: 2
+                            color: 'black'
                         }
 
                     }
-                }
-
-                Item {
-                    id: titleRect
-
-                    Layout.preferredHeight: titleText.height + 2
-                    Layout.fillWidth: true
 
                     Text {
-                        id: titleText
-                        anchors {
-                            top: parent.top
-                            left: parent.left
-                            right: parent.right
-                        }
+                        id: contentText
+                        property int requiredHeight: Math.max(contentHeight, units.fingerUnit)
 
-                        height: Math.max(contentHeight, units.fingerUnit)
-                        font.pixelSize: units.glanceUnit
-                        font.bold: true
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        font.pixelSize: units.readUnit
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        onLinkActivated: openExternalViewer(link)
                         Common.ImageButton {
                             anchors {
                                 top: parent.top
                                 right: parent.right
                             }
+
                             size: units.fingerUnit
                             image: 'edit-153612'
-                            onClicked: editorArea.changeEditor('titleEditor', inlineExpandedAnnotation.identifier)
+                            onClicked: editorArea.changeEditor('descEditor', inlineExpandedAnnotation.descText)
                         }
                     }
-                    Rectangle {
-                        anchors {
-                            top: titleText.bottom
-                            left: parent.left
-                            right: parent.right
+
+                    Text {
+                        id: gotoNextText
+                        Layout.preferredHeight: units.fingerUnit
+                        Layout.fillWidth: true
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        color: 'gray'
+                        font.pixelSize: units.glanceUnit
+                        text: qsTr('Posterior')
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: gotoNextAnnotation()
                         }
-                        height: 2
-                        color: 'black'
-                    }
-
-                }
-
-                Text {
-                    id: contentText
-                    property int requiredHeight: Math.max(contentHeight, units.fingerUnit)
-
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    onLinkActivated: openExternalViewer(link)
-                    Common.ImageButton {
-                        anchors {
-                            top: parent.top
-                            right: parent.right
-                        }
-
-                        size: units.fingerUnit
-                        image: 'edit-153612'
-                        onClicked: editorArea.changeEditor('descEditor', inlineExpandedAnnotation.descText)
-                    }
-                }
-
-                Text {
-                    id: gotoNextText
-                    Layout.preferredHeight: units.fingerUnit
-                    Layout.fillWidth: true
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    color: 'gray'
-                    font.pixelSize: units.glanceUnit
-                    text: qsTr('Posterior')
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: gotoNextAnnotation()
                     }
                 }
             }
-        }
 
+        }
+        Item {
+            id: rubricsArea
+
+            anchors {
+                margins: units.nailUnit
+                bottom: parent.bottom
+                left: parent.left
+                right: parent.right
+            }
+            height: (rubricsAssessmentModel.count>0)?units.fingerUnit * 2:0
+
+            ListView {
+                id: rubricsAnnotationInfo
+
+                anchors.fill: parent
+                orientation: ListView.Horizontal
+
+                model: rubricsAssessmentModel
+                spacing: units.nailUnit
+                delegate: Common.BoxedText {
+                    height: rubricsAnnotationInfo.height
+                    width: units.fingerUnit * 6
+                    text: model.title + " (" + model.group + ")"
+                    margins: units.nailUnit
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: openRubricGroupAssessment(model.id)
+                    }
+                }
+            }
+            Models.RubricsAssessmentModel {
+                id: rubricsAssessmentModel
+                filters: ["annotation=?"]
+            }
+        }
     }
 
     Rectangle {
         id: editorArea
-        anchors.fill: flickableText
+        anchors.fill: parent
         anchors.margins: units.nailUnit
         border.color: 'black'
         visible: editorArea.enabled
@@ -392,43 +439,6 @@ Item {
         function getEditedContent() {
             return editorLoader.item.content;
         }
-    }
-
-    Item {
-        id: rubricsArea
-
-        anchors {
-            margins: units.nailUnit
-            bottom: parent.bottom
-            left: parent.left
-            right: parent.right
-        }
-        height: (rubricsAssessmentModel.count>0)?units.fingerUnit * 2:0
-
-        ListView {
-            id: rubricsAnnotationInfo
-
-            anchors.fill: parent
-            orientation: ListView.Horizontal
-
-            model: rubricsAssessmentModel
-            spacing: units.nailUnit
-            delegate: Common.BoxedText {
-                height: rubricsAnnotationInfo.height
-                width: units.fingerUnit * 6
-                text: model.title + " (" + model.group + ")"
-                margins: units.nailUnit
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: openRubricGroupAssessment(model.id)
-                }
-            }
-        }
-        Models.RubricsAssessmentModel {
-            id: rubricsAssessmentModel
-            filters: ["annotation=?"]
-        }
-
     }
 
     Component {
@@ -924,6 +934,7 @@ Item {
 
     }
 
+
     function getText(newTitle,newDesc,start,end, labels, start, end, state) {
         identifier = newTitle;
         flickableText.contentY = gotoPreviousText.height;
@@ -973,6 +984,20 @@ Item {
     function openViewer() {
         editorArea.state = 'viewer';
         inlineExpandedAnnotation.closeEditor();
+    }
+
+    function newRubricAssessment(title, desc, rubric, group) {
+        var obj = {};
+        obj = {
+            title: title,
+            desc: desc,
+            rubric: rubric,
+            group: group,
+            annotation: inlineExpandedAnnotation.identifier
+        };
+
+        rubricsAssessmentModel.insertObject(obj);
+        rubricsAssessmentModel.select();
     }
 
     MarkDownParser {
