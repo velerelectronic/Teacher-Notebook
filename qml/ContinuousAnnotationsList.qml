@@ -23,6 +23,7 @@ BasicPage {
 
     property string searchString: ''
 
+    property string firstAnnotation: ''
     property string headerText: qsTr('Més enrere')
     property string footerText: qsTr('Més envant')
 
@@ -66,303 +67,62 @@ BasicPage {
                     text: qsTr('Paraules de cerca: ') + annotationsModel.searchString
                 }
             }
-
-            Item {
+            InlineExpandedAnnotation {
+                id: expandedAnnotation
                 Layout.fillHeight: true
                 Layout.fillWidth: true
 
-                ListView {
-                    id: annotationsList
-                    clip: true
-                    anchors {
-                        top: parent.top
-                        left: parent.left
-                        bottom: parent.bottom
-                    }
-                    width: (mainContinuousView.expanded)?(units.fingerUnit * 3):parent.width
+                annotationsModel: annotationsModel2
 
-                    model: annotationsModel
-
-                    header: Item {
-                        width: annotationsList.width
-                        height: units.fingerUnit * 2
-                        Text {
-                            anchors.fill: parent
-                            font.pixelSize: units.readUnit
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            text: headerText
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                periodStart.setDate(periodStart.getDate() - 7);
-                                annotationsModel.setupPeriod();
-                                beforeAnnotationsModel.setupFilter();
-
-                                headerText = qsTr('A partir de ') + periodStart.toLongDate() + ".\n";
-
-                                if (beforeAnnotationsModel.count == 0)
-                                    headerText += qsTr('No hi ha anotacions més enrere.');
-                                else
-                                    headerText += qsTr("Abans hi ha ") + beforeAnnotationsModel.count + qsTr(" anotacions.");
-                            }
-                        }
-                    }
-
-                    footer: Item {
-                        width: annotationsList.width
-                        height: units.fingerUnit * 2
-                        Text {
-                            anchors.fill: parent
-                            font.pixelSize: units.readUnit
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            text: footerText
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                var offset = annotationsList.contentY;
-
-                                periodEnd.setDate(periodEnd.getDate() + 7);
-                                annotationsModel.setupPeriod();
-                                annotationsList.contentY = offset;
-                                afterAnnotationsModel.setupFilter();
-
-                                footerText = qsTr('Fins a ') + periodEnd.toLongDate() + ".\n";
-
-                                if (afterAnnotationsModel.count == 0)
-                                    footerText += qsTr('No hi ha anotacions més envant.');
-                                else
-                                    footerText += qsTr("Després hi ha ") + afterAnnotationsModel.count + qsTr(" anotacions.");
-                            }
-                        }
-                    }
-
-                    section.property: 'blockDate'
-                    section.criteria: ViewSection.FullString
-                    section.delegate: Item {
-                        width: annotationsList.width
-                        height: units.fingerUnit * 2
-                        Text {
-                            anchors.fill: parent
-                            verticalAlignment: Text.AlignBottom
-                            color: 'black'
-                            font.pixelSize: units.readUnit
-                            text: {
-                                switch(parseInt(section)) {
-                                case -4:
-                                    return qsTr("Fa més d'un any");
-                                case -3:
-                                    return qsTr("El darrer any");
-                                case -2:
-                                    return qsTr("El darrer mes");
-                                case -1:
-                                    return qsTr("La darrera setmana");
-                                case 0:
-                                    return qsTr('Avui');
-                                case 1:
-                                    return qsTr("Aquesta setmana");
-                                case 2:
-                                    return qsTr("Aquest mes");
-                                case 3:
-                                    return qsTr("Aquest any");
-                                case 4:
-                                    return qsTr("Molt més tard");
-                                default:
-                                    return '';
-                                }
-                            }
-
-                        }
-                    }
-
-                    delegate: Rectangle {
-                        id: singleAnnotationRectangle
-
-                        z: 1
-                        states: [
-                            State {
-                                name: 'hidden'
-                                when: (!singleAnnotationRectangle.isCurrentItem) && (model.state <= -1)
-                                PropertyChanges {
-                                    target: singleAnnotationRectangle
-                                    height: units.fingerUnit / 2
-                                    color: 'gray'
-                                }
-                                PropertyChanges {
-                                    target: annotationRowLayout
-                                    visible: false
-                                }
-                            },
-                            State {
-                                name: 'minimized'
-                                when: (!singleAnnotationRectangle.isCurrentItem) && (model.state > -1)
-                                PropertyChanges {
-                                    target: singleAnnotationRectangle
-                                    height: units.fingerUnit * 2
-                                }
-                            },
-                            State {
-                                name: 'lastSelected'
-                                extend: 'minimized'
-                                when: (singleAnnotationRectangle.isCurrentItem) && (!mainContinuousView.expanded)
-                            },
-
-                            State {
-                                name: 'expanded'
-                                extend: 'minimized'
-                                when: (singleAnnotationRectangle.isCurrentItem) && (mainContinuousView.expanded)
-                                PropertyChanges {
-                                    target: singleAnnotationRectangle
-                                }
-                            }
-
-                        ]
-                        transitions: [
-                            Transition {
-                                from: 'hidden'
-                                to: 'minimized'
-                                reversible: true
-                                PropertyAnimation {
-                                    target: singleAnnotationRectangle
-                                    property: 'height'
-                                    duration: 500
-                                }
-                            }
-                        ]
-                        border.color: 'black'
-                        color: (ListView.isCurrentItem)?'yellow':((model.state > -1)?'white':'#BBBBBB')
-                        width: annotationsList.width
-
-                        property string desc: model.desc
-                        property string htmlContents: ''
-                        property bool isCurrentItem: ListView.isCurrentItem
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                switch(singleAnnotationRectangle.state) {
-                                case 'hidden':
-                                    singleAnnotationRectangle.state = 'minimized';
-                                    break;
-                                case 'lastSelected':
-                                    singleAnnotationRectangle.contentsToExpandedView();
-                                    break;
-                                case 'minimized':
-                                    annotationsList.currentIndex = model.index;
-                                    singleAnnotationRectangle.contentsToExpandedView();
-                                    break;
-                                }
-                            }
-                        }
-                        RowLayout {
-                            id: annotationRowLayout
-                            anchors.fill: parent
-                            anchors.margins: units.nailUnit
-                            spacing: units.nailUnit
-
-                            clip: true
-
-                            Text {
-                                id: contentsField
-                                Layout.fillHeight: true
-                                Layout.fillWidth: true
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                text: "<b>" + model.title + "</b> <font color=\"green\">#" + model.labels + "</font><br>" + ((singleAnnotationRectangle.state == 'expanded')?singleAnnotationRectangle.htmlContents:singleAnnotationRectangle.desc)
-                                clip: true
-                            }
-                            Text {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: (!mainContinuousView.expanded)?(units.fingerUnit * 3):0
-                                text: model.start + "<br>" + model.end
-                                clip: true
-                            }
-                        }
-
-                        function contentsToExpandedView() {
-                            mainContinuousView.expand(true);
-                            expandedAnnotation.getText(model.title, model.desc, model.start, model.end, model.labels, model.start, model.end, model.state);
-                        }
-                    }
+                onGotoPreviousAnnotation: {
+                    annotationsList.currentIndex = annotationsList.currentIndex - 1;
+                    annotationsList.currentItem.contentsToExpandedView();
                 }
 
-                Rectangle {
-                    anchors {
-                        top: parent.top
-                        left: annotationsList.right
-                        right: parent.right
-                        bottom: parent.bottom
-                    }
-                    clip: true
-                    radius: units.nailUnit
-                    border.color: 'black'
-                    color: 'white'
+                onGotoNextAnnotation: {
+                    annotationsList.currentIndex = annotationsList.currentIndex + 1;
+                    annotationsList.currentItem.contentsToExpandedView();
+                }
 
-                    InlineExpandedAnnotation {
-                        id: expandedAnnotation
-                        anchors {
-                            top: parent.top
-                            left: parent.left
-                            bottom: parent.bottom
-                            margins: units.fingerUnit
-                        }
-                        width: parent.width - 2 * anchors.margins
+                onCloseView: {
+                    mainContinuousView.closeInlineAnnotation();
+                }
 
-                        annotationsModel: annotationsModel2
+                onOpenExternalViewer: {
+                    annotations.openPageArgs('ShowExtendedAnnotation', {identifier: identifier});
+                }
 
-                        onGotoPreviousAnnotation: {
-                            annotationsList.currentIndex = annotationsList.currentIndex - 1;
-                            annotationsList.currentItem.contentsToExpandedView();
-                        }
+                onOpenTitleEditor: {
+                    annotations.pushButtonsModel();
+                    annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
+                }
 
-                        onGotoNextAnnotation: {
-                            annotationsList.currentIndex = annotationsList.currentIndex + 1;
-                            annotationsList.currentItem.contentsToExpandedView();
-                        }
+                onOpenDescriptionEditor: {
+                    annotations.pushButtonsModel();
+                    annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
+                }
 
-                        onCloseView: {
-                            mainContinuousView.closeInlineAnnotation();
-                        }
+                onOpenLabelsEditor: {
+                    annotations.pushButtonsModel();
+                    annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
+                }
 
-                        onOpenExternalViewer: {
-                            annotations.openPageArgs('ShowExtendedAnnotation', {identifier: identifier});
-                        }
+                onOpenPeriodEditor: {
+                    annotations.pushButtonsModel();
+                    annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
+                }
 
-                        onOpenTitleEditor: {
-                            annotations.pushButtonsModel();
-                            annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
-                        }
+                onOpenStateEditor: {
+                    annotations.pushButtonsModel();
+                    annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
+                }
 
-                        onOpenDescriptionEditor: {
-                            annotations.pushButtonsModel();
-                            annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
-                        }
+                onCloseEditor: {
+                    annotations.popButtonsModel();
+                }
 
-                        onOpenLabelsEditor: {
-                            annotations.pushButtonsModel();
-                            annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
-                        }
-
-                        onOpenPeriodEditor: {
-                            annotations.pushButtonsModel();
-                            annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
-                        }
-
-                        onOpenStateEditor: {
-                            annotations.pushButtonsModel();
-                            annotations.buttonsModel.append({icon: 'floppy-35952', object: expandedAnnotation, method: 'saveEditorContents'});
-                        }
-
-                        onCloseEditor: {
-                            annotations.popButtonsModel();
-                        }
-
-                        onOpenRubricGroupAssessment: {
-                            annotations.openPageArgs('RubricGroupAssessment',{assessment: assessment});
-                        }
-                    }
+                onOpenRubricGroupAssessment: {
+                    annotations.openPageArgs('RubricGroupAssessment',{assessment: assessment});
                 }
             }
         }
@@ -889,7 +649,7 @@ BasicPage {
         id: annotationsModel
 
         sort: 'blockDate ASC, start ASC, end ASC, title ASC'
-        filters: ['(start >= ?) OR (start IS NULL)', '(start <= ?) OR (start IS NULL)']
+        filters: ['(start >= ?) OR (start IS NULL)', '(start <= ?) OR (start IS NULL)', "title != ''"]
         searchFields: ['title','desc','labels']
         groupBy: 'title'
 
@@ -897,6 +657,7 @@ BasicPage {
             annotationsModel.bindValues = [periodStart.toYYYYMMDDFormat(), periodEnd.toYYYYMMDDFormat()];
             annotationsModel.searchString = annotations.searchString;
             selectAnnotations('');
+            firstAnnotation = annotationsModel.getObjectInRow(0)['title'];
         }
 
         Component.onCompleted: {
