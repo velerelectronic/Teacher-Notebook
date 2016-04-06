@@ -32,9 +32,9 @@ BasicPage {
 
         Component.onCompleted: {
             select();
-            if (identifier == "") {
+            if (annotationView.identifier == "") {
                 if (count>0)
-                    identifier = getObjectInRow(0)['title'];
+                    annotationView.identifier = getObjectInRow(0)['title'];
             }
         }
     }
@@ -94,7 +94,7 @@ BasicPage {
 
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: annotationView.openExternalViewer(identifier)
+                                onClicked: annotationView.openExternalViewer(annotationView.identifier)
                             }
                             RowLayout {
                                 anchors.fill: parent
@@ -311,13 +311,16 @@ BasicPage {
                         Layout.fillWidth: true
 
                         property string beforeAnnotation: ''
+                        color: (beforeAnnotation == '')?'gray':'white'
+
                         Text {
                             id: beforeAnnotationText
                             anchors.fill: parent
                             text: qsTr('AZ << ') + beforeAnnotationRect.beforeAnnotation
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: identifier = beforeAnnotationRect.beforeAnnotation
+                                enabled: beforeAnnotationRect.beforeAnnotation !== ''
+                                onClicked: annotationView.identifier = beforeAnnotationRect.beforeAnnotation
                             }
                         }
                     }
@@ -326,13 +329,15 @@ BasicPage {
                         Layout.preferredHeight: units.fingerUnit
                         Layout.fillWidth: true
                         property string afterAnnotation: ''
+                        color: (afterAnnotation == '')?'gray':'white'
                         Text {
                             id: afterAnnotationText
                             anchors.fill: parent
                             text: qsTr('AZ >> ') + afterAnnotationRect.afterAnnotation
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: identifier = afterAnnotationRect.afterAnnotation
+                                enabled: afterAnnotationRect.afterAnnotation !== ''
+                                onClicked: annotationView.identifier = afterAnnotationRect.afterAnnotation
                             }
                         }
                     }
@@ -342,12 +347,14 @@ BasicPage {
                         Layout.preferredHeight: units.fingerUnit
                         Layout.fillWidth: true
                         property string beforeAnnotationStart: ''
+                        color: (beforeAnnotationStart == '')?'gray':'white'
                         Text {
                             anchors.fill: parent
                             text: qsTr('Inici << ') + beforeAnnotationStartRect.beforeAnnotationStart
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: identifier = beforeAnnotationStartRect.beforeAnnotationStart
+                                enabled: beforeAnnotationStartRect.beforeAnnotationStart !== ''
+                                onClicked: annotationView.identifier = beforeAnnotationStartRect.beforeAnnotationStart
                             }
                         }
                     }
@@ -356,12 +363,14 @@ BasicPage {
                         Layout.preferredHeight: units.fingerUnit
                         Layout.fillWidth: true
                         property string afterAnnotationStart: ''
+                        color: (afterAnnotationStart == '')?'gray':'white'
                         Text {
                             anchors.fill: parent
                             text: qsTr('Inici >> ') + afterAnnotationStartRect.afterAnnotationStart
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: identifier = afterAnnotationStartRect.afterAnnotationStart
+                                enabled: afterAnnotationStartRect.afterAnnotationStart !== ''
+                                onClicked: annotationView.identifier = afterAnnotationStartRect.afterAnnotationStart
                             }
                         }
                     }
@@ -370,12 +379,14 @@ BasicPage {
                         Layout.preferredHeight: units.fingerUnit
                         Layout.fillWidth: true
                         property string beforeAnnotationEnd: ''
+                        color: (beforeAnnotationEnd == '')?'gray':'white'
                         Text {
                             anchors.fill: parent
                             text: qsTr('Final << ') + beforeAnnotationEndRect.beforeAnnotationEnd
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: identifier = beforeAnnotationEndRect.beforeAnnotationEnd
+                                enabled: beforeAnnotationEndRect.beforeAnnotationEnd !== ''
+                                onClicked: annotationView.identifier = beforeAnnotationEndRect.beforeAnnotationEnd
                             }
                         }
                     }
@@ -384,12 +395,15 @@ BasicPage {
                         Layout.preferredHeight: units.fingerUnit
                         Layout.fillWidth: true
                         property string afterAnnotationEnd: ''
+
+                        color: (afterAnnotationEnd == '')?'grey':'white'
                         Text {
                             anchors.fill: parent
                             text: qsTr('Final >> ') + afterAnnotationEndRect.afterAnnotationEnd
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: identifier = afterAnnotationEndRect.afterAnnotationEnd
+                                enabled: afterAnnotationEndRect.afterAnnotationEnd !== ''
+                                onClicked: annotationView.identifier = afterAnnotationEndRect.afterAnnotationEnd
                             }
                         }
                     }
@@ -539,16 +553,16 @@ BasicPage {
         Connections {
             target: annotationView
             onIdentifierChanged: {
-                console.log('new identifier', identifier)
+                console.log('new identifier', annotationView.identifier)
                 mainItem.getText();
             }
         }
 
         function getText() {
             console.log('gt text');
-            if (identifier != '') {
+            if (annotationView.identifier != '') {
                 annotationsModel.filters = ["title = ?"];
-                annotationsModel.bindValues = [identifier];
+                annotationsModel.bindValues = [annotationView.identifier];
 
             } else {
                 annotationsModel.filters = ["title != ''"];
@@ -557,22 +571,33 @@ BasicPage {
 
             annotationsModel.select();
             if (annotationsModel.count>0) {
-                var obj = annotationsModel.getObjectInRow(0);
-                identifier = obj['title'];
-                startText.text = qsTr('Inici: ') + obj['start'];
-                endText.text = qsTr('Final: ') + obj['end'];
-                labelsText.text = '# ' + obj['labels'];
-                titleText.text = identifier;
-                annotationView.labels = obj['labels'];
-                periodStart = obj['start'];
-                periodEnd = obj['end'];
-                descText = obj['desc'];
-                contentText.text = parser.toHtml(obj['desc']);
-                stateValue = obj['state'];
+                var obj;
+                if (annotationView.identifier == '') {
+                    var today = new Date();
+                    for (var i=0; i<annotationsModel.count; i++) {
+                        obj = annotationsModel.getObjectInRow(i);
+                        if (obj['start'] >= today.toYYYYMMDDHHMMFormat()) {
+                            break;
+                        }
+                    }
+                    annotationView.identifier = obj['title'];
+                } else {
+                    obj = annotationsModel.getObjectInRow(0);
+                    startText.text = qsTr('Inici: ') + obj['start'];
+                    endText.text = qsTr('Final: ') + obj['end'];
+                    labelsText.text = '# ' + obj['labels'];
+                    titleText.text = annotationView.identifier;
+                    annotationView.labels = obj['labels'];
+                    periodStart = obj['start'];
+                    periodEnd = obj['end'];
+                    descText = obj['desc'];
+                    contentText.text = parser.toHtml(obj['desc']);
+                    stateValue = obj['state'];
+                }
             }
 
             // Get rubrics
-            rubricsAssessmentModel.bindValues = [identifier];
+            rubricsAssessmentModel.bindValues = [annotationView.identifier];
             rubricsAssessmentModel.select();
 
             // Look for the previous and next annotations in TITLE
@@ -580,16 +605,22 @@ BasicPage {
             afterAndBeforeAnnotationsModel.select();
             for (var i=0; i<afterAndBeforeAnnotationsModel.count; i++) {
                 var obj = afterAndBeforeAnnotationsModel.getObjectInRow(i);
-                if (obj['title'] == identifier) {
+                if (obj['title'] == annotationView.identifier) {
                     console.log('index', i);
                     if (i>0) {
                         var beforeObj = afterAndBeforeAnnotationsModel.getObjectInRow(i-1);
                         beforeAnnotationRect.beforeAnnotation = beforeObj['title'];
+                    } else {
+                        beforeAnnotationRect.beforeAnnotation = '';
                     }
+
                     if (i<afterAndBeforeAnnotationsModel.count-1) {
                         var afterObj = afterAndBeforeAnnotationsModel.getObjectInRow(i+1);
                         afterAnnotationRect.afterAnnotation = afterObj['title'];
+                    } else {
+                        afterAnnotationRect.afterAnnotation = '';
                     }
+
                     break;
                 }
             }
@@ -599,15 +630,21 @@ BasicPage {
             afterAndBeforeAnnotationsModel.select();
             for (var i=0; i<afterAndBeforeAnnotationsModel.count; i++) {
                 var obj = afterAndBeforeAnnotationsModel.getObjectInRow(i);
-                if (obj['title'] == identifier) {
+                if (obj['title'] == annotationView.identifier) {
                     if (i>0) {
                         var beforeObj = afterAndBeforeAnnotationsModel.getObjectInRow(i-1);
                         beforeAnnotationStartRect.beforeAnnotationStart = beforeObj['title'];
+                    } else {
+                        beforeAnnotationStartRect.beforeAnnotationStart = '';
                     }
+
                     if (i<afterAndBeforeAnnotationsModel.count-1) {
                         var afterObj = afterAndBeforeAnnotationsModel.getObjectInRow(i+1);
                         afterAnnotationStartRect.afterAnnotationStart = afterObj['title'];
+                    } else {
+                        afterAnnotationStartRect.afterAnnotationStart = '';
                     }
+
                     break;
                 }
             }
@@ -617,15 +654,21 @@ BasicPage {
             afterAndBeforeAnnotationsModel.select();
             for (var i=0; i<afterAndBeforeAnnotationsModel.count; i++) {
                 var obj = afterAndBeforeAnnotationsModel.getObjectInRow(i);
-                if (obj['title'] == identifier) {
+                if (obj['title'] == annotationView.identifier) {
                     if (i>0) {
                         var beforeObj = afterAndBeforeAnnotationsModel.getObjectInRow(i-1);
                         beforeAnnotationEndRect.beforeAnnotationEnd = beforeObj['title'];
+                    } else {
+                        beforeAnnotationEndRect.beforeAnnotationEnd = '';
                     }
+
                     if (i<afterAndBeforeAnnotationsModel.count-1) {
                         var afterObj = afterAndBeforeAnnotationsModel.getObjectInRow(i+1);
                         afterAnnotationEndRect.afterAnnotationEnd = afterObj['title'];
+                    } else {
+                        afterAnnotationEndRect.afterAnnotationEnd = '';
                     }
+
                     break;
                 }
             }
