@@ -460,7 +460,7 @@ BasicPage {
                 editorArea.enabled = true;
 
                 annotationView.pushButtonsModel();
-                annotationView.buttonsModel.append({icon: 'floppy-35952', object: editorArea, method: 'saveEditorContents'});
+                annotationView.buttonsModel.append({icon: 'floppy-35952', object: annotationView, method: 'saveEditorContents'});
                 annotationView.buttonsModel.append({icon: 'road-sign-147409', object: editorArea, method: 'discardEditorContents'});
             }
 
@@ -474,18 +474,11 @@ BasicPage {
                 annotationView.popButtonsModel();
             }
 
+            /*
             function saveEditorContents() {
                 annotationView.saveEditorContents();
             }
-
-            function showRelatedAnnotations() {
-                annotationView.showRelatedAnnotations();
-            }
-
-            function hideRelatedAnnotations() {
-                annotationView.hideRelatedAnnotations();
-            }
-
+*/
         }
 
         Connections {
@@ -525,7 +518,7 @@ BasicPage {
                 endText.text = qsTr('Final: ') + obj['end'];
                 labelsText.text = '# ' + obj['labels'];
                 titleText.text = annotationView.identifier;
-                annotationView.labels = obj['labels'];
+                annotationView.labels = "" + obj['labels'];
                 periodStart = obj['start'];
                 periodEnd = obj['end'];
                 descText = obj['desc'];
@@ -685,7 +678,7 @@ BasicPage {
                 onEntered: {
                     // Change buttons
                     annotationView.pushButtonsModel();
-                    annotationView.buttonsModel.append({icon: 'road-sign-147409', object: editorArea, method: 'hideRelatedAnnotations'});
+                    annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'hideRelatedAnnotations'});
 
                     // Show related annotations
                     relatedAnnotationsLoader.visible = true;
@@ -1408,7 +1401,7 @@ BasicPage {
             id: relatedAnnotationsByLabelItem
             property int requiredHeight
             property string labelBase: ''
-            property string labels: ''
+            property string labels
             color: 'gray'
 
             ListView {
@@ -1459,7 +1452,6 @@ BasicPage {
 
             Models.ExtendedAnnotations {
                 id: relatedAnnotationsModel
-//                filters: ["INSTR(' '||labels||' ',?)"]
                 sort: 'start ASC, end ASC, title ASC'
             }
 
@@ -1469,17 +1461,15 @@ BasicPage {
             }
             onLabelsChanged: {
                 console.log('labels changed to ', labels);
-                var labelsArray = relatedAnnotationsByLabelItem.labels.split(' ');
+                var labelsArray = relatedAnnotationsByLabelItem.labels.trim().split(' ');
                 var filters = [];
                 for (var i=0; i<labelsArray.length; i++) {
                     filters.push("(INSTR(' '||labels||' ',?))");
                 }
-                relatedAnnotationsModel.filters = [filters.join(' OR ')];
+                relatedAnnotationsModel.filters = ["" + filters.join(' OR ')];
                 relatedAnnotationsModel.bindValues = labelsArray;
                 relatedAnnotationsModel.select();
             }
-
-            Component.onCompleted: relatedAnnotationsModel.select();
         }
     }
 

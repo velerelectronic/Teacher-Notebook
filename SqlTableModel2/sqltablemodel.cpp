@@ -283,7 +283,7 @@ bool SqlTableModel2::select() {
         filtersList << "(" + searchList.join(" OR ") + ")";
     }
 
-    QSqlQuery query;
+    QSqlQuery query(this->query());
     query.prepare("SELECT \"" + fieldNames().join("\", \"") + "\"" +
                   ((calculatedFieldNames().size()>0)?(", " + calculatedFieldNames().join(", ")):"") +
                   " FROM " + innerTableName +
@@ -307,10 +307,13 @@ bool SqlTableModel2::select() {
     }
 
     qDebug() << "bound values " << query.boundValues();
-    query.exec();
-    setQuery(query);
+    bool result = query.exec();
+    if (result)
+        this->QSqlQueryModel::setQuery(query);
+    qDebug() << "executed";
     qDebug() << "Last query 2" << query.executedQuery();
     countChanged();
+    return result;
 }
 
 bool SqlTableModel2::selectUnique(QString field) {    
