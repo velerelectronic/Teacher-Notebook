@@ -460,7 +460,7 @@ BasicPage {
                 editorArea.enabled = true;
 
                 annotationView.pushButtonsModel();
-                annotationView.buttonsModel.append({icon: 'floppy-35952', object: annotationView, method: 'saveEditorContents'});
+                annotationView.buttonsModel.append({icon: 'floppy-35952', object: editorArea, method: 'saveEditorContents'});
                 annotationView.buttonsModel.append({icon: 'road-sign-147409', object: editorArea, method: 'discardEditorContents'});
             }
 
@@ -473,6 +473,19 @@ BasicPage {
                 editorArea.enabled = false;
                 annotationView.popButtonsModel();
             }
+
+            function saveEditorContents() {
+                annotationView.saveEditorContents();
+            }
+
+            function showRelatedAnnotations() {
+                annotationView.showRelatedAnnotations();
+            }
+
+            function hideRelatedAnnotations() {
+                annotationView.hideRelatedAnnotations();
+            }
+
         }
 
         Connections {
@@ -672,7 +685,7 @@ BasicPage {
                 onEntered: {
                     // Change buttons
                     annotationView.pushButtonsModel();
-                    annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'hideRelatedAnnotations'});
+                    annotationView.buttonsModel.append({icon: 'road-sign-147409', object: editorArea, method: 'hideRelatedAnnotations'});
 
                     // Show related annotations
                     relatedAnnotationsLoader.visible = true;
