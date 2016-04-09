@@ -52,6 +52,8 @@ Item {
             onOpenPage: loadSubPage(page,{})
             onOpenPageArgs: loadSubPage(page,args)
 
+            onOpenExternalViewer: {}
+
             // Show messages
             onShowMessage: workingSpace.showMessage(message)
 

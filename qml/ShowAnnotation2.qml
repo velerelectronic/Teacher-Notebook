@@ -2,11 +2,14 @@ import QtQuick 2.5
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.2
+import QtQml.StateMachine 1.0 as DSM
 import PersonalTypes 1.0
 import ClipboardAdapter 1.0
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 import 'qrc:///models' as Models
+import "qrc:///common/FormatDates.js" as FormatDates
+
 
 BasicPage {
     id: annotationView
@@ -14,6 +17,9 @@ BasicPage {
     pageTitle: qsTr('Anotació')
 
     signal openExternalViewer(string identifier)
+    signal saveEditorContents()
+    signal showRelatedAnnotations()
+    signal hideRelatedAnnotations()
 
     property string identifier: ''
     property string descText: ''
@@ -29,14 +35,6 @@ BasicPage {
 
     Models.ExtendedAnnotations {
         id: annotationsModel
-
-        Component.onCompleted: {
-            select();
-            if (annotationView.identifier == "") {
-                if (count>0)
-                    annotationView.identifier = getObjectInRow(0)['title'];
-            }
-        }
     }
 
     Models.RubricsAssessmentModel {
@@ -107,8 +105,8 @@ BasicPage {
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                     font.pixelSize: units.readUnit
                                     MouseArea {
+                                        id: periodStartEditorMouseArea
                                         anchors.fill: parent
-                                        onClicked: editorArea.changeEditor('periodEditor', {start: annotationView.periodStart, end: annotationView.periodEnd})
                                     }
                                 }
                                 Text {
@@ -118,8 +116,8 @@ BasicPage {
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                     font.pixelSize: units.readUnit
                                     MouseArea {
+                                        id: periodEndEditorMouseArea
                                         anchors.fill: parent
-                                        onClicked: editorArea.changeEditor('periodEditor', {start: annotationView.periodStart, end: annotationView.periodEnd})
                                     }
                                 }
                                 Text {
@@ -130,8 +128,8 @@ BasicPage {
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                     font.pixelSize: units.readUnit
                                     MouseArea {
+                                        id: changeLabelsMouseArea
                                         anchors.fill: parent
-                                        onClicked: editorArea.changeEditor('labelsEditor', annotationView.labels)
                                     }
                                 }
                                 Rectangle {
@@ -197,8 +195,8 @@ BasicPage {
                                         }
                                     }
                                     MouseArea {
+                                        id: changeStateMousArea
                                         anchors.fill: parent
-                                        onClicked: editorArea.changeEditor('stateEditor', annotationView.identifier)
                                     }
                                 }
 
@@ -224,13 +222,13 @@ BasicPage {
                                 font.bold: true
                                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                 Common.ImageButton {
+                                    id: changeTitleButton
                                     anchors {
                                         top: parent.top
                                         right: parent.right
                                     }
                                     size: units.fingerUnit
                                     image: 'edit-153612'
-                                    onClicked: editorArea.changeEditor('titleEditor', annotationView.identifier)
                                 }
                             }
                             Rectangle {
@@ -253,8 +251,9 @@ BasicPage {
                             Layout.fillWidth: true
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            onLinkActivated: openExternalViewer(link)
+                            onLinkActivated: annotationView.identifier = link
                             Common.ImageButton {
+                                id: changeDescriptionButton
                                 anchors {
                                     top: parent.top
                                     right: parent.right
@@ -262,7 +261,6 @@ BasicPage {
 
                                 size: units.fingerUnit
                                 image: 'edit-153612'
-                                onClicked: editorArea.changeEditor('descEditor', annotationView.descText)
                             }
                         }
                     }
@@ -415,61 +413,21 @@ BasicPage {
             }
         }
 
+        Loader {
+            id: relatedAnnotationsLoader
+            anchors.fill: parent
+            visible: false
+        }
+
         Rectangle {
             id: editorArea
             anchors.fill: parent
             anchors.margins: units.nailUnit
             border.color: 'black'
+            enabled: false
             visible: editorArea.enabled
 
             property var newContent: ''
-
-            states: [
-                State {
-                    name: 'viewer'
-                    PropertyChanges {
-                        target: editorArea
-                        enabled: false
-                    }
-                },
-                State {
-                    name: 'titleEditor'
-                    PropertyChanges {
-                        target: editorLoader
-                        sourceComponent: titleEditorComponent
-                    }
-                },
-                State {
-                    name: 'descEditor'
-                    PropertyChanges {
-                        target: editorLoader
-                        sourceComponent: descEditorComponent
-                    }
-                },
-                State {
-                    name: 'periodEditor'
-                    PropertyChanges {
-                        target: editorLoader
-                        sourceComponent: periodEditorComponent
-                    }
-                },
-                State {
-                    name: 'labelsEditor'
-                    PropertyChanges {
-                        target: editorLoader
-                        sourceComponent: labelsEditorComponent
-                    }
-                },
-                State {
-                    name: 'stateEditor'
-                    PropertyChanges {
-                        target: editorLoader
-                        sourceComponent: stateEditorComponent
-                    }
-                }
-
-            ]
-            state: 'viewer'
 
             ColumnLayout {
                 anchors.fill: parent
@@ -496,57 +454,24 @@ BasicPage {
                 }
             }
 
-            function changeEditor(newEditor, newContent) {
-                if (editorArea.state == 'viewer') {
-                    editorArea.newContent = newContent;
-                    editorArea.state = newEditor;
-                    editorArea.enabled = true;
+            function showContent(newComponent, newContent) {
+                editorArea.newContent = newContent;
+                editorLoader.sourceComponent = newComponent;
+                editorArea.enabled = true;
 
-                    annotationView.pushButtonsModel();
-                    annotationView.buttonsModel.append({icon: 'floppy-35952', object: editorArea, method: 'saveEditorContents'});
-                    annotationView.buttonsModel.append({icon: 'road-sign-147409', object: editorArea, method: 'discardEditorContents'})
-                }
+                annotationView.pushButtonsModel();
+                annotationView.buttonsModel.append({icon: 'floppy-35952', object: annotationView, method: 'saveEditorContents'});
+                annotationView.buttonsModel.append({icon: 'road-sign-147409', object: editorArea, method: 'discardEditorContents'});
             }
 
             function getEditedContent() {
                 return editorLoader.item.content;
             }
 
-            function saveEditorContents() {
-                if (editorLoader.item.changes) {
-                    switch(editorArea.state) {
-                    case 'titleEditor':
-                        var newIdentifier = editorArea.getEditedContent();
-                        annotationsModel.updateObject(annotationView.identifier, {title: newIdentifier});
-                        annotationView.identifier = newIdentifier;
-                        break;
-                    case 'descEditor':
-                        annotationsModel.updateObject(annotationView.identifier, {desc: editorArea.getEditedContent()});
-                        break;
-                    case 'periodEditor':
-                        var period = editorArea.getEditedContent();
-                        annotationsModel.updateObject(annotationView.identifier, {start: period.start, end: period.end});
-                        break;
-                    case 'labelsEditor':
-                        annotationsModel.updateObject(annotationView.identifier, {labels: editorArea.getEditedContent()});
-                        break;
-                    case 'stateEditor':
-                        annotationsModel.updateObject(annotationView.identifier, {state: editorArea.getEditedContent()});
-                        break;
-                    }
-                    if (editorArea.state !== 'viewer') {
-                        editorArea.state = 'viewer';
-                        annotationView.popButtonsModel();
-                    }
-                    mainItem.getText();
-                }
-            }
-
-            function discardEditorContents() {
-                if (editorArea.state !== 'viewer') {
-                    editorArea.state = 'viewer';
-                    annotationView.popButtonsModel();
-                }
+            function hideEditorContents() {
+                editorLoader.sourceComponent = null;
+                editorArea.enabled = false;
+                annotationView.popButtonsModel();
             }
         }
 
@@ -565,35 +490,34 @@ BasicPage {
                 annotationsModel.bindValues = [annotationView.identifier];
 
             } else {
-                annotationsModel.filters = ["title != ''"];
-                annotationsModel.bindValues = [];
+                var today = new Date();
+                var filters = [];
+                filters.push("title != ''");
+                filters.push("(start <= ?) OR (end <= ?)");
+                annotationsModel.filters = filters;
+                var todayText = today.toYYYYMMDDHHMMFormat();
+                var values = [];
+                values.push(todayText);
+                values.push(todayText);
+                annotationsModel.bindValues = values;
+                annotationsModel.sort = 'start DESC, end DESC, title DESC';
             }
 
             annotationsModel.select();
             if (annotationsModel.count>0) {
                 var obj;
-                if (annotationView.identifier == '') {
-                    var today = new Date();
-                    for (var i=0; i<annotationsModel.count; i++) {
-                        obj = annotationsModel.getObjectInRow(i);
-                        if (obj['start'] >= today.toYYYYMMDDHHMMFormat()) {
-                            break;
-                        }
-                    }
-                    annotationView.identifier = obj['title'];
-                } else {
-                    obj = annotationsModel.getObjectInRow(0);
-                    startText.text = qsTr('Inici: ') + obj['start'];
-                    endText.text = qsTr('Final: ') + obj['end'];
-                    labelsText.text = '# ' + obj['labels'];
-                    titleText.text = annotationView.identifier;
-                    annotationView.labels = obj['labels'];
-                    periodStart = obj['start'];
-                    periodEnd = obj['end'];
-                    descText = obj['desc'];
-                    contentText.text = parser.toHtml(obj['desc']);
-                    stateValue = obj['state'];
-                }
+                obj = annotationsModel.getObjectInRow(0);
+                identifier = obj['title'];
+                startText.text = qsTr('Inici: ') + obj['start'];
+                endText.text = qsTr('Final: ') + obj['end'];
+                labelsText.text = '# ' + obj['labels'];
+                titleText.text = annotationView.identifier;
+                annotationView.labels = obj['labels'];
+                periodStart = obj['start'];
+                periodEnd = obj['end'];
+                descText = obj['desc'];
+                contentText.text = parser.toHtml(obj['desc']);
+                stateValue = obj['state'];
             }
 
             // Get rubrics
@@ -688,9 +612,180 @@ BasicPage {
         }
 
         Component.onCompleted: {
-            getText();
             annotationView.buttonsModel.append({icon: 'copy-97584', object: mainItem, method: 'copyAnnotationDescription'});
             annotationView.buttonsModel.append({icon: 'questionnaire-158862', object: mainItem, method: 'openRubricAssessmentMenu'});
+            annotationView.buttonsModel.append({icon: 'hierarchy-35795', object: annotationView, method: 'showRelatedAnnotations'});
+            annotationStateMachine.start();
+        }
+
+        DSM.StateMachine {
+            id: annotationStateMachine
+
+            initialState: singleAnnotation
+
+            DSM.State {
+                id: singleAnnotation
+
+                onEntered: {
+                    mainItem.getText();
+                }
+
+                DSM.SignalTransition {
+                    targetState: relatedAnnotations
+                    signal: annotationView.showRelatedAnnotations
+                }
+
+                DSM.SignalTransition {
+                    targetState: titleEditor
+                    signal: changeTitleButton.clicked
+                }
+
+                DSM.SignalTransition {
+                    targetState: descEditor
+                    signal: changeDescriptionButton.clicked
+                }
+
+                DSM.SignalTransition {
+                    targetState: periodEditor
+                    signal: periodStartEditorMouseArea.clicked
+                }
+
+                DSM.SignalTransition {
+                    targetState: periodEditor
+                    signal: periodEndEditorMouseArea.clicked
+                }
+
+                DSM.SignalTransition {
+                    targetState: labelsEditor
+                    signal: changeLabelsMouseArea.clicked
+                }
+
+                DSM.SignalTransition {
+                    targetState: stateEditor
+                    signal: changeStateMousArea.clicked
+                }
+            }
+
+            DSM.State {
+                id: relatedAnnotations
+
+                onEntered: {
+                    // Change buttons
+                    annotationView.pushButtonsModel();
+                    annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'hideRelatedAnnotations'});
+
+                    // Show related annotations
+                    relatedAnnotationsLoader.visible = true;
+                    relatedAnnotationsLoader.sourceComponent = relatedAnnotationsByLabelComponent;
+                    relatedAnnotationsLoader.item.labelBase = '';
+                    relatedAnnotationsLoader.item.labels = annotationView.labels;
+                }
+
+                onExited: {
+                    // Restore buttons and hide the related annotations
+                    annotationView.popButtonsModel();
+                    relatedAnnotationsLoader.visible = false;
+                    relatedAnnotationsLoader.sourceComponent = null;
+                }
+
+                DSM.SignalTransition {
+                    targetState: singleAnnotation
+                    signal: annotationView.hideRelatedAnnotations
+                }
+            }
+
+            DSM.State {
+                id: titleEditor
+
+                onEntered: {
+                    editorArea.showContent(titleEditorComponent, annotationView.identifier);
+                }
+
+                onExited: {
+                    var newIdentifier = editorArea.getEditedContent();
+                    annotationsModel.updateObject(annotationView.identifier, {title: newIdentifier});
+                    annotationView.identifier = newIdentifier;
+                    editorArea.hideEditorContents();
+                }
+
+                DSM.SignalTransition {
+                    targetState: singleAnnotation
+                    signal: annotationView.saveEditorContents
+                }
+            }
+
+            DSM.State {
+                id: descEditor
+
+                onEntered: {
+                    editorArea.showContent(descEditorComponent, annotationView.descText);
+                }
+
+                onExited: {
+                    annotationsModel.updateObject(annotationView.identifier, {desc: editorArea.getEditedContent()});
+                    editorArea.hideEditorContents();
+                }
+
+                DSM.SignalTransition {
+                    targetState: singleAnnotation
+                    signal: annotationView.saveEditorContents
+                }
+            }
+
+            DSM.State {
+                id: periodEditor
+
+                onEntered: {
+                    editorArea.showContent(periodEditorComponent, {start: annotationView.periodStart, end: annotationView.periodEnd});
+                }
+
+                onExited: {
+                    var period = editorArea.getEditedContent();
+                    annotationsModel.updateObject(annotationView.identifier, {start: period.start, end: period.end});
+                    editorArea.hideEditorContents();
+                }
+
+                DSM.SignalTransition {
+                    targetState: singleAnnotation
+                    signal: annotationView.saveEditorContents
+                }
+            }
+
+            DSM.State {
+                id: labelsEditor
+
+                onEntered: {
+                    editorArea.showContent(labelsEditorComponent, annotationView.labels);
+                }
+
+                onExited: {
+                    annotationsModel.updateObject(annotationView.identifier, {labels: editorArea.getEditedContent()});
+                    editorArea.hideEditorContents();
+                }
+
+                DSM.SignalTransition {
+                    targetState: singleAnnotation
+                    signal: annotationView.saveEditorContents
+                }
+            }
+
+            DSM.State {
+                id: stateEditor
+
+                onEntered: {
+                    editorArea.showContent(stateEditorComponent, annotationView.identifier);
+                }
+
+                onExited: {
+                    annotationsModel.updateObject(annotationView.identifier, {state: editorArea.getEditedContent()});
+                    editorArea.hideEditorContents();
+                }
+
+                DSM.SignalTransition {
+                    targetState: singleAnnotation
+                    signal: annotationView.saveEditorContents
+                }
+            }
         }
     }
 
@@ -1293,9 +1388,86 @@ BasicPage {
         }
     }
 
+    Component {
+        id: relatedAnnotationsByLabelComponent
 
-    function saveDescriptionContent() {
-        saveEditorContents();
+        Rectangle {
+            id: relatedAnnotationsByLabelItem
+            property int requiredHeight
+            property string labelBase: ''
+            property string labels: ''
+            color: 'gray'
+
+            ListView {
+                id: relatedAnnotationsView
+
+                anchors.fill: parent
+                model: relatedAnnotationsModel
+                spacing: units.nailUnit
+
+                header: Text {
+                    width: relatedAnnotationsView.width
+                    height: units.fingerUnit
+                    font.pixelSize: units.readUnit
+                    text: qsTr("Anotacions amb etiqueta #") + relatedAnnotationsByLabelItem.labelBase
+                }
+
+                delegate: Rectangle {
+                    width: relatedAnnotationsView.width
+                    height: units.fingerUnit * 2
+                    RowLayout {
+                        anchors.fill: parent
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: parent.width / 2
+                            font.pixelSize: units.readUnit
+                            color: 'green'
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: model.labels
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: model.title
+                        }
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            annotationView.hideRelatedAnnotations();
+                            annotationView.identifier = model.title;
+                        }
+                    }
+
+                }
+            }
+
+            Models.ExtendedAnnotations {
+                id: relatedAnnotationsModel
+//                filters: ["INSTR(' '||labels||' ',?)"]
+                sort: 'start ASC, end ASC, title ASC'
+            }
+
+            onLabelBaseChanged: {
+                relatedAnnotationsModel.bindValues = [labelBase];
+                relatedAnnotationsModel.select();
+            }
+            onLabelsChanged: {
+                console.log('labels changed to ', labels);
+                var labelsArray = relatedAnnotationsByLabelItem.labels.split(' ');
+                var filters = [];
+                for (var i=0; i<labelsArray.length; i++) {
+                    filters.push("(INSTR(' '||labels||' ',?))");
+                }
+                relatedAnnotationsModel.filters = [filters.join(' OR ')];
+                relatedAnnotationsModel.bindValues = labelsArray;
+                relatedAnnotationsModel.select();
+            }
+
+            Component.onCompleted: relatedAnnotationsModel.select();
+        }
     }
 
 
