@@ -21,6 +21,8 @@ SqlTableModel2::SqlTableModel2(QObject *parent, QSqlDatabase db) :
 
     QSqlQuery query(db);
     QSqlQueryModel::setQuery(query);
+
+    innerFakeCounter = 0;
 }
 
 void SqlTableModel2::debug() {
@@ -266,6 +268,10 @@ void SqlTableModel2::setPrimaryKey(const QString &key) {
 bool SqlTableModel2::select() {
 //    deselectAllObjects();
 
+    // This strongly needs to be fixed. There is a strange bug that keeps on calling "select()"
+    qDebug() << "NUMBER " << innerFakeCounter;
+    innerFakeCounter++;
+
     QStringList filtersList;
 
     // Attach the common filters
@@ -308,11 +314,16 @@ bool SqlTableModel2::select() {
 
     qDebug() << "bound values " << query.boundValues();
     bool result = query.exec();
-    if (result)
-        this->QSqlQueryModel::setQuery(query);
-    qDebug() << "executed";
-    qDebug() << "Last query 2" << query.executedQuery();
-    countChanged();
+    if (result) {
+        if (innerFakeCounter>10) {
+            innerFakeCounter = 0;
+            return false;
+        }
+        setQuery(query);
+        countChanged();
+        qDebug() << "executed";
+        qDebug() << "Last query 2" << query.executedQuery();
+    }
     return result;
 }
 

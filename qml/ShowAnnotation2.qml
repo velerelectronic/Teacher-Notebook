@@ -22,8 +22,6 @@ BasicPage {
     signal hideRelatedAnnotations()
     signal showSingleAnnotation()
 
-    onShowSingleAnnotation: console.log('AAAA');
-
     property string identifier: ''
     property string descText: ''
     property string labels: ''
@@ -38,6 +36,8 @@ BasicPage {
 
     Models.ExtendedAnnotations {
         id: annotationsModel
+
+        Component.onCompleted: select()
     }
 
     Models.RubricsAssessmentModel {
@@ -45,10 +45,16 @@ BasicPage {
         filters: ["annotation=?"]
     }
 
+
 //    color: 'yellow'
 
     mainPage: Item {
         id: mainItem
+
+        Models.ExtendedAnnotations {
+            id: relatedAnnotationsSimpleModel
+            //limit: 6
+        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -243,71 +249,61 @@ BasicPage {
                 }
             }
 
-            ListView {
-                id: relatedAnnotationsList
+            Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: units.fingerUnit * 2
-                orientation: ListView.Horizontal
-
-                model: relatedAnnotationsSimpleModel
-                spacing: units.nailUnit
-                delegate: Rectangle {
-                    z: 1
-                    width: units.fingerUnit * 6
-                    height: relatedAnnotationsList.height
-                    border.color: 'black'
-                    Text {
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
-                        font.pixelSize: units.readUnit
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        elide: Text.ElideRight
-                        text: model.title
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: annotationView.identifier = model.title
-                    }
-                }
-
-                Rectangle {
-                    z: 2
-                    width: units.fingerUnit * 4
-                    anchors {
-                        top: parent.top
-                        right: parent.right
-                        bottom: parent.bottom
-                    }
-
-                    Common.ImageButton {
-                        id: relatedAnnotationsButton
-                        anchors {
-                            bottom: parent.bottom
-                            right: parent.right
-                            rightMargin: units.fingerUnit * 3
-                        }
-                        image: 'arrow-145766'
-                        size: units.fingerUnit * 2
-                        onClicked: annotationView.showRelatedAnnotations()
-                    }
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: units.nailUnit
                     Common.ImageButton {
                         id: addAnnotationButton
-                        anchors {
-                            bottom: parent.bottom
-                            right: parent.right
-                        }
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: addAnnotationButton.height
                         image: 'plus-24844'
                         size: units.fingerUnit * 2
                     }
-                }
+                    ListView {
+                        id: relatedAnnotationsList
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        orientation: ListView.Horizontal
+                        clip: true
 
-                Models.ExtendedAnnotations {
-                    id: relatedAnnotationsSimpleModel
-                    filters: ["title != ''"]
-                    sort: 'start ASC, end ASC, title ASC'
-                    //limit: 6
+                        rightMargin: units.fingerUnit * 3
+                        model: relatedAnnotationsSimpleModel
+
+                        spacing: units.nailUnit
+                        delegate: Rectangle {
+                            z: 1
+                            width: units.fingerUnit * 6
+                            height: relatedAnnotationsList.height
+                            border.color: 'black'
+                            Text {
+                                anchors.fill: parent
+                                anchors.margins: units.nailUnit
+                                font.pixelSize: units.readUnit
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                elide: Text.ElideRight
+                                text: model.title
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: annotationView.identifier = model.title
+                            }
+                        }
+                        footer: Common.ImageButton {
+                            id: relatedAnnotationsButton
+                            height: relatedAnnotationsList.height
+                            width: relatedAnnotationsButton.height
+                            image: 'arrow-145766'
+                            size: units.fingerUnit * 2
+                            onClicked: annotationView.showRelatedAnnotations()
+                        }
+
+                    }
                 }
             }
+
         }
 
         Loader {
@@ -1507,7 +1503,7 @@ BasicPage {
                     annotationsTabbedView.widgets.append({title: qsTr("Alfabètic")});
                     annotationsTabbedView.widgets.append({title: qsTr("Etiquetes")});
                     annotationsTabbedView.widgets.append({title: qsTr("Pendents")});
-                    selectedIndex = 1;
+//                    selectedIndex = 1;
                 }
 
                 onSelectedIndexChanged: {
@@ -1556,7 +1552,10 @@ BasicPage {
                     anchors.fill: parent
                     clip: true
 
-                    model: relatedAnnotationsModel
+                    model: Models.ExtendedAnnotations {
+                        id: relatedAnnotationsModel
+                    }
+
                     spacing: units.nailUnit
 
                     header: Text {
@@ -1607,10 +1606,6 @@ BasicPage {
                 }
             }
 
-
-            Models.ExtendedAnnotations {
-                id: relatedAnnotationsModel
-            }
         }
     }
 

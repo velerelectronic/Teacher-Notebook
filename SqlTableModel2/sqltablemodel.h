@@ -129,6 +129,8 @@ private:
     void            generateRoleNames();
     int             searchRowWithKeyValue(const QVariant &);
 
+    int innerFakeCounter;
+
 };
 
 #endif // SQLTABLEMODEL2_H
