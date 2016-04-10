@@ -20,6 +20,9 @@ BasicPage {
     signal saveEditorContents()
     signal showRelatedAnnotations()
     signal hideRelatedAnnotations()
+    signal showSingleAnnotation()
+
+    onShowSingleAnnotation: console.log('AAAA');
 
     property string identifier: ''
     property string descText: ''
@@ -86,7 +89,7 @@ BasicPage {
 
                         Rectangle {
                             id: headerData
-                            Layout.preferredHeight: Math.max(startText.height, endText.height, labelsText.height, stateItem.height, units.fingerUnit) + 2 * units.nailUnit
+                            Layout.preferredHeight: Math.max(startText.height, endText.height, labelsText.height, stateLoader.height, units.fingerUnit) + 2 * units.nailUnit
                             Layout.fillWidth: true
                             border.color: 'black'
 
@@ -132,74 +135,20 @@ BasicPage {
                                         anchors.fill: parent
                                     }
                                 }
-                                Rectangle {
-                                    id: stateItem
+                                Loader {
+                                    id: stateLoader
+
+                                    signal clicked()
                                     Layout.preferredWidth: units.fingerUnit * 2
-                                    Layout.preferredHeight: stateText.contentHeight + 2 * units.nailUnit
-
-                                    Rectangle {
-                                        anchors {
-                                            bottom: parent.bottom
-                                            left: parent.left
-                                            right: parent.right
-                                        }
-                                        color: 'orange'
-                                        height: {
-                                            var value = parseInt(stateValue);
-                                            if ((value>0) && (value<=10)) {
-                                                return stateItem.height * value / 10;
-                                            } else {
-                                                if (value<0)
-                                                    return stateItem.height;
-                                                else
-                                                    return 0;
-                                            }
-                                        }
-                                    }
-
-                                    Text {
-                                        id: stateText
-                                        anchors.fill: parent
-                                        anchors.margins: units.nailUnit
-                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                        verticalAlignment: Text.AlignVCenter
-                                        horizontalAlignment: Text.AlignHCenter
-                                        font.pixelSize: units.readUnit
-                                        text: {
-                                            switch(stateValue) {
-                                            case '-1':
-                                                return qsTr('Finalitzat');
-                                            case '1':
-                                                return qsTr('10%');
-                                            case '2':
-                                                return qsTr('20%');
-                                            case '3':
-                                                return qsTr('30%');
-                                            case '4':
-                                                return qsTr('40%');
-                                            case '5':
-                                                return qsTr('50%');
-                                            case '6':
-                                                return qsTr('60%');
-                                            case '7':
-                                                return qsTr('70%');
-                                            case '8':
-                                                return qsTr('80%');
-                                            case '9':
-                                                return qsTr('90%');
-                                            case '10':
-                                                return qsTr('100%');
-                                            default:
-                                                return qsTr('Actiu');
-                                            }
-                                        }
-                                    }
-                                    MouseArea {
-                                        id: changeStateMousArea
-                                        anchors.fill: parent
+                                    Layout.preferredHeight: item.requiredHeight
+                                    sourceComponent: stateComponent
+                                    onLoaded: item.stateValue = Qt.binding(function () {return annotationView.stateValue; });
+                                    Connections {
+                                        target: stateLoader.item
+                                        ignoreUnknownSignals: true
+                                        onClicked: stateLoader.clicked();
                                     }
                                 }
-
                             }
                         }
 
@@ -321,11 +270,15 @@ BasicPage {
                     }
                 }
 
-                footerPositioning: ListView.OverlayFooter
-                footer: Rectangle {
+                Rectangle {
                     z: 2
                     width: units.fingerUnit * 4
-                    height: relatedAnnotationsList.height
+                    anchors {
+                        top: parent.top
+                        right: parent.right
+                        bottom: parent.bottom
+                    }
+
                     Common.ImageButton {
                         id: relatedAnnotationsButton
                         anchors {
@@ -338,6 +291,7 @@ BasicPage {
                         onClicked: annotationView.showRelatedAnnotations()
                     }
                     Common.ImageButton {
+                        id: addAnnotationButton
                         anchors {
                             bottom: parent.bottom
                             right: parent.right
@@ -533,6 +487,11 @@ BasicPage {
                 }
 
                 DSM.SignalTransition {
+                    targetState: addAnnotation
+                    signal: addAnnotationButton.clicked
+                }
+
+                DSM.SignalTransition {
                     targetState: titleEditor
                     signal: changeTitleButton.clicked
                 }
@@ -559,7 +518,7 @@ BasicPage {
 
                 DSM.SignalTransition {
                     targetState: stateEditor
-                    signal: changeStateMousArea.clicked
+                    signal: stateLoader.clicked
                 }
             }
 
@@ -588,6 +547,23 @@ BasicPage {
                 DSM.SignalTransition {
                     targetState: singleAnnotation
                     signal: annotationView.hideRelatedAnnotations
+                }
+            }
+
+            DSM.State {
+                id: addAnnotation
+
+                onEntered: {
+                    annotationView.openMenu(units.fingerUnit * 4, addImmediateAnnotationMenu, {labels: annotationView.labels});
+                }
+
+                onExited: {
+
+                }
+
+                DSM.SignalTransition {
+                    targetState: singleAnnotation
+                    signal: annotationView.showSingleAnnotation
                 }
             }
 
@@ -728,6 +704,141 @@ BasicPage {
             }
         }
 
+    }
+
+    Component {
+        id: addImmediateAnnotationMenu
+
+        AboveMenu {
+            id: menuRect
+
+            requiredHeight: units.fingerUnit * 10
+
+//            onOptionsChanged:
+
+            onCloseMenu: annotationView.showSingleAnnotation()
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: units.fingerUnit
+
+                Editors.TextAreaEditor3 {
+                    id: newAnnotationEditor
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    border.color: 'black'
+                }
+                Flow {
+                    id: flow
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: flow.childrenRect.height
+                    spacing: units.nailUnit
+
+                    Text {
+                        text: qsTr('Etiquetes')
+                    }
+
+                    Repeater {
+                        id: flowRepeater
+
+                        model: {
+                            return menuRect.getOption('labels', []);
+                        }
+
+                        delegate: Rectangle {
+                            width: childrenRect.width + units.nailUnit
+                            height: units.fingerUnit
+                            color: '#AAFFAA'
+                            Text {
+                                anchors {
+                                    top: parent.top
+                                    bottom: parent.bottom
+                                    left: parent.left
+                                    margins: units.nailUnit
+                                }
+                                width: contentWidth
+                                verticalAlignment: Text.AlignVCenter
+
+                                text: modelData
+                            }
+                        }
+                    }
+                }
+
+                Flow {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: childrenRect.height
+
+                    spacing: units.fingerUnit
+
+                    Common.ImageButton {
+                        width: units.fingerUnit * 1.5
+                        height: width
+                        image: 'floppy-35952'
+                        onClicked: {
+                            var re = new RegExp("^(.+)\n+((?:.|\n|\r)*)$","g");
+                            console.log(newAnnotationEditor.content);
+                            var res = re.exec(newAnnotationEditor.content);
+                            var date = (new Date()).toYYYYMMDDHHMMFormat();
+                            var newObj = {
+                                labels: flowRepeater.model.join(' ').trim(),
+                                start: date,
+                                end: date
+                            }
+
+                            if (res != null) {
+                                newObj['title'] = res[1].trim();
+                                newObj['desc'] = res[2];
+                                if (annotationsModel.insertObject(newObj)) {
+                                    annotations.refresh();
+                                    menuRect.closeMenu();
+                                }
+                            } else {
+                                newObj['title'] = newAnnotationEditor.content;
+                                newObj['desc'] = '';
+                                if (annotationsModel.insertObject(newObj)) {
+                                    annotations.refresh();
+                                    menuRect.closeMenu();
+                                }
+                            }
+                        }
+                    }
+                    Common.ImageButton {
+                        width: units.fingerUnit * 1.5
+                        height: width
+                        image: 'questionnaire-158862'
+                        size: units.fingerUnit * 1.5
+                        onClicked: {
+                            menuRect.closeMenu();
+                            annotations.invokeSubPageFunction('newIntelligentAnnotation',[]);
+                        }
+                    }
+
+                    Common.ImageButton {
+                        width: units.fingerUnit * 1.5
+                        height: width
+                        image: 'calendar-23684'
+                        size: units.fingerUnit * 1.5
+                        onClicked: {
+                            menuRect.closeMenu();
+                            annotations.openMenu(units.fingerUnit * 2, addTimetableAnnotationMenu, {})
+                        }
+                    }
+
+                    Common.ImageButton {
+                        width: units.fingerUnit * 1.5
+                        height: width
+                        image: 'upload-25068'
+                        size: units.fingerUnit * 1.5
+                        onClicked: {
+                            menuRect.closeMenu();
+                            importAnnotations(['title','desc','image'],annotationsModel,[]);
+                        }
+                    }
+
+                }
+            }
+        }
     }
 
     Component {
@@ -914,6 +1025,94 @@ BasicPage {
             }
         }
 
+    }
+
+    Component {
+        id: stateComponent
+
+        Rectangle {
+            id: stateItem
+
+            signal clicked()
+            property string stateValue
+            property int requiredHeight: stateText.contentHeight + 2 * units.nailUnit
+
+            Rectangle {
+                id: barRect
+                anchors {
+                    bottom: parent.bottom
+                    left: parent.left
+                    right: parent.right
+                }
+                color: 'orange'
+                height: {
+                    var value = parseInt(stateItem.stateValue);
+                    if ((value>0) && (value<=10)) {
+                        return stateItem.height * value / 10;
+                    } else {
+                        if (value<0)
+                            return stateItem.height;
+                        else
+                            return 0;
+                    }
+
+                }
+            }
+
+            Text {
+                id: stateText
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                font.pixelSize: units.readUnit
+                text: {
+                    switch(stateItem.stateValue) {
+                    case '-1':
+                        return qsTr('Finalitzat');
+                        break;
+                    case '1':
+                        return qsTr('10%');
+                        break;
+                    case '2':
+                        return qsTr('20%');
+                        break;
+                    case '3':
+                        return qsTr('30%');
+                        break;
+                    case '4':
+                        return qsTr('40%');
+                        break;
+                    case '5':
+                        return qsTr('50%');
+                        break;
+                    case '6':
+                        return qsTr('60%');
+                        break;
+                    case '7':
+                        return qsTr('70%');
+                        break;
+                    case '8':
+                        return qsTr('80%');
+                        break;
+                    case '9':
+                        return qsTr('90%');
+                        break;
+                    case '10':
+                        return qsTr('100%');
+                        break;
+                    default:
+                        return qsTr('Actiu');
+                        break;
+                    }
+                }
+            }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: stateItem.clicked()
+            }
+        }
     }
 
     Component {
@@ -1288,78 +1487,129 @@ BasicPage {
     Component {
         id: relatedAnnotationsByLabelComponent
 
-        Rectangle {
+        Item {
             id: relatedAnnotationsByLabelItem
             property int requiredHeight
             property string labelBase: ''
             property string labels
-            color: 'gray'
+            //color: 'white'
 
-            ListView {
-                id: relatedAnnotationsView
+            Common.TabbedView {
+                id: annotationsTabbedView
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                }
+                height: tabsHeight
 
-                anchors.fill: parent
-                model: relatedAnnotationsModel
-                spacing: units.nailUnit
-
-                header: Text {
-                    width: relatedAnnotationsView.width
-                    height: units.fingerUnit
-                    font.pixelSize: units.readUnit
-                    text: qsTr("Anotacions amb etiqueta #") + relatedAnnotationsByLabelItem.labelBase
+                Component.onCompleted: {
+                    annotationsTabbedView.widgets.append({title: qsTr("Alfabètic")});
+                    annotationsTabbedView.widgets.append({title: qsTr("Etiquetes")});
+                    annotationsTabbedView.widgets.append({title: qsTr("Pendents")});
+                    selectedIndex = 1;
                 }
 
-                delegate: Rectangle {
-                    width: relatedAnnotationsView.width
-                    height: units.fingerUnit * 2
-                    RowLayout {
-                        anchors.fill: parent
-                        Text {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: parent.width / 2
-                            font.pixelSize: units.readUnit
-                            color: 'green'
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            text: model.labels
+                onSelectedIndexChanged: {
+                    switch(selectedIndex) {
+                    case 0:
+                        relatedAnnotationsModel.sort = 'title ASC, start ASC, end ASC';
+                        relatedAnnotationsModel.filters = ["title != ''"];
+                        relatedAnnotationsModel.bindValues = [];
+                        relatedAnnotationsModel.select();
+                        break;
+                    case 1:
+                        var labelsArray = relatedAnnotationsByLabelItem.labels.trim().split(' ');
+                        var filters = [];
+                        for (var i=0; i<labelsArray.length; i++) {
+                            filters.push("(INSTR(' '||labels||' ',?))");
                         }
-                        Text {
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                            font.pixelSize: units.readUnit
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            text: model.title
-                        }
+                        relatedAnnotationsModel.sort = 'start ASC, end ASC, title ASC';
+                        relatedAnnotationsModel.filters = ["" + filters.join(' OR ')];
+                        relatedAnnotationsModel.bindValues = labelsArray;
+                        relatedAnnotationsModel.select();
+                        break;
+                    case 2:
+                        relatedAnnotationsModel.sort = 'start ASC, end ASC, title ASC';
+                        relatedAnnotationsModel.filters = ["title != ''", "state != '-1'"];
+                        relatedAnnotationsModel.bindValues = [];
+                        relatedAnnotationsModel.select();
+                        break;
+                    default:
+                        break;
                     }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            annotationView.hideRelatedAnnotations();
-                            annotationView.identifier = model.title;
-                        }
-                    }
-
                 }
             }
+
+            Rectangle {
+                anchors {
+                    top: annotationsTabbedView.bottom
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.bottom
+                }
+                color: 'gray'
+
+                ListView {
+                    id: relatedAnnotationsView
+
+                    anchors.fill: parent
+                    clip: true
+
+                    model: relatedAnnotationsModel
+                    spacing: units.nailUnit
+
+                    header: Text {
+                        width: relatedAnnotationsView.width
+                        height: units.fingerUnit
+                        font.pixelSize: units.readUnit
+                        text: qsTr("Anotacions amb etiqueta #") + relatedAnnotationsByLabelItem.labelBase
+                    }
+
+                    delegate: Rectangle {
+                        width: relatedAnnotationsView.width
+                        height: units.fingerUnit * 2
+                        color: (model.title == annotationView.identifier)?'yellow':'white'
+                        RowLayout {
+                            anchors.fill: parent
+                            Text {
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: parent.width / 2
+                                font.pixelSize: units.readUnit
+                                color: 'green'
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                text: model.labels
+                            }
+                            Text {
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+                                font.pixelSize: units.readUnit
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                text: model.title
+                            }
+
+                            Loader {
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: units.fingerUnit * 3
+                                sourceComponent: stateComponent
+                                onLoaded: item.stateValue = Qt.binding(function () {return model.state; });
+                            }
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                annotationView.hideRelatedAnnotations();
+                                annotationView.identifier = model.title;
+                            }
+                        }
+
+                    }
+                }
+            }
+
 
             Models.ExtendedAnnotations {
                 id: relatedAnnotationsModel
-                sort: 'start ASC, end ASC, title ASC'
-            }
-
-            onLabelBaseChanged: {
-                relatedAnnotationsModel.bindValues = [labelBase];
-                relatedAnnotationsModel.select();
-            }
-            onLabelsChanged: {
-                console.log('labels changed to ', labels);
-                var labelsArray = relatedAnnotationsByLabelItem.labels.trim().split(' ');
-                var filters = [];
-                for (var i=0; i<labelsArray.length; i++) {
-                    filters.push("(INSTR(' '||labels||' ',?))");
-                }
-                relatedAnnotationsModel.filters = ["" + filters.join(' OR ')];
-                relatedAnnotationsModel.bindValues = labelsArray;
-                relatedAnnotationsModel.select();
             }
         }
     }
