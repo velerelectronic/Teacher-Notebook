@@ -57,7 +57,6 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.bottomMargin: units.fingerUnit
 
         Item {
             Layout.fillWidth: true

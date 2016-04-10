@@ -294,121 +294,64 @@ BasicPage {
                 }
             }
 
-            Item {
+            ListView {
+                id: relatedAnnotationsList
                 Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit * 3 + units.nailUnit * 2
-                GridLayout {
-                    anchors.fill: parent
-                    columns: 2
-                    columnSpacing: units.nailUnit
-                    rowSpacing: columnSpacing
+                Layout.preferredHeight: units.fingerUnit * 2
+                orientation: ListView.Horizontal
 
-                    Rectangle {
-                        id: beforeAnnotationRect
-                        Layout.preferredHeight: units.fingerUnit
-                        Layout.fillWidth: true
-
-                        property string beforeAnnotation: ''
-                        color: (beforeAnnotation == '')?'gray':'white'
-
-                        Text {
-                            id: beforeAnnotationText
-                            anchors.fill: parent
-                            text: qsTr('AZ << ') + beforeAnnotationRect.beforeAnnotation
-                            MouseArea {
-                                anchors.fill: parent
-                                enabled: beforeAnnotationRect.beforeAnnotation !== ''
-                                onClicked: annotationView.identifier = beforeAnnotationRect.beforeAnnotation
-                            }
-                        }
+                model: relatedAnnotationsSimpleModel
+                spacing: units.nailUnit
+                delegate: Rectangle {
+                    z: 1
+                    width: units.fingerUnit * 6
+                    height: relatedAnnotationsList.height
+                    border.color: 'black'
+                    Text {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
+                        text: model.title
                     }
-                    Rectangle {
-                        id: afterAnnotationRect
-                        Layout.preferredHeight: units.fingerUnit
-                        Layout.fillWidth: true
-                        property string afterAnnotation: ''
-                        color: (afterAnnotation == '')?'gray':'white'
-                        Text {
-                            id: afterAnnotationText
-                            anchors.fill: parent
-                            text: qsTr('AZ >> ') + afterAnnotationRect.afterAnnotation
-                            MouseArea {
-                                anchors.fill: parent
-                                enabled: afterAnnotationRect.afterAnnotation !== ''
-                                onClicked: annotationView.identifier = afterAnnotationRect.afterAnnotation
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        id: beforeAnnotationStartRect
-                        Layout.preferredHeight: units.fingerUnit
-                        Layout.fillWidth: true
-                        property string beforeAnnotationStart: ''
-                        color: (beforeAnnotationStart == '')?'gray':'white'
-                        Text {
-                            anchors.fill: parent
-                            text: qsTr('Inici << ') + beforeAnnotationStartRect.beforeAnnotationStart
-                            MouseArea {
-                                anchors.fill: parent
-                                enabled: beforeAnnotationStartRect.beforeAnnotationStart !== ''
-                                onClicked: annotationView.identifier = beforeAnnotationStartRect.beforeAnnotationStart
-                            }
-                        }
-                    }
-                    Rectangle {
-                        id: afterAnnotationStartRect
-                        Layout.preferredHeight: units.fingerUnit
-                        Layout.fillWidth: true
-                        property string afterAnnotationStart: ''
-                        color: (afterAnnotationStart == '')?'gray':'white'
-                        Text {
-                            anchors.fill: parent
-                            text: qsTr('Inici >> ') + afterAnnotationStartRect.afterAnnotationStart
-                            MouseArea {
-                                anchors.fill: parent
-                                enabled: afterAnnotationStartRect.afterAnnotationStart !== ''
-                                onClicked: annotationView.identifier = afterAnnotationStartRect.afterAnnotationStart
-                            }
-                        }
-                    }
-                    Rectangle {
-                        id: beforeAnnotationEndRect
-                        Layout.preferredHeight: units.fingerUnit
-                        Layout.fillWidth: true
-                        property string beforeAnnotationEnd: ''
-                        color: (beforeAnnotationEnd == '')?'gray':'white'
-                        Text {
-                            anchors.fill: parent
-                            text: qsTr('Final << ') + beforeAnnotationEndRect.beforeAnnotationEnd
-                            MouseArea {
-                                anchors.fill: parent
-                                enabled: beforeAnnotationEndRect.beforeAnnotationEnd !== ''
-                                onClicked: annotationView.identifier = beforeAnnotationEndRect.beforeAnnotationEnd
-                            }
-                        }
-                    }
-                    Rectangle {
-                        id: afterAnnotationEndRect
-                        Layout.preferredHeight: units.fingerUnit
-                        Layout.fillWidth: true
-                        property string afterAnnotationEnd: ''
-
-                        color: (afterAnnotationEnd == '')?'grey':'white'
-                        Text {
-                            anchors.fill: parent
-                            text: qsTr('Final >> ') + afterAnnotationEndRect.afterAnnotationEnd
-                            MouseArea {
-                                anchors.fill: parent
-                                enabled: afterAnnotationEndRect.afterAnnotationEnd !== ''
-                                onClicked: annotationView.identifier = afterAnnotationEndRect.afterAnnotationEnd
-                            }
-                        }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: annotationView.identifier = model.title
                     }
                 }
+
+                footerPositioning: ListView.OverlayFooter
+                footer: Rectangle {
+                    z: 2
+                    width: units.fingerUnit * 4
+                    height: relatedAnnotationsList.height
+                    Common.ImageButton {
+                        id: relatedAnnotationsButton
+                        anchors {
+                            bottom: parent.bottom
+                            right: parent.right
+                            rightMargin: units.fingerUnit * 3
+                        }
+                        image: 'arrow-145766'
+                        size: units.fingerUnit * 2
+                        onClicked: annotationView.showRelatedAnnotations()
+                    }
+                    Common.ImageButton {
+                        anchors {
+                            bottom: parent.bottom
+                            right: parent.right
+                        }
+                        image: 'plus-24844'
+                        size: units.fingerUnit * 2
+                    }
+                }
+
                 Models.ExtendedAnnotations {
-                    id: afterAndBeforeAnnotationsModel
+                    id: relatedAnnotationsSimpleModel
                     filters: ["title != ''"]
+                    sort: 'start ASC, end ASC, title ASC'
+                    //limit: 6
                 }
             }
         }
@@ -517,6 +460,7 @@ BasicPage {
                 startText.text = qsTr('Inici: ') + obj['start'];
                 endText.text = qsTr('Final: ') + obj['end'];
                 labelsText.text = '# ' + obj['labels'];
+                labels = obj['labels'];
                 titleText.text = annotationView.identifier;
                 annotationView.labels = "" + obj['labels'];
                 periodStart = obj['start'];
@@ -530,79 +474,26 @@ BasicPage {
             rubricsAssessmentModel.bindValues = [annotationView.identifier];
             rubricsAssessmentModel.select();
 
-            // Look for the previous and next annotations in TITLE
-            afterAndBeforeAnnotationsModel.sort = 'title ASC';
-            afterAndBeforeAnnotationsModel.select();
-            for (var i=0; i<afterAndBeforeAnnotationsModel.count; i++) {
-                var obj = afterAndBeforeAnnotationsModel.getObjectInRow(i);
-                if (obj['title'] == annotationView.identifier) {
-                    console.log('index', i);
-                    if (i>0) {
-                        var beforeObj = afterAndBeforeAnnotationsModel.getObjectInRow(i-1);
-                        beforeAnnotationRect.beforeAnnotation = beforeObj['title'];
-                    } else {
-                        beforeAnnotationRect.beforeAnnotation = '';
-                    }
-
-                    if (i<afterAndBeforeAnnotationsModel.count-1) {
-                        var afterObj = afterAndBeforeAnnotationsModel.getObjectInRow(i+1);
-                        afterAnnotationRect.afterAnnotation = afterObj['title'];
-                    } else {
-                        afterAnnotationRect.afterAnnotation = '';
-                    }
-
-                    break;
-                }
+            // Look for related annotations in labels and period
+            relatedAnnotationsSimpleModel.sort = 'start ASC, end ASC, title ASC';
+            var labelsArray = annotationView.labels.trim().split(' ');
+            var labelFilter = [];
+            for (var i=0; i<labelsArray.length; i++) {
+                labelFilter.push("(INSTR(' '||lower(labels)||' ', ?))");
             }
+            var labelFilterString = labelFilter.join(" OR ");
 
-            // Look for the previous and next annotations in START
-            afterAndBeforeAnnotationsModel.sort = 'start ASC, end ASC, title ASC';
-            afterAndBeforeAnnotationsModel.select();
-            for (var i=0; i<afterAndBeforeAnnotationsModel.count; i++) {
-                var obj = afterAndBeforeAnnotationsModel.getObjectInRow(i);
-                if (obj['title'] == annotationView.identifier) {
-                    if (i>0) {
-                        var beforeObj = afterAndBeforeAnnotationsModel.getObjectInRow(i-1);
-                        beforeAnnotationStartRect.beforeAnnotationStart = beforeObj['title'];
-                    } else {
-                        beforeAnnotationStartRect.beforeAnnotationStart = '';
-                    }
+            var periodFilter = "((start <=?) AND (end >= ?))";
+            var notitleFilter = "(title != '')"
+            var differentTitle = "(title != ?)"
 
-                    if (i<afterAndBeforeAnnotationsModel.count-1) {
-                        var afterObj = afterAndBeforeAnnotationsModel.getObjectInRow(i+1);
-                        afterAnnotationStartRect.afterAnnotationStart = afterObj['title'];
-                    } else {
-                        afterAnnotationStartRect.afterAnnotationStart = '';
-                    }
-
-                    break;
-                }
-            }
-
-            // Look for the previous and next annotations in END
-            afterAndBeforeAnnotationsModel.sort = 'end ASC, start ASC, title ASC';
-            afterAndBeforeAnnotationsModel.select();
-            for (var i=0; i<afterAndBeforeAnnotationsModel.count; i++) {
-                var obj = afterAndBeforeAnnotationsModel.getObjectInRow(i);
-                if (obj['title'] == annotationView.identifier) {
-                    if (i>0) {
-                        var beforeObj = afterAndBeforeAnnotationsModel.getObjectInRow(i-1);
-                        beforeAnnotationEndRect.beforeAnnotationEnd = beforeObj['title'];
-                    } else {
-                        beforeAnnotationEndRect.beforeAnnotationEnd = '';
-                    }
-
-                    if (i<afterAndBeforeAnnotationsModel.count-1) {
-                        var afterObj = afterAndBeforeAnnotationsModel.getObjectInRow(i+1);
-                        afterAnnotationEndRect.afterAnnotationEnd = afterObj['title'];
-                    } else {
-                        afterAnnotationEndRect.afterAnnotationEnd = '';
-                    }
-
-                    break;
-                }
-            }
-
+            relatedAnnotationsSimpleModel.filters = [notitleFilter,differentTitle,periodFilter + ((labelFilterString != "")?" OR (" + labelFilterString + ")":'')];
+            labelsArray.unshift(annotationView.periodStart);
+            labelsArray.unshift(annotationView.periodStart);
+            labelsArray.unshift(identifier);
+            relatedAnnotationsSimpleModel.bindValues = labelsArray;
+            console.log("LABELS array",labelsArray);
+            relatedAnnotationsSimpleModel.select();
         }
 
         function copyAnnotationDescription() {
