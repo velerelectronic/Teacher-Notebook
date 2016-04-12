@@ -374,6 +374,104 @@ BasicPage {
 */
         }
 
+        Rectangle {
+            id: newAnnotationArea
+
+            anchors.fill: parent
+
+            visible: false
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: units.fingerUnit
+
+                Editors.TextAreaEditor3 {
+                    id: newAnnotationEditor
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    border.color: 'black'
+                }
+                Flow {
+                    id: flow
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: flow.childrenRect.height
+                    spacing: units.nailUnit
+
+                    Text {
+                        text: qsTr('Etiquetes')
+                    }
+
+                    Repeater {
+                        id: flowRepeater
+
+                        model: annotationView.labels.split(' ')
+
+                        delegate: Rectangle {
+                            width: childrenRect.width + units.nailUnit
+                            height: units.fingerUnit
+                            color: '#AAFFAA'
+                            Text {
+                                anchors {
+                                    top: parent.top
+                                    bottom: parent.bottom
+                                    left: parent.left
+                                    margins: units.nailUnit
+                                }
+                                width: contentWidth
+                                verticalAlignment: Text.AlignVCenter
+
+                                text: modelData
+                            }
+                        }
+                    }
+                }
+            }
+
+            function closeNewAnnotation() {
+                annotationView.showSingleAnnotation();
+            }
+
+            function saveNewAnnotation() {
+                var re = new RegExp("^(.+)\n+((?:.|\n|\r)*)$","g");
+                console.log(newAnnotationEditor.content);
+                var res = re.exec(newAnnotationEditor.content);
+                var date = (new Date()).toYYYYMMDDHHMMFormat();
+                var newObj = {
+                    labels: flowRepeater.model.join(' ').trim(),
+                    start: date,
+                    end: date
+                }
+
+                if (res != null) {
+                    newObj['title'] = res[1].trim();
+                    newObj['desc'] = res[2];
+                    if (annotationsModel.insertObject(newObj)) {
+                        closeNewAnnotation();
+                        identifier = newObj['title'];
+                    }
+                } else {
+                    newObj['title'] = newAnnotationEditor.content;
+                    newObj['desc'] = '';
+                    if (annotationsModel.insertObject(newObj)) {
+                        closeNewAnnotation();
+                        identifier = newObj['title'];
+                    }
+                }
+            }
+
+            function newIntelligentAnnotation() {
+
+            }
+
+            function newTimetableAnnotation() {
+                annotations.openMenu(units.fingerUnit * 2, addTimetableAnnotationMenu, {});
+            }
+
+            function importAnnotations() {
+                importAnnotations(['title','desc','image'],annotationsModel,[]);
+            }
+        }
+
         Connections {
             target: annotationView
             onIdentifierChanged: {
@@ -550,17 +648,24 @@ BasicPage {
                 id: addAnnotation
 
                 onEntered: {
-                    annotationView.openMenu(units.fingerUnit * 4, addImmediateAnnotationMenu, {labels: annotationView.labels});
+                    newAnnotationArea.visible = true;
+                    annotationView.pushButtonsModel();
+                    annotationView.buttonsModel.append({icon: 'floppy-35952', object: newAnnotationArea, method: 'saveNewAnnotation'});
+                    annotationView.buttonsModel.append({icon: 'questionnaire-158862', object: newAnnotationArea, method: 'newIntelligentAnnotation'});
+                    annotationView.buttonsModel.append({icon: 'calendar-23684', object: newAnnotationArea, method: 'newTimetableAnnotation'});
+                    annotationView.buttonsModel.append({icon: 'upload-25068', object: newAnnotationArea, method: 'importAnnotations'});
+                    annotationView.buttonsModel.append({icon: 'road-sign-147409', object: newAnnotationArea, method: 'closeNewAnnotation'});
                 }
 
                 onExited: {
-
+                    annotationView.popButtonsModel();
+                    newAnnotationArea.visible = false;
                 }
 
                 DSM.SignalTransition {
                     targetState: singleAnnotation
                     signal: annotationView.showSingleAnnotation
-                }
+                }                
             }
 
             DSM.State {
@@ -702,140 +807,6 @@ BasicPage {
 
     }
 
-    Component {
-        id: addImmediateAnnotationMenu
-
-        AboveMenu {
-            id: menuRect
-
-            requiredHeight: units.fingerUnit * 10
-
-//            onOptionsChanged:
-
-            onCloseMenu: annotationView.showSingleAnnotation()
-
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: units.fingerUnit
-
-                Editors.TextAreaEditor3 {
-                    id: newAnnotationEditor
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    border.color: 'black'
-                }
-                Flow {
-                    id: flow
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: flow.childrenRect.height
-                    spacing: units.nailUnit
-
-                    Text {
-                        text: qsTr('Etiquetes')
-                    }
-
-                    Repeater {
-                        id: flowRepeater
-
-                        model: {
-                            return menuRect.getOption('labels', []);
-                        }
-
-                        delegate: Rectangle {
-                            width: childrenRect.width + units.nailUnit
-                            height: units.fingerUnit
-                            color: '#AAFFAA'
-                            Text {
-                                anchors {
-                                    top: parent.top
-                                    bottom: parent.bottom
-                                    left: parent.left
-                                    margins: units.nailUnit
-                                }
-                                width: contentWidth
-                                verticalAlignment: Text.AlignVCenter
-
-                                text: modelData
-                            }
-                        }
-                    }
-                }
-
-                Flow {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: childrenRect.height
-
-                    spacing: units.fingerUnit
-
-                    Common.ImageButton {
-                        width: units.fingerUnit * 1.5
-                        height: width
-                        image: 'floppy-35952'
-                        onClicked: {
-                            var re = new RegExp("^(.+)\n+((?:.|\n|\r)*)$","g");
-                            console.log(newAnnotationEditor.content);
-                            var res = re.exec(newAnnotationEditor.content);
-                            var date = (new Date()).toYYYYMMDDHHMMFormat();
-                            var newObj = {
-                                labels: flowRepeater.model.join(' ').trim(),
-                                start: date,
-                                end: date
-                            }
-
-                            if (res != null) {
-                                newObj['title'] = res[1].trim();
-                                newObj['desc'] = res[2];
-                                if (annotationsModel.insertObject(newObj)) {
-                                    annotations.refresh();
-                                    menuRect.closeMenu();
-                                }
-                            } else {
-                                newObj['title'] = newAnnotationEditor.content;
-                                newObj['desc'] = '';
-                                if (annotationsModel.insertObject(newObj)) {
-                                    annotations.refresh();
-                                    menuRect.closeMenu();
-                                }
-                            }
-                        }
-                    }
-                    Common.ImageButton {
-                        width: units.fingerUnit * 1.5
-                        height: width
-                        image: 'questionnaire-158862'
-                        size: units.fingerUnit * 1.5
-                        onClicked: {
-                            menuRect.closeMenu();
-                            annotations.invokeSubPageFunction('newIntelligentAnnotation',[]);
-                        }
-                    }
-
-                    Common.ImageButton {
-                        width: units.fingerUnit * 1.5
-                        height: width
-                        image: 'calendar-23684'
-                        size: units.fingerUnit * 1.5
-                        onClicked: {
-                            menuRect.closeMenu();
-                            annotations.openMenu(units.fingerUnit * 2, addTimetableAnnotationMenu, {})
-                        }
-                    }
-
-                    Common.ImageButton {
-                        width: units.fingerUnit * 1.5
-                        height: width
-                        image: 'upload-25068'
-                        size: units.fingerUnit * 1.5
-                        onClicked: {
-                            menuRect.closeMenu();
-                            importAnnotations(['title','desc','image'],annotationsModel,[]);
-                        }
-                    }
-
-                }
-            }
-        }
-    }
 
     Component {
         id: descEditorComponent
