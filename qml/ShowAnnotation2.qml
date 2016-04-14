@@ -16,9 +16,11 @@ BasicPage {
 
     pageTitle: qsTr('Anotació')
 
+    signal showNewAnnotation()
     signal openExternalViewer(string identifier)
     signal saveEditorContents()
     signal showRelatedAnnotations()
+    signal showRelatedAnnotationsByLabels()
     signal hideRelatedAnnotations()
     signal showSingleAnnotation()
 
@@ -129,6 +131,13 @@ BasicPage {
                                         anchors.fill: parent
                                     }
                                 }
+                                Common.ImageButton {
+                                    id: changeLabelsButton
+                                    image: 'edit-153612'
+                                    size: units.fingerUnit
+                                    Layout.fillHeight: true
+                                    Layout.preferredWidth: size
+                                }
                                 Text {
                                     id: labelsText
                                     Layout.preferredHeight: contentHeight
@@ -137,10 +146,11 @@ BasicPage {
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                     font.pixelSize: units.readUnit
                                     MouseArea {
-                                        id: changeLabelsMouseArea
                                         anchors.fill: parent
+                                        onClicked: annotationView.showRelatedAnnotationsByLabels()
                                     }
                                 }
+
                                 Loader {
                                     id: stateLoader
 
@@ -255,13 +265,16 @@ BasicPage {
                 RowLayout {
                     anchors.fill: parent
                     spacing: units.nailUnit
-                    Common.ImageButton {
-                        id: addAnnotationButton
+                    Text {
+                        Layout.preferredWidth: units.fingerUnit * 4
                         Layout.fillHeight: true
-                        Layout.preferredWidth: addAnnotationButton.height
-                        image: 'plus-24844'
-                        size: units.fingerUnit * 2
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        text: qsTr('Anotacions relacionades')
                     }
+
                     ListView {
                         id: relatedAnnotationsList
                         Layout.fillHeight: true
@@ -559,7 +572,7 @@ BasicPage {
         Component.onCompleted: {
             annotationView.buttonsModel.append({icon: 'copy-97584', object: mainItem, method: 'copyAnnotationDescription'});
             annotationView.buttonsModel.append({icon: 'questionnaire-158862', object: mainItem, method: 'openRubricAssessmentMenu'});
-            annotationView.buttonsModel.append({icon: 'hierarchy-35795', object: annotationView, method: 'showRelatedAnnotations'});
+            annotationView.buttonsModel.append({icon: 'plus-24844', object: annotationView, method: 'showNewAnnotation'});
             annotationStateMachine.start();
         }
 
@@ -581,8 +594,13 @@ BasicPage {
                 }
 
                 DSM.SignalTransition {
+                    targetState: relatedAnnotations
+                    signal: annotationView.showRelatedAnnotationsByLabels
+                }
+
+                DSM.SignalTransition {
                     targetState: addAnnotation
-                    signal: addAnnotationButton.clicked
+                    signal: annotationView.showNewAnnotation
                 }
 
                 DSM.SignalTransition {
@@ -607,7 +625,7 @@ BasicPage {
 
                 DSM.SignalTransition {
                     targetState: labelsEditor
-                    signal: changeLabelsMouseArea.clicked
+                    signal: changeLabelsButton.clicked
                 }
 
                 DSM.SignalTransition {
@@ -747,7 +765,7 @@ BasicPage {
                 id: stateEditor
 
                 onEntered: {
-                    editorArea.showContent(stateEditorComponent, annotationView.identifier);
+                    editorArea.showContent(stateEditorComponent, annotationView.stateValue);
                 }
 
                 onExited: {
@@ -1432,7 +1450,7 @@ BasicPage {
                                     anchors.fill: parent
                                     onClicked: {
                                         closeMenu();
-                                        expandedAnnotation.newRubricAssessment(model.title, model.desc, model.id, singleRubricXGroup.group)
+                                        annotationView.newRubricAssessment(model.title, model.desc, model.id, singleRubricXGroup.group)
                                     }
                                 }
                             }
