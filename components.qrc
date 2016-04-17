@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>components/RelatedAnnotations.qml</file>
+        <file>components/StateComponent.qml</file>
+        <file>components/AnnotationsHistory.qml</file>
+    </qresource>
+</RCC>
