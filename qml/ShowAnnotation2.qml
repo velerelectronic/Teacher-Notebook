@@ -22,6 +22,7 @@ BasicPage {
     signal saveEditorContents()
     signal showRelatedAnnotations()
     signal showRelatedAnnotationsByLabels()
+    signal showRelatedAnnotationsByPeriod()
     signal hideHistory()
     signal hideRelatedAnnotations()
     signal showSingleAnnotation()
@@ -112,6 +113,14 @@ BasicPage {
                                 anchors.fill: parent
                                 anchors.margins: units.nailUnit
                                 spacing: units.nailUnit
+                                Common.ImageButton {
+                                    id: changePeriodButton
+                                    Layout.fillHeight: true
+                                    Layout.preferredWidth: size
+                                    size: units.fingerUnit
+                                    image: 'edit-153612'
+                                }
+
                                 Text {
                                     id: startText
                                     Layout.preferredHeight: contentHeight
@@ -119,8 +128,10 @@ BasicPage {
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                     font.pixelSize: units.readUnit
                                     MouseArea {
-                                        id: periodStartEditorMouseArea
                                         anchors.fill: parent
+                                        onClicked: {
+                                            annotationView.showRelatedAnnotationsByPeriod()
+                                        }
                                     }
                                 }
                                 Text {
@@ -130,8 +141,10 @@ BasicPage {
                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                     font.pixelSize: units.readUnit
                                     MouseArea {
-                                        id: periodEndEditorMouseArea
                                         anchors.fill: parent
+                                        onClicked: {
+                                            annotationView.showRelatedAnnotationsByPeriod()
+                                        }
                                     }
                                 }
                                 Common.ImageButton {
@@ -327,6 +340,23 @@ BasicPage {
                     annotationView.identifier = identifier;
                     hideRelatedAnnotations();
                 }
+            }
+
+            function prepareRelatedAnnotations(parameters) {
+                // Change buttons
+                annotationView.pushButtonsModel();
+                annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'hideRelatedAnnotations'});
+
+                // Show related annotations
+                relatedAnnotationsLoader.visible = true;
+                relatedAnnotationsLoader.setSource('qrc:///components/RelatedAnnotations.qml', parameters);
+            }
+
+            function closeRelatedAnnotations() {
+                // Restore buttons and hide the related annotations
+                annotationView.popButtonsModel();
+                relatedAnnotationsLoader.visible = false;
+                relatedAnnotationsLoader.sourceComponent = null;
             }
         }
 
@@ -612,8 +642,13 @@ BasicPage {
                 }
 
                 DSM.SignalTransition {
-                    targetState: relatedAnnotations
+                    targetState: relatedAnnotationsByLabels
                     signal: annotationView.showRelatedAnnotationsByLabels
+                }
+
+                DSM.SignalTransition {
+                    targetState: relatedAnnotationsByPeriod
+                    signal: annotationView.showRelatedAnnotationsByPeriod
                 }
 
                 DSM.SignalTransition {
@@ -638,12 +673,7 @@ BasicPage {
 
                 DSM.SignalTransition {
                     targetState: periodEditor
-                    signal: periodStartEditorMouseArea.clicked
-                }
-
-                DSM.SignalTransition {
-                    targetState: periodEditor
-                    signal: periodEndEditorMouseArea.clicked
+                    signal: changePeriodButton.clicked
                 }
 
                 DSM.SignalTransition {
@@ -661,20 +691,42 @@ BasicPage {
                 id: relatedAnnotations
 
                 onEntered: {
-                    // Change buttons
-                    annotationView.pushButtonsModel();
-                    annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'hideRelatedAnnotations'});
-
-                    // Show related annotations
-                    relatedAnnotationsLoader.visible = true;
-                    relatedAnnotationsLoader.setSource('qrc:///components/RelatedAnnotations.qml', {labelBase: '', labels: annotationView.labels, initialState: 'pending', mainIdentifier: annotationView.identifier});
+                    relatedAnnotationsLoader.prepareRelatedAnnotations();
                 }
 
                 onExited: {
-                    // Restore buttons and hide the related annotations
-                    annotationView.popButtonsModel();
-                    relatedAnnotationsLoader.visible = false;
-                    relatedAnnotationsLoader.sourceComponent = null;
+                    relatedAnnotationsLoader.closeRelatedAnnotations();
+                }
+
+                DSM.SignalTransition {
+                    targetState: singleAnnotation
+                    signal: annotationView.hideRelatedAnnotations
+                }
+            }
+
+            DSM.State {
+                id: relatedAnnotationsByLabels
+
+                onEntered: {
+                    relatedAnnotationsLoader.prepareRelatedAnnotations({labelBase: '', labels: annotationView.labels, initialState: 'labels', mainIdentifier: annotationView.identifier});
+                }
+                onExited: {
+                    relatedAnnotationsLoader.closeRelatedAnnotations();
+                }
+
+                DSM.SignalTransition {
+                    targetState: singleAnnotation
+                    signal: annotationView.hideRelatedAnnotations
+                }
+            }
+
+            DSM.State {
+                id: relatedAnnotationsByPeriod
+                onEntered: {
+                    relatedAnnotationsLoader.prepareRelatedAnnotations({labelBase: '', labels: annotationView.labels, initialState: 'pending', mainIdentifier: annotationView.identifier});
+                }
+                onExited: {
+                    relatedAnnotationsLoader.closeRelatedAnnotations();
                 }
 
                 DSM.SignalTransition {
