@@ -49,7 +49,7 @@ Rectangle {
         anchors.fill: parent
 
         Item {
-            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredHeight: units.fingerUnit * 1
             Layout.fillWidth: true
             RowLayout {
                 anchors.fill: parent
@@ -75,8 +75,9 @@ Rectangle {
                         delegate: Rectangle {
                             id: labelRect
                             objectName: 'labelItem'
-                            width: labelText.width
+                            width: labelText.width + units.fingerUnit
                             height: labelsGrid.height
+                            radius: height / 2
                             color: (selected)?'#AAFFAA':'#AAAAAA'
                             property bool selected: true
                             property string labelText: modelData
@@ -85,10 +86,10 @@ Rectangle {
                                 id: labelText
                                 anchors {
                                     top: parent.top
-                                    left: parent.left
                                     bottom: parent.bottom
+                                    horizontalCenter: parent.horizontalCenter
                                 }
-                                width: contentWidth + 2 * units.nailUnit
+                                width: contentWidth
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                                 font.pixelSize: units.readUnit
@@ -108,7 +109,7 @@ Rectangle {
         }
 
         Item {
-            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredHeight: units.fingerUnit
             Layout.fillWidth: true
             RowLayout {
                 anchors.fill: parent
@@ -134,8 +135,9 @@ Rectangle {
                         delegate: Rectangle {
                             id: stateRect
                             objectName: 'stateItem'
-                            width: stateText.width
+                            width: stateText.width + units.fingerUnit
                             height: statesGrid.height
+                            radius: height / 2
                             color: (selected)?'#AAAAFF':'#AAAAAA'
                             property bool selected: modelData != -1
                             property int stateValue: modelData
@@ -144,7 +146,7 @@ Rectangle {
                                 id: stateText
                                 anchors {
                                     top: parent.top
-                                    left: parent.left
+                                    horizontalCenter: parent.horizontalCenter
                                     bottom: parent.bottom
                                 }
                                 width: contentWidth + 2 * units.nailUnit
@@ -173,6 +175,15 @@ Rectangle {
                         }
                     }
                 }
+            }
+        }
+
+        Common.SearchBox {
+            id: searchBox
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit * 1.5
+            onPerformSearch: {
+                refreshAnnotationsList();
             }
         }
 
@@ -292,6 +303,8 @@ Rectangle {
         }
 
         relatedAnnotationsModel.sort = 'start ASC, end ASC, title ASC';
+        relatedAnnotationsModel.searchFields = ['title', 'desc'];
+        relatedAnnotationsModel.searchString = searchBox.text;
         relatedAnnotationsModel.filters = ["title = ? OR ((" + ((filters.length>0)?filters.join(" AND "):"1=1") + ") AND (" + statesFilter.join(" OR ") + "))"];
         relatedAnnotationsModel.bindValues = labelsArray;
         relatedAnnotationsModel.select();
