@@ -41,6 +41,13 @@
   * Magnifying glass: https://pixabay.com/photo-481818/
   * Config/settings/options: https://pixabay.com/photo-147414/
   * Open: https://pixabay.com/es/flecha-derecho-east-147175/
+
+  Annotation states:
+  * Inbox: https://pixabay.com/es/entrada-carga-archivo-documento-25064/
+  * Pinned: https://pixabay.com/es/pasador-azul-oficina-aviso-23620/#
+  * Postponed: https://pixabay.com/es/reloj-de-arena-temporizador-arena-23654/
+  * Archive: https://pixabay.com/es/marca-de-verificaci%C3%B3n-caja-304890/
+  * Deleted: https://pixabay.com/es/puede-papelera-de-basura-basura-294071/
 */
 
 import QtQuick 2.2

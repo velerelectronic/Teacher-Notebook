@@ -617,6 +617,7 @@ BasicPage {
         }
 
         Component.onCompleted: {
+            annotationView.buttonsModel.append({icon: 'hierarchy-35795', object: annotationView, method: 'showRelatedAnnotations'});
             annotationView.buttonsModel.append({icon: 'copy-97584', object: mainItem, method: 'copyAnnotationDescription'});
             annotationView.buttonsModel.append({icon: 'questionnaire-158862', object: mainItem, method: 'openRubricAssessmentMenu'});
             annotationView.buttonsModel.append({icon: 'plus-24844', object: annotationView, method: 'showNewAnnotation'});
@@ -691,7 +692,7 @@ BasicPage {
                 id: relatedAnnotations
 
                 onEntered: {
-                    relatedAnnotationsLoader.prepareRelatedAnnotations();
+                    relatedAnnotationsLoader.prepareRelatedAnnotations({labelBase: '', labels: '', mainIdentifier: annotationView.identifier});
                 }
 
                 onExited: {
@@ -1308,60 +1309,56 @@ BasicPage {
 
             property string content
 
-            Row {
+            ListView {
+                id: stateButtonsList
                 anchors.fill: parent
+                orientation: ListView.Horizontal
 
-                Repeater {
-                    model: 12
-                    Common.BoxedText {
-                        id: boxedText
+                model: statesModel
+                highlight: Rectangle {
+                    height: units.fingerUnit * 2
+                    width: height
+                    color: 'yellow'
+                }
 
-                        states: [
-                            State {
-                                name: 'completed'
-                                PropertyChanges {
-                                    target: boxedText
-                                    text: qsTr('Finalitzat')
-                                }
-                            },
-                            State {
-                                name: 'active'
-                                PropertyChanges {
-                                    target: boxedText
-                                    text: qsTr('Actiu')
-                                }
-                            },
-                            State {
-                                name: 'percentage'
-                                PropertyChanges {
-                                    target: boxedText
-                                    text: ((model.index - 1) * 10) + "%"
-                                }
-                            }
-                        ]
-                        state: {
-                            switch(model.index-1) {
-                            case -1:
-                                return 'completed';
-                            case 0:
-                                return 'active';
-                            default:
-                                return 'percentage';
-                            }
-                        }
-
-                        width: eventDoneList.width / 12
-                        height: eventDoneList.height
-                        color: (content == model.index-1)?'yellow':'transparent'
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                eventDoneList.content = model.index-1;
-                                eventDoneList.setChanges(true);
-                            }
+                delegate: Common.ImageButton {
+                    size: units.fingerUnit * 2
+                    image: model.image
+                    onClicked: {
+                        eventDoneList.content = model.stateValue;
+                        stateButtonsList.currentIndex = model.index;
+                        eventDoneList.setChanges(true);
+                    }
+                    Connections {
+                        target: eventDoneList
+                        onContentChanged: {
+                            if (eventDoneList.content == model.stateValue)
+                                stateButtonsList.currentIndex = model.index;
                         }
                     }
+                }
+            }
+            ListModel {
+                id: statesModel
+                ListElement {
+                    image: 'input-25064'
+                    stateValue: '0'
+                }
+                ListElement {
+                    image: 'pin-23620'
+                    stateValue: '1'
+                }
+                ListElement {
+                    image: 'hourglass-23654'
+                    stateValue: '2'
+                }
+                ListElement {
+                    image: 'check-mark-304890'
+                    stateValue: '3'
+                }
+                ListElement {
+                    image: 'can-294071'
+                    stateValue: '-1'
                 }
             }
         }

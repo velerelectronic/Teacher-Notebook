@@ -47,5 +47,9 @@
         <file>icons/cog-147414.svg</file>
         <file>icons/arrow-147175.svg</file>
         <file>icons/small-41255.svg</file>
+        <file>icons/hourglass-23654.svg</file>
+        <file>icons/check-mark-304890.svg</file>
+        <file>icons/can-294071.svg</file>
+        <file>icons/input-25064.svg</file>
     </qresource>
 </RCC>

@@ -12,6 +12,12 @@ Rectangle {
 
     property string mainIdentifier: ''
     property string initialState: ''
+    property string stateFilter: inboxState
+    property string inboxState: "state = 0 OR state IS NULL"
+    property string pinnedState: "state = 1"
+    property string postponedState: "state = 2"
+    property string archivedState: "state = 3"
+    property string trashedState: "state < 0"
 
     signal selectAnnotation(string identifier)
 
@@ -109,7 +115,7 @@ Rectangle {
         }
 
         Item {
-            Layout.preferredHeight: units.fingerUnit
+            Layout.preferredHeight: units.fingerUnit * 1.5
             Layout.fillWidth: true
             RowLayout {
                 anchors.fill: parent
@@ -119,59 +125,38 @@ Rectangle {
                     font.pixelSize: units.readUnit
                     text: qsTr('Estats:')
                 }
-                Flow {
-                    id: statesGrid
+                ListView {
+                    id: statesList
                     Layout.fillHeight: true
                     Layout.fillWidth: true
+                    spacing: units.fingerUnit
+                    orientation: ListView.Horizontal
 
-                    spacing: units.nailUnit
+                    model: ListModel {
+                        id: statesModel
 
-                    Repeater {
                         Component.onCompleted: {
-                            model = [0,1,-1]
-                            refreshAnnotationsList();
+                            append({image: 'input-25064', stateValue: inboxState});
+                            append({image: 'pin-23620', stateValue: pinnedState});
+                            append({image: 'hourglass-23654', stateValue: postponedState});
+                            append({image: 'check-mark-304890', stateValue: archivedState});
+                            append({image: 'can-294071', stateValue: trashedState});
                         }
+                    }
 
-                        delegate: Rectangle {
-                            id: stateRect
-                            objectName: 'stateItem'
-                            width: stateText.width + units.fingerUnit
-                            height: statesGrid.height
-                            radius: height / 2
-                            color: (selected)?'#AAAAFF':'#AAAAAA'
-                            property bool selected: modelData != -1
-                            property int stateValue: modelData
+                    highlight: Rectangle {
+                        color: 'yellow'
+                    }
 
-                            Text {
-                                id: stateText
-                                anchors {
-                                    top: parent.top
-                                    horizontalCenter: parent.horizontalCenter
-                                    bottom: parent.bottom
-                                }
-                                width: contentWidth + 2 * units.nailUnit
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                                font.pixelSize: units.readUnit
-                                text: {
-                                    switch(modelData) {
-                                    case 1:
-                                        return qsTr('A mig fer');
-                                    case -1:
-                                        return qsTr('Finalitzats');
-                                    case 0:
-                                    default:
-                                        return qsTr('Actius');
-                                    }
-                                }
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    stateRect.selected = !stateRect.selected;
-                                    refreshAnnotationsList();
-                                }
-                            }
+                    delegate: Common.ImageButton {
+                        height: statesList.height
+                        width: size
+                        size: units.fingerUnit
+                        image: model.image
+                        onClicked: {
+                            statesList.currentIndex = model.index;
+                            relatedAnnotations.stateFilter = model.stateValue;
+                            refreshAnnotationsList();
                         }
                     }
                 }
@@ -282,30 +267,10 @@ Rectangle {
             }
         }
 
-        var statesFilter = [];
-        for (var i=0; i<statesGrid.children.length; i++) {
-            var obj = statesGrid.children[i];
-            if (obj.objectName == 'stateItem') {
-                if (obj.selected) {
-                    switch(obj.stateValue) {
-                    case 0:
-                        statesFilter.push("state != '10' AND state != '-1'");
-                        break;
-                    case 1:
-                        statesFilter.push("state = '10'");
-                        break;
-                    case -1:
-                        statesFilter.push("state = '-1'");
-                        break;
-                    }
-                }
-            }
-        }
-
         relatedAnnotationsModel.sort = 'start ASC, end ASC, title ASC';
         relatedAnnotationsModel.searchFields = ['title', 'desc'];
         relatedAnnotationsModel.searchString = searchBox.text;
-        relatedAnnotationsModel.filters = ["title = ? OR ((" + ((filters.length>0)?filters.join(" AND "):"1=1") + ") AND (" + statesFilter.join(" OR ") + "))"];
+        relatedAnnotationsModel.filters = ["title = ? OR ((" + ((filters.length>0)?filters.join(" AND "):"1=1") + ") AND (" + relatedAnnotations.stateFilter + "))"];
         relatedAnnotationsModel.bindValues = labelsArray;
         relatedAnnotationsModel.select();
 

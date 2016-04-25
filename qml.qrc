@@ -94,5 +94,6 @@
         <file>qml/ContinuousAnnotationsList.qml</file>
         <file>qml/InlineExpandedAnnotation.qml</file>
         <file>qml/ShowAnnotation2.qml</file>
+        <file>icons/pin-23620.svg</file>
     </qresource>
 </RCC>
