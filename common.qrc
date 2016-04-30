@@ -38,5 +38,6 @@
         <file>common/DownSlideMenu.qml</file>
         <file>common/TextButton.qml</file>
         <file>common/ExpandableListView.qml</file>
+        <file>common/WheelClock.qml</file>
     </qresource>
 </RCC>

@@ -10,10 +10,9 @@ SqlTableModel {
         'descriptor',
         'level',
         'definition',
+        'title',
         'desc',
         'score'
     ]
     primaryKey: 'id'
 }
-
-

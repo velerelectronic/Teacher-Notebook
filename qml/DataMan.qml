@@ -3,8 +3,8 @@ import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.1
 import Qt.labs.folderlistmodel 2.1
 import PersonalTypes 1.0
-
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 
 BasicPage {
     id: backup
@@ -124,7 +124,29 @@ BasicPage {
             }
 
         }
+
+        Button {
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit
+            text: qsTr('Convertir anotacions eliminades a arxivades (temporal)')
+            onClicked: {
+                annotationsModel.filters = ["state = -1"]
+                annotationsModel.select();
+                while (annotationsModel.count>0) {
+                    var obj = annotationsModel.getObjectInRow(0);
+                    annotationsModel.updateObject(obj['title'], {state: 3});
+                    annotationsModel.filters = ["state = -1"]
+                    annotationsModel.select();
+                }
+            }
+        }
     }
+
+
+    Models.ExtendedAnnotations {
+        id: annotationsModel
+    }
+
     FolderListModel {
         id: folderList
         folder: 'file://' + fileDb.homePath

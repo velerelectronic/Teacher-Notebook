@@ -76,7 +76,6 @@
         <file>qml/ResourceAttachment.qml</file>
         <file>qml/ShowRubricGroupAssessmentByCriterium.qml</file>
         <file>qml/ShowRubricGroupAssessmentByIndividual.qml</file>
-        <file>qml/RubricAssessmentHistory.qml</file>
         <file>qml/WorkingSpace.qml</file>
         <file>qml/ShowExtendedAnnotation.qml</file>
         <file>qml/EditDateTimeItemInspector2.qml</file>
@@ -93,7 +92,8 @@
         <file>qml/OmniboxSearch.qml</file>
         <file>qml/ContinuousAnnotationsList.qml</file>
         <file>qml/InlineExpandedAnnotation.qml</file>
-        <file>qml/ShowAnnotation2.qml</file>
         <file>icons/pin-23620.svg</file>
+        <file>qml/AnnotationsModule.qml</file>
+        <file>qml/RubricsModule.qml</file>
     </qresource>
 </RCC>

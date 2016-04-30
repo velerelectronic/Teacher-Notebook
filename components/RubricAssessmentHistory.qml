@@ -8,8 +8,6 @@ import 'qrc:///models' as Models
 Item {
     id: rubricAssessmentHistory
 
-    property string pageTitle: qsTr("Historial d'avaluació de rúbrica")
-
     property int rubric: -1
     property string group: ''
 

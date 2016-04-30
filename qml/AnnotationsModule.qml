@@ -1,0 +1,506 @@
+import QtQuick 2.5
+import QtQuick.Controls 1.4
+import QtQuick.Layouts 1.1
+import QtQuick.Dialogs 1.2
+import QtQml.StateMachine 1.0 as DSM
+import PersonalTypes 1.0
+import ClipboardAdapter 1.0
+import 'qrc:///common' as Common
+import 'qrc:///editors' as Editors
+import 'qrc:///models' as Models
+import 'qrc:///components' as Components
+import "qrc:///common/FormatDates.js" as FormatDates
+
+
+BasicPage {
+    id: annotationView
+
+    pageTitle: qsTr('Anotació')
+
+    signal changeAnnotationTitle()
+    signal changeAnnotationDescription()
+    signal changeAnnotationLabels()
+    signal changeAnnotationPeriod()
+    signal changeAnnotationState()
+    signal closeNewAnnotation()
+    signal closeNewRubricAssessment()
+
+    signal editorContentsSaved()
+    signal editorContentsDeclined()
+    signal hideHistory()
+    signal importAnnotations()
+    signal newIntelligentAnnotation()
+    signal newRubricAssessment()
+    signal newTimetableAnnotation()
+    signal openExternalViewer(string identifier)
+
+    signal saveNewAnnotation()
+    signal showAnnotationsList()
+    signal showNewAnnotation()
+    signal showRelatedAnnotationsByLabels()
+    signal showRelatedAnnotationsByPeriod()
+    signal showSingleAnnotation()
+    signal showHistory()
+
+    property string identifier: ''
+    property var editContent
+    property string labels: ''
+
+    Common.UseUnits {
+        id: units
+    }
+
+    Models.ExtendedAnnotations {
+        id: annotationsModel
+
+        Component.onCompleted: select()
+    }
+
+    Connections {
+        target: mainItem
+
+        ignoreUnknownSignals: true
+
+        onCloseNewAnnotation: {
+            annotationView.closeNewAnnotation();
+        }
+
+        onCloseNewRubricAssessment: annotationView.closeNewRubricAssessment()
+
+        onEditAnnotationDescription: {
+            editContent = description;
+            annotationView.changeAnnotationDescription();
+        }
+        onEditAnnotationLabels: {
+            editContent = labels;
+            annotationView.changeAnnotationLabels();
+        }
+        onEditAnnotationPeriod: {
+            console.log('start-end',start,end);
+            editContent = {start: start, end: end};
+            annotationView.changeAnnotationPeriod();
+        }
+        onEditAnnotationState: {
+            editContent = stateValue;
+            annotationView.changeAnnotationState();
+        }
+
+        onEditAnnotationTitle: {
+            editContent = annotationView.identifier;
+            annotationView.changeAnnotationTitle();
+        }
+
+        onOpenAnnotation: {
+            annotationView.identifier = identifier;
+            showSingleAnnotation();
+        }
+    }
+
+    Components.AnnotationsHistory {
+        id: annotationsHistoryComponent
+        anchors.fill: parent
+        anchors.topMargin: units.fingerUnit * 2
+        visible: false
+        clip: true
+
+        onHideHistory: annotationView.hideHistory()
+
+        onOpenAnnotation: {
+            annotationView.identifier = identifier;
+            annotationView.showSingleAnnotation();
+        }
+    }
+
+    function closeAnnotationsList() {
+        // Restore buttons and hide the related annotations
+        annotationView.popButtonsModel();
+    }
+
+    function loadEditorComponent(page) {
+        var args = {};
+        args['identifier'] = annotationView.identifier;
+        args['content'] = editContent;
+        setSource('qrc:///components/' + page + '.qml', args);
+    }
+
+    function openNewAnnotation() {
+        console.log('labels',mainItem.labels);
+        annotationView.labels = mainItem.labels;
+        showNewAnnotation();
+    }
+
+    function prepareAnnotationsList(parameters) {
+        // Change buttons
+        annotationView.pushButtonsModel();
+        annotationView.buttonsModel.append({icon: 'list-153185', object: annotationView, method: 'showHistory'});
+        annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'showSingleAnnotation'});
+
+        // Show related annotations
+        annotationView.setSource('qrc:///components/RelatedAnnotations.qml', parameters);
+    }
+
+    function prepareAnnotationPartEditor() {
+        annotationView.pushButtonsModel();
+        annotationView.buttonsModel.append({icon: 'floppy-35952', object: annotationView, method: 'saveAnnotationEditorContents'});
+        annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'editorContentsDeclined'});
+    }
+
+    function saveAnnotationEditorContents() {
+        console.log('Saving', mainItem.annotationContent);
+        for (var prop in mainItem.annotationContent) {
+            console.log(prop, '=>', mainItem.annotationContent[prop]);
+        }
+
+        annotationsModel.updateObject(annotationView.identifier, mainItem.annotationContent);
+        editorContentsSaved();
+    }
+
+
+
+
+
+
+    MarkDownParser {
+        id: parser
+    }
+
+    DSM.StateMachine {
+        id: annotationStateMachine
+
+        initialState: (identifier == '')?annotationsList:singleAnnotation
+
+        DSM.State {
+            id: singleAnnotation
+
+            onEntered: {
+                annotationsHistoryComponent.addAnnotation(annotationView.identifier);
+                annotationView.setSource('qrc:///components/ShowAnnotation.qml', {identifier: annotationView.identifier});
+
+                annotationView.pushButtonsModel();
+                annotationView.buttonsModel.append({icon: 'hierarchy-35795', object: annotationView, method: 'showAnnotationsList'});
+                annotationView.buttonsModel.append({icon: 'copy-97584', object: mainItem, method: 'copyAnnotationDescription'});
+                annotationView.buttonsModel.append({icon: 'questionnaire-158862', object: annotationView, method: 'newRubricAssessment'});
+                annotationView.buttonsModel.append({icon: 'plus-24844', object: annotationView, method: 'openNewAnnotation'});
+                annotationView.buttonsModel.append({icon: 'list-153185', object: annotationView, method: 'showHistory'});
+
+                mainItem.getText();
+            }
+
+            onExited: {
+                annotationView.popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                targetState: singleAnnotation
+                signal: annotationView.showSingleAnnotation
+            }
+
+            DSM.SignalTransition {
+                targetState: annotationsList
+                signal: annotationView.showAnnotationsList
+            }
+
+            DSM.SignalTransition {
+                targetState: relatedAnnotationsByLabels
+                signal: annotationView.showRelatedAnnotationsByLabels
+            }
+
+            DSM.SignalTransition {
+                targetState: relatedAnnotationsByPeriod
+                signal: annotationView.showRelatedAnnotationsByPeriod
+            }
+
+            DSM.SignalTransition {
+                targetState: annotationsHistory
+                signal: annotationView.showHistory
+            }
+
+            DSM.SignalTransition {
+                targetState: addAnnotation
+                signal: annotationView.showNewAnnotation
+            }
+
+            DSM.SignalTransition {
+                targetState: addRubricAssessment
+                signal: annotationView.newRubricAssessment
+            }
+
+            DSM.SignalTransition {
+                targetState: titleEditor
+                signal: annotationView.changeAnnotationTitle
+            }
+
+            DSM.SignalTransition {
+                targetState: descEditor
+                signal: annotationView.changeAnnotationDescription
+            }
+
+            DSM.SignalTransition {
+                targetState: periodEditor
+                signal: annotationView.changeAnnotationPeriod
+            }
+
+            DSM.SignalTransition {
+                targetState: labelsEditor
+                signal: annotationView.changeAnnotationLabels
+            }
+
+            DSM.SignalTransition {
+                targetState: stateEditor
+                signal: annotationView.changeAnnotationState
+            }
+        }
+
+        DSM.State {
+            id: annotationsList
+
+            onEntered: {
+                prepareAnnotationsList({labelBase: '', labels: '', mainIdentifier: annotationView.identifier});
+            }
+
+            onExited: {
+                closeAnnotationsList();
+            }
+
+            DSM.SignalTransition {
+                targetState: singleAnnotation
+                signal: annotationView.showSingleAnnotation
+            }
+
+            DSM.SignalTransition {
+                targetState: annotationsHistory
+                signal: annotationView.showHistory
+            }
+        }
+
+        DSM.State {
+            id: relatedAnnotationsByLabels
+
+            onEntered: {
+                prepareAnnotationsList({labelBase: '', labels: annotationView.labels, initialState: 'labels', mainIdentifier: annotationView.identifier});
+            }
+            onExited: {
+                closeAnnotationsList();
+            }
+
+            DSM.SignalTransition {
+                targetState: singleAnnotation
+                signal: annotationView.showSingleAnnotation
+            }
+        }
+
+        DSM.State {
+            id: relatedAnnotationsByPeriod
+            onEntered: {
+                prepareRelatedAnnotations({labelBase: '', labels: annotationView.labels, initialState: 'pending', mainIdentifier: annotationView.identifier});
+            }
+            onExited: {
+                closeAnnotationsList();
+            }
+
+            DSM.SignalTransition {
+                targetState: singleAnnotation
+                signal: annotationView.hideRelatedAnnotations
+            }
+        }
+
+        DSM.State {
+            id: annotationsHistory
+
+            onEntered: {
+                annotationsHistoryComponent.visible = true;
+                annotationView.pushButtonsModel();
+                annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'hideHistory'});
+            }
+
+            onExited: {
+                annotationsHistoryComponent.visible = false;
+                annotationView.popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                targetState: singleAnnotation
+                signal: annotationView.showSingleAnnotation
+            }
+
+            DSM.SignalTransition {
+                targetState: historyState
+                signal: annotationView.hideHistory
+            }
+        }
+
+        DSM.HistoryState {
+            id: historyState
+            defaultState: singleAnnotation
+        }
+
+        DSM.State {
+            id: addAnnotation
+
+            onEntered: {
+                annotationView.pushButtonsModel();
+
+                annotationView.setSource('qrc:///components/NewAnnotation.qml', {labels: annotationView.labels});
+
+                annotationView.buttonsModel.append({icon: 'floppy-35952', object: mainItem, method: 'saveNewAnnotation'});
+                annotationView.buttonsModel.append({icon: 'questionnaire-158862', object: mainItem, method: 'newIntelligentAnnotation'});
+                annotationView.buttonsModel.append({icon: 'calendar-23684', object: mainItem, method: 'newTimetableAnnotation'});
+                annotationView.buttonsModel.append({icon: 'upload-25068', object: mainItem, method: 'importAnnotations'});
+                annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'closeNewAnnotation'});
+            }
+
+            onExited: {
+                annotationView.popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                targetState: singleAnnotation
+                signal: annotationView.showSingleAnnotation
+            }
+            DSM.SignalTransition {
+                targetState: historyState
+                signal: annotationView.editorContentsDeclined || annotationView.closeNewAnnotation
+            }
+            DSM.SignalTransition {
+                targetState: historyState
+                signal: annotationView.closeNewAnnotation
+            }
+        }
+
+        DSM.State {
+            id: addRubricAssessment
+
+            onEntered: {
+                annotationView.pushButtonsModel();
+                annotationView.setSource('qrc:///components/AddRubricAssessmentComponent.qml', {});
+                annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'closeNewRubricAssessment'});
+            }
+
+            onExited: {
+                annotationView.popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                targetState: historyState
+                signal: annotationView.closeNewRubricAssessment
+            }
+        }
+
+        DSM.State {
+            id: titleEditor
+
+            onEntered: {
+                loadEditorComponent('TitleEditorComponent');
+            }
+
+            onExited: {
+                var newIdentifier = editorArea.getEditedContent();
+                annotationsModel.updateObject(annotationView.identifier, {title: newIdentifier});
+                annotationView.identifier = newIdentifier;
+                editorArea.hideEditorContents();
+            }
+
+            DSM.SignalTransition {
+                targetState: singleAnnotation
+                signal: annotationView.editorContentsSaved
+            }
+            DSM.SignalTransition {
+                targetState: historyState
+                signal: annotationView.editorContentsDeclined
+            }
+        }
+
+        DSM.State {
+            id: descEditor
+
+            onEntered: {
+                prepareAnnotationPartEditor();
+                loadEditorComponent('DescriptionEditorComponent');
+            }
+
+            onExited: {
+                annotationView.popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                targetState: singleAnnotation
+                signal: annotationView.editorContentsSaved
+            }
+            DSM.SignalTransition {
+                targetState: historyState
+                signal: annotationView.editorContentsDeclined
+            }
+        }
+
+        DSM.State {
+            id: periodEditor
+
+            onEntered: {
+                prepareAnnotationPartEditor();
+                loadEditorComponent('PeriodEditorComponent');
+            }
+
+            onExited: {
+                annotationView.popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                targetState: singleAnnotation
+                signal: annotationView.editorContentsSaved
+            }
+            DSM.SignalTransition {
+                targetState: historyState
+                signal: annotationView.editorContentsDeclined
+            }
+        }
+
+        DSM.State {
+            id: labelsEditor
+
+            onEntered: {
+                prepareAnnotationPartEditor();
+                loadEditorComponent('LabelsEditorComponent');
+            }
+
+            onExited: {
+                annotationView.popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                targetState: singleAnnotation
+                signal: annotationView.editorContentsSaved
+            }
+            DSM.SignalTransition {
+                targetState: historyState
+                signal: annotationView.editorContentsDeclined
+            }
+        }
+
+        DSM.State {
+            id: stateEditor
+
+            onEntered: {
+                prepareAnnotationPartEditor();
+                loadEditorComponent('AnnotationStateEditorComponent');
+            }
+
+            onExited: {
+                annotationView.popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                targetState: singleAnnotation
+                signal: annotationView.editorContentsSaved
+            }
+            DSM.SignalTransition {
+                targetState: historyState
+                signal: annotationView.editorContentsDeclined
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        annotationStateMachine.start();
+    }
+}
+

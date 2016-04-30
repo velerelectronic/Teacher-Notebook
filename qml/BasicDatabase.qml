@@ -233,7 +233,8 @@ DatabaseBackup {
                             rubrics_descriptors.level       AS level,
                             rubrics_descriptors.definition  AS definition,
 
-                            rubrics_levels.score            AS score
+                            rubrics_levels.score            AS score,
+                            rubrics_levels.title            AS levelTitle
 
                             FROM    rubrics_assessment,
                                     individuals_list,

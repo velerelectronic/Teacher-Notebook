@@ -11,6 +11,7 @@ Item {
     property string pageTitle: ''
 
     property Component mainPage
+    property alias mainItem: basicPageLocation.item
 
     property bool isSubPage: false
 
@@ -27,6 +28,10 @@ Item {
     property var buttonsModelStack: []
 
     property bool pageClosable: true
+
+    function setSource(source, parameters) {
+        basicPageLocation.setSource(source, parameters);
+    }
 
     function invokeSubPageFunction(method, parameters) {
         return basicPageLoader.item[method](parameters);

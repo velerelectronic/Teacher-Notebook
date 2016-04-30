@@ -30,5 +30,6 @@ SqlTableModel {
         'definition',
         'score'
     ]
+    primaryKey: 'lastScoreId'
 }
 

@@ -10,7 +10,8 @@ Rectangle {
         id: units
     }
 
-    signal selectAnnotation(string identifier)
+    signal openAnnotation(string identifier)
+    signal hideHistory()
 
     color: 'grey'
 
@@ -30,6 +31,18 @@ Rectangle {
             height: units.fingerUnit * 2
             RowLayout {
                 anchors.fill: parent
+                anchors.margins: units.nailUnit
+                spacing: units.nailUnit
+
+                Text {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: units.fingerUnit
+                    font.pixelSize: units.readUnit
+                    horizontalAlignment: Text.AlignHCenter
+                    fontSizeMode: Text.Fit
+                    text: (model.index+1)
+                }
+
                 Text {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
@@ -47,7 +60,7 @@ Rectangle {
             }
             MouseArea {
                 anchors.fill: parent
-                onClicked: annotationsHistory.selectAnnotation(model.title)
+                onClicked: annotationsHistory.openAnnotation(model.title)
                 onPressAndHold: annotationsHistoryModel.remove(model.index)
             }
         }

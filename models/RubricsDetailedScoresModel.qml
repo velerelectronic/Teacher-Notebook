@@ -24,6 +24,7 @@ SqlTableModel {
         'level',
         'definition',
 
+        'levelTitle',
         'score'
 
     ]

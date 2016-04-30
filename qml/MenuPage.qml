@@ -171,7 +171,7 @@ Item {
         console.log('get saved searcges');
         labelsSortModel.select();
         subMenuElements.append({title: title, caption: qsTr('Ordenacions'), page: 'LabelsSort', parameters: {}});
-        subMenuElements.append({title: title, caption: qsTr('Anotacions'), page: 'ShowAnnotation2', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Anotacions'), page: 'AnnotationsModule', parameters: {}});
         for (var i=0; i<labelsSortModel.count; i++) {
             var sortLabel = labelsSortModel.getObjectInRow(i);
             subMenuElements.append({title: title, caption: sortLabel.title, page: 'ExtendedAnnotationsList', parameters: {sortLabels: sortLabel.labels}});
@@ -189,7 +189,7 @@ Item {
     }
 
     function getRubricsOptions(title) {
-        subMenuElements.append({title: title, caption: qsTr('Avaluació'), page: 'RubricsAssessmentList', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Avaluació'), page: 'RubricsModule', parameters: {initialState: 'assessmentList'}});
         subMenuElements.append({title: title, caption: qsTr('Definicions'), page: 'RubricsDefinitionsList', parameters: {}});
         subMenuElements.append({title: title, caption: qsTr('Grups'), page: 'RubricsGroupsList', parameters: {}});
         subMenuElements.append({title: title, caption: qsTr('Informes'), page: 'RubricsReportsList', parameters: {}});

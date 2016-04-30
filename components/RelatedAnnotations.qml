@@ -3,7 +3,7 @@ import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 
-Rectangle {
+Item {
     id: relatedAnnotations
 
     property int requiredHeight
@@ -19,9 +19,7 @@ Rectangle {
     property string archivedState: "state = 3"
     property string trashedState: "state < 0"
 
-    signal selectAnnotation(string identifier)
-
-    color: 'grey'
+    signal openAnnotation(string identifier)
 
     Common.UseUnits {
         id: units
@@ -30,24 +28,6 @@ Rectangle {
     Component.onCompleted: {
 //        refreshAnnotationsList();
 
-        switch(selectedIndex) {
-        case 0:
-            relatedAnnotationsModel.sort = 'title ASC, start ASC, end ASC';
-            relatedAnnotationsModel.filters = ["title != ''"];
-            relatedAnnotationsModel.bindValues = [];
-            relatedAnnotationsModel.select();
-            break;
-        case 1:
-            break;
-        case 2:
-            relatedAnnotationsModel.sort = 'start ASC, end ASC, title ASC';
-            relatedAnnotationsModel.filters = ["(title = ?) OR ((title != '') AND (state != '-1'))"];
-            relatedAnnotationsModel.bindValues = [relatedAnnotations.mainIdentifier];
-            relatedAnnotationsModel.select();
-            break;
-        default:
-            break;
-        }
         getMainIndex();
     }
 
@@ -74,7 +54,12 @@ Rectangle {
 
                     Repeater {
                         Component.onCompleted: {
-                            model = relatedAnnotations.labels.split(/\s+/g);
+                            var newLabels = relatedAnnotations.labels.trim();
+                            if (newLabels == '') {
+                                model = [];
+                            } else {
+                                model = newLabels.split(/\s+/g);
+                            }
                             refreshAnnotationsList();
                         }
 
@@ -172,10 +157,9 @@ Rectangle {
             }
         }
 
-        Rectangle {
+        Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            color: 'gray'
 
             ListView {
                 id: relatedAnnotationsView
@@ -195,15 +179,17 @@ Rectangle {
                     width: relatedAnnotationsView.width
                     height: units.fingerUnit
                     font.pixelSize: units.readUnit
-                    text: qsTr("Anotacions amb etiqueta #") + relatedAnnotations.labelBase
+                    text: qsTr("Anotacions amb etiquetes #") + relatedAnnotations.labels
                 }
 
                 delegate: Rectangle {
                     width: relatedAnnotationsView.width
                     height: units.fingerUnit * 2
-                    color: (model.title == mainIdentifier)?'yellow':'white'
+                    color: ((mainIdentifier !== '') && (model.title == mainIdentifier))?'yellow':'white'
                     RowLayout {
                         anchors.fill: parent
+                        anchors.margins: units.nailUnit
+                        spacing: units.nailUnit
                         Text {
                             Layout.fillHeight: true
                             Layout.preferredWidth: parent.width / 3
@@ -238,7 +224,7 @@ Rectangle {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            selectAnnotation(model.title);
+                            openAnnotation(model.title);
                         }
                     }
                 }

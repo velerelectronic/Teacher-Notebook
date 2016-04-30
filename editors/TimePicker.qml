@@ -28,6 +28,7 @@ Rectangle {
                 fromNumber: 0
                 toNumber: 23
                 onHighlightedValueChanged: {
+                    console.log('Wheel ha canviat');
                     time.setHours(getCurrentValue());
                     console.log("Current " + getCurrentValue());
                     updatedByUser();
@@ -67,12 +68,14 @@ Rectangle {
         hour.moveToNumber(h);
         var m = time.getMinutes()
         minute.moveToNumber(m);
+        console.log('update', h, m);
         //var s = time.getSeconds();
         //seconds.moveToNumber(s);
     }
 
     function setDateTime(newDate) {
         timePicker.time = new Date(newDate);
+        console.log('picker time', timePicker.time);
         updateDisplay();
     }
 
