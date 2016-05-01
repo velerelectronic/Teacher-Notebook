@@ -2,6 +2,7 @@
 #define DATABASEBACKUP_H
 
 #include <QObject>
+#include <QSqlError>
 
 class DatabaseBackup : public QObject
 {
@@ -23,8 +24,12 @@ public slots:
     Q_INVOKABLE bool dropTable(const QString &);
     Q_INVOKABLE bool alterTable(const QString &, const QString &, const QString &);
     Q_INVOKABLE bool dropView(const QString &);
+    Q_INVOKABLE QString lastError();
     Q_INVOKABLE bool saveContents(const QString &);
     Q_INVOKABLE bool readContents(const QString &filename);
+
+private:
+    QSqlError innerLastError;
 
 };
 

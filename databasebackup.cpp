@@ -53,6 +53,7 @@ bool DatabaseBackup::createView(const QString &viewName, const QString &selectSt
 bool DatabaseBackup::dropTable(const QString &table) {
     QSqlQueryModel model(this);
     model.setQuery(QSqlQuery("DROP TABLE IF EXISTS " + table));
+    innerLastError = model.lastError();
 }
 
 bool DatabaseBackup::dropView(const QString &viewName) {
@@ -65,6 +66,10 @@ const QString &DatabaseBackup::homePath() {
     dir->append(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation));
     dir->append("/TeacherNotebook");
     return *dir;
+}
+
+QString DatabaseBackup::lastError() {
+    return innerLastError.text();
 }
 
 bool DatabaseBackup::readContents(const QString &filename) {

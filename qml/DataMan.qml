@@ -125,14 +125,24 @@ BasicPage {
 
         }
         Button {
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit
             text: qsTr('Destrueix taules resources, resourcesAnnotations i detailedResourcesAnnotations');
             onClicked: {
                 fileDb.dropTable('resources');
+                resultsArea.text = "1\n" + fileDb.lastError();
                 fileDb.dropTable('resourceAnnotations');
+                resultsArea.text = resultsArea.text + "2\n" + fileDb.lastError();
                 fileDb.dropView('detailedResourcesAnnotations');
+                resultsArea.text = resultsArea.text + "3\n" + fileDb.lastError();
                 text = qsTr('Fet!');
                 enabled = false;
             }
+        }
+        TextArea {
+            id: resultsArea
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit * 4
         }
     }
 
