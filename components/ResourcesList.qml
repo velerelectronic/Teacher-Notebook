@@ -32,153 +32,161 @@ Item {
         }
     }
 
-    ListView {
-        id: resourcesList
+    ColumnLayout {
         anchors.fill: parent
+        spacing: units.nailUnit
 
-        clip: true
-        model: resourcesModel
+        ListView {
+            id: resourcesList
+            Layout.fillWidth: true
+            Layout.fillHeight: true
 
-        header: Rectangle {
-            id: resourceHeader
+            clip: true
+            model: resourcesModel
 
-            width: resourcesList.width
-            height: units.fingerUnit * 2 + units.nailUnit
-            z: 2
+            header: Rectangle {
+                id: resourceHeader
 
-            GridLayout {
-                anchors.fill: parent
-                anchors.margins: units.nailUnit
-                columnSpacing: units.nailUnit
-                rowSpacing: columnSpacing
+                width: resourcesList.width
+                height: units.fingerUnit * 2 + units.nailUnit
+                z: 2
 
-                rows: 2
-                columns: 4
+                GridLayout {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    columnSpacing: units.nailUnit
+                    rowSpacing: columnSpacing
 
-                Common.SearchBox {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: units.fingerUnit
-                    Layout.columnSpan: 4
+                    rows: 2
+                    columns: 4
 
-                    onPerformSearch: resourcesModel.searchString = text
-                }
+                    Common.SearchBox {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
+                        Layout.columnSpan: 4
 
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: resourceHeader.width / 4
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    text: qsTr('Títol i descripció')
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: resourceHeader.width / 4
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    text: qsTr('Origen')
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    text: qsTr('Tipus')
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: resourceHeader.width / 4
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    text: qsTr('Anotació')
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
-                }
-            }
-        }
+                        onPerformSearch: {
+                            resourcesModel.searchString = text;
+                            resourcesModel.select();
+                        }
+                    }
 
-        headerPositioning: ListView.OverlayHeader
-
-        delegate: Rectangle {
-            id: resourceItem
-            width: resourcesList.width
-            height: units.fingerUnit * 2
-            z: 1
-
-            border.color: 'grey'
-
-            color: (model.id == selectedIdentifier)?'yellow':'white'
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: resourcesListItem.resourceSelected(model.id)
-            }
-
-            RowLayout {
-                anchors.fill: parent
-                spacing: units.nailUnit
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: resourceItem.width / 4
-                    font.pixelSize: units.readUnit
-                    text: "<b>" + model.title + "</b><br>" + model.desc
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
-                }
-
-                Text {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    font.pixelSize: units.readUnit
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
-                    text: model.source
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: resourceSourceSelected(model.id)
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: resourceHeader.width / 4
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+                        text: qsTr('Títol i descripció')
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: resourceHeader.width / 4
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+                        text: qsTr('Origen')
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+                        text: qsTr('Tipus')
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: resourceHeader.width / 4
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+                        text: qsTr('Anotació')
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
                     }
                 }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: resourceItem.width / 4
-                    font.pixelSize: units.readUnit
-                    text: model.type
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
+            }
+
+            headerPositioning: ListView.OverlayHeader
+
+            delegate: Rectangle {
+                id: resourceItem
+                width: resourcesList.width
+                height: units.fingerUnit * 2
+                z: 1
+
+                border.color: 'grey'
+
+                color: (model.id == selectedIdentifier)?'yellow':'white'
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: resourcesListItem.resourceSelected(model.id)
                 }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: resourceItem.width / 4
-                    font.pixelSize: units.readUnit
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
-                    text: model.annotation
+
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: units.nailUnit
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: resourceItem.width / 4
+                        font.pixelSize: units.readUnit
+                        text: "<b>" + model.title + "</b><br>" + model.desc
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
+                    }
+
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        font.pixelSize: units.readUnit
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
+                        text: model.source
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: resourceSourceSelected(model.id)
+                        }
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: resourceItem.width / 4
+                        font.pixelSize: units.readUnit
+                        text: model.type
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: resourceItem.width / 4
+                        font.pixelSize: units.readUnit
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
+                        text: model.annotation
+                    }
                 }
             }
+            Common.SuperposedButton {
+                anchors {
+                    bottom: parent.bottom
+                    right: parent.right
+                }
+                size: units.fingerUnit * 2
+                imageSource: 'plus-24844'
+                onClicked: resourcesListItem.newResourceSelected()
+            }
         }
-    }
-
-    Common.SuperposedButton {
-        anchors {
-            bottom: parent.bottom
-            right: parent.right
-        }
-        size: units.fingerUnit * 2
-        imageSource: 'plus-24844'
-        onClicked: resourcesListItem.newResourceSelected()
     }
 
 }

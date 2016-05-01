@@ -52,13 +52,16 @@ bool DatabaseBackup::createView(const QString &viewName, const QString &selectSt
 
 bool DatabaseBackup::dropTable(const QString &table) {
     QSqlQueryModel model(this);
+    qDebug() << "Errors while in " << table;
     model.setQuery(QSqlQuery("DROP TABLE IF EXISTS " + table));
+    qDebug() << model.lastError();
     innerLastError = model.lastError();
 }
 
 bool DatabaseBackup::dropView(const QString &viewName) {
     QSqlQueryModel model(this);
     model.setQuery(QSqlQuery("DROP VIEW IF EXISTS " + viewName));
+    qDebug() << model.lastError();
 }
 
 const QString &DatabaseBackup::homePath() {

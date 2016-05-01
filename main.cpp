@@ -43,6 +43,9 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     QSqlDatabase db;
+
+    DatabaseBackup back;
+
     if (dir.cd(specificPath)) {
         db = QSqlDatabase::addDatabase("QSQLITE");
         db.setDatabaseName(dir.absolutePath() + "/mainDatabase.sqlite");
