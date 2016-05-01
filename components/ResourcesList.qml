@@ -5,22 +5,20 @@ import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import "qrc:///common/FormatDates.js" as FormatDates
 
-BasicPage {
-    id: resourceManager
+Item {
+    id: resourcesListItem
 
     Common.UseUnits { id: units }
 
-    pageTitle: qsTr('Recursos')
-
-    signal createResource(var model)
-    signal showResource(int idResource,var model)
+    signal newResourceSelected()
+    signal resourceSelected(int resource)
 
     property int requiredHeight: resourcesList.contentItem.height
 
     Models.ResourcesModel {
         id: resourcesModel
 
-        searchFields: ['title','desc','type','source']
+        searchFields: ['title','desc','type','source','annotation']
 
         limit: 30
 
@@ -29,7 +27,7 @@ BasicPage {
         }
     }
 
-    mainPage: ListView {
+    ListView {
         id: resourcesList
         anchors.fill: parent
 
@@ -65,17 +63,7 @@ BasicPage {
                     Layout.preferredWidth: resourceHeader.width / 4
                     font.pixelSize: units.readUnit
                     font.bold: true
-                    text: qsTr('Títol')
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: resourceHeader.width / 4
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    text: qsTr('Descripció')
+                    text: qsTr('Títol i descripció')
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     elide: Text.ElideRight
@@ -86,6 +74,16 @@ BasicPage {
                     font.pixelSize: units.readUnit
                     font.bold: true
                     text: qsTr('Tipus')
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
+                }
+                Text {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: resourceHeader.width / 4
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr('Anotació')
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     elide: Text.ElideRight
@@ -119,7 +117,7 @@ BasicPage {
                     Layout.fillHeight: true
                     Layout.preferredWidth: resourceItem.width / 4
                     font.pixelSize: units.readUnit
-                    text: model.title
+                    text: "<b>" + model.title + "</b><br>" + model.desc
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     elide: Text.ElideRight
@@ -128,11 +126,12 @@ BasicPage {
                     Layout.fillHeight: true
                     Layout.preferredWidth: resourceItem.width / 4
                     font.pixelSize: units.readUnit
-                    text: model.desc
+                    text: model.annotation
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     elide: Text.ElideRight
                 }
+
                 Text {
                     Layout.fillHeight: true
                     Layout.preferredWidth: resourceItem.width / 4
@@ -154,7 +153,7 @@ BasicPage {
             }
             MouseArea {
                 anchors.fill: parent
-                onClicked: resourceManager.showResource(model.id,resourcesModel)
+                onClicked: resourcesListItem.resourceSelected(model.id)
             }
         }
     }
@@ -166,7 +165,7 @@ BasicPage {
         }
         size: units.fingerUnit * 2
         imageSource: 'plus-24844'
-        onClicked: resourceManager.createResource(resourcesModel)
+        onClicked: resourcesListItem.newResourceSelected()
     }
 
 }

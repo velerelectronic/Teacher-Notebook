@@ -146,13 +146,11 @@ Item {
         menuModel.append({caption: qsTr('Anotacions'), submenu: {object: menuPage, method: 'getSortLabels'}});
         menuModel.append({caption: qsTr('Taules'), submenu: {object: menuPage, method: 'getSortLabelsForTables'}});
         menuModel.append({caption: qsTr('Rúbriques'), submenu: {object: menuPage, method: 'getRubricsOptions'}});
-        menuModel.append({caption: qsTr('Projectes'), submenu: {object: menuPage, method: 'getProjectsList'}});
         menuModel.append({caption: qsTr('Altres eines'), submenu: {object: menuPage, method: 'getOtherToolsList'}});
 
         menuModel.append({caption: qsTr('Espai de treball'), page: 'WorkSpace', parameters: {}, submenu: {object: menuPage, method: ''}});
         menuModel.append({caption: qsTr('Pissarra'), page: 'Whiteboard', parameters: {}, submenu: {object: menuPage, method: ''}});
         menuModel.append({caption: qsTr('Documents'), page: 'DocumentsList', parameters: {}, submenu: {object: menuPage, method: ''}});
-        menuModel.append({caption: qsTr('Recursos'), page: 'ResourceManager', parameters: {}, submenu: {object: menuPage, method: ''}});
     }
 
     ListModel {
@@ -172,10 +170,6 @@ Item {
         labelsSortModel.select();
         subMenuElements.append({title: title, caption: qsTr('Ordenacions'), page: 'LabelsSort', parameters: {}});
         subMenuElements.append({title: title, caption: qsTr('Anotacions'), page: 'AnnotationsModule', parameters: {}});
-        for (var i=0; i<labelsSortModel.count; i++) {
-            var sortLabel = labelsSortModel.getObjectInRow(i);
-            subMenuElements.append({title: title, caption: sortLabel.title, page: 'ExtendedAnnotationsList', parameters: {sortLabels: sortLabel.labels}});
-        }
         subMenuElements.append({title: title, caption: qsTr('Anotacions (anterior)'), page: 'AnnotationsList', parameters: {}});
     }
 
@@ -198,16 +192,8 @@ Item {
 
     }
 
-    function getProjectsList() {
-        projectsModel.select();
-        subMenuElements.append({caption: qsTr('Sense projecte'), page: 'ExtendedAnnotationsList', parameters: {onlyEmptyProjects: true}});
-        for (var i=0; i<projectsModel.count; i++) {
-            var projectObj = projectsModel.getObjectInRow(i);
-            subMenuElements.append({caption: projectObj.name, page: 'ExtendedAnnotationsList', parameters: {project: projectObj.name}});
-        }
-    }
-
     function getOtherToolsList() {
+        subMenuElements.append({caption: qsTr('Recursos'), page: 'ResourcesModule', parameters: {}});
         subMenuElements.append({caption: qsTr('Gestor de dades'), page: 'DataMan', parameters: {}});
         subMenuElements.append({caption: qsTr('! Recerca de coneixement'), page: 'Researcher', parameters: {}, submenu: {object: menuPage, method: ''}});
         subMenuElements.append({caption: qsTr('Feeds'), page: 'FeedWEIB', parameters: {}});

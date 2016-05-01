@@ -7,7 +7,6 @@
         <file>models/ProjectsModel.qml</file>
         <file>models/DetailedAnnotationsModel.qml</file>
         <file>models/ResourcesModel.qml</file>
-        <file>models/DetailedResourcesModel.qml</file>
         <file>models/ResourcesAnnotationsModel.qml</file>
         <file>models/DetailedScheduleModel.qml</file>
         <file>models/RubricsLastScoresModel.qml</file>

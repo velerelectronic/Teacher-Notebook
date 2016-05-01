@@ -121,26 +121,15 @@ DatabaseBackup {
         dataBck.createTable('individuals_list', 'id INTEGER PRIMARY KEY, "group" TEXT NOT NULL, name TEXT, surname TEXT, faceImage BLOB');
 
 //        dataBck.dropTable('resources');
-        dataBck.createTable('resources','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, type TEXT, source TEXT, contents BLOB, hash TEXT');
-        dataBck.createTable('resourcesAnnotations', 'id INTEGER PRIMARY KEY, resource INTEGER, annotation INTEGER');
+        dataBck.createTable('resources','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, type TEXT, source TEXT, contents BLOB, hash TEXT, annotation TEXT');
+
+        dataBck.dropTable('resourceAnnotations');
 
         dataBck.createTable('timetables', 'id INTEGER PRIMARY KEY, annotation TEXT, periodTime INTEGER NOT NULL, periodDay INTEGER NOT NULL, title TEXT NOT NULL, startTime TEXT, endTime TEXT');
 
         // VIEWS
 
-        dataBck.createView('detailedResourcesAnnotations',
-                           "SELECT  resourcesAnnotations.id         AS  id,
-                                    resourcesAnnotations.resource   AS  resourceId,
-                                    resources.title                 AS  resourceTitle,
-                                    resources.desc                  AS  resourceDesc,
-                                    resources.type                  AS  resourceType,
-                                    resources.source                AS  resourceSource,
-                                    resources.contents              AS  resourceContents,
-                                    resourcesAnnotations.annotation AS  annotationId
-                            FROM    resources,
-                                    resourcesAnnotations
-                            WHERE   resourcesAnnotations.resource = resources.id
-                            ");
+        dataBck.dropView('detailedResourcesAnnotations');
 
         // Views
         dataBck.createView('rubrics_levels_descriptors',"SELECT rubrics_descriptors.id AS id, rubrics_descriptors.criterium AS criterium, rubrics_criteria.title AS criteriumTitle, rubrics_criteria.desc AS criteriumDesc, rubrics_descriptors.id AS descriptor, rubrics_descriptors.level AS level, rubrics_descriptors.definition AS definition, rubrics_levels.title AS title, rubrics_levels.desc AS desc, rubrics_levels.score AS score FROM rubrics_levels, rubrics_criteria LEFT JOIN rubrics_descriptors ON rubrics_levels.id=rubrics_descriptors.level WHERE rubrics_criteria.id=rubrics_descriptors.criterium");
@@ -274,15 +263,15 @@ DatabaseBackup {
                             annotations.labels                      AS labels,
                             projects.name                           AS projectName,
                             COUNT(DISTINCT schedule.id)             AS eventsCount,
-                            COUNT(DISTINCT resourcesAnnotations.id) AS resourcesCount
+                            COUNT(DISTINCT resources.id)            AS resourcesCount
                         FROM        annotations
                         LEFT JOIN   projects
                             ON      annotations.ref = projects.id
                         LEFT JOIN   schedule
                             ON      schedule.ref = annotations.id
-                        LEFT JOIN   resourcesAnnotations
-                            ON      resourcesAnnotations.annotation = annotations.id
-                        GROUP BY    annotations.id, schedule.ref, resourcesAnnotations.annotation
+                        LEFT JOIN   resources
+                            ON      resources.annotation = annotations.id
+                        GROUP BY    annotations.id, schedule.ref, resources.annotation
                     ");
 
 

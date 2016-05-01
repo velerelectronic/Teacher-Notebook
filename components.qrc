@@ -16,5 +16,8 @@
         <file>components/RubricAssessmentHistory.qml</file>
         <file>components/RubricGroupAssessmentCriterium.qml</file>
         <file>components/RubricGroupAssessmentDescriptorEditor.qml</file>
+        <file>components/ResourcesList.qml</file>
+        <file>components/ShowSingleResource.qml</file>
+        <file>components/DocumentsList.qml</file>
     </qresource>
 </RCC>

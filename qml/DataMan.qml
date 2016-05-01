@@ -124,29 +124,6 @@ BasicPage {
             }
 
         }
-
-        Button {
-            Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit
-            text: qsTr('Convertir anotacions eliminades a arxivades (temporal)')
-            onClicked: {
-                annotationsModel.filters = ["title != ''", "state = -1"];
-                annotationsModel.select();
-                while (annotationsModel.count>0) {
-                    var obj = annotationsModel.getObjectInRow(0);
-                    if (obj['title'] !== '') {
-                        annotationsModel.updateObject(obj['title'], {state: 3});
-                    }
-                    annotationsModel.filters = ["title != ''","state = -1"];
-                    annotationsModel.select();
-                }
-            }
-        }
-    }
-
-
-    Models.ExtendedAnnotations {
-        id: annotationsModel
     }
 
     FolderListModel {
