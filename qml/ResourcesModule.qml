@@ -1,15 +1,7 @@
 import QtQuick 2.5
-import QtQuick.Controls 1.4
-import QtQuick.Layouts 1.1
-import QtQuick.Dialogs 1.2
 import QtQml.StateMachine 1.0 as DSM
 import PersonalTypes 1.0
-import ClipboardAdapter 1.0
-import 'qrc:///common' as Common
-import 'qrc:///editors' as Editors
 import 'qrc:///models' as Models
-import 'qrc:///components' as Components
-import "qrc:///common/FormatDates.js" as FormatDates
 import "qrc:///javascript/Storage.js" as Storage
 
 BasicPage {
@@ -20,6 +12,7 @@ BasicPage {
     signal closeCurrentPage()
     signal documentSelected()
     signal showResource()
+    signal showResourceSource()
     signal showSelectFile()
 
     property int resourceId: -1
@@ -47,6 +40,15 @@ BasicPage {
             resourceId = resource;
             showResource();
         }
+
+        onResourceSourceSelected: {
+            resourceId = resource;
+            showResourceSource();
+        }
+
+        onResourceUpdated: {
+            closeCurrentPage();
+        }
     }
 
     DSM.StateMachine {
@@ -59,7 +61,7 @@ BasicPage {
 
             onEntered: {
                 pushButtonsModel();
-                setSource('qrc:///components/ResourcesList.qml', {});
+                setSource('qrc:///components/ResourcesList.qml', {selectedIdentifier: resourceId});
             }
 
             onExited: {
@@ -75,6 +77,11 @@ BasicPage {
                 signal: showSelectFile
                 targetState: selectFileState
             }
+
+            DSM.SignalTransition {
+                signal: showResourceSource
+                targetState: resourceSourceDisplayState
+            }
         }
 
         DSM.HistoryState {
@@ -89,10 +96,17 @@ BasicPage {
             onEntered: {
                 pushButtonsModel();
                 setSource('qrc:///components/ShowSingleResource.qml', {resource: resourceId});
+                buttonsModel.append({icon: 'floppy-35952', object: mainItem, method: 'saveEditorContents'});
+                buttonsModel.append({icon: 'road-sign-147409', object: resourcesModule, method: 'closeCurrentPage'});
             }
 
             onExited: {
                 popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                signal: closeCurrentPage
+                targetState: resourcesListState
             }
         }
 
@@ -127,12 +141,14 @@ BasicPage {
 
             onEntered: {
                 console.log('Document source', documentSource);
+                var extension = /[^.]+$/.exec(documentSource);
                 var obj = {
                     created: Storage.currentTime(),
                     title: qsTr('Nou recurs'),
                     desc: qsTr('Edita la descripció...'),
                     source: documentSource,
                     contents: '',
+                    type: extension.toString().toUpperCase(),
                     hash: '',
                     annotation: ''
                 }
@@ -146,7 +162,37 @@ BasicPage {
                 targetState: resourcesListState
             }
         }
+        DSM.State {
+            id: resourceSourceDisplayState
+
+            onEntered: {
+                pushButtonsModel();
+                setSource('qrc:///components/ResourceSourceViewer.qml', {resource: resourceId});
+                buttonsModel.append({icon: 'road-sign-147409', object: resourcesModule, method: 'closeCurrentPage'});
+            }
+
+            onExited: {
+                popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                signal: closeCurrentPage
+                targetState: historyState
+            }
+        }
     }
 
-    Component.onCompleted: resourcesModuleSM.start();
+    Component.onCompleted: {
+        if (resourceId >= 0) {
+            switch(state) {
+            case 'displaySource':
+                resourcesModuleSM.initialState = resourceSourceDisplayState;
+                break;
+            default:
+                resourcesModuleSM.initialState = singleResourceState;
+                break;
+            }
+        }
+        resourcesModuleSM.start();
+    }
 }

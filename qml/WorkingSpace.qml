@@ -184,7 +184,6 @@ Item {
                 closeCurrentPage();
             }
 
-            onShowResource: openNewPage('ShowResource',{idResource: idResource, resourcesModel: model});
             onUpdatedResourceAttachment: {
                 messageBox.publishMessage(message);
                 closeCurrentPage();

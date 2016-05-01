@@ -12,8 +12,11 @@ Item {
 
     signal newResourceSelected()
     signal resourceSelected(int resource)
+    signal resourceSourceSelected(int resource)
 
     property int requiredHeight: resourcesList.contentItem.height
+
+    property int selectedIdentifier
 
     Models.ResourcesModel {
         id: resourcesModel
@@ -21,6 +24,8 @@ Item {
         searchFields: ['title','desc','type','source','annotation']
 
         limit: 30
+
+        sort: 'id DESC'
 
         Component.onCompleted: {
             select();
@@ -73,6 +78,16 @@ Item {
                     Layout.preferredWidth: resourceHeader.width / 4
                     font.pixelSize: units.readUnit
                     font.bold: true
+                    text: qsTr('Origen')
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
+                }
+                Text {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    font.pixelSize: units.readUnit
+                    font.bold: true
                     text: qsTr('Tipus')
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -84,16 +99,6 @@ Item {
                     font.pixelSize: units.readUnit
                     font.bold: true
                     text: qsTr('Anotació')
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    text: qsTr('Origen')
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     elide: Text.ElideRight
@@ -110,6 +115,14 @@ Item {
             z: 1
 
             border.color: 'grey'
+
+            color: (model.id == selectedIdentifier)?'yellow':'white'
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: resourcesListItem.resourceSelected(model.id)
+            }
+
             RowLayout {
                 anchors.fill: parent
                 spacing: units.nailUnit
@@ -122,16 +135,20 @@ Item {
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     elide: Text.ElideRight
                 }
+
                 Text {
                     Layout.fillHeight: true
-                    Layout.preferredWidth: resourceItem.width / 4
+                    Layout.fillWidth: true
                     font.pixelSize: units.readUnit
-                    text: model.annotation
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     elide: Text.ElideRight
+                    text: model.source
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: resourceSourceSelected(model.id)
+                    }
                 }
-
                 Text {
                     Layout.fillHeight: true
                     Layout.preferredWidth: resourceItem.width / 4
@@ -143,17 +160,13 @@ Item {
                 }
                 Text {
                     Layout.fillHeight: true
-                    Layout.fillWidth: true
+                    Layout.preferredWidth: resourceItem.width / 4
                     font.pixelSize: units.readUnit
-                    text: model.source
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     elide: Text.ElideRight
+                    text: model.annotation
                 }
-            }
-            MouseArea {
-                anchors.fill: parent
-                onClicked: resourcesListItem.resourceSelected(model.id)
             }
         }
     }

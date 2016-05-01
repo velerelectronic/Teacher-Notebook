@@ -124,6 +124,16 @@ BasicPage {
             }
 
         }
+        Button {
+            text: qsTr('Destrueix taules resources, resourcesAnnotations i detailedResourcesAnnotations');
+            onClicked: {
+                fileDb.dropTable('resources');
+                fileDb.dropTable('resourceAnnotations');
+                fileDb.dropView('detailedResourcesAnnotations');
+                text = qsTr('Fet!');
+                enabled = false;
+            }
+        }
     }
 
     FolderListModel {

@@ -19,5 +19,6 @@
         <file>components/ResourcesList.qml</file>
         <file>components/ShowSingleResource.qml</file>
         <file>components/DocumentsList.qml</file>
+        <file>components/ResourceSourceViewer.qml</file>
     </qresource>
 </RCC>

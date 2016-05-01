@@ -15,6 +15,7 @@ Item {
     signal annotationStateSelected(int stateValue)
     signal annotationTitleSelected()
     signal rubricAssessmentSelected(int assessment)
+    signal resourceSelected(int resource)
     signal showRelatedAnnotations()
     signal showRelatedAnnotationsByLabels()
     signal showRelatedAnnotationsByPeriod()
@@ -36,6 +37,14 @@ Item {
         filters: ["annotation=?"]
     }
 
+    Models.ResourcesModel {
+        id: resourcesModel
+        filters: ["annotation=?"]
+    }
+
+    ListModel {
+        id: attachedItems
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -234,16 +243,27 @@ Item {
                 anchors.fill: parent
                 orientation: ListView.Horizontal
 
-                model: rubricsAssessmentModel
+                model: attachedItems
                 spacing: units.nailUnit
                 delegate: Common.BoxedText {
                     height: rubricsAnnotationInfo.height
                     width: units.fingerUnit * 6
-                    text: model.title + " (" + model.group + ")"
+                    text: model.visualTitle
                     margins: units.nailUnit
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: annotationView.openPageArgs('RubricsModule', {rubricAssessmentIdentifier: model.id})
+                        onClicked: {
+                            switch(model.type) {
+                            case 'rubric':
+                                annotationView.openPageArgs('RubricsModule', {rubricAssessmentIdentifier: model.identifier});
+                                break;
+                            case 'resource':
+                                annotationView.openPageArgs('ResourcesModule', {resourceId: model.identifier, state: 'displaySource'});
+                                break;
+                            default:
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -412,8 +432,23 @@ Item {
         }
 
         // Get rubrics
+        attachedItems.clear();
         rubricsAssessmentModel.bindValues = [showAnnotationItem.identifier];
         rubricsAssessmentModel.select();
+
+        for (var i=0; i<rubricsAssessmentModel.count; i++) {
+            var rubricObj = rubricsAssessmentModel.getObjectInRow(i);
+            attachedItems.append({type: 'rubric', visualTitle: rubricObj.title + " (" + rubricObj.group + ")", identifier: rubricObj.id});
+        }
+
+        // Get resources
+        resourcesModel.bindValues = [showAnnotationItem.identifier];
+        resourcesModel.select();
+
+        for (var i=0; i<resourcesModel.count; i++) {
+            var resourceObj = resourcesModel.getObjectInRow(i);
+            attachedItems.append({type: 'resource', visualTitle: resourceObj.title, identifier: resourceObj.id});
+        }
 
         // Look for related annotations in labels and period
         relatedAnnotationsSimpleModel.sort = 'start ASC, end ASC, title ASC';
