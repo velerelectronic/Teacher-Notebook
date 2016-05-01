@@ -130,12 +130,14 @@ BasicPage {
             Layout.preferredHeight: units.fingerUnit
             text: qsTr('Convertir anotacions eliminades a arxivades (temporal)')
             onClicked: {
-                annotationsModel.filters = ["state = -1"]
+                annotationsModel.filters = ["title != ''", "state = -1"];
                 annotationsModel.select();
                 while (annotationsModel.count>0) {
                     var obj = annotationsModel.getObjectInRow(0);
-                    annotationsModel.updateObject(obj['title'], {state: 3});
-                    annotationsModel.filters = ["state = -1"]
+                    if (obj['title'] !== '') {
+                        annotationsModel.updateObject(obj['title'], {state: 3});
+                    }
+                    annotationsModel.filters = ["title != ''","state = -1"];
                     annotationsModel.select();
                 }
             }

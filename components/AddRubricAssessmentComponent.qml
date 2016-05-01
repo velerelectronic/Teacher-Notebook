@@ -1,16 +1,20 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
-import QtQuick.Controls 1.4
 import 'qrc:///common' as Common
-import 'qrc:///editors' as Editors
 import 'qrc:///models' as Models
 
 Rectangle {
     id: addRubricMenuRect
 
-    property int requiredHeight: childrenRect.height
+    property int requiredHeight: possibleList.requiredHeight + possibleList.anchors.margins * 2
 
     signal closeNewRubricAssessment()
+
+    property string annotation
+
+    Common.UseUnits {
+        id: units
+    }
 
     Models.IndividualsModel {
         id: groupsModel
@@ -32,15 +36,13 @@ Rectangle {
 
     ListView {
         id: possibleList
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-            margins: units.fingerUnit
-        }
-        height: contentItem.height
+        anchors.fill: parent
+        anchors.margins: units.fingerUnit
+
+        property int requiredHeight: contentItem.height
 
         clip: true
+        spacing: units.nailUnit
 
         model: groupsModel
 
@@ -48,7 +50,7 @@ Rectangle {
             id: singleRubricXGroup
 
             width: possibleList.width
-            height: childrenRect.height
+            height: groupText.height + rubricsGrid.height + units.nailUnit
 
             property string group: model.group
 
@@ -58,9 +60,11 @@ Rectangle {
                     left: parent.left
                     right: parent.right
                 }
-//                            height: childrenRect.height
+
+                spacing: units.nailUnit
 
                 Text {
+                    id: groupText
                     Layout.fillWidth: true
                     Layout.preferredHeight: units.fingerUnit
                     font.bold: true
@@ -69,6 +73,7 @@ Rectangle {
                     text: qsTr('Grup') + " " + model.group
                 }
                 GridView {
+                    id: rubricsGrid
                     Layout.fillWidth: true
                     Layout.preferredHeight: contentItem.height
 
@@ -103,7 +108,7 @@ Rectangle {
             desc: desc,
             rubric: rubric,
             group: group,
-            annotation: annotationView.identifier
+            annotation: addRubricMenuRect.annotation
         };
 
         rubricsAssessmentModel.insertObject(obj);

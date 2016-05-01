@@ -61,39 +61,40 @@ BasicPage {
 
         ignoreUnknownSignals: true
 
+        onAnnotationDescriptionSelected: {
+            editContent = description;
+            annotationView.changeAnnotationDescription();
+        }
+        onAnnotationLabelsSelected: {
+            editContent = labels;
+            annotationView.changeAnnotationLabels();
+        }
+        onAnnotationPeriodSelected: {
+            console.log('start-end',start,end);
+            editContent = {start: start, end: end};
+            annotationView.changeAnnotationPeriod();
+        }
+
+        onAnnotationSelected: {
+            annotationView.identifier = title;
+            showSingleAnnotation();
+        }
+
+        onAnnotationStateSelected: {
+            editContent = stateValue;
+            annotationView.changeAnnotationState();
+        }
+
+        onAnnotationTitleSelected: {
+            editContent = annotationView.identifier;
+            annotationView.changeAnnotationTitle();
+        }
+
         onCloseNewAnnotation: {
             annotationView.closeNewAnnotation();
         }
 
         onCloseNewRubricAssessment: annotationView.closeNewRubricAssessment()
-
-        onEditAnnotationDescription: {
-            editContent = description;
-            annotationView.changeAnnotationDescription();
-        }
-        onEditAnnotationLabels: {
-            editContent = labels;
-            annotationView.changeAnnotationLabels();
-        }
-        onEditAnnotationPeriod: {
-            console.log('start-end',start,end);
-            editContent = {start: start, end: end};
-            annotationView.changeAnnotationPeriod();
-        }
-        onEditAnnotationState: {
-            editContent = stateValue;
-            annotationView.changeAnnotationState();
-        }
-
-        onEditAnnotationTitle: {
-            editContent = annotationView.identifier;
-            annotationView.changeAnnotationTitle();
-        }
-
-        onOpenAnnotation: {
-            annotationView.identifier = identifier;
-            showSingleAnnotation();
-        }
     }
 
     Components.AnnotationsHistory {
@@ -105,8 +106,8 @@ BasicPage {
 
         onHideHistory: annotationView.hideHistory()
 
-        onOpenAnnotation: {
-            annotationView.identifier = identifier;
+        onAnnotationSelected: {
+            annotationView.identifier = title;
             annotationView.showSingleAnnotation();
         }
     }
@@ -152,6 +153,10 @@ BasicPage {
         }
 
         annotationsModel.updateObject(annotationView.identifier, mainItem.annotationContent);
+        if ('title' in mainItem.annotationContent) {
+            identifier = mainItem.annotationContent['title'];
+        }
+
         editorContentsSaved();
     }
 
@@ -372,7 +377,7 @@ BasicPage {
 
             onEntered: {
                 annotationView.pushButtonsModel();
-                annotationView.setSource('qrc:///components/AddRubricAssessmentComponent.qml', {});
+                annotationView.setSource('qrc:///components/AddRubricAssessmentComponent.qml', {annotation: identifier});
                 annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'closeNewRubricAssessment'});
             }
 
@@ -390,6 +395,7 @@ BasicPage {
             id: titleEditor
 
             onEntered: {
+                prepareAnnotationPartEditor();
                 loadEditorComponent('TitleEditorComponent');
             }
 
@@ -401,12 +407,12 @@ BasicPage {
             }
 
             DSM.SignalTransition {
-                targetState: singleAnnotation
                 signal: annotationView.editorContentsSaved
+                targetState: singleAnnotation
             }
             DSM.SignalTransition {
-                targetState: historyState
                 signal: annotationView.editorContentsDeclined
+                targetState: historyState
             }
         }
 
@@ -423,12 +429,12 @@ BasicPage {
             }
 
             DSM.SignalTransition {
-                targetState: singleAnnotation
                 signal: annotationView.editorContentsSaved
+                targetState: singleAnnotation
             }
             DSM.SignalTransition {
-                targetState: historyState
                 signal: annotationView.editorContentsDeclined
+                targetState: historyState
             }
         }
 
@@ -445,12 +451,12 @@ BasicPage {
             }
 
             DSM.SignalTransition {
-                targetState: singleAnnotation
                 signal: annotationView.editorContentsSaved
+                targetState: singleAnnotation
             }
             DSM.SignalTransition {
-                targetState: historyState
                 signal: annotationView.editorContentsDeclined
+                targetState: historyState
             }
         }
 
@@ -467,12 +473,12 @@ BasicPage {
             }
 
             DSM.SignalTransition {
-                targetState: singleAnnotation
                 signal: annotationView.editorContentsSaved
+                targetState: singleAnnotation
             }
             DSM.SignalTransition {
-                targetState: historyState
                 signal: annotationView.editorContentsDeclined
+                targetState: historyState
             }
         }
 
@@ -489,12 +495,12 @@ BasicPage {
             }
 
             DSM.SignalTransition {
-                targetState: singleAnnotation
                 signal: annotationView.editorContentsSaved
+                targetState: singleAnnotation
             }
             DSM.SignalTransition {
-                targetState: historyState
                 signal: annotationView.editorContentsDeclined
+                targetState: historyState
             }
         }
     }

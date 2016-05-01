@@ -177,12 +177,12 @@ BasicPage {
 
             DSM.SignalTransition {
                 signal: closeCurrentPage
-                targetState: rubricGroupAssessmentCriterium
+                targetState: historyState
             }
 
             DSM.SignalTransition {
                 signal: contentsSaved
-                targetState: rubricGroupAssessmentCriterium
+                targetState: historyState
             }
         }
 

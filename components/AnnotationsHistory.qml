@@ -10,7 +10,7 @@ Rectangle {
         id: units
     }
 
-    signal openAnnotation(string identifier)
+    signal annotationSelected(string title)
     signal hideHistory()
 
     color: 'grey'
@@ -60,7 +60,7 @@ Rectangle {
             }
             MouseArea {
                 anchors.fill: parent
-                onClicked: annotationsHistory.openAnnotation(model.title)
+                onClicked: annotationsHistory.annotationSelected(model.title)
                 onPressAndHold: annotationsHistoryModel.remove(model.index)
             }
         }

@@ -52,8 +52,6 @@
         <file>qml/Projects.qml</file>
         <file>qml/ProjectEditor.qml</file>
         <file>qml/RubricAssessmentEditor.qml</file>
-        <file>qml/RubricGroupAssessment.qml</file>
-        <file>qml/RubricAssessmentDescriptor.qml</file>
         <file>qml/BasicDatabase.qml</file>
         <file>qml/GroupsIndividuals.qml</file>
         <file>qml/GroupIndividualEditor.qml</file>
@@ -80,9 +78,7 @@
         <file>qml/ShowExtendedAnnotation.qml</file>
         <file>qml/EditDateTimeItemInspector2.qml</file>
         <file>qml/BasicPage.qml</file>
-        <file>qml/ExtendedAnnotationsList.qml</file>
         <file>qml/ShowTimeTable.qml</file>
-        <file>qml/RubricsAssessmentList.qml</file>
         <file>qml/RubricsDefinitionsList.qml</file>
         <file>qml/RubricsGroupsList.qml</file>
         <file>qml/RubricsReportsList.qml</file>
@@ -90,7 +86,6 @@
         <file>qml/LabelsSort.qml</file>
         <file>qml/AboveMenu.qml</file>
         <file>qml/OmniboxSearch.qml</file>
-        <file>qml/ContinuousAnnotationsList.qml</file>
         <file>qml/InlineExpandedAnnotation.qml</file>
         <file>icons/pin-23620.svg</file>
         <file>qml/AnnotationsModule.qml</file>

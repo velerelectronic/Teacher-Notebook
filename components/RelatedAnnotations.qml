@@ -19,7 +19,7 @@ Item {
     property string archivedState: "state = 3"
     property string trashedState: "state < 0"
 
-    signal openAnnotation(string identifier)
+    signal annotationSelected(string title)
 
     Common.UseUnits {
         id: units
@@ -175,13 +175,6 @@ Item {
 
                 spacing: units.nailUnit
 
-                header: Text {
-                    width: relatedAnnotationsView.width
-                    height: units.fingerUnit
-                    font.pixelSize: units.readUnit
-                    text: qsTr("Anotacions amb etiquetes #") + relatedAnnotations.labels
-                }
-
                 delegate: Rectangle {
                     width: relatedAnnotationsView.width
                     height: units.fingerUnit * 2
@@ -223,9 +216,21 @@ Item {
                     }
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {
-                            openAnnotation(model.title);
-                        }
+                        onClicked: annotationSelected(model.title)
+                    }
+                }
+
+                footer: (relatedAnnotationsModel.count==0)?noAnnotationsComponent:null
+
+                Component {
+                    id: noAnnotationsComponent
+                    Text {
+                        width: relatedAnnotationsView.width
+                        height: units.fingerUnit
+                        font.pixelSize: units.readUnit
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        text: qsTr('No hi ha anotacions.')
                     }
                 }
 

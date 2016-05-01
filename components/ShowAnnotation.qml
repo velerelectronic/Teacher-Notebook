@@ -8,13 +8,13 @@ import ClipboardAdapter 1.0
 Item {
     id: showAnnotationItem
 
-    signal editAnnotationTitle()
-    signal editAnnotationDescription(string description)
-    signal editAnnotationPeriod(string start, string end)
-    signal editAnnotationLabels(string labels)
-    signal editAnnotationState(int stateValue)
-    signal openAnnotation(string title)
-    signal openRubricAssessment(int assessment)
+    signal annotationSelected(string title)
+    signal annotationDescriptionSelected(string description)
+    signal annotationLabelsSelected(string labels)
+    signal annotationPeriodSelected(string start, string end)
+    signal annotationStateSelected(int stateValue)
+    signal annotationTitleSelected()
+    signal rubricAssessmentSelected(int assessment)
     signal showRelatedAnnotations()
     signal showRelatedAnnotationsByLabels()
     signal showRelatedAnnotationsByPeriod()
@@ -82,7 +82,7 @@ Item {
 
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: openAnnotation(showAnnotationItem.identifier)
+                            onClicked: annotationSelected(showAnnotationItem.identifier)
                         }
                         RowLayout {
                             anchors.fill: parent
@@ -94,7 +94,7 @@ Item {
                                 Layout.preferredWidth: size
                                 size: units.fingerUnit
                                 image: 'edit-153612'
-                                onClicked: editAnnotationPeriod(periodStart, periodEnd)
+                                onClicked: annotationPeriodSelected(periodStart, periodEnd)
                             }
 
                             Text {
@@ -125,7 +125,7 @@ Item {
                                 size: units.fingerUnit
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: size
-                                onClicked: editAnnotationLabels(showAnnotationItem.labels)
+                                onClicked: annotationLabelsSelected(showAnnotationItem.labels)
                             }
                             Text {
                                 id: labelsText
@@ -150,7 +150,7 @@ Item {
 
                                 onClicked: {
                                     console.log('edit state');
-                                    editAnnotationState(showAnnotationItem.stateValue);
+                                    annotationStateSelected(showAnnotationItem.stateValue);
                                 }
                             }
                         }
@@ -182,7 +182,7 @@ Item {
                                 }
                                 size: units.fingerUnit
                                 image: 'edit-153612'
-                                onClicked: editAnnotationTitle()
+                                onClicked: annotationTitleSelected()
                             }
                         }
                         Rectangle {
@@ -215,7 +215,7 @@ Item {
 
                             size: units.fingerUnit
                             image: 'edit-153612'
-                            onClicked: editAnnotationDescription(descText)
+                            onClicked: annotationDescriptionSelected(descText)
                         }
                     }
                 }
@@ -291,7 +291,7 @@ Item {
                         }
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: openAnnotation(model.title)
+                            onClicked: annotationSelected(model.title)
                         }
                     }
                     footer: Common.ImageButton {
@@ -441,7 +441,7 @@ Item {
         clipboard.copia(showAnnotationItem.descText);
     }
 
-    function openRubricAssessmentMenu() {
+    function rubricAssessmentMenu() {
         console.log('hola');
 //        annotationView.openMenu(units.fingerUnit * 2, addRubricMenu, {})
     }

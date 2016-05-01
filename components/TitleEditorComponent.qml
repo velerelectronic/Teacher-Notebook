@@ -9,6 +9,8 @@ Common.AbstractEditor {
     id: generalTitleEditor
     property alias content: titleEditor.content
 
+    property var annotationContent
+
     onChangesChanged: {
         if (!generalTitleEditor.changes) {
             titleEditor.setChanges(false);
@@ -41,5 +43,9 @@ Common.AbstractEditor {
             text: qsTr('Esborrar anotació')
             onClicked: {}
         }
+    }
+
+    onContentChanged: {
+        annotationContent = {title: content};
     }
 }
