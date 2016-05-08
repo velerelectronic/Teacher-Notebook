@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg viewBox="0 0 437.5 437.5" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<linearGradient>
+<stop offset="0" stop-color="#ffff8a" stop-opacity=".6667"/>
+<stop offset="1" stop-opacity=".3961"/>
+</linearGradient>
+<linearGradient>
+<stop offset="0" stop-color="#faff00"/>
+<stop offset="1" stop-color="#026d00"/>
+</linearGradient>
+<linearGradient x1="-6.84581591e-9" x2="1" y1="-4.18149391e-8" y2="1">
+<stop offset="0" stop-color="#000f67"/>
+<stop offset="1" stop-color="#fff"/>
+</linearGradient>
+<linearGradient xlink:href="#linearGradient53"/>
+<linearGradient x1=".23077" x2=".76923" xlink:href="#linearGradient53" y1=".50781" y2=".51563"/>
+<linearGradient x1=".48276" x2=".32184" xlink:href="#linearGradient53" y1=".38281" y2=".53125"/>
+<radialGradient cx=".5" cy=".5" r=".5" xlink:href="#linearGradient53"/>
+</defs>
+<path d="m43.82272,143.5732c0,0 152.09448,162.0739 174.97198,188.4197s104.3201,40.801 122.1787,29.1731c17.6787-10.1182 18.6816-68.0947-19.503-112.4394s-190.2588-216.50072-205.42-223.11205-96.00103,33.36872-85.58838,53.83034 178.47838,205.75751 205.58598,224.41781 49.6349,17.3051 60.6844,6.2811c7.301-8.3467 15.5532-21.0232-7.3243-47.3688s-161.5109-174.70142-161.5109-174.70142" fill="none" stroke="#009600" stroke-width="23.17007"/>
+</svg>

@@ -14,6 +14,7 @@ Item {
     signal annotationPeriodSelected(string start, string end)
     signal annotationStateSelected(int stateValue)
     signal annotationTitleSelected()
+    signal attachmentsSelected()
     signal rubricAssessmentSelected(int assessment)
     signal resourceSelected(int resource)
     signal showRelatedAnnotations()
@@ -26,6 +27,10 @@ Item {
     property string periodStart: ''
     property string periodEnd: ''
     property int stateValue: 0
+
+    Common.UseUnits {
+        id: units
+    }
 
     Models.ExtendedAnnotations {
         id: relatedAnnotationsSimpleModel
@@ -235,7 +240,7 @@ Item {
             id: rubricsArea
 
             Layout.fillWidth: true
-            Layout.preferredHeight: (rubricsAssessmentModel.count>0)?units.fingerUnit * 2:0
+            Layout.preferredHeight: units.fingerUnit * 2
 
             ListView {
                 id: rubricsAnnotationInfo
@@ -245,7 +250,20 @@ Item {
 
                 model: attachedItems
                 spacing: units.nailUnit
+
+                headerPositioning: ListView.OverlayHeader
+                header: Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: width
+                    size: units.fingerUnit * 2
+
+                    z: 2
+                    image: 'paper-clip-27821'
+                    onClicked: attachmentsSelected()
+                }
+
                 delegate: Common.BoxedText {
+                    z: 1
                     height: rubricsAnnotationInfo.height
                     width: units.fingerUnit * 6
                     text: model.visualTitle
@@ -394,7 +412,6 @@ Item {
 
 
     function getText() {
-        console.log('gt text');
         if (showAnnotationItem.identifier != '') {
             annotationsModel.filters = ["title = ?"];
             annotationsModel.bindValues = [showAnnotationItem.identifier];

@@ -17,11 +17,13 @@ BasicPage {
 
     pageTitle: qsTr('Anotació')
 
+    signal openAttachmentsPage()
     signal changeAnnotationTitle()
     signal changeAnnotationDescription()
     signal changeAnnotationLabels()
     signal changeAnnotationPeriod()
     signal changeAnnotationState()
+    signal closeCurrentPage()
     signal closeNewAnnotation()
     signal closeNewRubricAssessment()
 
@@ -90,11 +92,21 @@ BasicPage {
             annotationView.changeAnnotationTitle();
         }
 
+        onAttachmentsSelected: {
+            console.log('select');
+            openAttachmentsPage();
+        }
+
         onCloseNewAnnotation: {
             annotationView.closeNewAnnotation();
         }
 
         onCloseNewRubricAssessment: annotationView.closeNewRubricAssessment()
+
+        onNewRubricAssessment: {
+            identifier = annotation;
+            annotationView.newRubricAssessment();
+        }
     }
 
     Components.AnnotationsHistory {
@@ -196,63 +208,68 @@ BasicPage {
             }
 
             DSM.SignalTransition {
-                targetState: singleAnnotation
                 signal: annotationView.showSingleAnnotation
+                targetState: singleAnnotation
             }
 
             DSM.SignalTransition {
-                targetState: annotationsList
                 signal: annotationView.showAnnotationsList
+                targetState: annotationsList
             }
 
             DSM.SignalTransition {
-                targetState: relatedAnnotationsByLabels
                 signal: annotationView.showRelatedAnnotationsByLabels
+                targetState: relatedAnnotationsByLabels
             }
 
             DSM.SignalTransition {
-                targetState: relatedAnnotationsByPeriod
                 signal: annotationView.showRelatedAnnotationsByPeriod
+                targetState: relatedAnnotationsByPeriod
             }
 
             DSM.SignalTransition {
-                targetState: annotationsHistory
+                signal: openAttachmentsPage
+                targetState: attachmentsState
+            }
+
+            DSM.SignalTransition {
                 signal: annotationView.showHistory
+                targetState: annotationsHistory
             }
 
             DSM.SignalTransition {
-                targetState: addAnnotation
                 signal: annotationView.showNewAnnotation
+                targetState: addAnnotation
             }
 
             DSM.SignalTransition {
-                targetState: addRubricAssessment
                 signal: annotationView.newRubricAssessment
+                targetState: addRubricAssessment
             }
 
             DSM.SignalTransition {
-                targetState: titleEditor
                 signal: annotationView.changeAnnotationTitle
+                targetState: titleEditor
             }
 
             DSM.SignalTransition {
-                targetState: descEditor
                 signal: annotationView.changeAnnotationDescription
+                targetState: descEditor
             }
 
             DSM.SignalTransition {
-                targetState: periodEditor
                 signal: annotationView.changeAnnotationPeriod
+                targetState: periodEditor
             }
 
             DSM.SignalTransition {
-                targetState: labelsEditor
                 signal: annotationView.changeAnnotationLabels
+                targetState: labelsEditor
             }
 
             DSM.SignalTransition {
-                targetState: stateEditor
                 signal: annotationView.changeAnnotationState
+                targetState: stateEditor
             }
         }
 
@@ -377,6 +394,7 @@ BasicPage {
 
             onEntered: {
                 annotationView.pushButtonsModel();
+                console.log('ARA');
                 annotationView.setSource('qrc:///components/AddRubricAssessmentComponent.qml', {annotation: identifier});
                 annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'closeNewRubricAssessment'});
             }
@@ -501,6 +519,30 @@ BasicPage {
             DSM.SignalTransition {
                 signal: annotationView.editorContentsDeclined
                 targetState: historyState
+            }
+        }
+
+        DSM.State {
+            id: attachmentsState
+
+            onEntered: {
+                pushButtonsModel();
+                setSource('qrc:///components/AnnotationAttachedItems.qml', {annotation: annotationView.identifier});
+                buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'closeCurrentPage'});
+            }
+
+            onExited: {
+                popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                signal: newRubricAssessment
+                targetState: addRubricAssessment
+            }
+
+            DSM.SignalTransition {
+                signal: closeCurrentPage
+                targetState: singleAnnotation
             }
         }
     }

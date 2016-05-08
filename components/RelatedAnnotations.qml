@@ -13,11 +13,12 @@ Item {
     property string mainIdentifier: ''
     property string initialState: ''
     property string stateFilter: inboxState
-    property string inboxState: "state = 0 OR state IS NULL"
+    property string inboxState: "state = 0 OR state = 1 OR state IS NULL" // inbox + pinnedState
     property string pinnedState: "state = 1"
     property string postponedState: "state = 2"
     property string archivedState: "state = 3"
     property string trashedState: "state < 0"
+    property string anyState: "1=1"
 
     signal annotationSelected(string title)
 
@@ -144,6 +145,11 @@ Item {
                             refreshAnnotationsList();
                         }
                     }
+
+                    function selectAnyState() {
+                        currentIndex = -1;
+                        relatedAnnotations.stateFilter = relatedAnnotations.anyState;
+                    }
                 }
             }
         }
@@ -153,6 +159,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: units.fingerUnit * 1.5
             onPerformSearch: {
+                statesList.selectAnyState();
                 refreshAnnotationsList();
             }
         }

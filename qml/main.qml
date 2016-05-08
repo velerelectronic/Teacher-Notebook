@@ -48,6 +48,8 @@
   * Postponed: https://pixabay.com/es/reloj-de-arena-temporizador-arena-23654/
   * Archive: https://pixabay.com/es/marca-de-verificaci%C3%B3n-caja-304890/
   * Deleted: https://pixabay.com/es/puede-papelera-de-basura-basura-294071/
+
+  * Attached: https://pixabay.com/es/clip-de-papel-mantenga-metal-27821/
 */
 
 import QtQuick 2.2

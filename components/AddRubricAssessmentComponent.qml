@@ -6,7 +6,7 @@ import 'qrc:///models' as Models
 Rectangle {
     id: addRubricMenuRect
 
-    property int requiredHeight: possibleList.requiredHeight + possibleList.anchors.margins * 2
+//    property int requiredHeight: possibleList.requiredHeight + possibleList.anchors.margins * 2
 
     signal closeNewRubricAssessment()
 
@@ -39,8 +39,6 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: units.fingerUnit
 
-        property int requiredHeight: contentItem.height
-
         clip: true
         spacing: units.nailUnit
 
@@ -52,7 +50,7 @@ Rectangle {
             width: possibleList.width
             height: groupText.height + rubricsGrid.height + units.nailUnit
 
-            property string group: model.group
+            property string thisGroup: model.group
 
             ColumnLayout {
                 anchors {
@@ -70,7 +68,7 @@ Rectangle {
                     font.bold: true
                     font.pixelSize: units.readUnit
                     elide: Text.ElideRight
-                    text: qsTr('Grup') + " " + model.group
+                    text: qsTr('Grup') + " " + singleRubricXGroup.thisGroup
                 }
                 GridView {
                     id: rubricsGrid
@@ -91,7 +89,7 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                newRubricAssessment(model.title, model.desc, model.id, singleRubricXGroup.group);
+                                addRubricMenuRect.createNewRubricAssessment(model.title, model.desc, model.id, singleRubricXGroup.thisGroup);
                                 closeNewRubricAssessment();
                             }
                         }
@@ -101,7 +99,7 @@ Rectangle {
         }
     }
 
-    function newRubricAssessment(title, desc, rubric, group) {
+    function createNewRubricAssessment(title, desc, rubric, group) {
         var obj = {};
         obj = {
             title: title,
@@ -119,5 +117,4 @@ Rectangle {
         groupsModel.selectUnique('group');
         console.log('COUNT', groupsModel.count)
     }
-
 }

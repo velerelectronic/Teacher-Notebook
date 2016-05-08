@@ -9,6 +9,7 @@ BasicPage {
 
     pageTitle: qsTr('Recursos')
 
+    signal changeAnnotation()
     signal closeCurrentPage()
     signal documentSelected()
     signal showResource()
@@ -17,6 +18,7 @@ BasicPage {
 
     property int resourceId: -1
     property string documentSource: ''
+    property string annotationTitle: ''
 
     Models.ResourcesModel {
         id: resourcesModel
@@ -26,6 +28,17 @@ BasicPage {
         target: mainItem
 
         ignoreUnknownSignals: true
+
+        onAnnotationSelected: {
+            resourcesModel.updateObject(resourceId, {annotation: title});
+            changeAnnotation();
+        }
+
+        onAnnotationEditSelected: {
+            annotationTitle = annotation;
+            resourceId = resource;
+            changeAnnotation();
+        }
 
         onDocumentSelected: {
             documentSource = document;
@@ -108,6 +121,11 @@ BasicPage {
                 signal: closeCurrentPage
                 targetState: resourcesListState
             }
+
+            DSM.SignalTransition {
+                signal: changeAnnotation
+                targetState: changeResourceAnnotationState
+            }
         }
 
         DSM.State {
@@ -133,6 +151,30 @@ BasicPage {
             DSM.SignalTransition {
                 signal: closeCurrentPage
                 targetState: historyState
+            }
+        }
+
+        DSM.State {
+            id: changeResourceAnnotationState
+
+            onEntered: {
+                pushButtonsModel();
+                buttonsModel.append({icon: 'road-sign-147409', object: resourcesModule, method: 'closeCurrentPage'});
+                setSource('qrc:///components/RelatedAnnotations.qml', {identifier: annotationTitle});
+            }
+
+            onExited: {
+                popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                signal: changeAnnotation
+                targetState: singleResourceState
+            }
+
+            DSM.SignalTransition {
+                signal: closeCurrentPage
+                targetState: singleResourceState
             }
         }
 

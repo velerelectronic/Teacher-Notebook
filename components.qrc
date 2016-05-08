@@ -20,5 +20,6 @@
         <file>components/ShowSingleResource.qml</file>
         <file>components/DocumentsList.qml</file>
         <file>components/ResourceSourceViewer.qml</file>
+        <file>components/AnnotationAttachedItems.qml</file>
     </qresource>
 </RCC>

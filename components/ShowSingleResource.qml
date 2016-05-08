@@ -22,6 +22,7 @@ Item {
     property string annotation: ''
 
     signal resourceUpdated()
+    signal annotationEditSelected(string annotation, int resource)
 
     Models.ResourcesModel {
         id: resourcesModel
@@ -106,13 +107,21 @@ Item {
                 font.bold: true
                 text: qsTr('Anotació')
             }
-            Editors.TextAreaEditor3 {
-                id: annotationEditor
+            Rectangle {
                 width: resourceListView.width
-                height: units.fingerUnit * 8
-                color: 'white'
-                border.color: 'black'
-                text: annotation
+                height: units.fingerUnit * 3
+                Text {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    font.pixelSize: units.readUnit
+                    text: annotation
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: annotationEditSelected(annotation, resource)
+                }
             }
         }
     }
@@ -135,7 +144,7 @@ Item {
             desc: descEditor.text,
             type: mediaTypeEditor.text,
             source: sourceEditor.text,
-            annotation: annotationEditor.text
+            annotation: annotation
         }
 
         resourcesModel.updateObject(resource,obj);
