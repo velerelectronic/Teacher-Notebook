@@ -12,6 +12,11 @@ Rectangle {
 
     property string annotation
 
+    property string chosenGroup: ''
+    property int chosenRubricId: -1
+    property string chosenRubricTitle: ''
+    property string chosenRubricDesc: ''
+
     Common.UseUnits {
         id: units
     }
@@ -34,70 +39,86 @@ Rectangle {
         id: rubricsAssessmentModel
     }
 
-    ListView {
-        id: possibleList
+    RowLayout {
         anchors.fill: parent
         anchors.margins: units.fingerUnit
 
-        clip: true
         spacing: units.nailUnit
 
-        model: groupsModel
+        ListView {
+            id: groupsList
+            Layout.fillHeight: true
+            Layout.fillWidth: true
 
-        delegate: Item {
-            id: singleRubricXGroup
+            model: groupsModel
 
-            width: possibleList.width
-            height: groupText.height + rubricsGrid.height + units.nailUnit
+            spacing: units.nailUnit
+            delegate: Common.BoxedText {
+                width: groupsList.width
+                height: units.fingerUnit * 2
 
-            property string thisGroup: model.group
-
-            ColumnLayout {
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                }
-
-                spacing: units.nailUnit
-
-                Text {
-                    id: groupText
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: units.fingerUnit
-                    font.bold: true
-                    font.pixelSize: units.readUnit
-                    elide: Text.ElideRight
-                    text: qsTr('Grup') + " " + singleRubricXGroup.thisGroup
-                }
-                GridView {
-                    id: rubricsGrid
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: contentItem.height
-
-                    model: rubricsModel
-                    interactive: false
-
-                    cellWidth: units.fingerUnit * 4
-                    cellHeight: cellWidth
-
-                    delegate: Common.BoxedText {
-                        width: units.fingerUnit * 3
-                        height: width
-                        margins: units.nailUnit
-                        text: model.title
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                addRubricMenuRect.createNewRubricAssessment(model.title, model.desc, model.id, singleRubricXGroup.thisGroup);
-                                closeNewRubricAssessment();
-                            }
-                        }
+                color: 'transparent'
+                text: qsTr('Grup') + " " + model.group
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        groupsList.currentIndex = model.index;
+                        chosenGroup = model.group;
                     }
                 }
             }
+
+            highlight: Rectangle {
+                width: groupsList.width
+                height: units.fingerUnit * 2
+                color: 'yellow'
+            }
         }
+
+        ListView {
+            id: rubricsList
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            model: rubricsModel
+
+            spacing: units.nailUnit
+            delegate: Common.BoxedText {
+                width: rubricsList.width
+                height: units.fingerUnit * 2
+                margins: units.nailUnit
+                color: 'transparent'
+                text: model.title
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        rubricsList.currentIndex = model.index;
+                        chosenRubricId = model.id;
+                        chosenRubricTitle = model.title;
+                        chosenRubricDesc = model.desc;
+                    }
+                }
+            }
+            highlight: Rectangle {
+                width: rubricsList.width
+                height: units.fingerUnit * 2
+                color: 'yellow'
+            }
+        }
+        Common.Button {
+            Layout.preferredWidth: units.fingerUnit * 3
+            Layout.fillHeight: true
+
+            enabled: (groupsList.currentIndex > -1) && (rubricsList.currentIndex > -1)
+            text: qsTr('Crea rúbrica')
+            onClicked: {
+                addRubricMenuRect.createNewRubricAssessment(chosenRubricTitle, chosenRubricDesc, chosenRubricId, chosenGroup);
+                closeNewRubricAssessment();
+            }
+        }
+
     }
+
 
     function createNewRubricAssessment(title, desc, rubric, group) {
         var obj = {};
