@@ -39,5 +39,6 @@
         <file>common/TextButton.qml</file>
         <file>common/ExpandableListView.qml</file>
         <file>common/WheelClock.qml</file>
+        <file>common/HorizontalStaticMenu.qml</file>
     </qresource>
 </RCC>

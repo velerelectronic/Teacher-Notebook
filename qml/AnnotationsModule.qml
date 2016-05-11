@@ -146,6 +146,7 @@ BasicPage {
         // Change buttons
         annotationView.pushButtonsModel();
         annotationView.buttonsModel.append({icon: 'list-153185', object: annotationView, method: 'showHistory'});
+        annotationView.buttonsModel.append({icon: 'plus-24844', object: annotationView, method: 'openNewAnnotation'});
         annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'showSingleAnnotation'});
 
         // Show related annotations
@@ -196,8 +197,6 @@ BasicPage {
                 annotationView.pushButtonsModel();
                 annotationView.buttonsModel.append({icon: 'hierarchy-35795', object: annotationView, method: 'showAnnotationsList'});
                 annotationView.buttonsModel.append({icon: 'copy-97584', object: mainItem, method: 'copyAnnotationDescription'});
-                annotationView.buttonsModel.append({icon: 'questionnaire-158862', object: annotationView, method: 'newRubricAssessment'});
-                annotationView.buttonsModel.append({icon: 'plus-24844', object: annotationView, method: 'openNewAnnotation'});
                 annotationView.buttonsModel.append({icon: 'list-153185', object: annotationView, method: 'showHistory'});
 
                 mainItem.getText();
@@ -285,13 +284,18 @@ BasicPage {
             }
 
             DSM.SignalTransition {
-                targetState: singleAnnotation
                 signal: annotationView.showSingleAnnotation
+                targetState: singleAnnotation
             }
 
             DSM.SignalTransition {
-                targetState: annotationsHistory
                 signal: annotationView.showHistory
+                targetState: annotationsHistory
+            }
+
+            DSM.SignalTransition {
+                signal: annotationView.showNewAnnotation
+                targetState: addAnnotation
             }
         }
 

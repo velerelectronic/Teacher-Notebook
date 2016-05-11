@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
+import QtQml.Models 2.2
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///components' as Components
@@ -17,6 +18,7 @@ Item {
     signal attachmentsSelected()
     signal rubricAssessmentSelected(int assessment)
     signal resourceSelected(int resource)
+    signal newRubricAssessment(string annotation)
     signal showRelatedAnnotations()
     signal showRelatedAnnotationsByLabels()
     signal showRelatedAnnotationsByPeriod()
@@ -37,154 +39,190 @@ Item {
         //limit: 6
     }
 
-    Models.RubricsAssessmentModel {
-        id: rubricsAssessmentModel
-        filters: ["annotation=?"]
-    }
-
-    Models.ResourcesModel {
-        id: resourcesModel
-        filters: ["annotation=?"]
-    }
-
-    ListModel {
-        id: attachedItems
-    }
-
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: units.nailUnit
-        Rectangle {
+
+        Common.HorizontalStaticMenu {
+            id: optionsMenu
             Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit
-            Text {
-                anchors.fill: parent
-                verticalAlignment: Text.AlignVCenter
-                font.pixelSize: units.readUnit
-                text: showAnnotationItem.identifier
-                elide: Text.ElideRight
+            Layout.preferredHeight: units.fingerUnit * 2
+
+            spacing: units.nailUnit
+            underlineColor: 'orange'
+            underlineWidth: units.nailUnit
+
+            Component.onCompleted: {
+                optionsMenu.appendOption({title: 'Principal'});
+                optionsMenu.appendOption({title: 'Descripció'});
+                optionsMenu.appendOption({title: 'Elements annexos'});
+                optionsMenu.appendOption({title: 'Anotacions relacionades'});
             }
         }
 
-        Flickable {
-            id: flickableText
-            Layout.fillHeight: true
+        ListView {
+            id: partsList
             Layout.fillWidth: true
-            contentHeight: groupAnnotationItem.height
-            contentWidth: groupAnnotationItem.width
-            clip: true
+            Layout.fillHeight: true
 
-            visible: flickableText.enabled
+            visible: partsList.enabled
             enabled: !editorArea.enabled
 
-            Item {
-                id: groupAnnotationItem
+            clip: true
 
-                property int interspacing: units.nailUnit
-                width: flickableText.width
-                height: Math.max(headerData.height + titleRect.height + contentText.requiredHeight + 2 * groupAnnotationItem.interspacing, flickableText.height)
+            spacing: units.fingerUnit
 
-                ColumnLayout {
-                    anchors.fill: parent
-                    spacing: groupAnnotationItem.interspacing
+            Connections {
+                target: optionsMenu
+                onCurrentOptionChanged: {
+                    partsList.currentIndex = index;
+                }
+            }
 
-                    Rectangle {
-                        id: headerData
-                        Layout.preferredHeight: Math.max(startText.height, endText.height, labelsText.height, stateComponent.height, units.fingerUnit) + 2 * units.nailUnit
-                        Layout.fillWidth: true
-                        border.color: 'black'
+            model: ObjectModel {
+                Rectangle {
+                    id: headerData
+                    width: partsList.width
+                    height: Math.max(units.fingerUnit, childrenRect.height)
+                    border.color: 'black'
 
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: annotationSelected(showAnnotationItem.identifier)
+                    GridLayout {
+                        anchors {
+                            top: parent.top
+                            left: parent.left
+                            right: parent.right
                         }
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.margins: units.nailUnit
-                            spacing: units.nailUnit
-                            Common.ImageButton {
-                                id: changePeriodButton
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: size
-                                size: units.fingerUnit
-                                image: 'edit-153612'
-                                onClicked: annotationPeriodSelected(periodStart, periodEnd)
-                            }
 
-                            Text {
-                                id: startText
-                                Layout.preferredHeight: contentHeight
-                                Layout.preferredWidth: parent.width / 3
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: showRelatedAnnotationsByPeriod();
-                                }
-                            }
-                            Text {
-                                id: endText
-                                Layout.preferredHeight: contentHeight
-                                Layout.preferredWidth: parent.width / 3
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: showRelatedAnnotationsByPeriod();
-                                }
-                            }
-                            Common.ImageButton {
-                                id: changeLabelsButton
-                                image: 'edit-153612'
-                                size: units.fingerUnit
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: size
-                                onClicked: annotationLabelsSelected(showAnnotationItem.labels)
-                            }
-                            Text {
-                                id: labelsText
-                                Layout.preferredHeight: contentHeight
-                                Layout.fillWidth: true
-                                color: 'green'
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: showRelatedAnnotationsByLabels()
-                                }
-                            }
+                        columns: 3
 
-                            Components.StateComponent {
-                                id: stateComponent
-
-                                Layout.preferredWidth: units.fingerUnit * 2
-                                Layout.preferredHeight: stateComponent.requiredHeight
-
-                                stateValue: showAnnotationItem.stateValue
-
-                                onClicked: {
-                                    console.log('edit state');
-                                    annotationStateSelected(showAnnotationItem.stateValue);
-                                }
-                            }
-                        }
-                    }
-
-                    Item {
-                        id: titleRect
-
-                        Layout.preferredHeight: titleText.height + 2
-                        Layout.fillWidth: true
+                        columnSpacing: units.nailUnit
+                        rowSpacing: units.nailUnit
 
                         Text {
-                            id: titleText
-                            anchors {
-                                top: parent.top
-                                left: parent.left
-                                right: parent.right
-                            }
+                            width: headerData.width / 2
+                            height: units.fingerUnit
+                            font.pixelSize: units.readUnit
+                            text: qsTr('Anotació:')
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            height: contentHeight
+                            verticalAlignment: Text.AlignVCenter
+                            font.pixelSize: units.readUnit
+                            text: showAnnotationItem.identifier
+                            elide: Text.ElideRight
+                        }
+                        Item {
+                            width: units.fingerUnit * 2
+                            height: units.fingerUnit
+                        }
 
-                            height: Math.max(contentHeight, units.fingerUnit)
+                        Text {
+                            font.pixelSize: units.readUnit
+                            text: qsTr('Període:')
+                        }
+                        Text {
+                            id: startText
+                            height: contentHeight
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.pixelSize: units.readUnit
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: showRelatedAnnotationsByPeriod();
+                            }
+                        }
+                        Item {
+                            width: units.fingerUnit * 2
+                        }
+
+                        Item {
+                            width: units.fingerUnit * 2
+                        }
+
+                        Text {
+                            id: endText
+                            Layout.preferredHeight: contentHeight
+                            Layout.preferredWidth: parent.width / 3
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.pixelSize: units.readUnit
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: showRelatedAnnotationsByPeriod();
+                            }
+                        }
+                        Common.ImageButton {
+                            id: changePeriodButton
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: size
+                            size: units.fingerUnit
+                            image: 'edit-153612'
+                            onClicked: annotationPeriodSelected(periodStart, periodEnd)
+                        }
+
+                        Text {
+                            font.pixelSize: units.readUnit
+                            text: qsTr('Etiquetes:')
+                        }
+                        Text {
+                            id: labelsText
+                            Layout.preferredHeight: contentHeight
+                            Layout.fillWidth: true
+                            color: 'green'
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.pixelSize: units.readUnit
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: showRelatedAnnotationsByLabels()
+                            }
+                        }
+                        Common.ImageButton {
+                            id: changeLabelsButton
+                            image: 'edit-153612'
+                            size: units.fingerUnit
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: size
+                            onClicked: annotationLabelsSelected(showAnnotationItem.labels)
+                        }
+
+                        Text {
+                            font.pixelSize: units.readUnit
+                            text: qsTr('Estat:')
+                        }
+                        Components.StateComponent {
+                            id: stateComponent
+
+                            Layout.preferredWidth: units.fingerUnit * 2
+                            Layout.preferredHeight: stateComponent.requiredHeight
+
+                            stateValue: showAnnotationItem.stateValue
+
+                            onClicked: {
+                                console.log('edit state');
+                                annotationStateSelected(showAnnotationItem.stateValue);
+                            }
+                        }
+                        Item {
+                            width: units.fingerUnit * 2
+                        }
+                    }
+                }
+                Item {
+                    id: titleRect
+
+                    width: partsList.width
+                    height: titleText.height + barTitleSeparator.height + contentText.height
+
+                    ColumnLayout {
+                        anchors {
+                            top: parent.top
+                            left: parent.left
+                            right: parent.right
+                        }
+                        spacing: 0
+                        Text {
+                            id: titleText
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: Math.max(contentHeight, units.fingerUnit)
                             font.pixelSize: units.glanceUnit
                             font.bold: true
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -200,151 +238,109 @@ Item {
                             }
                         }
                         Rectangle {
-                            anchors {
-                                top: titleText.bottom
-                                left: parent.left
-                                right: parent.right
-                            }
-                            height: 2
+                            id: barTitleSeparator
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 2
                             color: 'black'
                         }
-
-                    }
-
-                    Text {
-                        id: contentText
-                        property int requiredHeight: Math.max(contentHeight, units.fingerUnit)
-
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        font.pixelSize: units.readUnit
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        onLinkActivated: openAnnotation(link)
-                        Common.ImageButton {
-                            id: changeDescriptionButton
-                            anchors {
-                                top: parent.top
-                                right: parent.right
-                            }
-
-                            size: units.fingerUnit
-                            image: 'edit-153612'
-                            onClicked: annotationDescriptionSelected(descText)
-                        }
-                    }
-                }
-            }
-
-        }
-        Item {
-            id: rubricsArea
-
-            Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit * 2
-
-            ListView {
-                id: rubricsAnnotationInfo
-
-                anchors.fill: parent
-                orientation: ListView.Horizontal
-
-                model: attachedItems
-                spacing: units.nailUnit
-
-                headerPositioning: ListView.OverlayHeader
-                header: Common.ImageButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: width
-                    size: units.fingerUnit * 2
-
-                    z: 2
-                    image: 'paper-clip-27821'
-                    onClicked: attachmentsSelected()
-                }
-
-                delegate: Common.BoxedText {
-                    z: 1
-                    height: rubricsAnnotationInfo.height
-                    width: units.fingerUnit * 6
-                    text: model.visualTitle
-                    margins: units.nailUnit
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            switch(model.type) {
-                            case 'rubric':
-                                annotationView.openPageArgs('RubricsModule', {rubricAssessmentIdentifier: model.identifier});
-                                break;
-                            case 'resource':
-                                annotationView.openPageArgs('ResourcesModule', {resourceId: model.identifier, state: 'displaySource'});
-                                break;
-                            default:
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Item {
-            Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit * 2
-            RowLayout {
-                anchors.fill: parent
-                spacing: units.nailUnit
-                Text {
-                    Layout.preferredWidth: units.fingerUnit * 4
-                    Layout.fillHeight: true
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    text: qsTr('Anotacions relacionades')
-                }
-
-                ListView {
-                    id: relatedAnnotationsList
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    orientation: ListView.Horizontal
-                    clip: true
-
-                    rightMargin: units.fingerUnit * 3
-                    model: relatedAnnotationsSimpleModel
-
-                    spacing: units.nailUnit
-                    delegate: Rectangle {
-                        z: 1
-                        width: units.fingerUnit * 6
-                        height: relatedAnnotationsList.height
-                        border.color: 'black'
                         Text {
-                            anchors.fill: parent
-                            anchors.margins: units.nailUnit
+                            id: contentText
+                            property int requiredHeight: Math.max(contentHeight, units.fingerUnit)
+
+                            Layout.preferredHeight: contentText.requiredHeight
+                            Layout.fillWidth: true
+
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            elide: Text.ElideRight
-                            text: model.title
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: annotationSelected(model.title)
-                        }
-                    }
-                    footer: Common.ImageButton {
-                        id: relatedAnnotationsButton
-                        height: relatedAnnotationsList.height
-                        width: relatedAnnotationsButton.height
-                        image: 'arrow-145766'
-                        size: units.fingerUnit * 2
-                        onClicked: showRelatedAnnotations()
-                    }
+                            onLinkActivated: openAnnotation(link)
+                            Common.ImageButton {
+                                id: changeDescriptionButton
+                                anchors {
+                                    top: parent.top
+                                    right: parent.right
+                                }
 
+                                size: units.fingerUnit
+                                image: 'edit-153612'
+                                onClicked: annotationDescriptionSelected(descText)
+                            }
+                        }
+                    }
                 }
+
+                Components.AnnotationAttachedItems {
+                    id: attachedItemsArea
+
+                    width: partsList.width
+                    height: units.fingerUnit * 10
+
+                    annotation: showAnnotationItem.identifier
+
+                    onNewRubricAssessment: showAnnotationItem.newRubricAssessment(annotation)
+                }
+
+                Item {
+                    id: relatedAnnotationsArea
+                    width: partsList.width
+                    height: units.fingerUnit * 2
+                    RowLayout {
+                        anchors.fill: parent
+                        spacing: units.nailUnit
+                        Text {
+                            Layout.preferredWidth: units.fingerUnit * 4
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            text: qsTr('Anotacions relacionades')
+                        }
+
+                        ListView {
+                            id: relatedAnnotationsList
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            orientation: ListView.Horizontal
+                            clip: true
+
+                            rightMargin: units.fingerUnit * 3
+                            model: relatedAnnotationsSimpleModel
+
+                            spacing: units.nailUnit
+
+                            delegate: Rectangle {
+                                z: 1
+                                width: units.fingerUnit * 6
+                                height: relatedAnnotationsList.height
+                                border.color: 'black'
+                                Text {
+                                    anchors.fill: parent
+                                    anchors.margins: units.nailUnit
+                                    font.pixelSize: units.readUnit
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                    elide: Text.ElideRight
+                                    text: model.title
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: annotationSelected(model.title)
+                                }
+                            }
+                            footer: Common.ImageButton {
+                                id: relatedAnnotationsButton
+                                height: relatedAnnotationsList.height
+                                width: relatedAnnotationsButton.height
+                                image: 'arrow-145766'
+                                size: units.fingerUnit * 2
+                                onClicked: showRelatedAnnotations()
+                            }
+
+                        }
+                    }
+                }
+
             }
         }
-
     }
 
 
@@ -446,25 +442,6 @@ Item {
             descText = obj['desc'];
             contentText.text = parser.toHtml(obj['desc']);
             stateValue = obj['state'];
-        }
-
-        // Get rubrics
-        attachedItems.clear();
-        rubricsAssessmentModel.bindValues = [showAnnotationItem.identifier];
-        rubricsAssessmentModel.select();
-
-        for (var i=0; i<rubricsAssessmentModel.count; i++) {
-            var rubricObj = rubricsAssessmentModel.getObjectInRow(i);
-            attachedItems.append({type: 'rubric', visualTitle: rubricObj.title + " (" + rubricObj.group + ")", identifier: rubricObj.id});
-        }
-
-        // Get resources
-        resourcesModel.bindValues = [showAnnotationItem.identifier];
-        resourcesModel.select();
-
-        for (var i=0; i<resourcesModel.count; i++) {
-            var resourceObj = resourcesModel.getObjectInRow(i);
-            attachedItems.append({type: 'resource', visualTitle: resourceObj.title, identifier: resourceObj.id});
         }
 
         // Look for related annotations in labels and period

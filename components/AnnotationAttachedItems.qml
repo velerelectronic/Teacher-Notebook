@@ -39,7 +39,8 @@ Item {
             Layout.preferredHeight: units.fingerUnit
             font.pixelSize: units.readUnit
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-            text: annotation
+            font.bold: true
+            text: qsTr("Elements annexos: ") + annotation
         }
 
         ListView {
@@ -53,21 +54,22 @@ Item {
             model: attachedItems
             spacing: units.nailUnit
 
-            headerPositioning: ListView.OverlayHeader
-
             bottomMargin: units.fingerUnit * 2
 
             delegate: Rectangle {
+                z: 1
                 height: units.fingerUnit * 2
                 width: attachedItemsList.width
                 RowLayout {
                     anchors.fill: parent
                     anchors.margins: units.nailUnit
+                    anchors.leftMargin: units.fingerUnit * 2
                     spacing: units.nailUnit
                     Text {
                         Layout.fillHeight: true
                         Layout.preferredWidth: parent.width / 3
                         font.pixelSize: units.readUnit
+                        verticalAlignment: Text.AlignVCenter
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         text: model.visualTitle
                     }
@@ -75,8 +77,18 @@ Item {
                         Layout.fillHeight: true
                         Layout.preferredWidth: parent.width / 3
                         font.pixelSize: units.readUnit
+                        verticalAlignment: Text.AlignVCenter
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: model.type
+                        text: {
+                            switch(model.type) {
+                            case 'rubric':
+                                return qsTr('Rúbrica');
+                            case 'resource':
+                                return qsTr('Recurs');
+                            default:
+                                return qsTr('Algun altre tipus');
+                            }
+                        }
                     }
                 }
 
@@ -106,11 +118,26 @@ Item {
                 image: 'plus-24844'
                 onClicked: attachedItemsItem.newRubricAssessment(attachedItemsItem.annotation)
             }
+            Common.ImageButton {
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                }
+
+                size: units.fingerUnit * 2
+
+                z: 2
+                image: 'paper-clip-27821'
+            }
         }
 
     }
 
-    Component.onCompleted: {
+    onAnnotationChanged: refreshData();
+
+    Component.onCompleted: refreshData();
+
+    function refreshData() {
         console.log('Attachment items');
 
         // Get rubrics
@@ -131,6 +158,5 @@ Item {
             var resourceObj = resourcesModel.getObjectInRow(i);
             attachedItems.append({type: 'resource', visualTitle: resourceObj.title, identifier: resourceObj.id});
         }
-
     }
 }
