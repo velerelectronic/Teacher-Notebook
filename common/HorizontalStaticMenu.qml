@@ -1,4 +1,5 @@
-import QtQuick 2.0
+import QtQuick 2.5
+import QtQml.Models 2.2
 
 ListView {
     id: optionsList
@@ -11,9 +12,22 @@ ListView {
     property int cellWidth: Math.floor(model.count>0?((optionsList.width - model.count * optionsList.spacing) / model.count):0)
     property int underlineWidth: 0
     property string underlineColor: ''
+    property ListView connectedList: null
 
     model: ListModel {
         id: optionsModel
+    }
+
+    property ObjectModel sectionsModel
+
+    onSectionsModelChanged: {
+        optionsModel.clear();
+        for (var i=0; i<sectionsModel.count; i++) {
+            var obj = sectionsModel.get(i);
+            if (obj['objectName'] == 'BasicSection') {
+                optionsModel.append({title: obj['caption']});
+            }
+        }
     }
 
     delegate: Item {
@@ -32,10 +46,15 @@ ListView {
             onClicked: {
                 optionsList.currentIndex = model.index;
                 optionsList.currentOptionChanged(optionsList.currentIndex);
+                if (connectedList !== null)
+                    connectedList.currentIndex = optionsList.currentIndex;
+
                 console.log('option', currentIndex);
             }
         }
     }
+
+    highlightMoveDuration: 200
 
     highlight: Item {
         width: optionsList.cellWidth

@@ -20,6 +20,7 @@ Item {
     property string mediaType: ''
     property string source: ''
     property string annotation: ''
+    property string hashString: ''
 
     signal resourceUpdated()
     signal annotationEditSelected(string annotation, int resource)
@@ -30,97 +31,133 @@ Item {
 
     onResourceChanged: getResourceDetails()
 
-    ListView {
-        id: resourceListView
+
+    ColumnLayout {
         anchors.fill: parent
         spacing: units.nailUnit
+        Common.HorizontalStaticMenu {
+            id: menuBar
 
-        model: ObjectModel {
-            Text {
-                width: resourceListView.width
-                height: units.fingerUnit
-                font.pixelSize: units.readUnit
-                font.bold: true
-                text: qsTr('Títol')
-            }
-            Editors.TextAreaEditor3 {
-                id: titleEditor
-                width: resourceListView.width
-                height: units.fingerUnit * 8
-                color: 'white'
-                border.color: 'black'
-                text: title
-            }
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit * 1.5
 
-            Text {
-                width: resourceListView.width
-                height: units.fingerUnit
-                font.pixelSize: units.readUnit
-                font.bold: true
-                text: qsTr('Descripció')
-            }
-            Editors.TextAreaEditor3 {
-                id: descEditor
-                width: resourceListView.width
-                height: units.fingerUnit * 8
-                color: 'white'
-                border.color: 'black'
-                text: desc
-            }
+            underlineColor: 'orange'
+            underlineWidth: units.nailUnit
 
-            Text {
-                width: resourceListView.width
-                height: units.fingerUnit
-                font.pixelSize: units.readUnit
-                font.bold: true
-                text: qsTr('Tipus')
-            }
-            Editors.TextAreaEditor3 {
-                id: mediaTypeEditor
-                width: resourceListView.width
-                height: units.fingerUnit * 8
-                color: 'white'
-                border.color: 'black'
-                text: mediaType
-            }
+            sectionsModel: resourceSectionsModel
+            connectedList: resourceListView
+        }
 
-            Text {
-                width: resourceListView.width
-                height: units.fingerUnit
-                font.pixelSize: units.readUnit
-                font.bold: true
-                text: qsTr('Origen')
-            }
-            Editors.TextAreaEditor3 {
-                id: sourceEditor
-                width: resourceListView.width
-                height: units.fingerUnit * 8
-                color: 'white'
-                border.color: 'black'
-                text: source
-            }
+        ListView {
+            id: resourceListView
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            clip: true
 
-            Text {
-                width: resourceListView.width
-                height: units.fingerUnit
-                font.pixelSize: units.readUnit
-                font.bold: true
-                text: qsTr('Anotació')
-            }
-            Rectangle {
-                width: resourceListView.width
-                height: units.fingerUnit * 3
-                Text {
-                    anchors.fill: parent
-                    anchors.margins: units.nailUnit
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    font.pixelSize: units.readUnit
-                    text: annotation
+            spacing: units.fingerUnit
+
+            model: ObjectModel {
+                id: resourceSectionsModel
+
+                Common.BasicSection {
+                    width: resourceListView.width
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+                    caption: qsTr('Títol')
+
+                    Editors.TextAreaEditor3 {
+                        id: titleEditor
+                        width: parent.width
+                        height: units.fingerUnit * 8
+                        color: 'white'
+                        border.color: 'black'
+                        text: title
+                    }
                 }
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: annotationEditSelected(annotation, resource)
+
+                Common.BasicSection {
+                    width: resourceListView.width
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+                    caption: qsTr('Descripció')
+
+                    Editors.TextAreaEditor3 {
+                        id: descEditor
+                        width: parent.width
+                        height: units.fingerUnit * 8
+                        color: 'white'
+                        border.color: 'black'
+                        text: desc
+                    }
+                }
+
+                Common.BasicSection {
+                    width: resourceListView.width
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+                    caption: qsTr('Tipus')
+
+                    Editors.TextAreaEditor3 {
+                        id: mediaTypeEditor
+                        width: parent.width
+                        height: units.fingerUnit * 8
+                        color: 'white'
+                        border.color: 'black'
+                        text: mediaType
+                    }
+                }
+
+                Common.BasicSection {
+                    width: resourceListView.width
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+                    caption: qsTr('Origen')
+
+                    Editors.TextAreaEditor3 {
+                        id: sourceEditor
+                        width: parent.width
+                        height: units.fingerUnit * 8
+                        color: 'white'
+                        border.color: 'black'
+                        text: source
+                    }
+                }
+
+                Common.BasicSection {
+                    caption: qsTr('Hash')
+                    width: resourceListView.width
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+
+                    Text {
+                        id: hash
+                        width: parent.width
+                        height: contentHeight
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        text: hashString
+                    }
+                }
+
+                Common.BasicSection {
+                    width: resourceListView.width
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+                    caption: qsTr('Anotació')
+
+                    Text {
+                        width: parent.width
+                        height: units.fingerUnit * 3
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        font.pixelSize: units.readUnit
+                        text: annotation
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: annotationEditSelected(annotation, resource)
+                        }
+                    }
                 }
             }
         }
@@ -128,13 +165,16 @@ Item {
 
     function getResourceDetails() {
         resourcesModel.select();
+        console.log('Resource', resource);
         var obj = resourcesModel.getObject(resource);
+
         if (obj) {
             title = obj['title'];
             desc = obj['desc'];
             mediaType = obj['type'];
             source = obj['source'];
             annotation = obj['annotation'];
+            hashString = obj['hash'];
         }
     }
 

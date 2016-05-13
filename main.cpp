@@ -10,6 +10,7 @@
 #include "databasebackup.h"
 #include "standardpaths.h"
 #include "MarkDownParser/markdownparser.h"
+#include "CryptographicHash/cryptographichash.h"
 #include "ClipboardAdapter/qmlclipboardadapter.h"
 
 int main(int argc, char *argv[])
@@ -28,6 +29,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<XmlModel>("PersonalTypes", 1, 0, "XmlModel");
     qmlRegisterType<TeachingPlanning>("PersonalTypes", 1, 0, "TeachingPlanning");
     qmlRegisterType<ImageData>("PersonalTypes", 1, 0, "ImageData");
+    qmlRegisterType<CryptographicHash, 1>("CryptographicHash", 1, 0, "CryptographicHash");
     qRegisterMetaType<XmlModel>("XmlModel");
     qmlRegisterType<DatabaseBackup>("PersonalTypes", 1, 0, "DatabaseBackup");
     qmlRegisterType<SqlTableModel2>("PersonalTypes", 1, 0, "SqlTableModel");

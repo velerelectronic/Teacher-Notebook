@@ -1,6 +1,8 @@
 import QtQuick 2.5
 import QtQml.StateMachine 1.0 as DSM
 import PersonalTypes 1.0
+import CryptographicHash 1.0
+import FileIO 1.0
 import 'qrc:///models' as Models
 import "qrc:///javascript/Storage.js" as Storage
 
@@ -22,6 +24,10 @@ BasicPage {
 
     Models.ResourcesModel {
         id: resourcesModel
+    }
+
+    CryptographicHash {
+        id: hash
     }
 
     Connections {
@@ -181,7 +187,13 @@ BasicPage {
         DSM.State {
             id: newResourceState
 
+            FileIO {
+                id: selectedFile
+            }
+
             onEntered: {
+                selectedFile.source = documentSource;
+
                 console.log('Document source', documentSource);
                 var extension = /[^.]+$/.exec(documentSource);
                 var obj = {
@@ -191,7 +203,7 @@ BasicPage {
                     source: documentSource,
                     contents: '',
                     type: extension.toString().toUpperCase(),
-                    hash: '',
+                    hash: hash.md5(selectedFile.read()),
                     annotation: ''
                 }
                 resourcesModel.insertObject(obj);

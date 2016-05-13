@@ -151,7 +151,7 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         elide: Text.ElideRight
-                        text: model.source
+                        text: model.source + "\n" + model.hash
                         MouseArea {
                             anchors.fill: parent
                             onClicked: resourceSourceSelected(model.id)
