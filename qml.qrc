@@ -86,5 +86,6 @@
         <file>qml/AnnotationsModule.qml</file>
         <file>qml/RubricsModule.qml</file>
         <file>qml/DocumentsModule.qml</file>
+        <file>qml/ExportManager.qml</file>
     </qresource>
 </RCC>
