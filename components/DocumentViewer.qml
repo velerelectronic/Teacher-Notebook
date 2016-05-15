@@ -3,13 +3,9 @@ import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 
 Item {
-    id: resourceSourceDisplayItem
+    id: documentViewerItem
 
-    property int resource: -1
-
-    Models.ResourcesModel {
-        id: resourcesModel
-    }
+    property string source: ""
 
     Image {
         id: mainImage
@@ -27,10 +23,11 @@ Item {
         }
     }
 
+    function openSourceExternally() {
+        Qt.openUrlExternally(source);
+    }
+
     Component.onCompleted: {
-        resourcesModel.select();
-        var obj = resourcesModel.getObject(resource);
-        if (obj['source'] != '')
-            mainImage.source = obj['source'];
+        mainImage.source = source;
     }
 }

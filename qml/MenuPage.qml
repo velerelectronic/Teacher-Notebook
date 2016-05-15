@@ -193,7 +193,7 @@ Item {
     }
 
     function getOtherToolsList() {
-        subMenuElements.append({caption: qsTr('Recursos'), page: 'ResourcesModule', parameters: {}});
+        subMenuElements.append({caption: qsTr('Documents'), page: 'DocumentsModule', parameters: {}});
         subMenuElements.append({caption: qsTr('Gestor de dades'), page: 'DataMan', parameters: {}});
         subMenuElements.append({caption: qsTr('! Recerca de coneixement'), page: 'Researcher', parameters: {}, submenu: {object: menuPage, method: ''}});
         subMenuElements.append({caption: qsTr('Feeds'), page: 'FeedWEIB', parameters: {}});

@@ -94,3 +94,4 @@ Date.prototype.toShortReadableDate = function() {
     var months = ['gen', 'feb', 'març', 'abr','maig','jun','jul','ago','set','oct','nov','des'];
     return (weekdays[this.getDay()] + ' ' + this.getDate() + ' ' + months[this.getMonth()] + ' ' + this.getFullYear());
 }
+

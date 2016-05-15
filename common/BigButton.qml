@@ -8,7 +8,7 @@ Rectangle {
     height: units.fingerUnit * 2
     border.color: "green"
     color: "#d5ffcc"
-    property alias title: titleText.text
+    property string title: ''
     signal clicked()
 
     Text {
@@ -19,6 +19,7 @@ Rectangle {
         horizontalAlignment: Text.AlignHCenter
         font.pixelSize: units.readUnit
         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+        text: bigButton.title
     }
     MouseArea {
         anchors.fill: parent

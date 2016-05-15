@@ -22,5 +22,6 @@
         <file>models/TimeTablesModel.qml</file>
         <file>models/CombinedAnnotationsVolatileModel.qml</file>
         <file>models/LabelsSortModel.qml</file>
+        <file>models/DocumentsModel.qml</file>
     </qresource>
 </RCC>

@@ -85,6 +85,6 @@
         <file>icons/pin-23620.svg</file>
         <file>qml/AnnotationsModule.qml</file>
         <file>qml/RubricsModule.qml</file>
-        <file>qml/ResourcesModule.qml</file>
+        <file>qml/DocumentsModule.qml</file>
     </qresource>
 </RCC>
