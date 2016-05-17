@@ -203,7 +203,7 @@ Item {
                             Layout.fillWidth: true
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            text: model.title
+                            text: "<b>" + model.title + "</b> " + model.desc
                         }
 
                         Text {

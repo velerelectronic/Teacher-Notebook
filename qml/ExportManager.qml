@@ -5,11 +5,14 @@ import Qt.labs.folderlistmodel 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
+import 'qrc:///components' as Components
 
 BasicPage {
     id: exportManager
 
     pageTitle: qsTr('Exportador')
+
+    property int selectedRemoveId: -1
 
     Common.UseUnits {
         id: units
@@ -19,10 +22,16 @@ BasicPage {
         id: importModel
 
         property int fieldsLength: fieldNames.length
+        signal selected()
 
         Component.onCompleted: {
             select();
+            selected();
         }
+    }
+
+    Models.ExtendedAnnotations {
+        id: receptorModel
     }
 
     mainPage: Rectangle {
@@ -79,12 +88,19 @@ BasicPage {
                     }
                 }
 
+                highlight: Rectangle {
+                    color: 'yellow'
+                    width: mainList.width
+                    height: units.fingerUnit * 3
+                }
+
                 delegate: Rectangle {
                     id: recordRowItem
                     z: 1
                     width: mainList.width
                     height: units.fingerUnit * 3
                     border.color: 'black'
+                    color: 'transparent'
 
                     property int index: model.index
                     property int row: model.index+1
@@ -124,14 +140,52 @@ BasicPage {
                             }
                         }
                     }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            mainList.currentIndex = model.index;
+                            var fields = fieldsList.record;
+                            selectedRemoveId = fields['id'];
+                            var state = (fields['state'] == 'done')?3:0;
+                            var obj = {
+                                title: fields['id'] + " " + fields['event'],
+                                created: fields['created'],
+                                desc: fields['desc'],
+                                labels: 'import',
+                                start: fields['startDate'] + " " + fields['startTime'],
+                                end: fields['endDate'] + " " + fields['endTime'],
+                                state: state
+                            }
+
+                            receptorModel.insertObject(obj);
+
+                            receptorList.setSource('qrc:///components/RelatedAnnotations.qml', {mainIdentifier: obj['title']});
+                        }
+                    }
                 }
+
+                Connections {
+                    target: importModel
+                    onSelected: mainList.currentIndex = -1;
+                }
+            }
+
+            Loader {
+                id: receptorList
+                Layout.fillWidth: true
+                Layout.preferredHeight: parent.width / 2
             }
 
             Button {
                 Layout.fillWidth: true
                 Layout.preferredHeight: units.fingerUnit * 2
-                text: qsTr('Endavant...')
-                onClicked: {}
+                text: qsTr('Esborra original')
+                onClicked: {
+                    importModel.removeObject(selectedRemoveId);
+                    importModel.select();
+                    importModel.selected();
+                }
             }
         }
     }
