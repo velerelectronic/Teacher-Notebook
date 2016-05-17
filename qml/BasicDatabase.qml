@@ -38,61 +38,22 @@ DatabaseBackup {
 
     function createTables() {
         //dataBck.dropTable('annotations');
-        //dataBck.dropTable('schedule');
+        dataBck.dropTable('schedule');
         //dataBck.dropTable('rubrics_criteria');
         dataBck.createTable('annotations','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, image BLOB, ref INTEGER, labels TEXT');
 
         dataBck.createTable('extended_annotations','title TEXT PRIMARY KEY, created TEXT, desc TEXT, project TEXT, labels TEXT, start TEXT, end TEXT, state INTEGER');
 
         dataBck.createTable('savedAnnotationsSearches', 'id INTEGER PRIMARY KEY, title TEXT UNIQUE NOT NULL, desc TEXT, terms TEXT, created TEXT');
-        dataBck.createTable('schedule','id INTEGER PRIMARY KEY, created TEXT, event TEXT, desc TEXT, startDate TEXT, startTime TEXT, endDate TEXT, endTime TEXT, state TEXT, ref INTEGER');
+//        dataBck.createTable('schedule','id INTEGER PRIMARY KEY, created TEXT, event TEXT, desc TEXT, startDate TEXT, startTime TEXT, endDate TEXT, endTime TEXT, state TEXT, ref INTEGER');
 
         dataBck.createTable('characteristics','id INTEGER PRIMARY KEY, title TEXT, desc TEXT, ref INTEGER');
         dataBck.createTable('eventCharacteristics', 'id INTEGER PRIMARY KEY, characteristic INTEGER, event INTEGER, comment TEXT');
 
         dataBck.createTable('labelsSort', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT, labels TEXT');
 
-        createView('detailedSchedule',
-                   "SELECT  schedule.id         AS id,
-                            schedule.created    AS created,
-                            schedule.event      AS event,
-                            schedule.desc       AS desc,
-                            schedule.startDate  AS startDate,
-                            schedule.startTime  AS startTime,
-                            schedule.endDate    AS endDate,
-                            schedule.endTime    AS endTime,
-                            schedule.state      AS state,
-                            schedule.ref        AS annotationId,
-                            annotations.title   AS annotationTitle,
-                            annotations.desc    AS annotationDesc,
-                            annotations.labels  AS annotationLabels
-                    FROM    schedule
-                    LEFT JOIN   annotations     ON annotations.id = schedule.ref
-                    ");
-        createView('detailedEventCharacteristics',
-            "SELECT eventCharacteristics.id             AS id,
-                    eventCharacteristics.comment        AS comment,
-                    characteristics.id                  AS characteristicId,
-                    characteristics.title               AS characteristicTitle,
-                    characteristics.desc                AS characteristicDesc,
-                    schedule.id                         AS eventId,
-                    schedule.event                      AS eventTitle,
-                    schedule.desc                       AS eventDesc,
-                    schedule.startDate                  AS startDate,
-                    schedule.startTime                  AS startTime,
-                    schedule.endDate                    AS endDate,
-                    schedule.endTime                    AS endTime,
-                    schedule.state                      AS eventState,
-                    schedule.ref                        AS eventRef
-            FROM    eventCharacteristics, characteristics, schedule
-            WHERE   eventCharacteristics.characteristic = characteristics.id AND
-                    eventCharacteristics.event = schedule.id
-            ORDER BY    startDate ASC,
-                        startTime ASC,
-                        endDate ASC,
-                        endTime ASC,
-                        state ASC
-            ");
+        dropView('detailedSchedule');
+        dropView('detailedEventCharacteristics');
 
         //dataBck.dropTable('rubrics');
         //dataBck.dropTable('rubrics_labels');

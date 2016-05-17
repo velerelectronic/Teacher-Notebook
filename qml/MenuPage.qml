@@ -170,7 +170,6 @@ Item {
         labelsSortModel.select();
         subMenuElements.append({title: title, caption: qsTr('Ordenacions'), page: 'LabelsSort', parameters: {}});
         subMenuElements.append({title: title, caption: qsTr('Anotacions'), page: 'AnnotationsModule', parameters: {}});
-        subMenuElements.append({title: title, caption: qsTr('Anotacions (anterior)'), page: 'AnnotationsList', parameters: {}});
     }
 
     function getSortLabelsForTables(title) {

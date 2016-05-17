@@ -1,7 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>qml/AnnotationItem.qml</file>
-        <file>qml/AnnotationsList.qml</file>
         <file>qml/ArisenWidget.qml</file>
         <file>qml/Clock.qml</file>
         <file>qml/DataMan.qml</file>
@@ -82,7 +80,6 @@
         <file>qml/LabelsSort.qml</file>
         <file>qml/AboveMenu.qml</file>
         <file>qml/OmniboxSearch.qml</file>
-        <file>icons/pin-23620.svg</file>
         <file>qml/AnnotationsModule.qml</file>
         <file>qml/RubricsModule.qml</file>
         <file>qml/DocumentsModule.qml</file>

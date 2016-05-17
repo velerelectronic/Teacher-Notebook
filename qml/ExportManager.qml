@@ -18,7 +18,7 @@ BasicPage {
         id: units
     }
 
-    Models.ScheduleModel {
+    Models.AnnotationsModel {
         id: importModel
 
         property int fieldsLength: fieldNames.length
@@ -158,7 +158,7 @@ BasicPage {
                                 state: state
                             }
 
-                            receptorModel.insertObject(obj);
+//                            receptorModel.insertObject(obj);
 
                             receptorList.setSource('qrc:///components/RelatedAnnotations.qml', {mainIdentifier: obj['title']});
                         }
@@ -180,11 +180,11 @@ BasicPage {
             Button {
                 Layout.fillWidth: true
                 Layout.preferredHeight: units.fingerUnit * 2
-                text: qsTr('Esborra original')
+                text: qsTr('Esborra original (no operatiu)')
                 onClicked: {
-                    importModel.removeObject(selectedRemoveId);
-                    importModel.select();
-                    importModel.selected();
+//                    importModel.removeObject(selectedRemoveId);
+//                    importModel.select();
+//                    importModel.selected();
                 }
             }
         }
