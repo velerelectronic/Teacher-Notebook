@@ -62,7 +62,7 @@ Item {
                 id: documentsSectionsModel
 
                 Common.BasicSection {
-                    width: documentsListView.width
+//                    width: documentsListView.width
                     padding: units.fingerUnit
                     caption: qsTr('Document')
 
@@ -107,7 +107,6 @@ Item {
                 }
 
                 Common.BasicSection {
-                    width: documentsListView.width
                     padding: units.fingerUnit
                     captionSize: units.readUnit
                     caption: qsTr('Títol')
@@ -123,7 +122,6 @@ Item {
                 }
 
                 Common.BasicSection {
-                    width: documentsListView.width
                     padding: units.fingerUnit
                     captionSize: units.readUnit
                     caption: qsTr('Descripció')
@@ -139,7 +137,6 @@ Item {
                 }
 
                 Common.BasicSection {
-                    width: documentsListView.width
                     padding: units.fingerUnit
                     captionSize: units.readUnit
                     caption: qsTr('Tipus')
@@ -155,7 +152,6 @@ Item {
                 }
 
                 Common.BasicSection {
-                    width: documentsListView.width
                     padding: units.fingerUnit
                     captionSize: units.readUnit
                     caption: qsTr('Origen')
@@ -204,7 +200,6 @@ Item {
                 }
 
                 Common.BasicSection {
-                    width: documentsListView.width
                     padding: units.fingerUnit
                     captionSize: units.readUnit
                     caption: qsTr('Anotacions')
@@ -229,7 +224,6 @@ Item {
                 }
 
                 Common.BasicSection {
-                    width: documentsListView.width
                     padding: units.fingerUnit
                     captionSize: units.readUnit
                     caption: qsTr('Eliminar')

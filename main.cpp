@@ -9,9 +9,14 @@
 #include "SqlTableModel2/sqltablemodel.h"
 #include "databasebackup.h"
 #include "standardpaths.h"
-#include "MarkDownParser/markdownparser.h"
-#include "CryptographicHash/cryptographichash.h"
+
 #include "ClipboardAdapter/qmlclipboardadapter.h"
+#include "CryptographicHash/cryptographichash.h"
+#include "MarkDownParser/markdownparser.h"
+#include "RubricXml/rubricxml.h"
+#include "RubricXml/rubriccriteria.h"
+#include "RubricXml/rubricdescriptorsmodel.h"
+#include "RubricXml/rubricindividualsmodel.h"
 
 int main(int argc, char *argv[])
 {
@@ -24,6 +29,12 @@ int main(int argc, char *argv[])
         dir.mkdir(specificPath);
     }
 
+    // Register rubric classes and types
+    qmlRegisterType<RubricXml>("RubricXml", 1, 0, "RubricXml");
+    qmlRegisterType<RubricCriteria>("RubricXml", 1, 0, "RubricCriteria");
+    qmlRegisterType<RubricDescriptorsModel>("RubricXml", 1, 0, "RubricDescriptorsModel");
+    qmlRegisterType<RubricIndividualsModel>("RubricXml", 1, 0, "RubricIndividualsModel");
+
     qmlRegisterType<FileIO, 1>("FileIO", 1, 0, "FileIO");
     qmlRegisterType<QmlClipboardAdapter, 1>("ClipboardAdapter", 1, 0, "QClipboard");
     qmlRegisterType<XmlModel>("PersonalTypes", 1, 0, "XmlModel");
@@ -35,6 +46,8 @@ int main(int argc, char *argv[])
     qmlRegisterType<SqlTableModel2>("PersonalTypes", 1, 0, "SqlTableModel");
     qmlRegisterType<StandardPaths>("PersonalTypes", 1, 0, "StandardPaths");
     qmlRegisterType<MarkDownParser>("PersonalTypes", 1, 0, "MarkDownParser");
+
+    qRegisterMetaType<RubricDescriptorsModel>();
 
     QStringList list;
     list << QString("A1") << QString("B2") << QString("B3");

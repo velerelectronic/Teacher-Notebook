@@ -2,12 +2,10 @@
     <qresource prefix="/">
         <file>models/CharacteristicsModel.qml</file>
         <file>models/ScheduleModel.qml</file>
-        <file>models/DetailedEventCharacteristics.qml</file>
         <file>models/EventCharacteristicsModel.qml</file>
         <file>models/ProjectsModel.qml</file>
         <file>models/DetailedAnnotationsModel.qml</file>
         <file>models/ResourcesModel.qml</file>
-        <file>models/DetailedScheduleModel.qml</file>
         <file>models/RubricsLastScoresModel.qml</file>
         <file>models/RubricsLevelsDescriptorsModel.qml</file>
         <file>models/IndividualsModel.qml</file>
@@ -20,7 +18,6 @@
         <file>models/RubricsModel.qml</file>
         <file>models/RubricsCriteriaModel.qml</file>
         <file>models/TimeTablesModel.qml</file>
-        <file>models/CombinedAnnotationsVolatileModel.qml</file>
         <file>models/LabelsSortModel.qml</file>
         <file>models/DocumentsModel.qml</file>
     </qresource>

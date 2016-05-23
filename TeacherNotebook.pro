@@ -16,7 +16,12 @@ SOURCES += main.cpp \
     XmlGrid/xmlgrid.cpp \
     MarkDownParser/markdownparser.cpp \
     SqlTableModel2/sqltablemodel.cpp \
-    CryptographicHash/cryptographichash.cpp
+    CryptographicHash/cryptographichash.cpp \
+    RubricXml/rubricxml.cpp \
+    RubricXml/rubriccriteria.cpp \
+    RubricXml/rubricdescriptorsmodel.cpp \
+    RubricXml/rubricindividualsmodel.cpp \
+    RubricXml/rubricassessmentmodel.cpp
 
 RESOURCES += qml.qrc \
     icons.qrc \
@@ -45,7 +50,12 @@ HEADERS += \
     MarkDownParser/markdownparser.h \
     ClipboardAdapter/qmlclipboardadapter.h \
     SqlTableModel2/sqltablemodel.h \
-    CryptographicHash/cryptographichash.h
+    CryptographicHash/cryptographichash.h \
+    RubricXml/rubricxml.h \
+    RubricXml/rubriccriteria.h \
+    RubricXml/rubricdescriptorsmodel.h \
+    RubricXml/rubricindividualsmodel.h \
+    RubricXml/rubricassessmentmodel.h
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 

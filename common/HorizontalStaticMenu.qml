@@ -13,6 +13,7 @@ ListView {
     property int underlineWidth: 0
     property string underlineColor: ''
     property ListView connectedList: null
+    property int sectionsWidth: parent.width
 
     model: ListModel {
         id: optionsModel
@@ -26,6 +27,7 @@ ListView {
             var obj = sectionsModel.get(i);
             if (obj['objectName'] == 'BasicSection') {
                 optionsModel.append({title: obj['caption']});
+                obj['width'] = Qt.binding(function() { return optionsList.sectionsWidth; });
             }
         }
     }

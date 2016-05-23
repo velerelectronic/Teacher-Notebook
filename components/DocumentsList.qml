@@ -46,6 +46,8 @@ Item {
             model: documentsModel
             spacing: units.nailUnit
 
+            bottomMargin: addDocumentButton.size + addDocumentButton.margins * 2
+
             header: Rectangle {
                 id: documentsHeader
 
@@ -135,11 +137,32 @@ Item {
                     anchors.fill: parent
                     anchors.margins: units.nailUnit
                     spacing: units.nailUnit
-                    Image {
-                        id: thumbnail
+                    Item {
+                        id: thumbnailItem
                         Layout.fillHeight: true
                         Layout.preferredWidth: height
-                        source: MediaTypes.imageForMediaType(model.source, model.type)
+
+                        Component {
+                            id: thumbnailComponent
+
+                            Image {
+                                anchors.fill: thumbnailItem
+                                fillMode: Image.PreserveAspectFit
+                            }
+                        }
+
+                        Component.onCompleted: {
+                            var incubator = thumbnailComponent.incubateObject(thumbnailItem, {source: MediaTypes.imageForMediaType(model.source, model.type)});
+                            if (incubator.status != Component.Ready) {
+                                incubator.onStatusChanged = function(status) {
+                                    if (status == Component.Ready) {
+                                        console.log('Incubator after');
+                                    }
+                                }
+                            } else {
+                                console.log('Incubator now');
+                            }
+                        }
                     }
 
                     Text {
@@ -162,7 +185,11 @@ Item {
                         text: model.source + "\n" + model.hash
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: documentSourceSelected(model.source)
+                            onClicked: {
+                                selectedIdentifier = model.title;
+                                console.log('new identifier', selectedIdentifier);
+                                documentSourceSelected(model.source);
+                            }
                         }
                     }
                     Text {
@@ -177,6 +204,7 @@ Item {
                 }
             }
             Common.SuperposedButton {
+                id: addDocumentButton
                 anchors {
                     bottom: parent.bottom
                     right: parent.right

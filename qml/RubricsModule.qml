@@ -15,6 +15,8 @@ BasicPage {
     property int criterium
     property int individual
 
+    property string rubricFile: ''
+
     signal closeRubricAssessmentHistory()
     signal closeCurrentPage()
     signal contentsSaved()
@@ -191,9 +193,28 @@ BasicPage {
             historyType: DSM.HistoryState.DeepHistory
             defaultState: rubricsAssessmentList
         }
+
+        DSM.State {
+            id: showRubricFromDocument
+
+            onEntered: {
+                rubricsModuleItem.pushButtonsModel();
+                rubricsModuleItem.buttonsModel.append({icon: 'road-sign-147409', object: rubricsModuleItem, method: 'closeCurrentPage'});
+                setSource('qrc:///components/ExtendedRubricDefinition.qml', {rubricFile: rubricsModuleItem.rubricFile});
+            }
+
+            onExited: {
+                rubricsModuleItem.popButtonsModel();
+            }
+        }
     }
 
     Component.onCompleted: {
+        if (rubricFile !== '') {
+            console.log('Rubric file', rubricFile);
+            rubricsModuleSM.initialState = showRubricFromDocument;
+        }
+
         rubricsModuleSM.start();
     }
 

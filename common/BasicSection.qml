@@ -38,6 +38,17 @@ Rectangle {
 
             Layout.fillHeight: true
             Layout.fillWidth: true
+
+            /*
+            property int count: basicAreaItem.children.length
+
+            onCountChanged: {
+                console.log('BASIC AREA count changed to', basicAreaItem.count)
+                for (var i=0; i<basicAreaItem.count; i++) {
+                    basicAreaItem.children[i].width = Qt.binding(function() { return basicAreaItem.width; });
+                }
+            }
+            */
         }
 
     }

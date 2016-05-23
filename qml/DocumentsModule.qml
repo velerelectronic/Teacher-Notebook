@@ -56,9 +56,14 @@ BasicPage {
         }
 
         onDocumentSourceSelected: {
-            documentSource = source;
             console.log('show', source);
-            showDocumentSource();
+            documentSource = source;
+            if (/\.rubricxml$/g.test(source)) {
+                // Show Rubric FromFile
+                documentsModule.openPageArgs('RubricsModule', {rubricFile: documentSource});
+            } else {
+                showDocumentSource();
+            }
         }
 
         onCloseNewDocument: {
@@ -241,7 +246,7 @@ BasicPage {
                 documentsModuleSM.initialState = documentSourceDisplayState;
                 break;
             default:
-                documentsModuleSM.initialState = singleDocumentState;
+                documentsModuleSM.initialState = documentsListState;
                 break;
             }
         }

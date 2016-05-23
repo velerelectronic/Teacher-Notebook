@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.5
 import PersonalTypes 1.0
 
 DatabaseBackup {
@@ -6,42 +6,23 @@ DatabaseBackup {
 
     function initEverything() {
         createTables();
-        createVolatileTables();
 
         dataBck.createFunction('Split','@Sep char(1), @S varchar(512)','TABLE','WITH Pieces(pn, start, stop) AS (SELECT 1, 1, CHARINDEX(@Sep, @S) UNION ALL SELECT pn + 1, stop + 1, CHARINDEX(@Sep, @S, stop + 1) FROM Pieces WHERE stop > 0) SELECT pn, SUBSTR(@S, start, CASE WHEN stop > 0 THEN stop-start ELSE 512 END) AS S FROM Pieces');
-
-//        globalAnnotationsModel.tableName = 'annotations';
-        console.log("SELECTING in annotations")
-        globalAnnotationsModel.fieldNames =  ['created','id','title','desc','image','labels'];
-        globalAnnotationsModel.select();
-
-//        globalScheduleModel.tableName = 'schedule';
-        globalScheduleModel.fieldNames = ['created','id','event','desc','startDate','startTime','endDate','endTime','state','ref'];
-        globalScheduleModel.setSort(5,Qt.AscendingOrder);
-        globalScheduleModel.filters = [];
-        globalScheduleModel.select();
 
 //        globalProjectsModel.tableName = 'projects';
         globalProjectsModel.fieldNames = ['id', 'name', 'desc'];
         globalProjectsModel.select();
     }
 
-    function configureEventCharacteristics(model) {
-        model.tableName = 'eventCharacteristics';
-        model.fieldNames = ['id','characteristic','event','comment'];
-    }
-
-    function configureDetailedEventCharacteristics(model) {
-        model.tableName = 'detailedEventCharacteristics';
-        model.fieldNames = ['id','comment','characteristicId','characteristicTitle','characteristicDesc','eventId','eventTitle','eventDesc','startDate','startTime','endDate','endTime','eventState','eventRef'];
-    }
-
     function createTables() {
-        //dataBck.dropTable('annotations');
+        dataBck.dropTable('annotations');
         dataBck.dropTable('schedule');
-        //dataBck.dropTable('rubrics_criteria');
-        dataBck.createTable('annotations','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, image BLOB, ref INTEGER, labels TEXT');
+        dataBck.dropTable('combinedAnnotationsVolatileTable')
+        dataBck.dropView('detailedAnnotations');
+        dataBck.dropView('detailedSchedule');
+        dataBck.dropView('detailedEventCharacteristics');
 
+        //dataBck.dropTable('rubrics_criteria');
         dataBck.createTable('extended_annotations','title TEXT PRIMARY KEY, created TEXT, desc TEXT, project TEXT, labels TEXT, start TEXT, end TEXT, state INTEGER');
 
         dataBck.createTable('savedAnnotationsSearches', 'id INTEGER PRIMARY KEY, title TEXT UNIQUE NOT NULL, desc TEXT, terms TEXT, created TEXT');
@@ -51,9 +32,6 @@ DatabaseBackup {
         dataBck.createTable('eventCharacteristics', 'id INTEGER PRIMARY KEY, characteristic INTEGER, event INTEGER, comment TEXT');
 
         dataBck.createTable('labelsSort', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT, labels TEXT');
-
-        dropView('detailedSchedule');
-        dropView('detailedEventCharacteristics');
 
         //dataBck.dropTable('rubrics');
         //dataBck.dropTable('rubrics_labels');
@@ -208,30 +186,6 @@ DatabaseBackup {
 
         dataBck.createView('rubrics_total_scores','SELECT assessment, individual, name, surname, \"group\", SUM(weight) AS weight, SUM(score) AS score, SUM(weight * score) AS points FROM rubrics_descriptors_scores GROUP BY assessment, individual');
 
-        // Detailed Annotations
-
-        dataBck.dropView('detailedAnnotations');
-        dataBck.createView('detailedAnnotations',
-                    "SELECT annotations.id                          AS id,
-                            annotations.created                     AS created,
-                            annotations.title                       AS title,
-                            annotations.desc                        AS desc,
-                            annotations.image                       AS image,
-                            annotations.ref                         AS project,
-                            annotations.labels                      AS labels,
-                            projects.name                           AS projectName,
-                            COUNT(DISTINCT schedule.id)             AS eventsCount,
-                            COUNT(DISTINCT resources.id)            AS resourcesCount
-                        FROM        annotations
-                        LEFT JOIN   projects
-                            ON      annotations.ref = projects.id
-                        LEFT JOIN   schedule
-                            ON      schedule.ref = annotations.id
-                        LEFT JOIN   resources
-                            ON      resources.annotation = annotations.id
-                        GROUP BY    annotations.id, schedule.ref, resources.annotation
-                    ");
-
 
         // Assessment
         // dataBck.dropTable('assessmentGrid');
@@ -239,8 +193,4 @@ DatabaseBackup {
         dataBck.createView('individuals_groups','SELECT "group" FROM individuals_list GROUP BY "group"');
     }
 
-    function createVolatileTables() {
-        dataBck.dropTable('combinedAnnotationsVolatileTable')
-        dataBck.createTable('combinedAnnotationsVolatileTable','id INTEGER PRIMARY KEY, annotation TEXT, heading TEXT, contents TEXT');
-    }
 }

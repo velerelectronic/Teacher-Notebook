@@ -84,5 +84,6 @@
         <file>qml/RubricsModule.qml</file>
         <file>qml/DocumentsModule.qml</file>
         <file>qml/ExportManager.qml</file>
+        <file>qml/RubricExperiment.qml</file>
     </qresource>
 </RCC>
