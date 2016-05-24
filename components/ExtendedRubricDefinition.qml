@@ -70,12 +70,14 @@ Item {
                 ListView {
                     id: criteriaList
                     width: parent.width
-                    height: contentItem.height
+                    height: contentItem.height + bottomMargin
 
                     interactive: false
 
                     model: rubricXml.criteria
                     spacing: units.nailUnit
+
+                    bottomMargin: units.fingerUnit * 1.5
 
                     delegate: Rectangle {
                         id: criteriumRowRect
@@ -185,6 +187,19 @@ Item {
                         }
 
 
+                    }
+
+                    Common.ImageButton {
+                        image: 'plus-24844'
+                        anchors {
+                            bottom: parent.bottom
+                            right: parent.right
+                        }
+                        size: units.fingerUnit * 1.5
+
+                        onClicked: {
+                            rubricXml.criteria.append({title: qsTr('Nou criteri'), description: '', weight: 0, order: rubricXml.criteria.count});
+                        }
                     }
                 }
             }

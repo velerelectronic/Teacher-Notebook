@@ -16,6 +16,27 @@ RubricCriteria::~RubricCriteria() {
 
 }
 
+bool RubricCriteria::append(QVariantMap values) {
+    beginInsertRows(this->createIndex(rowCount(),1).parent(),rowCount(),rowCount());
+    QDomElement newCriterium = innerRubricDomRoot.ownerDocument().createElement("criterium");
+
+    qDebug() << values;
+
+    QVariantMap::const_iterator i;
+    for (i = values.constBegin(); i != values.constEnd(); ++i) {
+        qDebug() << i.key() << i.value().toString() << "\n";
+        newCriterium.setAttribute(i.key(), i.value().toString());
+    }
+
+    qDebug() << "inserted";
+    qDebug() << newCriterium.attributes().size();
+    innerRubricDomRoot.appendChild(newCriterium);
+    qDebug() << innerRubricDomRoot.ownerDocument().toString();
+    endInsertRows();
+    countChanged();
+    return true;
+}
+
 void RubricCriteria::setDomRoot(QDomElement domroot) {
     innerRubricDomRoot = domroot;
     countChanged();

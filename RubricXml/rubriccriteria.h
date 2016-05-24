@@ -44,9 +44,10 @@ public:
     int                     count();
     void                    setDomRoot(QDomElement domroot);
 
+    Q_INVOKABLE bool        append(QVariantMap values);
 
 signals:
-    int     countChanged();
+    void     countChanged();
 
 private:
     QString         fieldNameForRole(int role) const;
