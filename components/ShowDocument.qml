@@ -31,6 +31,10 @@ Item {
         id: documentsModel
     }
 
+    Models.ConcurrentDocuments {
+        id: concurrentDocumentsModel
+    }
+
     onDocumentChanged: getDocumentDetails()
 
 
@@ -256,6 +260,10 @@ Item {
             mediaType = obj['type'];
             source = obj['source'];
             hashString = obj['hash'];
+
+            concurrentDocumentsModel.insertObject({document: title});
+            var now = new Date();
+            concurrentDocumentsModel.updateObject(title, {lastAccessTime: now.toISOString()});
         }
     }
 

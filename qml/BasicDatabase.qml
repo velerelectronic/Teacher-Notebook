@@ -62,6 +62,7 @@ DatabaseBackup {
         //dataBck.dropTable('resources');
         //dataBck.dropTable('documentsSources');
         dataBck.createTable('documentsSources', 'title TEXT PRIMARY KEY, desc TEXT, created TEXT, source TEXT, hash TEXT, type TEXT, contents TEXT');
+        dataBck.createTable('concurrentDocuments', 'document TEXT PRIMARY KEY, lastAccessTime TEXT, parameters TEXT');
 
         //dataBck.createTable('resources','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, type TEXT, source TEXT, contents BLOB, hash TEXT, annotation TEXT');
 

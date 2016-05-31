@@ -21,6 +21,16 @@ BasicPage {
     property string documentSource: ''
     property string annotationTitle: ''
 
+    states: [
+        State {
+            name: 'displaySource'
+        },
+        State {
+            name: 'defaultState'
+        }
+    ]
+    state: 'defaultState'
+
     Models.DocumentsModel {
         id: documentsModel
     }
@@ -240,8 +250,11 @@ BasicPage {
     }
 
     Component.onCompleted: {
-        if (documentId >= 0) {
-            switch(state) {
+        if (documentId !== "") {
+            switch(documentsModule.state) {
+            case 'displayDocument':
+                documentsModuleSM.initialState = singleDocumentState;
+                break;
             case 'displaySource':
                 documentsModuleSM.initialState = documentSourceDisplayState;
                 break;

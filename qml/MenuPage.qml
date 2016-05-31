@@ -144,6 +144,7 @@ Item {
 
     Component.onCompleted: {
         menuModel.append({caption: qsTr('Anotacions'), submenu: {object: menuPage, method: 'getSortLabels'}});
+        menuModel.append({caption: qsTr('Documents'), submenu: {object: menuPage, method: 'getDocumentsOptions'}});
         menuModel.append({caption: qsTr('Taules'), submenu: {object: menuPage, method: 'getSortLabelsForTables'}});
         menuModel.append({caption: qsTr('Rúbriques'), submenu: {object: menuPage, method: 'getRubricsOptions'}});
         menuModel.append({caption: qsTr('Altres eines'), submenu: {object: menuPage, method: 'getOtherToolsList'}});
@@ -163,6 +164,21 @@ Item {
 
     Models.LabelsSortModel {
         id: labelsSortModel
+    }
+
+    Models.ConcurrentDocuments {
+        id: concurrentDocuments
+
+        sort: 'lastAccessTime DESC'
+    }
+
+    function getDocumentsOptions(title) {
+        concurrentDocuments.select();
+        for (var i=0; i<concurrentDocuments.count; i++) {
+            var documentObject = concurrentDocuments.getObjectInRow(i);
+            subMenuElements.append({title: title, caption: documentObject['document'], page: 'DocumentsModule', parameters: {state: 'displayDocument', documentId: documentObject['document']}});
+        }
+        subMenuElements.append({title: title, caption: qsTr('Llista'), page: 'DocumentsModule'});
     }
 
     function getSortLabels(title) {
