@@ -23,7 +23,9 @@ Item {
     property string contents: ''
     property string hashString: ''
 
+    signal documentRemoved()
     signal documentUpdated()
+    signal documentSelected(string document)
     signal annotationEditSelected(string annotation, int document)
     signal documentSourceSelected(string source)
 
@@ -58,8 +60,8 @@ Item {
             id: documentsListView
             Layout.fillHeight: true
             Layout.fillWidth: true
-            clip: true
 
+            clip: true
             spacing: units.fingerUnit
 
             model: ObjectModel {
@@ -111,47 +113,75 @@ Item {
                 }
 
                 Common.BasicSection {
+                    z: 1
                     padding: units.fingerUnit
                     captionSize: units.readUnit
-                    caption: qsTr('Títol')
+                    caption: qsTr('General')
 
-                    Editors.TextAreaEditor3 {
-                        id: titleEditor
+                    Item {
                         width: parent.width
-                        height: units.fingerUnit * 8
-                        color: 'white'
-                        border.color: 'black'
-                        text: title
-                    }
-                }
+                        height: childrenRect.height
 
-                Common.BasicSection {
-                    padding: units.fingerUnit
-                    captionSize: units.readUnit
-                    caption: qsTr('Descripció')
+                        GridLayout {
+                            anchors {
+                                top: parent.top
+                                left: parent.left
+                                right: parent.right
+                            }
+                            height: childrenRect.height
+                            columns: 3
+                            rows: 2
+                            columnSpacing: units.nailUnit
+                            rowSpacing: units.nailUnit
 
-                    Editors.TextAreaEditor3 {
-                        id: descEditor
-                        width: parent.width
-                        height: units.fingerUnit * 8
-                        color: 'white'
-                        border.color: 'black'
-                        text: desc
-                    }
-                }
+                            Text {
+                                Layout.preferredWidth: contentWidth
+                                Layout.preferredHeight: contentHeight
+                                font.pixelSize: units.readUnit
+                                font.bold: true
+                                text: qsTr('Títol')
+                            }
+                            Text {
+                                id: titleText
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Math.max(units.fingerUnit * 1.5, contentHeight)
+                                font.pixelSize: units.readUnit
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                text: title
+                            }
+                            Common.ImageButton {
+                                id: titleEditButton
+                                Layout.preferredHeight: size
+                                Layout.preferredWidth: size
+                                image: 'edit-153612'
+                                size: units.fingerUnit * 1.5
+                                onClicked: titleEditWidget.toggleWidget()
+                            }
+                            Text {
+                                Layout.preferredWidth: contentWidth
+                                Layout.preferredHeight: contentHeight
+                                font.pixelSize: units.readUnit
+                                font.bold: true
+                                text: qsTr('Descripció')
+                            }
+                            Text {
+                                id: descText
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Math.max(units.fingerUnit * 1.5, contentHeight)
+                                font.pixelSize: units.readUnit
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                text: desc
+                            }
+                            Common.ImageButton {
+                                id: descEditButton
+                                Layout.preferredHeight: size
+                                Layout.preferredWidth: size
+                                image: 'edit-153612'
+                                size: units.fingerUnit * 1.5
+                                onClicked: descEditWidget.toggleWidget()
+                            }
 
-                Common.BasicSection {
-                    padding: units.fingerUnit
-                    captionSize: units.readUnit
-                    caption: qsTr('Tipus')
-
-                    Editors.TextAreaEditor3 {
-                        id: mediaTypeEditor
-                        width: parent.width
-                        height: units.fingerUnit * 8
-                        color: 'white'
-                        border.color: 'black'
-                        text: mediaType
+                        }
                     }
                 }
 
@@ -165,7 +195,7 @@ Item {
                         height: childrenRect.height
 
                         columns: 2
-                        rows: 2
+                        rows: 3
 
                         Text {
                             Layout.preferredWidth: contentWidth
@@ -199,6 +229,24 @@ Item {
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             text: hashString
                         }
+                        Text {
+                            Layout.preferredWidth: contentWidth
+                            font.pixelSize: units.readUnit
+                            text: qsTr('Tipus:')
+                        }
+                        Text {
+                            id: mediaTypeText
+                            Layout.fillWidth: true
+                            height: Math.max(contentHeight, units.fingerUnit)
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: mediaType
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: mediaTypeEditWidget.showWidget()
+                            }
+                        }
+
                     }
 
                 }
@@ -238,7 +286,123 @@ Item {
                         text: qsTr('Elimina document (immediatament)')
                         onClicked: {
                             documentsModel.removeObject(showDocumentItem.title);
-                            documentUpdated();
+                            documentRemoved();
+                        }
+                    }
+                }
+            }
+
+            // Editors
+            Common.SuperposedWidget {
+                id: titleEditWidget
+
+                anchors.fill: parent
+                anchoringItem: titleEditButton
+                margins: units.nailUnit
+
+                minimumWidth: parent.width - 2 * units.fingerUnit
+                minimumHeight: units.fingerUnit * 4
+
+                onShown: titleEditor.text = titleText.text
+
+                Rectangle {
+                    anchors.fill: parent
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+
+                        Editors.TextAreaEditor3 {
+                            id: titleEditor
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                        }
+                        Common.ImageButton {
+                            Layout.preferredWidth: units.fingerUnit
+                            Layout.fillHeight: true
+                            image: 'floppy-35952'
+                            onClicked: {
+                                titleText.text = titleEditor.text;
+                                saveEditorContents();
+                                titleEditWidget.hideWidget();
+                                showDocumentItem.document = titleEditor.text;
+                                getDocumentDetails();
+                                documentSelected(document);
+                            }
+                        }
+                    }
+                }
+            }
+            Common.SuperposedWidget {
+                id: descEditWidget
+
+                anchors.fill: parent
+                anchoringItem: descEditButton
+                margins: units.nailUnit
+
+                minimumWidth: parent.width - 2 * units.fingerUnit
+                minimumHeight: units.fingerUnit * 4
+
+                onShown: descEditor.text = descText.text
+
+                Rectangle {
+                    anchors.fill: parent
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+
+                        Editors.TextAreaEditor3 {
+                            id: descEditor
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                        }
+                        Common.ImageButton {
+                            Layout.preferredWidth: units.fingerUnit
+                            Layout.fillHeight: true
+                            image: 'floppy-35952'
+                            onClicked: {
+                                descText.text = descEditor.text;
+                                saveEditorContents();
+                                descEditWidget.hideWidget();
+                                getDocumentDetails();
+                            }
+                        }
+                    }
+                }
+            }
+
+            Common.SuperposedWidget {
+                id: mediaTypeEditWidget
+
+                anchors.fill: parent
+                anchoringItem: mediaTypeText
+                margins: units.nailUnit
+
+                minimumWidth: parent.width - 2 * units.fingerUnit
+                minimumHeight: units.fingerUnit * 4
+
+                onShown: mediaTypeEditor.text = mediaTypeText.text
+
+                Rectangle {
+                    anchors.fill: parent
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+
+                        Editors.TextAreaEditor3 {
+                            id: mediaTypeEditor
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                        }
+                        Common.ImageButton {
+                            Layout.preferredWidth: units.fingerUnit
+                            Layout.fillHeight: true
+                            image: 'floppy-35952'
+                            onClicked: {
+                                mediaTypeText.text = mediaTypeEditor.text;
+                                saveEditorContents();
+                                mediaTypeEditWidget.hideWidget();
+                                getDocumentDetails();
+                            }
                         }
                     }
                 }
@@ -269,14 +433,13 @@ Item {
 
     function saveEditorContents() {
         var obj = {
-            title: titleEditor.text,
-            desc: descEditor.text,
+            title: titleText.text,
+            desc: descText.text,
             type: mediaTypeEditor.text
         }
 
         documentsModel.updateObject(document,obj);
         console.log('saved');
-        documentUpdated();
     }
 
 

@@ -12,7 +12,6 @@ BasicPage {
     signal changeDocumentSource()
     signal closeCurrentPage()
     signal documentSelected()
-    signal documentUpdated()
     signal showDocument()
     signal showDocumentSource()
     signal showSelectFile()
@@ -61,6 +60,11 @@ BasicPage {
             changeDocumentSource();
         }
 
+        onFolderSelected: {
+            var sourceFolder = folder;
+            openPageArgs('RubricsModule',{state: 'newRubricFile', sourceFolder: sourceFolder});
+        }
+
         onNewDocumentSelected: {
             showSelectFile();
         }
@@ -77,10 +81,6 @@ BasicPage {
         }
 
         onCloseNewDocument: {
-            closeCurrentPage();
-        }
-
-        onDocumentUpdated: {
             closeCurrentPage();
         }
     }
@@ -135,7 +135,6 @@ BasicPage {
             onEntered: {
                 pushButtonsModel();
                 setSource('qrc:///components/ShowDocument.qml', {document: documentId});
-                buttonsModel.append({icon: 'floppy-35952', object: mainItem, method: 'saveEditorContents'});
                 buttonsModel.append({icon: 'road-sign-147409', object: documentsModule, method: 'closeCurrentPage'});
             }
 

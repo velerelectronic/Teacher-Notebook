@@ -8,7 +8,7 @@ Item {
     property bool available: true
     signal clicked
 
-    clip: true
+//    clip: true
 
     width: (available)?size:0
     height: (available)?size:0

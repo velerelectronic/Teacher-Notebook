@@ -24,5 +24,6 @@
         <file>components/NewDocument.qml</file>
         <file>components/mediaTypes.js</file>
         <file>components/ExtendedRubricDefinition.qml</file>
+        <file>components/NewRubricFile.qml</file>
     </qresource>
 </RCC>

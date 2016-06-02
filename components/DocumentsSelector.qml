@@ -25,6 +25,7 @@ Item {
     property url initialDirectory: ''
 
     signal fileSelected(string file)
+    signal folderSelected(string folder)
     signal openTBook(string document)
     signal openingDocumentExternally(string document)
     signal createdFile(string file)
@@ -203,7 +204,10 @@ Item {
                         clip: true
                         text: qsTr('Selecciona')
                         onClicked: {
-                            fileSelected(fileURL);
+                            if (model.fileIsDir)
+                                documentsListPage.folderSelected(fileURL);
+                            else
+                                documentsListPage.fileSelected(fileURL);
                         }
                     }
                 }

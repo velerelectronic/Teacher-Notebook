@@ -41,5 +41,6 @@
         <file>common/WheelClock.qml</file>
         <file>common/HorizontalStaticMenu.qml</file>
         <file>common/BasicSection.qml</file>
+        <file>common/SuperposedWidget.qml</file>
     </qresource>
 </RCC>

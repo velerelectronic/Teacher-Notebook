@@ -11,6 +11,7 @@ BasicPage {
 
     property string initialState: ''
     property int rubricAssessmentIdentifier: -1
+    property string sourceFolder: ''
     property string group
     property int criterium
     property int individual
@@ -26,6 +27,16 @@ BasicPage {
     signal openRubricGroupAssessment()
     signal showRubricAssessmentHistory()
     signal showRubricsAssessmentList()
+
+    states: [
+        State {
+            name: 'newRubricFile'
+        },
+        State {
+            name: 'default'
+        }
+    ]
+    state: 'default'
 
     function openRubricHistory(group) {
         openPageArgs('RubricAssessmentHistory',{group: group});
@@ -207,12 +218,29 @@ BasicPage {
                 rubricsModuleItem.popButtonsModel();
             }
         }
+
+        DSM.State {
+            id: newRubricState
+
+            onEntered: {
+                pushButtonsModel();
+                setSource('qrc:///components/NewRubricFile.qml', {sourceFolder: sourceFolder});
+            }
+
+            onExited: {
+                popButtonsModel();
+            }
+        }
     }
 
     Component.onCompleted: {
-        if (rubricFile !== '') {
-            console.log('Rubric file', rubricFile);
-            rubricsModuleSM.initialState = showRubricFromDocument;
+        if (state == 'newRubricFile') {
+            rubricsModuleSM.initialState = newRubricState;
+        } else {
+            if (rubricFile !== '') {
+                console.log('Rubric file', rubricFile);
+                rubricsModuleSM.initialState = showRubricFromDocument;
+            }
         }
 
         rubricsModuleSM.start();

@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
+import QtQml.Models 2.2
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
@@ -211,7 +212,62 @@ Item {
                 }
                 size: units.fingerUnit * 2
                 imageSource: 'plus-24844'
-                onClicked: documentsListItem.newDocumentSelected()
+                onClicked: {
+                    superposedAddMenu.toggleWidget();
+                }
+            }
+            Common.SuperposedWidget {
+                id: superposedAddMenu
+
+                anchors.fill: parent
+                anchoringItem: addDocumentButton
+
+                minimumHeight: units.fingerUnit * 4
+                minimumWidth: units.fingerUnit * 6
+
+                glowColor: 'black'
+
+                ListView {
+                    id: menuList
+                    anchors.fill: parent
+
+                    headerPositioning: ListView.OverlayHeader
+
+                    header: Common.BoxedText {
+                        width: menuList.width
+                        height: units.fingerUnit
+                        boldFont: true
+                        fontSize: units.readUnit
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        text: qsTr('Nou document...')
+                    }
+
+                    model: ObjectModel {
+                        Common.BoxedText {
+                            width: menuList.width
+                            height: units.fingerUnit * 1.5
+                            margins: units.nailUnit
+                            text: qsTr('Fitxer')
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: documentsListItem.newDocumentSelected();
+                            }
+                        }
+                        Common.BoxedText {
+                            width: menuList.width
+                            height: units.fingerUnit * 1.5
+                            margins: units.nailUnit
+                            text: qsTr('Adreça web')
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: superposedAddMenu.hideWidget()
+                                // Not available yet
+                            }
+                        }
+                    }
+                }
             }
         }
     }
