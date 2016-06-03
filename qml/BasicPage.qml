@@ -15,6 +15,7 @@ Item {
 
     property bool isSubPage: false
 
+    property alias subItem: superposedWidgetLoader.item
     property int padding: 0
 
     signal openMainPage()
@@ -135,6 +136,19 @@ Item {
     }
 
 
+    Common.SuperposedWidget {
+        id: superposedWidget
+
+        anchoringItem: parent
+        margins: units.nailUnit
+
+        Loader {
+            id: superposedWidgetLoader
+
+            anchors.fill: parent
+        }
+    }
+
     MouseArea {
         id: subPageArea
 
@@ -251,6 +265,19 @@ Item {
 
     function lookFor() {
         basicPageItem.openPageArgs('OmniboxSearch',{});
+    }
+
+    function openSuperposedMenu(widget, minWidth, minHeight, page, params) {
+        superposedWidget.anchoringItem = widget;
+        superposedWidget.minimumWidth = minWidth - superposedWidget.margins * 2;
+        superposedWidget.minimumHeight = minHeight - superposedWidget.margins * 2;
+        superposedWidget.showWidget();
+        superposedWidgetLoader.setSource(page, params);
+    }
+
+    function closeSuperposedMenu() {
+        superposedWidget.hideWidget();
+        superposedWidgetLoader.sourceComponent = undefined;
     }
 
     Component.onCompleted: {

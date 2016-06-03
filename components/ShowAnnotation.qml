@@ -10,11 +10,11 @@ Item {
     id: showAnnotationItem
 
     signal annotationSelected(string title)
-    signal annotationDescriptionSelected(string description)
+    signal annotationDescriptionSelected(string description, var widget)
     signal annotationLabelsSelected(string labels)
     signal annotationPeriodSelected(string start, string end)
     signal annotationStateSelected(int stateValue)
-    signal annotationTitleSelected()
+    signal annotationTitleSelected(var widget)
     signal attachmentsSelected()
     signal rubricAssessmentSelected(int assessment)
     signal resourceSelected(int resource)
@@ -232,7 +232,7 @@ Item {
                                 }
                                 size: units.fingerUnit
                                 image: 'edit-153612'
-                                onClicked: annotationTitleSelected()
+                                onClicked: annotationTitleSelected(changeTitleButton)
                             }
                         }
                         Rectangle {
@@ -260,7 +260,7 @@ Item {
 
                                 size: units.fingerUnit
                                 image: 'edit-153612'
-                                onClicked: annotationDescriptionSelected(descText)
+                                onClicked: annotationDescriptionSelected(descText, changeDescriptionButton)
                             }
                         }
                     }

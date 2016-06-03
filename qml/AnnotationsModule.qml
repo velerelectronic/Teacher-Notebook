@@ -9,6 +9,7 @@ import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 import 'qrc:///models' as Models
 import 'qrc:///components' as Components
+import 'qrc:///modules/annotations' as AnnotationComponents
 import "qrc:///common/FormatDates.js" as FormatDates
 
 
@@ -48,6 +49,8 @@ BasicPage {
     property var editContent
     property string labels: ''
 
+    property var lastItemSelected: null
+
     Common.UseUnits {
         id: units
     }
@@ -64,6 +67,7 @@ BasicPage {
         ignoreUnknownSignals: true
 
         onAnnotationDescriptionSelected: {
+            lastItemSelected = widget;
             editContent = description;
             annotationView.changeAnnotationDescription();
         }
@@ -89,6 +93,7 @@ BasicPage {
 
         onAnnotationTitleSelected: {
             editContent = annotationView.identifier;
+            lastItemSelected = widget;
             annotationView.changeAnnotationTitle();
         }
 
@@ -106,6 +111,25 @@ BasicPage {
         onNewRubricAssessment: {
             identifier = annotation;
             annotationView.newRubricAssessment();
+        }
+    }
+
+    Connections {
+        target: subItem
+
+        ignoreUnknownSignals: true
+
+        onSaveAnnotationTitleRequest: {
+            console.log('content', content);
+            var newIdentifier = content;
+            annotationsModel.updateObject(annotationView.identifier, {title: newIdentifier});
+            annotationView.identifier = newIdentifier;
+            editorContentsSaved();
+        }
+
+        onSaveAnnotationDescriptionRequest: {
+            annotationsModel.updateObject(annotationView.identifier, {desc: content});
+            editorContentsSaved();
         }
     }
 
@@ -133,7 +157,7 @@ BasicPage {
         var args = {};
         args['identifier'] = annotationView.identifier;
         args['content'] = editContent;
-        setSource('qrc:///components/' + page + '.qml', args);
+        setSource('qrc:///modules/annotations/' + page + '.qml', args);
     }
 
     function openNewAnnotation() {
@@ -248,12 +272,12 @@ BasicPage {
 
             DSM.SignalTransition {
                 signal: annotationView.changeAnnotationTitle
-                targetState: titleEditor
+                targetState: titleEditorState
             }
 
             DSM.SignalTransition {
                 signal: annotationView.changeAnnotationDescription
-                targetState: descEditor
+                targetState: descEditorState
             }
 
             DSM.SignalTransition {
@@ -414,18 +438,14 @@ BasicPage {
         }
 
         DSM.State {
-            id: titleEditor
+            id: titleEditorState
 
             onEntered: {
-                prepareAnnotationPartEditor();
-                loadEditorComponent('TitleEditorComponent');
+                openSuperposedMenu(lastItemSelected, annotationView.width, units.fingerUnit * 4, 'qrc:///modules/annotations/TitleEditorComponent.qml', {identifier: annotationView.identifier, content: annotationView.identifier});
             }
 
             onExited: {
-                var newIdentifier = editorArea.getEditedContent();
-                annotationsModel.updateObject(annotationView.identifier, {title: newIdentifier});
-                annotationView.identifier = newIdentifier;
-                editorArea.hideEditorContents();
+                closeSuperposedMenu();
             }
 
             DSM.SignalTransition {
@@ -439,15 +459,14 @@ BasicPage {
         }
 
         DSM.State {
-            id: descEditor
+            id: descEditorState
 
             onEntered: {
-                prepareAnnotationPartEditor();
-                loadEditorComponent('DescriptionEditorComponent');
+                openSuperposedMenu(lastItemSelected, annotationView.width, height / 2, 'qrc:///modules/annotations/DescriptionEditorComponent.qml', {identifier: annotationView.identifier, content: annotationView.editContent});
             }
 
             onExited: {
-                annotationView.popButtonsModel();
+                closeSuperposedMenu();
             }
 
             DSM.SignalTransition {

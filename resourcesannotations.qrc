@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/annotations/DescriptionEditorComponent.qml</file>
+        <file>modules/annotations/LabelsEditorComponent.qml</file>
+        <file>modules/annotations/TitleEditorComponent.qml</file>
+    </qresource>
+</RCC>

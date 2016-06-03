@@ -5,10 +5,7 @@
         <file>components/AnnotationsHistory.qml</file>
         <file>components/ShowAnnotation.qml</file>
         <file>components/NewAnnotation.qml</file>
-        <file>components/TitleEditorComponent.qml</file>
-        <file>components/DescriptionEditorComponent.qml</file>
         <file>components/PeriodEditorComponent.qml</file>
-        <file>components/LabelsEditorComponent.qml</file>
         <file>components/AnnotationStateEditorComponent.qml</file>
         <file>components/AddRubricAssessmentComponent.qml</file>
         <file>components/RubricsAssessmentList.qml</file>
