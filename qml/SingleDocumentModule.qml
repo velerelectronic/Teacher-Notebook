@@ -6,29 +6,22 @@ import 'qrc:///models' as Models
 BasicPage {
     id: documentsModule
 
-    pageTitle: qsTr('Documents')
+    pageTitle: qsTr('Vista de document')
 
     signal changeAnnotation()
     signal changeDocumentSource()
     signal closeCurrentPage()
+    signal documentsListSelected(string document)
     signal documentSelected()
     signal showDocument()
     signal showDocumentSource()
     signal showSelectFile()
 
+    property var sharedObject: null
+
     property string documentId: ""
     property string documentSource: ''
     property string annotationTitle: ''
-
-    states: [
-        State {
-            name: 'displaySource'
-        },
-        State {
-            name: 'defaultState'
-        }
-    ]
-    state: 'defaultState'
 
     Models.DocumentsModel {
         id: documentsModel
@@ -90,38 +83,7 @@ BasicPage {
 
         initialState: documentsListState
 
-        DSM.State {
-            id: documentsListState
-
-            onEntered: {
-                pushButtonsModel();
-                setSource('qrc:///components/DocumentsList.qml', {selectedIdentifier: documentId});
-            }
-
-            onExited: {
-                popButtonsModel();
-            }
-
-            DSM.SignalTransition {
-                signal: showDocument
-                targetState: singleDocumentState
-            }
-
-            DSM.SignalTransition {
-                signal: documentSelected
-                targetState: singleDocumentState
-            }
-
-            DSM.SignalTransition {
-                signal: showSelectFile
-                targetState: selectFileState
-            }
-
-            DSM.SignalTransition {
-                signal: showDocumentSource
-                targetState: documentSourceDisplayState
-            }
-        }
+        signal documentsListSelected()
 
         DSM.HistoryState {
             id: historyState
@@ -135,7 +97,7 @@ BasicPage {
             onEntered: {
                 pushButtonsModel();
                 setSource('qrc:///components/ShowDocument.qml', {document: documentId});
-                buttonsModel.append({icon: 'road-sign-147409', object: documentsModule, method: 'closeCurrentPage'});
+                buttonsModel.append({icon: 'list-153185', object: documentsModuleSM, method: 'documentsListSelected'});
             }
 
             onExited: {
@@ -155,6 +117,11 @@ BasicPage {
             DSM.SignalTransition {
                 signal: showDocumentSource
                 targetState: documentSourceDisplayState
+            }
+
+            DSM.SignalTransition {
+                signal: documentsModuleSM.documentsListSelected
+                targetState: documentsListState
             }
         }
 
@@ -209,32 +176,13 @@ BasicPage {
         }
 
         DSM.State {
-            id: newDocumentState
-
-            onEntered: {
-                pushButtonsModel();
-                buttonsModel.append({icon: 'road-sign-147409', object: documentsModule, method: 'closeCurrentPage'});
-                setSource('qrc:///components/NewDocument.qml', {source: documentSource});
-
-            }
-
-            onExited: {
-                popButtonsModel();
-            }
-
-            DSM.SignalTransition {
-                signal: closeCurrentPage
-                targetState: documentsListState
-            }
-        }
-        DSM.State {
             id: documentSourceDisplayState
 
             onEntered: {
                 pushButtonsModel();
                 setSource('qrc:///components/DocumentViewer.qml', {source: documentSource});
                 buttonsModel.append({icon: 'box-24557', object: mainItem, method: 'openSourceExternally'});
-                buttonsModel.append({icon: 'road-sign-147409', object: documentsModule, method: 'closeCurrentPage'});
+                buttonsModel.append({icon: 'list-153185', object: documentsModule, method: 'openDocumentsList'});
             }
 
             onExited: {
@@ -246,22 +194,19 @@ BasicPage {
                 targetState: historyState
             }
         }
+
+        DSM.FinalState {
+            id: documentsListState
+
+            onEntered: {
+                console.log('document id', documentId);
+                documentsListSelected(documentId);
+            }
+        }
     }
 
     Component.onCompleted: {
-        if (documentId !== "") {
-            switch(documentsModule.state) {
-            case 'displayDocument':
-                documentsModuleSM.initialState = singleDocumentState;
-                break;
-            case 'displaySource':
-                documentsModuleSM.initialState = documentSourceDisplayState;
-                break;
-            default:
-                documentsModuleSM.initialState = documentsListState;
-                break;
-            }
-        }
+        documentsModuleSM.initialState = singleDocumentState;
         documentsModuleSM.start();
     }
 }

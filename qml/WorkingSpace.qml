@@ -5,23 +5,23 @@ import QtQuick.Dialogs 1.2
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
-Item {
+Loader {
     id: workingSpace
 
-    property string mainPage: ''
-
-    signal closeWorkingSpace()
     signal openMenu(int initialHeight, var menu, var options)
     signal showMessage(string message)
 
     Common.UseUnits { id: units }
 
+    /*
     ListModel {
         id: pagesModel
 
         dynamicRoles: true
     }
+    */
 
+    /*
     StackView {
         id: basicStack
 
@@ -205,26 +205,11 @@ Item {
 
         }
     }
-
-    function loadFirstPage(page, param) {
-        basicStack.clear();
-        loadSubPage(page, param);
-    }
+    */
 
     function loadSubPage(page, param) {
         console.log('opening', page, param);
-        if (basicStack.depth>0)
-            param['isSubPage'] = true;
-        basicStack.push({item: Qt.resolvedUrl(page + ".qml"), properties: param});
-    }
-
-    function requestClosePage() {
-        if (basicStack.depth>1)
-            basicStack.pop();
-    }
-
-    function closeCurrentPage() {
-        // Erase this function
+        setSource(Qt.resolvedUrl(page + ".qml"), param);
     }
 
     Component.onCompleted: {

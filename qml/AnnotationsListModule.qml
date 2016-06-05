@@ -9,7 +9,7 @@ import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 import 'qrc:///models' as Models
 import 'qrc:///components' as Components
-import 'qrc:///modules/annotations' as AnnotationComponents
+import 'qrc:///modules/annotations' as AnnotationsComponents
 import "qrc:///common/FormatDates.js" as FormatDates
 
 
@@ -36,6 +36,7 @@ BasicPage {
     signal newRubricAssessment()
     signal newTimetableAnnotation()
     signal openExternalViewer(string identifier)
+    signal rubricSelected(string assessment)
 
     signal saveNewAnnotation()
     signal showAnnotationsList()
@@ -45,7 +46,6 @@ BasicPage {
     signal showSingleAnnotation()
     signal showHistory()
 
-    property string identifier: ''
     property var editContent
     property string labels: ''
 
@@ -81,18 +81,13 @@ BasicPage {
             annotationView.changeAnnotationPeriod();
         }
 
-        onAnnotationSelected: {
-            annotationView.identifier = title;
-            showSingleAnnotation();
-        }
-
         onAnnotationStateSelected: {
             editContent = stateValue;
             annotationView.changeAnnotationState();
         }
 
         onAnnotationTitleSelected: {
-            editContent = annotationView.identifier;
+            editContent = annotationSM.identifier;
             lastItemSelected = widget;
             annotationView.changeAnnotationTitle();
         }
@@ -102,16 +97,26 @@ BasicPage {
             openAttachmentsPage();
         }
 
-        onCloseNewAnnotation: {
-            annotationView.closeNewAnnotation();
-        }
-
         onCloseNewRubricAssessment: annotationView.closeNewRubricAssessment()
 
+        onNewAnnotation: {
+            console.log('labels',mainItem.labels);
+            annotationView.labels = mainItem.labels;
+            lastItemSelected = annotationView;
+            showNewAnnotation();
+        }
+
         onNewRubricAssessment: {
-            identifier = annotation;
+            annotationSM.identifier = annotation;
             annotationView.newRubricAssessment();
         }
+
+        onRubricAssessmentSelected: {
+            console.log('---');
+            annotationSM.assessment = assessment;
+            annotationSM.openRubricAssessment();
+        }
+
     }
 
     Connections {
@@ -119,21 +124,35 @@ BasicPage {
 
         ignoreUnknownSignals: true
 
+        onCloseNewAnnotation: {
+            closeSuperposedMenu();
+            annotationView.closeNewAnnotation();
+        }
+
+        onCloseNewRubricAssessment: {
+            closeSuperposedMenu();
+            annotationSM.superposedMenuClosed();
+        }
+
+        onNewTimetableAnnotationSelected: {
+            openSuperposedMenu(lastItemSelected, width, height, 'qrc:///modules/annotations/NewAnnotationFromTimetable.qml', {labels: labels});
+        }
+
         onSaveAnnotationTitleRequest: {
             console.log('content', content);
             var newIdentifier = content;
-            annotationsModel.updateObject(annotationView.identifier, {title: newIdentifier});
-            annotationView.identifier = newIdentifier;
+            annotationsModel.updateObject(annotationSM.identifier, {title: newIdentifier});
+            annotationSM.identifier = newIdentifier;
             editorContentsSaved();
         }
 
         onSaveAnnotationDescriptionRequest: {
-            annotationsModel.updateObject(annotationView.identifier, {desc: content});
+            annotationsModel.updateObject(annotationSM.identifier, {desc: content});
             editorContentsSaved();
         }
     }
 
-    Components.AnnotationsHistory {
+    AnnotationsComponents.AnnotationsHistory {
         id: annotationsHistoryComponent
         anchors.fill: parent
         anchors.topMargin: units.fingerUnit * 2
@@ -143,7 +162,7 @@ BasicPage {
         onHideHistory: annotationView.hideHistory()
 
         onAnnotationSelected: {
-            annotationView.identifier = title;
+            annotationSM.identifier = title;
             annotationView.showSingleAnnotation();
         }
     }
@@ -155,26 +174,19 @@ BasicPage {
 
     function loadEditorComponent(page) {
         var args = {};
-        args['identifier'] = annotationView.identifier;
+        args['identifier'] = annotationSM.identifier;
         args['content'] = editContent;
         setSource('qrc:///modules/annotations/' + page + '.qml', args);
-    }
-
-    function openNewAnnotation() {
-        console.log('labels',mainItem.labels);
-        annotationView.labels = mainItem.labels;
-        showNewAnnotation();
     }
 
     function prepareAnnotationsList(parameters) {
         // Change buttons
         annotationView.pushButtonsModel();
         annotationView.buttonsModel.append({icon: 'list-153185', object: annotationView, method: 'showHistory'});
-        annotationView.buttonsModel.append({icon: 'plus-24844', object: annotationView, method: 'openNewAnnotation'});
         annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'showSingleAnnotation'});
 
         // Show related annotations
-        annotationView.setSource('qrc:///components/RelatedAnnotations.qml', parameters);
+        annotationView.setSource('qrc:///modules/annotations/RelatedAnnotations.qml', parameters);
     }
 
     function prepareAnnotationPartEditor() {
@@ -189,7 +201,7 @@ BasicPage {
             console.log(prop, '=>', mainItem.annotationContent[prop]);
         }
 
-        annotationsModel.updateObject(annotationView.identifier, mainItem.annotationContent);
+        annotationsModel.updateObject(annotationSM.identifier, mainItem.annotationContent);
         if ('title' in mainItem.annotationContent) {
             identifier = mainItem.annotationContent['title'];
         }
@@ -207,16 +219,28 @@ BasicPage {
     }
 
     DSM.StateMachine {
-        id: annotationStateMachine
+        id: annotationSM
 
-        initialState: (identifier == '')?annotationsList:singleAnnotation
+        initialState: (identifier == '')?annotationsListState:singleAnnotationState
+
+        // Shared variables
+
+        property string identifier: ''
+        property int assessment: -1
+
+        // Internal signals
+
+        // * Must be moved here
+
+        signal openRubricAssessment()
+        signal superposedMenuClosed()
 
         DSM.State {
-            id: singleAnnotation
+            id: singleAnnotationState
 
             onEntered: {
-                annotationsHistoryComponent.addAnnotation(annotationView.identifier);
-                annotationView.setSource('qrc:///components/ShowAnnotation.qml', {identifier: annotationView.identifier});
+                annotationsHistoryComponent.addAnnotation(annotationSM.identifier);
+                annotationView.setSource('qrc:///modules/annotations/ShowAnnotation.qml', {identifier: annotationSM.identifier});
 
                 annotationView.pushButtonsModel();
                 annotationView.buttonsModel.append({icon: 'hierarchy-35795', object: annotationView, method: 'showAnnotationsList'});
@@ -232,12 +256,12 @@ BasicPage {
 
             DSM.SignalTransition {
                 signal: annotationView.showSingleAnnotation
-                targetState: singleAnnotation
+                targetState: singleAnnotationState
             }
 
             DSM.SignalTransition {
                 signal: annotationView.showAnnotationsList
-                targetState: annotationsList
+                targetState: annotationsListState
             }
 
             DSM.SignalTransition {
@@ -271,6 +295,11 @@ BasicPage {
             }
 
             DSM.SignalTransition {
+                signal: annotationSM.openRubricAssessment
+                targetState: openRubricAssessmentState
+            }
+
+            DSM.SignalTransition {
                 signal: annotationView.changeAnnotationTitle
                 targetState: titleEditorState
             }
@@ -297,19 +326,21 @@ BasicPage {
         }
 
         DSM.State {
-            id: annotationsList
+            id: annotationsListState
 
             onEntered: {
-                prepareAnnotationsList({labelBase: '', labels: '', mainIdentifier: annotationView.identifier});
+                prepareAnnotationsList({labelBase: '', labels: '', mainIdentifier: annotationSM.identifier});
             }
 
             onExited: {
+                annotationSM.identifier = mainItem.mainIdentifier;
                 closeAnnotationsList();
             }
 
             DSM.SignalTransition {
-                signal: annotationView.showSingleAnnotation
-                targetState: singleAnnotation
+                signal: mainItem.annotationSelected
+                // signal: annotationView.showSingleAnnotation
+                targetState: singleAnnotationState
             }
 
             DSM.SignalTransition {
@@ -324,32 +355,39 @@ BasicPage {
         }
 
         DSM.State {
+            id: dummyState
+            onEntered: {
+                console.log('DUMMY');
+            }
+        }
+
+        DSM.State {
             id: relatedAnnotationsByLabels
 
             onEntered: {
-                prepareAnnotationsList({labelBase: '', labels: annotationView.labels, initialState: 'labels', mainIdentifier: annotationView.identifier});
+                prepareAnnotationsList({labelBase: '', labels: annotationView.labels, initialState: 'labels', mainIdentifier: annotationSM.identifier});
             }
             onExited: {
                 closeAnnotationsList();
             }
 
             DSM.SignalTransition {
-                targetState: singleAnnotation
                 signal: annotationView.showSingleAnnotation
+                targetState: singleAnnotationState
             }
         }
 
         DSM.State {
             id: relatedAnnotationsByPeriod
             onEntered: {
-                prepareRelatedAnnotations({labelBase: '', labels: annotationView.labels, initialState: 'pending', mainIdentifier: annotationView.identifier});
+                prepareRelatedAnnotations({labelBase: '', labels: annotationView.labels, initialState: 'pending', mainIdentifier: annotationSM.identifier});
             }
             onExited: {
                 closeAnnotationsList();
             }
 
             DSM.SignalTransition {
-                targetState: singleAnnotation
+                targetState: singleAnnotationState
                 signal: annotationView.hideRelatedAnnotations
             }
         }
@@ -369,7 +407,7 @@ BasicPage {
             }
 
             DSM.SignalTransition {
-                targetState: singleAnnotation
+                targetState: singleAnnotationState
                 signal: annotationView.showSingleAnnotation
             }
 
@@ -381,30 +419,22 @@ BasicPage {
 
         DSM.HistoryState {
             id: historyState
-            defaultState: singleAnnotation
+            defaultState: singleAnnotationState
         }
 
         DSM.State {
             id: addAnnotation
 
             onEntered: {
-                annotationView.pushButtonsModel();
-
-                annotationView.setSource('qrc:///components/NewAnnotation.qml', {labels: annotationView.labels});
-
-                annotationView.buttonsModel.append({icon: 'floppy-35952', object: mainItem, method: 'saveNewAnnotation'});
-                annotationView.buttonsModel.append({icon: 'questionnaire-158862', object: mainItem, method: 'newIntelligentAnnotation'});
-                annotationView.buttonsModel.append({icon: 'calendar-23684', object: mainItem, method: 'newTimetableAnnotation'});
-                annotationView.buttonsModel.append({icon: 'upload-25068', object: mainItem, method: 'importAnnotations'});
-                annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'closeNewAnnotation'});
+                openSuperposedMenu(lastItemSelected, width, units.fingerUnit * 8, 'qrc:///modules/annotations/NewAnnotation.qml', {labels: annotationView.labels});
             }
 
             onExited: {
-                annotationView.popButtonsModel();
+                closeSuperposedMenu();
             }
 
             DSM.SignalTransition {
-                targetState: singleAnnotation
+                targetState: singleAnnotationState
                 signal: annotationView.showSingleAnnotation
             }
             DSM.SignalTransition {
@@ -421,19 +451,16 @@ BasicPage {
             id: addRubricAssessment
 
             onEntered: {
-                annotationView.pushButtonsModel();
-                console.log('ARA');
-                annotationView.setSource('qrc:///components/AddRubricAssessmentComponent.qml', {annotation: identifier});
-                annotationView.buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'closeNewRubricAssessment'});
+                openSuperposedMenu(annotationView, width, height, 'qrc:///components/AddRubricAssessmentComponent.qml', {annotation: annotationSM.identifier});
             }
 
             onExited: {
-                annotationView.popButtonsModel();
+                closeSuperposedMenu();
             }
 
             DSM.SignalTransition {
+                signal: annotationSM.superposedMenuClosed
                 targetState: historyState
-                signal: annotationView.closeNewRubricAssessment
             }
         }
 
@@ -441,7 +468,7 @@ BasicPage {
             id: titleEditorState
 
             onEntered: {
-                openSuperposedMenu(lastItemSelected, annotationView.width, units.fingerUnit * 4, 'qrc:///modules/annotations/TitleEditorComponent.qml', {identifier: annotationView.identifier, content: annotationView.identifier});
+                openSuperposedMenu(lastItemSelected, annotationView.width, units.fingerUnit * 4, 'qrc:///modules/annotations/TitleEditorComponent.qml', {identifier: annotationSM.identifier, content: annotationSM.identifier});
             }
 
             onExited: {
@@ -450,7 +477,7 @@ BasicPage {
 
             DSM.SignalTransition {
                 signal: annotationView.editorContentsSaved
-                targetState: singleAnnotation
+                targetState: singleAnnotationState
             }
             DSM.SignalTransition {
                 signal: annotationView.editorContentsDeclined
@@ -462,7 +489,7 @@ BasicPage {
             id: descEditorState
 
             onEntered: {
-                openSuperposedMenu(lastItemSelected, annotationView.width, height / 2, 'qrc:///modules/annotations/DescriptionEditorComponent.qml', {identifier: annotationView.identifier, content: annotationView.editContent});
+                openSuperposedMenu(lastItemSelected, annotationView.width, height / 2, 'qrc:///modules/annotations/DescriptionEditorComponent.qml', {identifier: annotationSM.identifier, content: annotationView.editContent});
             }
 
             onExited: {
@@ -471,7 +498,7 @@ BasicPage {
 
             DSM.SignalTransition {
                 signal: annotationView.editorContentsSaved
-                targetState: singleAnnotation
+                targetState: historyState
             }
             DSM.SignalTransition {
                 signal: annotationView.editorContentsDeclined
@@ -493,7 +520,7 @@ BasicPage {
 
             DSM.SignalTransition {
                 signal: annotationView.editorContentsSaved
-                targetState: singleAnnotation
+                targetState: singleAnnotationState
             }
             DSM.SignalTransition {
                 signal: annotationView.editorContentsDeclined
@@ -515,7 +542,7 @@ BasicPage {
 
             DSM.SignalTransition {
                 signal: annotationView.editorContentsSaved
-                targetState: singleAnnotation
+                targetState: singleAnnotationState
             }
             DSM.SignalTransition {
                 signal: annotationView.editorContentsDeclined
@@ -537,7 +564,7 @@ BasicPage {
 
             DSM.SignalTransition {
                 signal: annotationView.editorContentsSaved
-                targetState: singleAnnotation
+                targetState: singleAnnotationState
             }
             DSM.SignalTransition {
                 signal: annotationView.editorContentsDeclined
@@ -550,7 +577,7 @@ BasicPage {
 
             onEntered: {
                 pushButtonsModel();
-                setSource('qrc:///components/AnnotationAttachedItems.qml', {annotation: annotationView.identifier});
+                setSource('qrc:///components/AnnotationAttachedItems.qml', {annotation: annotationSM.identifier});
                 buttonsModel.append({icon: 'road-sign-147409', object: annotationView, method: 'closeCurrentPage'});
             }
 
@@ -565,13 +592,21 @@ BasicPage {
 
             DSM.SignalTransition {
                 signal: closeCurrentPage
-                targetState: singleAnnotation
+                targetState: singleAnnotationState
+            }
+        }
+
+        DSM.FinalState {
+            id: openRubricAssessmentState
+
+            onEntered: {
+                annotationView.rubricSelected(annotationSM.assessment);
             }
         }
     }
 
     Component.onCompleted: {
-        annotationStateMachine.start();
+        annotationSM.start();
     }
 }
 

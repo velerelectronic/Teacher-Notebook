@@ -11,7 +11,15 @@ Item {
     id: menuPage
     property string pageTitle: qsTr('Teacher Notebook');
 
-    signal openWorkingPage(string title, string page, var parameters)
+    signal annotationsListSelected()
+    signal annotationSelected(string annotation)
+    signal documentsListSelected()
+    signal documentSelected(string document)
+    signal reportSelected(string report)
+    signal reportsListSelected()
+    signal rubricsListSelected()
+    signal rubricSelected(string rubric)
+
     signal sendOutputMessage(string message)
 
     function acceptNewChanges() {
@@ -102,7 +110,7 @@ Item {
 
                     spacing: units.nailUnit
 
-                    model: (menuItemRect.isCurrentItem)?menuItemRect.submenu:[]
+                    model: (menuItemRect.isCurrentItem)?subMenuElements:[]
                     delegate: Rectangle {
                         width: units.fingerUnit * 4
                         height: units.fingerUnit * 2
@@ -120,7 +128,12 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                openWorkingPage(model.title, model.page, model.parameters);
+                                console.log('model', model, model.title, model.caption, model.parameters);
+                                if (model.parameters == null) {
+                                    menuPage[model.method].call(menuPage);
+                                } else {
+                                    menuPage[model.method].call(menuPage, model.parameters);
+                                }
                             }
                         }
                     }
@@ -143,8 +156,8 @@ Item {
 
 
     Component.onCompleted: {
-        menuModel.append({caption: qsTr('Anotacions'), submenu: {object: menuPage, method: 'getSortLabels'}});
         menuModel.append({caption: qsTr('Documents'), submenu: {object: menuPage, method: 'getDocumentsOptions'}});
+        menuModel.append({caption: qsTr('Anotacions'), submenu: {object: menuPage, method: 'getSortLabels'}});
         menuModel.append({caption: qsTr('Taules'), submenu: {object: menuPage, method: 'getSortLabelsForTables'}});
         menuModel.append({caption: qsTr('Rúbriques'), submenu: {object: menuPage, method: 'getRubricsOptions'}});
         menuModel.append({caption: qsTr('Altres eines'), submenu: {object: menuPage, method: 'getOtherToolsList'}});
@@ -156,6 +169,8 @@ Item {
 
     ListModel {
         id: subMenuElements
+
+        dynamicRoles: true
     }
 
     Models.SavedAnnotationsSearchesModel {
@@ -174,18 +189,21 @@ Item {
 
     function getDocumentsOptions(title) {
         concurrentDocuments.select();
+        subMenuElements.clear();
+
         for (var i=0; i<concurrentDocuments.count; i++) {
             var documentObject = concurrentDocuments.getObjectInRow(i);
-            subMenuElements.append({title: title, caption: documentObject['document'], page: 'DocumentsModule', parameters: {state: 'displayDocument', documentId: documentObject['document']}});
+            subMenuElements.append({title: title, caption: documentObject['document'], method: "documentSelected", parameters: documentObject['document']});
         }
-        subMenuElements.append({title: title, caption: qsTr('Llista'), page: 'DocumentsModule'});
+
+        subMenuElements.append({title: title, caption: qsTr('Llista'), method: 'documentsListSelected', parameters: null});
     }
 
     function getSortLabels(title) {
         console.log('get saved searcges');
         labelsSortModel.select();
-        subMenuElements.append({title: title, caption: qsTr('Ordenacions'), page: 'LabelsSort', parameters: {}});
-        subMenuElements.append({title: title, caption: qsTr('Anotacions'), page: 'AnnotationsModule', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Ordenacions'), method: 'LabelsSort', parameters: null});
+        subMenuElements.append({title: title, caption: qsTr('Anotacions'), method: 'annotationsListSelected', parameters: null});
     }
 
     function getSortLabelsForTables(title) {
@@ -198,17 +216,13 @@ Item {
     }
 
     function getRubricsOptions(title) {
-        subMenuElements.append({title: title, caption: qsTr('Avaluació'), page: 'RubricsModule', parameters: {initialState: 'assessmentList'}});
-        subMenuElements.append({title: title, caption: qsTr('Definicions'), page: 'RubricsDefinitionsList', parameters: {}});
-        subMenuElements.append({title: title, caption: qsTr('Grups'), page: 'RubricsGroupsList', parameters: {}});
-        subMenuElements.append({title: title, caption: qsTr('Informes'), page: 'RubricsReportsList', parameters: {}});
-
-        subMenuElements.append({title: title, caption: qsTr('Antigues avaluacions'), page: 'AssessmentSystem', parameters: {}});
-
+        subMenuElements.append({title: title, caption: qsTr('Avaluació'), method: 'rubricsListSelected', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Definicions'), method: 'rubricDefinitionsSelected', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Grups'), page: 'groupsListSelected', parameters: {}});
+        subMenuElements.append({title: title, caption: qsTr('Informes'), page: 'reportsListSelected', parameters: {}});
     }
 
     function getOtherToolsList() {
-        subMenuElements.append({caption: qsTr('Documents'), page: 'DocumentsModule', parameters: {}});
         subMenuElements.append({caption: qsTr('Gestor de dades'), page: 'DataMan', parameters: {}});
         subMenuElements.append({caption: qsTr('Exportador'), page: 'ExportManager', parameters: {}});
         subMenuElements.append({caption: qsTr('! Recerca de coneixement'), page: 'Researcher', parameters: {}, submenu: {object: menuPage, method: ''}});

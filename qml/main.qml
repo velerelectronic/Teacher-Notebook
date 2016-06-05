@@ -52,12 +52,13 @@
   * Attached: https://pixabay.com/es/clip-de-papel-mantenga-metal-27821/
 */
 
-import QtQuick 2.2
+import QtQuick 2.5
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import QtQuick.Window 2.1
 import QtQuick.Dialogs 1.1
 import PersonalTypes 1.0
+import QtQml.StateMachine 1.0 as DSM
 import 'qrc:///common' as Common
 
 Window {
@@ -96,8 +97,6 @@ Window {
             anchors.fill: parent
             anchors.margins: units.nailUnit * 2
 
-            mainPage: 'MenuPage'
-
             onOpenMenu: {
                 slideMenu.initialHeight = initialHeight;
                 slideMenu.options = options;
@@ -107,6 +106,44 @@ Window {
 
             onShowMessage: {
                 messageBox.publishMessage(message);
+            }
+
+            Connections {
+                target: workingSpace.item
+                ignoreUnknownSignals: true
+
+                onAnnotationsListSelected: {
+                    appStateMachine.openAnnotationsList();
+                }
+
+                onAnnotationSelected: {
+                    appStateMachine.annotation = annotation;
+                    appStateMachine.openSingleAnnotation();
+                }
+
+                onDocumentsListSelected: {
+                    if (typeof document !== 'undefined')
+                        appStateMachine.document = document;
+                    appStateMachine.openDocumentsList();
+                }
+
+                onDocumentSelected: {
+                    appStateMachine.document = document;
+                    appStateMachine.openSingleDocument();
+                }
+
+                onOpenMainPage: {
+                    appStateMachine.openMainPage();
+                }
+
+                onRubricSelected: {
+                    appStateMachine.assessment = assessment;
+                    appStateMachine.openSingleRubric();
+                }
+
+                onRubricsListSelected: {
+                    appStateMachine.openRubricsList();
+                }
             }
         }
 
@@ -129,6 +166,176 @@ Window {
             fontSize: units.readUnit
             interval: 2000
         }
+    }
+
+    DSM.StateMachine {
+        id: appStateMachine
+
+        initialState: mainMenuState
+
+        // Shared variable across states
+
+        property string annotation: ''
+        property string document: ''
+        property string rubric: ''
+        property int assessment: -1
+
+        // Signals
+
+        signal openAnnotationsList()
+        signal openDocumentsList()
+        signal openMainPage()
+        signal openRubricsList()
+        signal openSingleAnnotation()
+        signal openSingleDocument()
+        signal openSingleRubric()
+
+        DSM.State {
+            id: mainMenuState
+
+            onEntered: {
+                workingSpace.loadSubPage('MenuPageModule', {});
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openDocumentsList
+                targetState: documentsListState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openSingleDocument
+                targetState: singleDocumentState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openAnnotationsList
+                targetState: annotationsListState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openRubricsList
+                targetState: rubricsListState
+            }
+        }
+
+        DSM.State {
+            id: documentsListState
+
+            onEntered: {
+                workingSpace.loadSubPage('DocumentsListModule', {documentId: appStateMachine.document});
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openMainPage
+                targetState: mainMenuState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openSingleDocument
+                targetState: singleDocumentState
+            }
+        }
+
+        DSM.State {
+            id: singleDocumentState
+
+            onEntered: {
+                workingSpace.loadSubPage('SingleDocumentModule', {documentId: appStateMachine.document});
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openDocumentsList
+                targetState: documentsListState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openMainPage
+                targetState: mainMenuState
+            }
+        }
+
+        DSM.State {
+            id: annotationsListState
+
+            onEntered: {
+                workingSpace.loadSubPage('AnnotationsListModule', {annotation: appStateMachine.annotation});
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openSingleAnnotation
+                targetState: singleAnnotationState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openMainPage
+                targetState: mainMenuState
+            }
+        }
+
+        DSM.State {
+            id: singleAnnotationState
+
+            onEntered: {
+                workingSpace.loadSubPage('SingleAnnotationModule', {annotation: appStateMachine.annotation});
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openAnnotationsList
+                targetState: annotationsListState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openMainPage
+                targetState: mainMenuState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openSingleRubric
+                targetState: singleRubricState
+            }
+        }
+
+        DSM.State {
+            id: rubricsListState
+
+            onEntered: {
+                workingSpace.loadSubPage('RubricsListModule', {rubric: appStateMachine.rubric});
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openSingleRubric
+                targetState: singleRubricState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openMainPage
+                targetState: mainMenuState
+            }
+        }
+
+        DSM.State {
+            id: singleRubricState
+
+            onEntered: {
+                console.log('inside');
+                workingSpace.loadSubPage('SingleRubricModule', {assessment: appStateMachine.assessment});
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openRubricsList
+                targetState: rubricsListState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openMainPage
+                targetState: mainMenuState
+            }
+        }
+
+    }
+
+    Component.onCompleted: {
+        appStateMachine.start();
     }
 }
 

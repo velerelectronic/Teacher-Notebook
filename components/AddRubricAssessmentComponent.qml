@@ -39,81 +39,114 @@ Rectangle {
         id: rubricsAssessmentModel
     }
 
-    RowLayout {
+    ColumnLayout {
         anchors.fill: parent
-        anchors.margins: units.fingerUnit
 
-        spacing: units.nailUnit
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit * 2
 
-        ListView {
-            id: groupsList
+            RowLayout {
+                anchors.fill: parent
+                spacing: units.nailUnit
+                Text {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    font.bold: true
+                    font.pixelSize: units.readUnit
+                    text: qsTr('Crear nova rúbrica...')
+                }
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
+                    size: units.fingerUnit * 2
+                    image: 'road-sign-147409'
+                    onClicked: closeNewRubricAssessment()
+                }
+            }
+        }
+        Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            model: groupsModel
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: units.fingerUnit
 
-            spacing: units.nailUnit
-            delegate: Common.BoxedText {
-                width: groupsList.width
-                height: units.fingerUnit * 2
+                spacing: units.nailUnit
 
-                color: 'transparent'
-                text: qsTr('Grup') + " " + model.group
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        groupsList.currentIndex = model.index;
-                        chosenGroup = model.group;
+                ListView {
+                    id: groupsList
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+
+                    model: groupsModel
+
+                    spacing: units.nailUnit
+                    delegate: Common.BoxedText {
+                        width: groupsList.width
+                        height: units.fingerUnit * 2
+
+                        color: 'transparent'
+                        text: qsTr('Grup') + " " + model.group
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                groupsList.currentIndex = model.index;
+                                chosenGroup = model.group;
+                            }
+                        }
+                    }
+
+                    highlight: Rectangle {
+                        width: groupsList.width
+                        height: units.fingerUnit * 2
+                        color: 'yellow'
                     }
                 }
-            }
 
-            highlight: Rectangle {
-                width: groupsList.width
-                height: units.fingerUnit * 2
-                color: 'yellow'
-            }
-        }
+                ListView {
+                    id: rubricsList
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
 
-        ListView {
-            id: rubricsList
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+                    model: rubricsModel
 
-            model: rubricsModel
-
-            spacing: units.nailUnit
-            delegate: Common.BoxedText {
-                width: rubricsList.width
-                height: units.fingerUnit * 2
-                margins: units.nailUnit
-                color: 'transparent'
-                text: model.title
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        rubricsList.currentIndex = model.index;
-                        chosenRubricId = model.id;
-                        chosenRubricTitle = model.title;
-                        chosenRubricDesc = model.desc;
+                    spacing: units.nailUnit
+                    delegate: Common.BoxedText {
+                        width: rubricsList.width
+                        height: units.fingerUnit * 2
+                        margins: units.nailUnit
+                        color: 'transparent'
+                        text: model.title
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                rubricsList.currentIndex = model.index;
+                                chosenRubricId = model.id;
+                                chosenRubricTitle = model.title;
+                                chosenRubricDesc = model.desc;
+                            }
+                        }
+                    }
+                    highlight: Rectangle {
+                        width: rubricsList.width
+                        height: units.fingerUnit * 2
+                        color: 'yellow'
                     }
                 }
-            }
-            highlight: Rectangle {
-                width: rubricsList.width
-                height: units.fingerUnit * 2
-                color: 'yellow'
-            }
-        }
-        Common.Button {
-            Layout.preferredWidth: units.fingerUnit * 3
-            Layout.fillHeight: true
+                Common.Button {
+                    Layout.preferredWidth: units.fingerUnit * 3
+                    Layout.fillHeight: true
 
-            enabled: (groupsList.currentIndex > -1) && (rubricsList.currentIndex > -1)
-            text: qsTr('Crea rúbrica')
-            onClicked: {
-                addRubricMenuRect.createNewRubricAssessment(chosenRubricTitle, chosenRubricDesc, chosenRubricId, chosenGroup);
-                closeNewRubricAssessment();
+                    enabled: (groupsList.currentIndex > -1) && (rubricsList.currentIndex > -1)
+                    text: qsTr('Crea rúbrica')
+                    onClicked: {
+                        addRubricMenuRect.createNewRubricAssessment(chosenRubricTitle, chosenRubricDesc, chosenRubricId, chosenGroup);
+                        closeNewRubricAssessment();
+                    }
+                }
+
             }
         }
 

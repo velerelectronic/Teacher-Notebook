@@ -1,12 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>components/RelatedAnnotations.qml</file>
-        <file>components/StateComponent.qml</file>
-        <file>components/AnnotationsHistory.qml</file>
-        <file>components/ShowAnnotation.qml</file>
-        <file>components/NewAnnotation.qml</file>
-        <file>components/PeriodEditorComponent.qml</file>
-        <file>components/AnnotationStateEditorComponent.qml</file>
         <file>components/AddRubricAssessmentComponent.qml</file>
         <file>components/RubricsAssessmentList.qml</file>
         <file>components/RubricGroupAssessment.qml</file>
@@ -14,7 +7,6 @@
         <file>components/RubricGroupAssessmentCriterium.qml</file>
         <file>components/RubricGroupAssessmentDescriptorEditor.qml</file>
         <file>components/DocumentsList.qml</file>
-        <file>components/AnnotationAttachedItems.qml</file>
         <file>components/DocumentViewer.qml</file>
         <file>components/DocumentsSelector.qml</file>
         <file>components/ShowDocument.qml</file>

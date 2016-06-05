@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtGraphicalEffects 1.0
+import QtQml.Models 2.2
 
 Item {
     property int minimumHeight: 0
@@ -14,6 +15,8 @@ Item {
     signal shown()
     signal hidden()
 
+    signal interiorClicked()
+
     MouseArea {
         anchors.fill: parent
         onPressed: mouse.accepted = true
@@ -25,8 +28,6 @@ Item {
         // Parent is the enclosing Item
         // MaximumHeight is parent's total height
         // MaximumWidth is parent's total width
-
-
 
         property int maximumHeight: parent.height
         property int maximumWidth: parent.width
@@ -42,6 +43,14 @@ Item {
             right: (anchoringItem.x + anchoringItem.width + width >= enclosingItem.width)?anchoringItem.left:undefined
         }
         */
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                console.log('INT');
+                interiorClicked();
+            }
+        }
 
         RectangularGlow {
             anchors.fill: parent

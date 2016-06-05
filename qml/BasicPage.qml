@@ -112,7 +112,7 @@ Item {
                         size: units.fingerUnit
                         image: model.icon
                         onClicked: {
-                            model.object[model.method]();
+                            model.object[model.method].call(model.object);
                         }
                     }
                 }
@@ -146,6 +146,11 @@ Item {
             id: superposedWidgetLoader
 
             anchors.fill: parent
+        }
+
+        onInteriorClicked: {
+            console.log('interior');
+            closeSuperposedMenu();
         }
     }
 

@@ -42,5 +42,6 @@
         <file>common/HorizontalStaticMenu.qml</file>
         <file>common/BasicSection.qml</file>
         <file>common/SuperposedWidget.qml</file>
+        <file>common/SuperposedWidgetList.qml</file>
     </qresource>
 </RCC>

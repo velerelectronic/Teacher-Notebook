@@ -5,7 +5,6 @@
         <file>qml/DataMan.qml</file>
         <file>qml/GanttItem.qml</file>
         <file>qml/main.qml</file>
-        <file>qml/MenuPage.qml</file>
         <file>qml/PageWidget.qml</file>
         <file>qml/Researcher.qml</file>
         <file>qml/Schedule.qml</file>
@@ -80,10 +79,12 @@
         <file>qml/LabelsSort.qml</file>
         <file>qml/AboveMenu.qml</file>
         <file>qml/OmniboxSearch.qml</file>
-        <file>qml/AnnotationsModule.qml</file>
-        <file>qml/RubricsModule.qml</file>
-        <file>qml/DocumentsModule.qml</file>
         <file>qml/ExportManager.qml</file>
         <file>qml/RubricExperiment.qml</file>
+        <file>qml/MenuPageModule.qml</file>
+        <file>qml/DocumentsListModule.qml</file>
+        <file>qml/SingleDocumentModule.qml</file>
+        <file>qml/AnnotationsListModule.qml</file>
+        <file>qml/RubricsListModule.qml</file>
     </qresource>
 </RCC>

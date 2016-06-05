@@ -9,6 +9,7 @@ Item {
     property string annotation: ''
 
     signal newRubricAssessment(string annotation)
+    signal rubricAssessmentSelected(string assessment)
 
     Common.UseUnits {
         id: units
@@ -97,7 +98,8 @@ Item {
                     onClicked: {
                         switch(model.type) {
                         case 'rubric':
-                            annotationView.openPageArgs('RubricsModule', {rubricAssessmentIdentifier: model.identifier});
+                            rubricAssessmentSelected(model.identifier);
+//                            annotationView.openPageArgs('RubricsModule', {rubricAssessmentIdentifier: model.identifier});
                             break;
                         case 'resource':
                             annotationView.openPageArgs('ResourcesModule', {resourceId: model.identifier, state: 'displaySource'});

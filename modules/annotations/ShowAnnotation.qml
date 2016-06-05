@@ -3,7 +3,7 @@ import QtQuick.Layouts 1.1
 import QtQml.Models 2.2
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
-import 'qrc:///components' as Components
+import 'qrc:///modules/annotations' as AnnotationsComponents
 import ClipboardAdapter 1.0
 
 Item {
@@ -16,12 +16,14 @@ Item {
     signal annotationStateSelected(int stateValue)
     signal annotationTitleSelected(var widget)
     signal attachmentsSelected()
-    signal rubricAssessmentSelected(int assessment)
     signal resourceSelected(int resource)
+    signal rubricAssessmentSelected(int assessment)
     signal newRubricAssessment(string annotation)
     signal showRelatedAnnotations()
     signal showRelatedAnnotationsByLabels()
     signal showRelatedAnnotationsByPeriod()
+
+    property var sharedObject: null
 
     property string identifier: ''
     property string descText: ''
@@ -185,7 +187,7 @@ Item {
                                 font.pixelSize: units.readUnit
                                 text: qsTr('Estat:')
                             }
-                            Components.StateComponent {
+                            AnnotationsComponents.StateComponent {
                                 id: stateComponent
 
                                 Layout.preferredWidth: units.fingerUnit * 2
@@ -272,7 +274,7 @@ Item {
                     captionSize: units.readUnit
                     caption: qsTr('Elements annexos')
 
-                    Components.AnnotationAttachedItems {
+                    AnnotationsComponents.AnnotationAttachedItems {
                         id: attachedItemsArea
 
                         width: parent.width
@@ -281,6 +283,7 @@ Item {
                         annotation: showAnnotationItem.identifier
 
                         onNewRubricAssessment: showAnnotationItem.newRubricAssessment(annotation)
+                        onRubricAssessmentSelected: showAnnotationItem.rubricAssessmentSelected(assessment)
                     }
                 }
 

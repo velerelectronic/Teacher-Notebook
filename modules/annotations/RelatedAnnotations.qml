@@ -21,6 +21,7 @@ Item {
     property string anyState: "1=1"
 
     signal annotationSelected(string title)
+    signal newAnnotation()
 
     Common.UseUnits {
         id: units
@@ -182,6 +183,8 @@ Item {
 
                 spacing: units.nailUnit
 
+                bottomMargin: newAnnotationButton.height
+
                 delegate: Rectangle {
                     width: relatedAnnotationsView.width
                     height: units.fingerUnit * 2
@@ -223,7 +226,11 @@ Item {
                     }
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: annotationSelected(model.title)
+                        onClicked: {
+                            relatedAnnotations.mainIdentifier = model.title;
+                            console.log('MAIN->', relatedAnnotations.mainIdentifier);
+                            annotationSelected(model.title);
+                        }
                     }
                 }
 
@@ -244,6 +251,24 @@ Item {
                 onListIndexChanged: {
                     if (relatedAnnotationsView.listIndex > -1)
                         relatedAnnotationsView.positionViewAtIndex(listIndex,ListView.Center);
+                }
+                Rectangle {
+                    id: newAnnotationButton
+                    anchors {
+                        right: parent.right
+                        bottom: parent.bottom
+                    }
+                    height: units.fingerUnit * 2
+                    width: units.fingerUnit * 2
+                    radius: width / 2
+                    color: 'green'
+
+                    Common.ImageButton {
+                        size: units.fingerUnit * 2 - units.nailUnit * 2
+                        anchors.centerIn: parent
+                        image: 'plus-24844'
+                        onClicked: newAnnotation()
+                    }
                 }
             }
         }

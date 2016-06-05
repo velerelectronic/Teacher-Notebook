@@ -3,5 +3,14 @@
         <file>modules/annotations/DescriptionEditorComponent.qml</file>
         <file>modules/annotations/LabelsEditorComponent.qml</file>
         <file>modules/annotations/TitleEditorComponent.qml</file>
+        <file>modules/annotations/NewAnnotation.qml</file>
+        <file>modules/annotations/NewAnnotationFromTimetable.qml</file>
+        <file>modules/annotations/PeriodEditorComponent.qml</file>
+        <file>modules/annotations/ShowAnnotation.qml</file>
+        <file>modules/annotations/RelatedAnnotations.qml</file>
+        <file>modules/annotations/AnnotationsHistory.qml</file>
+        <file>modules/annotations/AnnotationAttachedItems.qml</file>
+        <file>modules/annotations/AnnotationStateEditorComponent.qml</file>
+        <file>modules/annotations/StateComponent.qml</file>
     </qresource>
 </RCC>
