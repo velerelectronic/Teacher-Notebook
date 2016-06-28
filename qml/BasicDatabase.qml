@@ -17,7 +17,8 @@ DatabaseBackup {
     function createTables() {
         dataBck.dropTable('annotations');
         dataBck.dropTable('schedule');
-        dataBck.dropTable('combinedAnnotationsVolatileTable')
+        dataBck.dropTable('combinedAnnotationsVolatileTable');
+        dataBck.dropTable('projects');
         dataBck.dropView('detailedAnnotations');
         dataBck.dropView('detailedSchedule');
         dataBck.dropView('detailedEventCharacteristics');

@@ -31,8 +31,10 @@ RESOURCES += qml.qrc \
     common.qrc \
     showdown.qrc \
     models.qrc \
-    components.qrc \
-    resourcesannotations.qrc
+    resourcesannotations.qrc \
+    resourcesdocuments.qrc \
+    resourcesfiles.qrc \
+    resourcesrubrics.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =

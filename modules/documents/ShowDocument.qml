@@ -4,9 +4,8 @@ import QtQml.Models 2.2
 import ClipboardAdapter 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
-import 'qrc:///components' as Components
 import 'qrc:///editors' as Editors
-import "qrc:///components/mediaTypes.js" as MediaTypes
+import "qrc:///modules/files/mediaTypes.js" as MediaTypes
 
 Item {
     id: showDocumentItem

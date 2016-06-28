@@ -1,18 +1,3 @@
 <RCC>
-    <qresource prefix="/">
-        <file>components/AddRubricAssessmentComponent.qml</file>
-        <file>components/RubricsAssessmentList.qml</file>
-        <file>components/RubricGroupAssessment.qml</file>
-        <file>components/RubricAssessmentHistory.qml</file>
-        <file>components/RubricGroupAssessmentCriterium.qml</file>
-        <file>components/RubricGroupAssessmentDescriptorEditor.qml</file>
-        <file>components/DocumentsList.qml</file>
-        <file>components/DocumentViewer.qml</file>
-        <file>components/DocumentsSelector.qml</file>
-        <file>components/ShowDocument.qml</file>
-        <file>components/NewDocument.qml</file>
-        <file>components/mediaTypes.js</file>
-        <file>components/ExtendedRubricDefinition.qml</file>
-        <file>components/NewRubricFile.qml</file>
-    </qresource>
+    <qresource prefix="/"/>
 </RCC>

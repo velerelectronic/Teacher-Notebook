@@ -5,7 +5,7 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import "qrc:///common/FormatDates.js" as FormatDates
-import "qrc:///components/mediaTypes.js" as MediaTypes
+import "qrc:///modules/files/mediaTypes.js" as MediaTypes
 
 Item {
     id: documentsListItem
@@ -122,15 +122,40 @@ Item {
                 height: units.fingerUnit * 4
                 z: 1
 
+                Behavior on x {
+                    NumberAnimation {
+                        duration: 200
+                    }
+                }
+
 //                border.color: 'grey'
 
                 color: ((model.title == selectedIdentifier) && (selectedIdentifier !== ''))?'yellow':'white'
 
                 MouseArea {
                     anchors.fill: parent
+                    drag.target: documentItem
+                    drag.axis: Drag.XAxis
+                    drag.minimumX: -documentItem.width
+                    drag.maximumX: 0
+
+                    property bool dragActive: drag.active
+
                     onClicked: {
                         selectedIdentifier = model.title;
                         documentsListItem.documentSelected(model.title);
+                    }
+
+                    onDragActiveChanged: {
+                        if (dragActive) {
+
+                        } else {
+                            if (documentItem.x < -documentItem.height * 2) {
+                                documentItem.x = -documentItem.width
+                            } else {
+                                documentItem.x = 0;
+                            }
+                        }
                     }
                 }
 

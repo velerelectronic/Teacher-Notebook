@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/rubrics/RubricAssessmentHistory.qml</file>
+        <file>modules/rubrics/RubricGroupAssessment.qml</file>
+        <file>modules/rubrics/RubricGroupAssessmentCriterium.qml</file>
+        <file>modules/rubrics/RubricGroupAssessmentDescriptorEditor.qml</file>
+        <file>modules/rubrics/RubricsAssessmentList.qml</file>
+        <file>modules/rubrics/AddRubricAssessmentComponent.qml</file>
+        <file>modules/rubrics/ExtendedRubricDefinition.qml</file>
+        <file>modules/rubrics/NewRubricFile.qml</file>
+    </qresource>
+</RCC>

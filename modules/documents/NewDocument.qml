@@ -10,7 +10,7 @@ import "qrc:///javascript/Storage.js" as Storage
 Item {
     id: newDocumentItem
 
-    signal closeNewDocument()
+    signal closeNewDocument(string document)
 
     property string title: ''
     property string source: ''
@@ -70,7 +70,7 @@ Item {
             onClicked: {
                 newDocumentItem.title = searchTitleBox.text;
                 acquireDocument();
-                closeNewDocument();
+                closeNewDocument(newDocumentItem.title);
             }
         }
     }
@@ -93,6 +93,7 @@ Item {
                 extension = "";
             else
                 extension = extension.toString();
+
             var obj = {
                 created: Storage.currentTime(),
                 title: newDocumentItem.title,
@@ -106,4 +107,6 @@ Item {
             documentsModel.insertObject(obj);
         }
     }
+
+    Component.onCompleted: searchTitleBox.text = newDocumentItem.title
 }

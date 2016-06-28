@@ -229,10 +229,4 @@ Item {
         subMenuElements.append({caption: qsTr('Feeds'), page: 'FeedWEIB', parameters: {}});
         subMenuElements.append({caption: qsTr('Rellotge'), page: 'TimeController', parameters: {}});
     }
-
-    Models.ProjectsModel {
-        id: projectsModel
-        sort: 'name ASC'
-        filters: ["name <> ''"]
-    }
 }

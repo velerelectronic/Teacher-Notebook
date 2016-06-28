@@ -132,6 +132,11 @@ Window {
                     appStateMachine.openSingleDocument();
                 }
 
+                onNewDocumentSelected: {
+                    console.log('HOE')
+                    appStateMachine.openNewDocument();
+                }
+
                 onOpenMainPage: {
                     appStateMachine.openMainPage();
                 }
@@ -144,6 +149,10 @@ Window {
                 onRubricsListSelected: {
                     appStateMachine.openRubricsList();
                 }
+            }
+
+            function requestClosePage() {
+                appStateMachine.openMainPage();
             }
         }
 
@@ -186,6 +195,9 @@ Window {
         signal openDocumentsList()
         signal openMainPage()
         signal openRubricsList()
+        signal openNewAnnotation()
+        signal openNewDocument()
+        signal openNewRubric()
         signal openSingleAnnotation()
         signal openSingleDocument()
         signal openSingleRubric()
@@ -234,6 +246,11 @@ Window {
                 signal: appStateMachine.openSingleDocument
                 targetState: singleDocumentState
             }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openNewDocument
+                targetState: newDocumentState
+            }
         }
 
         DSM.State {
@@ -251,6 +268,19 @@ Window {
             DSM.SignalTransition {
                 signal: appStateMachine.openMainPage
                 targetState: mainMenuState
+            }
+        }
+
+        DSM.State {
+            id: newDocumentState
+
+            onEntered: {
+                appStateMachine.document = '';
+            }
+
+            DSM.TimeoutTransition {
+                timeout: 0
+                targetState: singleDocumentState
             }
         }
 

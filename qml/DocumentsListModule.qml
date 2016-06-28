@@ -12,6 +12,7 @@ BasicPage {
     signal changeDocumentSource()
     signal closeCurrentPage()
     signal documentSelected(string document)
+    signal newDocumentSelected()
     signal showDocument()
     signal showDocumentSource()
     signal showSelectFile()
@@ -21,16 +22,6 @@ BasicPage {
     property string documentId: ""
     property string documentSource: ''
     property string annotationTitle: ''
-
-    states: [
-        State {
-            name: 'displaySource'
-        },
-        State {
-            name: 'defaultState'
-        }
-    ]
-    state: 'defaultState'
 
     Models.DocumentsModel {
         id: documentsModel
@@ -54,7 +45,7 @@ BasicPage {
 
         onDocumentSelected: {
             documentId = document;
-            documentsModuleSM.documentSelected();
+            documentsModule.documentSelected(document);
         }
 
         onFileSelected: {
@@ -68,7 +59,7 @@ BasicPage {
         }
 
         onNewDocumentSelected: {
-            showSelectFile();
+            documentsModule.newDocumentSelected();
         }
 
         onDocumentSourceSelected: {
@@ -87,90 +78,8 @@ BasicPage {
         }
     }
 
-    DSM.StateMachine {
-        id: documentsModuleSM
-
-        signal documentSelected()
-
-        initialState: documentsListState
-
-        DSM.State {
-            id: documentsListState
-
-            onEntered: {
-                pushButtonsModel();
-                setSource('qrc:///components/DocumentsList.qml', {selectedIdentifier: documentId});
-            }
-
-            onExited: {
-                popButtonsModel();
-            }
-
-            DSM.SignalTransition {
-                signal: documentsModuleSM.documentSelected
-                targetState: singleDocumentState
-            }
-        }
-
-        DSM.FinalState {
-            id: singleDocumentState
-
-            onEntered: {
-                console.log('selected',documentId);
-
-                documentSelected(documentId);
-            }
-        }
-
-        DSM.HistoryState {
-            id: historyState
-
-            defaultState: documentsListState
-        }
-
-        DSM.State {
-            id: newDocumentState
-
-            onEntered: {
-                pushButtonsModel();
-                buttonsModel.append({icon: 'road-sign-147409', object: documentsModule, method: 'closeCurrentPage'});
-                setSource('qrc:///components/NewDocument.qml', {source: documentSource});
-
-            }
-
-            onExited: {
-                popButtonsModel();
-            }
-
-            DSM.SignalTransition {
-                signal: closeCurrentPage
-                targetState: documentsListState
-            }
-        }
-
-        DSM.State {
-            id: documentSourceDisplayState
-
-            onEntered: {
-                pushButtonsModel();
-                setSource('qrc:///components/DocumentViewer.qml', {source: documentSource});
-                buttonsModel.append({icon: 'box-24557', object: mainItem, method: 'openSourceExternally'});
-                buttonsModel.append({icon: 'road-sign-147409', object: documentsModule, method: 'closeCurrentPage'});
-            }
-
-            onExited: {
-                popButtonsModel();
-            }
-
-            DSM.SignalTransition {
-                signal: closeCurrentPage
-                targetState: historyState
-            }
-        }
-    }
 
     Component.onCompleted: {
-        documentsModuleSM.initialState = documentsListState;
-        documentsModuleSM.start();
+        setSource('qrc:///modules/documents/DocumentsList.qml', {selectedIdentifier: documentId});
     }
 }

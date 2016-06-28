@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/files/FileSelector.qml</file>
+        <file>modules/files/mediaTypes.js</file>
+    </qresource>
+</RCC>
