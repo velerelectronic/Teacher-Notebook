@@ -12,6 +12,7 @@ Item {
     id: rubricsListArea
 
     signal rubricGroupAssessmentSelected(int assessment)
+    signal rubricGroupAssessmentExportSelected(int assessment)
 
     property int assessment
 
@@ -82,6 +83,10 @@ Item {
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     font.bold: true
                     text: qsTr('Opcions')
+                }
+                Item {
+                    Layout.preferredWidth: units.fingerUnit * 3
+                    Layout.fillHeight: true
                 }
             }
         }
@@ -156,6 +161,12 @@ Item {
                             }
                         }
                     }
+                }
+                Button {
+                    Layout.preferredWidth: units.fingerUnit * 3
+                    Layout.fillHeight: true
+                    text: qsTr('Exporta')
+                    onClicked: rubricsListArea.rubricGroupAssessmentExportSelected(model.id)
                 }
             }
 

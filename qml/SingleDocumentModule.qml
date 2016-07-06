@@ -11,7 +11,6 @@ BasicPage {
     signal documentsListSelected(string document)
     signal documentSelected()
     signal showDocument()
-    signal showDocumentSource()
     signal showSelectFile()
 
     property var sharedObject: null
@@ -66,7 +65,7 @@ BasicPage {
                 // Show Rubric FromFile
                 documentsModule.openPageArgs('RubricsModule', {rubricFile: documentSource});
             } else {
-                showDocumentSource();
+                documentsModuleSM.showDocumentSource();
             }
         }
 
@@ -85,6 +84,7 @@ BasicPage {
         signal changeDocumentSource()
         signal documentsListSelected()
         signal showDocument()
+        signal showDocumentSource()
 
         // Internal properties
 
@@ -109,7 +109,7 @@ BasicPage {
             }
 
             DSM.SignalTransition {
-                signal: showDocumentSource
+                signal: documentsModuleSM.showDocumentSource
                 targetState: documentSourceDisplayState
             }
         }
@@ -178,9 +178,9 @@ BasicPage {
 
             onEntered: {
                 pushButtonsModel();
-                setSource('qrc:///components/DocumentViewer.qml', {source: documentSource});
+                setSource('qrc:///modules/documents/DocumentViewer.qml', {source: documentSource});
                 buttonsModel.append({icon: 'box-24557', object: mainItem, method: 'openSourceExternally'});
-                buttonsModel.append({icon: 'list-153185', object: documentsModule, method: 'openDocumentsList'});
+                buttonsModel.append({icon: 'list-153185', object: documentsModule, method: 'reopenDocumentsList'});
             }
 
             onExited: {
@@ -201,4 +201,6 @@ BasicPage {
         }
         documentsModuleSM.start();
     }
+
+    Component.onDestruction: popButtonsModel()
 }

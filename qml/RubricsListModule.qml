@@ -72,6 +72,12 @@ BasicPage {
             rubricsModuleItem.openRubricGroupAssessment();
         }
 
+        onRubricGroupAssessmentExportSelected: {
+            rubricAssessmentIdentifier = assessment;
+            console.log('assessment', assessment);
+            rubricsModuleSM.exportRubric();
+        }
+
         onEditRubricAssessmentDescriptor: {
             rubricsModuleItem.individual = individual;
             showRubricGroupAssessmentDescriptorEditor();
@@ -87,12 +93,15 @@ BasicPage {
 
         initialState: (rubricAssessmentIdentifier<0)?rubricsAssessmentList:singleRubricGroupAssessment
 
+        // Internal signals
+        signal exportRubric()
+
         DSM.State {
             id: rubricsAssessmentList
 
             onEntered: {
                 rubricsModuleItem.pushButtonsModel();
-                rubricsModuleItem.setSource('qrc:///components/RubricsAssessmentList.qml',{assessment: rubricsModuleItem.rubricAssessmentIdentifier});
+                rubricsModuleItem.setSource('qrc:///modules/rubrics/RubricsAssessmentList.qml',{assessment: rubricsModuleItem.rubricAssessmentIdentifier});
             }
             onExited: {
                 rubricsModuleItem.popButtonsModel();
@@ -101,6 +110,11 @@ BasicPage {
             DSM.SignalTransition {
                 signal: rubricsModuleItem.openRubricGroupAssessment
                 targetState: singleRubricGroupAssessment
+            }
+
+            DSM.SignalTransition {
+                signal: rubricsModuleSM.exportRubric
+                targetState: rubricGroupAssessmentExportState
             }
         }
 
@@ -111,7 +125,7 @@ BasicPage {
                 rubricsModuleItem.pushButtonsModel();
                 rubricsModuleItem.buttonsModel.append({icon: 'list-153185', object: rubricsModuleItem, method: 'showRubricAssessmentHistory'});
                 rubricsModuleItem.buttonsModel.append({icon: 'road-sign-147409', object: rubricsModuleItem, method: 'showRubricsAssessmentList'});
-                rubricsModuleItem.setSource('qrc:///components/RubricGroupAssessment.qml',{assessment: rubricAssessmentIdentifier});
+                rubricsModuleItem.setSource('qrc:///modules/rubrics/RubricGroupAssessment.qml',{assessment: rubricAssessmentIdentifier});
             }
             onExited: {
                 rubricsModuleItem.popButtonsModel();
@@ -139,7 +153,7 @@ BasicPage {
             onEntered: {
                 rubricsModuleItem.pushButtonsModel();
                 rubricsModuleItem.buttonsModel.append({icon: 'road-sign-147409', object: rubricsModuleItem, method: 'closeRubricAssessmentHistory'});
-                setSource('qrc:///components/RubricAssessmentHistory.qml', {rubric: mainItem.rubric, group: mainItem.group});
+                setSource('qrc:///modules/rubrics/RubricAssessmentHistory.qml', {rubric: mainItem.rubric, group: mainItem.group});
             }
             onExited: {
                 rubricsModuleItem.popButtonsModel();
@@ -157,7 +171,7 @@ BasicPage {
             onEntered: {
                 rubricsModuleItem.pushButtonsModel();
                 rubricsModuleItem.buttonsModel.append({icon: 'window-27140', object: rubricsModuleItem, method: 'showRubricGroupAssessment'});
-                setSource('qrc:///components/RubricGroupAssessmentCriterium.qml', {assessment: rubricsModuleItem.rubricAssessmentIdentifier, group: rubricsModuleItem.group, criterium: rubricsModuleItem.criterium});
+                setSource('qrc:///modules/rubrics/RubricGroupAssessmentCriterium.qml', {assessment: rubricsModuleItem.rubricAssessmentIdentifier, group: rubricsModuleItem.group, criterium: rubricsModuleItem.criterium});
             }
 
             onExited: {
@@ -180,7 +194,7 @@ BasicPage {
 
             onEntered: {
                 rubricsModuleItem.pushButtonsModel();
-                setSource('qrc:///components/RubricGroupAssessmentDescriptorEditor.qml',{assessment: rubricAssessmentIdentifier, criterium: criterium, individual: individual});
+                setSource('qrc:///modules/rubrics/RubricGroupAssessmentDescriptorEditor.qml',{assessment: rubricAssessmentIdentifier, criterium: criterium, individual: individual});
                 rubricsModuleItem.buttonsModel.append({icon: 'floppy-35952', object: mainItem, method: 'saveModifiedContents'});
                 rubricsModuleItem.buttonsModel.append({icon: 'road-sign-147409', object: rubricsModuleItem, method: 'closeCurrentPage'});
             }
@@ -206,12 +220,25 @@ BasicPage {
         }
 
         DSM.State {
+            id: rubricGroupAssessmentExportState
+
+            onEntered: {
+                pushButtonsModel();
+                setSource('qrc:///modules/rubrics/ExportRubricToXml.qml', {assessment: rubricAssessmentIdentifier});
+            }
+
+            onExited: {
+                popButtonsModel();
+            }
+        }
+
+        DSM.State {
             id: showRubricFromDocument
 
             onEntered: {
                 rubricsModuleItem.pushButtonsModel();
                 rubricsModuleItem.buttonsModel.append({icon: 'road-sign-147409', object: rubricsModuleItem, method: 'closeCurrentPage'});
-                setSource('qrc:///components/ExtendedRubricDefinition.qml', {rubricFile: rubricsModuleItem.rubricFile});
+                setSource('qrc:///modules/rubrics/ExtendedRubricDefinition.qml', {rubricFile: rubricsModuleItem.rubricFile});
             }
 
             onExited: {
@@ -224,7 +251,7 @@ BasicPage {
 
             onEntered: {
                 pushButtonsModel();
-                setSource('qrc:///components/NewRubricFile.qml', {sourceFolder: sourceFolder});
+                setSource('qrc:///modules/rubrics/NewRubricFile.qml', {sourceFolder: sourceFolder});
             }
 
             onExited: {

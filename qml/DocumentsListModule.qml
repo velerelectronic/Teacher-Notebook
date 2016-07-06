@@ -17,8 +17,6 @@ BasicPage {
     signal showDocumentSource()
     signal showSelectFile()
 
-    property var sharedObject: null
-
     property string documentId: ""
     property string documentSource: ''
     property string annotationTitle: ''

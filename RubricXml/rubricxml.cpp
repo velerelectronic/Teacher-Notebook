@@ -21,6 +21,10 @@ RubricCriteria *RubricXml::criteria() {
     return innerCriteria;
 }
 
+const QString &RubricXml::description() {
+    return mainRubricRoot.attribute("description");
+}
+
 QVariantList RubricXml::getDescriptors(int criterium) {
     QDomNodeList descriptorsList = mainRubricRoot.elementsByTagName("criterium").at(criterium).toElement().elementsByTagName("descriptor");
     return getNodesAttributesList(descriptorsList);
@@ -40,6 +44,10 @@ QVariantList RubricXml::getNodesAttributesList(const QDomNodeList &list) {
         returnList.append(object);
     }
     return returnList;
+}
+
+const QString &RubricXml::group() {
+    return mainRubricRoot.attribute("group");
 }
 
 RubricIndividualsModel *RubricXml::individuals() {
@@ -95,6 +103,10 @@ const QString &RubricXml::source() {
     return innerSource;
 }
 
-const QString &RubricXml::xml() {
+const QString &RubricXml::title() {
+    return mainRubricRoot.attribute("title");
+}
 
+const QString &RubricXml::xml() {
+    return mainRubricRoot.ownerDocument().toString();
 }

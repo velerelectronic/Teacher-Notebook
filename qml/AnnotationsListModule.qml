@@ -8,7 +8,6 @@ import ClipboardAdapter 1.0
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 import 'qrc:///models' as Models
-import 'qrc:///components' as Components
 import 'qrc:///modules/annotations' as AnnotationsComponents
 import "qrc:///common/FormatDates.js" as FormatDates
 

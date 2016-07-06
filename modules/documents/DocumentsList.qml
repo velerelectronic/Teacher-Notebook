@@ -13,6 +13,7 @@ Item {
     Common.UseUnits { id: units }
 
     signal newDocumentSelected()
+    signal newRubricSelected()
     signal documentSelected(string document)
     signal documentSourceSelected(string source)
 
@@ -247,7 +248,7 @@ Item {
                 anchors.fill: parent
                 anchoringItem: addDocumentButton
 
-                minimumHeight: units.fingerUnit * 4
+                minimumHeight: menuList.contentItem.height
                 minimumWidth: units.fingerUnit * 6
 
                 glowColor: 'black'
@@ -280,6 +281,17 @@ Item {
                                 onClicked: documentsListItem.newDocumentSelected();
                             }
                         }
+                        Common.BoxedText {
+                            width: menuList.width
+                            height: units.fingerUnit * 1.5
+                            margins: units.nailUnit
+                            text: qsTr('Rúbrica')
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: documentsListItem.newRubricSelected();
+                            }
+                        }
+
                         Common.BoxedText {
                             width: menuList.width
                             height: units.fingerUnit * 1.5
