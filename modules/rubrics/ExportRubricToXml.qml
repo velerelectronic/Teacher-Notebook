@@ -8,6 +8,7 @@ import 'qrc:///models' as Models
 import 'qrc:///modules/files' as Files
 import 'qrc:///editors' as Editors
 
+import FileIO 1.0
 import RubricXml 1.0
 
 Common.SteppedPage {
@@ -19,6 +20,10 @@ Common.SteppedPage {
     property string assessmentAnnotation: ''
     property string assessmentStart: ''
     property string assessmentEnd: ''
+
+    property string xmlExportContents: ''
+    property string selectedFolder: ''
+    property string selectedFileName: ''
 
     RubricXml {
         id: rubricExport
@@ -692,7 +697,7 @@ Common.SteppedPage {
                     height: contentHeight
                     textFormat: Text.PlainText
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: rubricExport.xml;
+                    text: xmlExportContents
                 }
                 Rectangle {
                     width: itemsList.width
@@ -706,7 +711,7 @@ Common.SteppedPage {
             selectDirectory: true
 
             onFolderSelected: {
-                folderText.text = folder;
+                selectedFolder = folder;
                 moveForward();
             }
         }
@@ -725,11 +730,11 @@ Common.SteppedPage {
                     text: qsTr('Ubicació')
                 }
                 Text {
-                    id: folderText
                     Layout.fillWidth: true
                     Layout.preferredHeight: contentHeight
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    text: selectedFolder
                 }
                 Text {
                     Layout.fillWidth: true
@@ -742,12 +747,106 @@ Common.SteppedPage {
                 Editors.TextLineEditor {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+
+                    onAccepted: {
+                        selectedFileName = content;
+                        moveForward();
+                    }
                 }
             }
         }
-/*
-        */
 
+        Rectangle {
+            ColumnLayout {
+                anchors.fill: parent
+                spacing: units.nailUnit
+
+                Text {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: contentHeight
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr("Es desarà el fitxer amb el nom següent:")
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: contentHeight
+                    font.pixelSize: units.readUnit
+                    text: selectedFolder + '/' + selectedFileName
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: contentHeight
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr("També s'esborrarà la rúbrica de la base de dades.")
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: contentHeight
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    text: qsTr("Vols continuar?")
+                }
+
+                Button {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit * 2
+                    text: qsTr('Sí')
+
+                    onClicked: exportFile.saveXmlContents()
+                }
+            }
+            FileIO {
+                id: exportFile
+
+                function saveXmlContents() {
+                    source = selectedFolder + '/' + selectedFileName;
+                    if (create()) {
+                        if (write(xmlExportContents)) {
+                            console.log('Esborrar base de dades')
+
+                            // Remove scores in database
+                            removeScoresModel.bindValues = [assessment];
+                            removeScoresModel.select();
+                            while (removeScoresModel.count>0) {
+                                var obj = removeScoresModel.getObjectInRow(0);
+                                removeScoresModel.removeObject(obj['id']);
+                                removeScoresModel.select();
+                            }
+
+                            // Remove the assessment in database
+                            removeAssessmentModel.removeObject(assessment);
+
+                            moveForward();
+                            moveBackwardsEnabled = false;
+                        }
+                    } else {
+                        moveBackwards();
+                    }
+                }
+            }
+            Models.RubricsScoresModel {
+                id: removeScoresModel
+
+                filters: ['assessment=?']
+            }
+            Models.RubricsAssessmentModel {
+                id: removeAssessmentModel
+            }
+        }
+        Rectangle {
+            Text {
+                anchors.centerIn: parent
+                width: parent.width / 2
+                font.pixelSize: units.readUnit
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                text: qsTr("La rúbrica s'ha desat dins l'arxiu. Les dades originals han estat esborrades.")
+            }
+        }
     }
 
 
@@ -853,7 +952,7 @@ Common.SteppedPage {
             rubricExport.assessment.append(newGradeObj);
         }
 
-        xmlText.text = rubricExport.xml;
+        xmlExportContents = '<?xml version="1.0"?>\n' + rubricExport.xml;
 
         // Just levels, ignored for the export
         levelsOnlyModel.bindValues = [assessmentRubric];

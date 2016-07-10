@@ -9,6 +9,9 @@ Item {
 
     property alias sections: sectionsList.model
 
+    property bool moveForwardEnabled: true
+    property bool moveBackwardsEnabled: true
+
     ColumnLayout {
         anchors.fill: parent
         spacing: units.nailUnit
@@ -22,6 +25,7 @@ Item {
             keyNavigationWraps: false
             clip: true
             spacing: units.nailUnit
+            highlightMoveDuration: 250
 
             onWidthChanged: recalculateSectionDimensions()
             onHeaderChanged: recalculateSectionDimensions()
@@ -38,6 +42,7 @@ Item {
                     Layout.fillHeight: true
                     Layout.preferredWidth: height
 
+                    enabled: moveBackwardsEnabled
                     image: 'arrow-145769'
 
                     onClicked: moveBackwards()
@@ -69,6 +74,7 @@ Item {
                     Layout.fillHeight: true
                     Layout.preferredWidth: height
 
+                    enabled: moveForwardEnabled
                     image: 'arrow-145766'
 
                     onClicked: moveForward()
@@ -78,11 +84,13 @@ Item {
     }
 
     function moveForward() {
-        sectionsList.incrementCurrentIndex();
+        if (moveForwardEnabled)
+            sectionsList.incrementCurrentIndex();
     }
 
     function moveBackwards() {
-        sectionsList.decrementCurrentIndex();
+        if (moveBackwardsEnabled)
+            sectionsList.decrementCurrentIndex();
     }
 
     function recalculateSectionDimensions() {
