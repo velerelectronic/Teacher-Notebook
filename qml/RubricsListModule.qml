@@ -61,6 +61,16 @@ BasicPage {
             openPageArgs('AnnotationsModule', {identifier: annotation});
         }
 
+        onEditRubricAssessmentDescriptor: {
+            rubricsModuleItem.individual = individual;
+            showRubricGroupAssessmentDescriptorEditor();
+        }
+
+        onExportedXml: {
+            rubricsModuleSM.xml = xml;
+            rubricsModuleSM.saveXmlRubric();
+        }
+
         onRubricAssessmentCriteriumSelected: {
             console.log('ctierium', criterium);
             rubricsModuleItem.criterium = criterium;
@@ -78,11 +88,6 @@ BasicPage {
             rubricsModuleSM.exportRubric();
         }
 
-        onEditRubricAssessmentDescriptor: {
-            rubricsModuleItem.individual = individual;
-            showRubricGroupAssessmentDescriptorEditor();
-        }
-
         onRubricGroupAssessmentDescriptorSelected: {
             showRubricGroupAssessmentDescriptorEditor();
         }
@@ -95,6 +100,10 @@ BasicPage {
 
         // Internal signals
         signal exportRubric()
+        signal saveXmlRubric()
+
+        // Internal properties
+        property string xml
 
         DSM.State {
             id: rubricsAssessmentList
@@ -227,6 +236,23 @@ BasicPage {
                 setSource('qrc:///modules/rubrics/ExportRubricToXml.qml', {assessment: rubricAssessmentIdentifier});
             }
 
+            onExited: {
+                popButtonsModel();
+            }
+
+            DSM.SignalTransition {
+                signal: rubricsModuleSM.saveXmlRubric
+                targetState: xmlRubricSaveState
+            }
+        }
+
+        DSM.State {
+            id: xmlRubricSaveState
+
+            onEntered: {
+                pushButtonsModel();
+                setSource('qrc:///modules/rubrics/XmlRubricSave.qml', {xml: rubricsModuleSM.xml});
+            }
             onExited: {
                 popButtonsModel();
             }

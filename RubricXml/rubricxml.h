@@ -9,7 +9,7 @@
 #include <QAbstractListModel>
 
 #include "RubricXml/rubriccriteria.h"
-#include "RubricXml/rubricindividualsmodel.h"
+#include "RubricXml/rubricpopulationmodel.h"
 #include "RubricXml/rubricassessmentmodel.h"
 
 class RubricCriteria;
@@ -21,20 +21,20 @@ class RubricXml : public QObject
     Q_OBJECT
 
     Q_PROPERTY(RubricCriteria* criteria READ criteria NOTIFY criteriaChanged)
-    Q_PROPERTY(RubricIndividualsModel* individuals READ individuals NOTIFY individualsChanged)
+    Q_PROPERTY(RubricPopulationModel* population READ population NOTIFY populationChanged)
     Q_PROPERTY(RubricAssessmentModel* assessment READ assessment NOTIFY assessmentChanged)
 
     Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QString xml READ xml WRITE setXml NOTIFY xmlChanged)
 
-    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
-    Q_PROPERTY(QString description READ description NOTIFY descriptionChanged)
-    Q_PROPERTY(QString group READ group NOTIFY groupChanged)
+    Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
+    Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged)
 
 public:
 
     explicit RubricXml(QObject *parent = 0);
 
+    Q_INVOKABLE void    createEmptyRubric();
     Q_INVOKABLE QVariantList getDescriptors(int criterium);
     Q_INVOKABLE void loadXml();
     Q_INVOKABLE void setDescriptors(const QVariantList &map);
@@ -42,24 +42,24 @@ public:
     // Getters
     RubricAssessmentModel   *assessment();
     RubricCriteria          *criteria();
-    RubricIndividualsModel  *individuals();
+    RubricPopulationModel   *population();
 
-    const QString           &description();
-    const QString           &group();
-    const QString           &source();
-    const QString           &title();
-    const QString           &xml();
+    QString                 description();
+    QString                 source();
+    QString                 title();
+    QString                 xml();
 
     // Setters
-    void setSource(const QString &source);
-    void setXml(const QString &xml);
+    void    setDescription(QString description);
+    void    setSource(QString source);
+    void    setTitle(QString title);
+    void    setXml(QString xml);
 
 signals:
     void    assessmentChanged();
     void    criteriaChanged();
     void    descriptionChanged();
-    void    groupChanged();
-    void    individualsChanged();
+    void    populationChanged();
     void    sourceChanged();
     void    titleChanged();
     void    xmlChanged();
@@ -73,8 +73,9 @@ private:
     QDomDocument            document;
     RubricAssessmentModel   *innerAssessmentModel;
     RubricCriteria          *innerCriteria;
-    RubricIndividualsModel  *innerIndividualsModel;
+    RubricPopulationModel  *innerPopulationModel;
     QString                 innerSource;
+    QString                 innerVersion = "1.0";
 };
 
 #endif // RUBRICXML_H

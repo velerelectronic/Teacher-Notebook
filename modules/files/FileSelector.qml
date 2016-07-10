@@ -80,10 +80,7 @@ Item {
                     Layout.preferredWidth: units.fingerUnit * 5
                     Layout.fillHeight: true
                     text: qsTr('Selecciona')
-                    onClicked: {
-                        closePageRequested();
-                        openDirectoryWithPage(folderList.folder,goBack);
-                    }
+                    onClicked: folderSelected(folderList.folder)
                 }
             }
         }

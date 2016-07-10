@@ -3,13 +3,13 @@
 #include <QVariantList>
 #include <QDebug>
 #include "rubricxml.h"
-#include "rubricindividualsmodel.h"
+#include "rubricpopulationmodel.h"
 #include "rubricassessmentmodel.h"
 
 RubricXml::RubricXml(QObject *parent) : QObject(parent)
 {
     innerCriteria = new RubricCriteria(this);
-    innerIndividualsModel = new RubricIndividualsModel(this);
+    innerPopulationModel = new RubricPopulationModel(this);
     innerAssessmentModel = new RubricAssessmentModel(this);
 }
 
@@ -17,11 +17,15 @@ RubricAssessmentModel *RubricXml::assessment() {
     return innerAssessmentModel;
 }
 
+void RubricXml::createEmptyRubric() {
+    setXml("<rubric version=\"" + innerVersion + "\"><population/><assessment/></rubric>");
+}
+
 RubricCriteria *RubricXml::criteria() {
     return innerCriteria;
 }
 
-const QString &RubricXml::description() {
+QString RubricXml::description() {
     return mainRubricRoot.attribute("description");
 }
 
@@ -46,12 +50,8 @@ QVariantList RubricXml::getNodesAttributesList(const QDomNodeList &list) {
     return returnList;
 }
 
-const QString &RubricXml::group() {
-    return mainRubricRoot.attribute("group");
-}
-
-RubricIndividualsModel *RubricXml::individuals() {
-    return innerIndividualsModel;
+RubricPopulationModel *RubricXml::population() {
+    return innerPopulationModel;
 }
 
 
@@ -69,11 +69,18 @@ void RubricXml::loadXml() {
     emit xmlChanged();
 }
 
+void RubricXml::setDescription(QString description) {
+    document.elementsByTagName("rubric").at(0).toElement().setAttribute("description", description);
+    descriptionChanged();
+    xmlChanged();
+}
+
+
 void RubricXml::setDescriptors(const QVariantList &map) {
 
 }
 
-void RubricXml::setSource(const QString &source) {
+void RubricXml::setSource(QString source) {
     innerSource = source;
     if (innerSource.startsWith("file://"))
         innerSource.remove(0,7);
@@ -81,9 +88,14 @@ void RubricXml::setSource(const QString &source) {
     emit sourceChanged();
 }
 
-void RubricXml::setXml(const QString &xml) {
-    qDebug() << "Setting XML";
-    document.setContent(xml);
+void RubricXml::setTitle(QString title) {
+    document.elementsByTagName("rubric").at(0).toElement().setAttribute("title", title);
+    titleChanged();
+    xmlChanged();
+}
+
+void RubricXml::setXml(QString string) {
+    document.setContent(string);
     xmlChanged();
 
     QDomNodeList domlist = document.elementsByTagName("rubric");
@@ -91,22 +103,22 @@ void RubricXml::setXml(const QString &xml) {
 
     innerCriteria->setDomRoot(mainRubricRoot);
 
-    innerIndividualsModel->setDomRoot(mainRubricRoot.elementsByTagName("group").at(0).toElement());
+    innerPopulationModel->setDomRoot(mainRubricRoot.elementsByTagName("population").at(0).toElement());
 
     innerAssessmentModel->setDomRoot(mainRubricRoot.elementsByTagName("assessment").at(0).toElement());
     criteriaChanged();
-    individualsChanged();
+    populationChanged();
     assessmentChanged();
 }
 
-const QString &RubricXml::source() {
+QString RubricXml::source() {
     return innerSource;
 }
 
-const QString &RubricXml::title() {
+QString RubricXml::title() {
     return mainRubricRoot.attribute("title");
 }
 
-const QString &RubricXml::xml() {
-    return mainRubricRoot.ownerDocument().toString();
+QString RubricXml::xml() {
+    return document.toString();
 }

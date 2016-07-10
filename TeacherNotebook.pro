@@ -20,8 +20,8 @@ SOURCES += main.cpp \
     RubricXml/rubricxml.cpp \
     RubricXml/rubriccriteria.cpp \
     RubricXml/rubricdescriptorsmodel.cpp \
-    RubricXml/rubricindividualsmodel.cpp \
-    RubricXml/rubricassessmentmodel.cpp
+    RubricXml/rubricassessmentmodel.cpp \
+    RubricXml/rubricpopulationmodel.cpp
 
 RESOURCES += qml.qrc \
     icons.qrc \
@@ -57,8 +57,8 @@ HEADERS += \
     RubricXml/rubricxml.h \
     RubricXml/rubriccriteria.h \
     RubricXml/rubricdescriptorsmodel.h \
-    RubricXml/rubricindividualsmodel.h \
-    RubricXml/rubricassessmentmodel.h
+    RubricXml/rubricassessmentmodel.h \
+    RubricXml/rubricpopulationmodel.h
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 

@@ -20,7 +20,7 @@ public:
         Score = Qt::UserRole + 5
     };
 
-    RubricDescriptorsModel(QAbstractListModel *parent = 0);
+    explicit RubricDescriptorsModel(QAbstractListModel *parent = 0);
     RubricDescriptorsModel(const RubricDescriptorsModel &original);
     ~RubricDescriptorsModel();
 
@@ -37,6 +37,8 @@ public:
     // Specific of this new class
     int                     count();
     void                    setDomRoot(QDomElement domroot);
+
+    Q_INVOKABLE bool        append(QVariantMap values);
 
 signals:
     int     countChanged();

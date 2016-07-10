@@ -9,5 +9,6 @@
         <file>modules/rubrics/ExtendedRubricDefinition.qml</file>
         <file>modules/rubrics/NewRubricFile.qml</file>
         <file>modules/rubrics/ExportRubricToXml.qml</file>
+        <file>modules/rubrics/XmlRubricSave.qml</file>
     </qresource>
 </RCC>

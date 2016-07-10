@@ -1,5 +1,5 @@
-#ifndef RUBRICINDIVIDUALSMODEL_H
-#define RUBRICINDIVIDUALSMODEL_H
+#ifndef RUBRICPOPULATIONMODEL_H
+#define RUBRICPOPULATIONMODEL_H
 
 #include <QObject>
 #include <QAbstractListModel>
@@ -7,11 +7,10 @@
 #include <QMetaType>
 
 
-class RubricIndividualsModel : public QAbstractListModel
+class RubricPopulationModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
-    Q_PROPERTY(QString groupName READ groupName NOTIFY groupNameChanged)
 
 public:
     enum DescriptorRoles {
@@ -20,9 +19,9 @@ public:
         Name = Qt::UserRole + 3
     };
 
-    explicit RubricIndividualsModel(QObject *parent = 0);
-    RubricIndividualsModel(const RubricIndividualsModel &original);
-    ~RubricIndividualsModel();
+    explicit RubricPopulationModel(QObject *parent = 0);
+    RubricPopulationModel(const RubricPopulationModel &original);
+    ~RubricPopulationModel();
 
     // Redefine superclass
     QVariant                data(const QModelIndex &index, int role) const;
@@ -36,22 +35,19 @@ public:
 
     // Specific of this new class
     int                     count();
-    QString                 groupName();
     void                    setDomRoot(QDomElement domroot);
-    void                    setGroupName(QString name);
+    Q_INVOKABLE bool        append(QVariantMap values);
 
 signals:
     void    countChanged();
-    void    groupNameChanged();
 
 public slots:
 
 private:
-    QDomElement             innerGroupDomRoot;
-    QString                 innerGroupName;
+    QDomElement             innerPopulationDomRoot;
 
 };
-Q_DECLARE_METATYPE(RubricIndividualsModel)
+Q_DECLARE_METATYPE(RubricPopulationModel)
 
 
-#endif // RUBRICINDIVIDUALSMODEL_H
+#endif // RUBRICPOPULATIONMODEL_H

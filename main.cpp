@@ -16,7 +16,7 @@
 #include "RubricXml/rubricxml.h"
 #include "RubricXml/rubriccriteria.h"
 #include "RubricXml/rubricdescriptorsmodel.h"
-#include "RubricXml/rubricindividualsmodel.h"
+#include "RubricXml/rubricpopulationmodel.h"
 
 int main(int argc, char *argv[])
 {
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<RubricXml>("RubricXml", 1, 0, "RubricXml");
     qmlRegisterType<RubricCriteria>("RubricXml", 1, 0, "RubricCriteria");
     qmlRegisterType<RubricDescriptorsModel>("RubricXml", 1, 0, "RubricDescriptorsModel");
-    qmlRegisterType<RubricIndividualsModel>("RubricXml", 1, 0, "RubricIndividualsModel");
+    qmlRegisterType<RubricPopulationModel>("RubricXml", 1, 0, "RubricPopulationModel");
 
     qmlRegisterType<FileIO, 1>("FileIO", 1, 0, "FileIO");
     qmlRegisterType<QmlClipboardAdapter, 1>("ClipboardAdapter", 1, 0, "QClipboard");

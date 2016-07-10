@@ -59,6 +59,12 @@ QVariant RubricCriteria::data(const QModelIndex &index, int role = Qt::DisplayRo
     }
 }
 
+RubricDescriptorsModel *RubricCriteria::descriptors(int index) {
+    RubricDescriptorsModel *descriptorsModel = new RubricDescriptorsModel(this);
+    descriptorsModel->setDomRoot(innerRubricDomRoot.elementsByTagName("criterium").at(index).toElement());
+    return descriptorsModel;
+}
+
 Qt::ItemFlags RubricCriteria::flags(const QModelIndex &index) const {
     return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemNeverHasChildren;
 }

@@ -20,5 +20,6 @@
         <file>models/LabelsSortModel.qml</file>
         <file>models/DocumentsModel.qml</file>
         <file>models/ConcurrentDocuments.qml</file>
+        <file>models/RubricsLevelsModel.qml</file>
     </qresource>
 </RCC>

@@ -16,6 +16,28 @@ RubricDescriptorsModel::~RubricDescriptorsModel() {
 
 }
 
+bool RubricDescriptorsModel::append(QVariantMap values) {
+    beginInsertRows(this->createIndex(rowCount(),1).parent(),rowCount(),rowCount());
+    QDomElement newDescriptor = innerCriteriumDomRoot.ownerDocument().createElement("descriptor");
+
+    qDebug() << values;
+
+    QVariantMap::const_iterator i;
+    for (i = values.constBegin(); i != values.constEnd(); ++i) {
+        qDebug() << i.key() << i.value().toString() << "\n";
+        newDescriptor.setAttribute(i.key(), i.value().toString());
+    }
+
+    qDebug() << "inserted";
+    qDebug() << newDescriptor.attributes().size();
+    innerCriteriumDomRoot.appendChild(newDescriptor);
+    qDebug() << innerCriteriumDomRoot.ownerDocument().toString();
+    endInsertRows();
+    countChanged();
+    return true;
+
+}
+
 int RubricDescriptorsModel::count() {
     return rowCount();
 }

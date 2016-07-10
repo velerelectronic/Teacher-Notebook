@@ -16,6 +16,7 @@ class RubricDescriptorsModel;
 class RubricCriteria : public QAbstractListModel {
     Q_OBJECT
     Q_PROPERTY(int count READ count   NOTIFY countChanged)
+//    Q_PROPERTY(RubricDescriptorsModel* descriptors READ descriptors NOTIFY descriptorsChanged)
 
 public:
     enum CriteriumRoles {
@@ -41,13 +42,14 @@ public:
     bool                    setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
     // Specific of this new class
+    Q_INVOKABLE bool        append(QVariantMap values);
     int                     count();
+    Q_INVOKABLE RubricDescriptorsModel *descriptors(int index);
     void                    setDomRoot(QDomElement domroot);
 
-    Q_INVOKABLE bool        append(QVariantMap values);
-
 signals:
-    void     countChanged();
+    void    countChanged();
+//    void    descriptorsChanged();
 
 private:
     QString         fieldNameForRole(int role) const;

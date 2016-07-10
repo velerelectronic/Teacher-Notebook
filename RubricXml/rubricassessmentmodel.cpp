@@ -17,6 +17,21 @@ int RubricAssessmentModel::count() {
     return rowCount();
 }
 
+bool RubricAssessmentModel::append(QVariantMap values) {
+    beginInsertRows(this->createIndex(rowCount(),1).parent(),rowCount(),rowCount());
+    QDomElement newGradeElement = innerAssessmentDomRoot.ownerDocument().createElement("grade");
+
+    QVariantMap::const_iterator i;
+    for (i = values.constBegin(); i != values.constEnd(); ++i) {
+        newGradeElement.setAttribute(i.key(), i.value().toString());
+    }
+
+    innerAssessmentDomRoot.appendChild(newGradeElement);
+    endInsertRows();
+    countChanged();
+    return true;
+}
+
 QVariant RubricAssessmentModel::data(const QModelIndex &index, int role = Qt::DisplayRole) const {
     QString attribute;
     switch(role) {
@@ -89,11 +104,13 @@ void RubricAssessmentModel::setDomRoot(QDomElement domroot) {
 }
 
 void RubricAssessmentModel::setPeriodEnd(QString end) {
-
+    innerAssessmentDomRoot.setAttribute("periodEnd",end);
+    periodEndChanged();
 }
 
 void RubricAssessmentModel::setPeriodStart(QString start) {
-
+    innerAssessmentDomRoot.setAttribute("periodStart",start);
+    periodStartChanged();
 }
 
 bool RubricAssessmentModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role) {

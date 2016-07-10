@@ -40,6 +40,7 @@ public:
     bool                    setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
     // Specific of this new class
+    Q_INVOKABLE bool        append(QVariantMap values);
     int                     count();
     QString                 periodEnd();
     QString                 periodStart();
