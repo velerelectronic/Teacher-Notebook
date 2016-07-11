@@ -43,6 +43,7 @@ Item {
                     Layout.preferredWidth: height
 
                     enabled: moveBackwardsEnabled
+                    visible: moveBackwardsEnabled
                     image: 'arrow-145769'
 
                     onClicked: moveBackwards()
@@ -75,6 +76,7 @@ Item {
                     Layout.preferredWidth: height
 
                     enabled: moveForwardEnabled
+                    visible: moveForwardEnabled
                     image: 'arrow-145766'
 
                     onClicked: moveForward()

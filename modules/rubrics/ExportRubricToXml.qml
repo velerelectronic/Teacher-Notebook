@@ -745,13 +745,40 @@ Common.SteppedPage {
                     text: qsTr("Nom de l'arxiu")
                 }
                 Editors.TextLineEditor {
+                    id: fileNameEditor
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    onAccepted: {
-                        selectedFileName = content;
-                        moveForward();
+                    content: assessmentTitle + ' ' + assessmentAnnotation + ".xml"
+                }
+                Button {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit * 2
+
+                    text: qsTr('Desa el fitxer')
+                    onClicked: {
+                        selectedFileName = fileNameEditor.content;
+                        if (exportFile.saveXmlContents()) {
+                            moveForward();
+                            moveBackwardsEnabled = false;
+                        } else {
+                            moveBackwards();
+                        }
                     }
+                }
+            }
+            FileIO {
+                id: exportFile
+
+                function saveXmlContents() {
+                    source = selectedFolder + '/' + selectedFileName;
+                    if (create()) {
+                        if (write(xmlExportContents)) {
+                            console.log('Esborrar base de dades')
+                            return true;
+                        }
+                    }
+                    return false;
                 }
             }
         }
@@ -763,69 +790,23 @@ Common.SteppedPage {
 
                 Text {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: contentHeight
+                    Layout.fillHeight: true
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
                     font.pixelSize: units.readUnit
                     font.bold: true
-                    text: qsTr("Es desarà el fitxer amb el nom següent:")
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: contentHeight
-                    font.pixelSize: units.readUnit
-                    text: selectedFolder + '/' + selectedFileName
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: contentHeight
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    text: qsTr("També s'esborrarà la rúbrica de la base de dades.")
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: contentHeight
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    text: qsTr("Vols continuar?")
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    text: qsTr("S'esborrarà la rúbrica de la base de dades.\nVols continuar?")
                 }
 
                 Button {
                     Layout.fillWidth: true
                     Layout.preferredHeight: units.fingerUnit * 2
-                    text: qsTr('Sí')
-
-                    onClicked: exportFile.saveXmlContents()
-                }
-            }
-            FileIO {
-                id: exportFile
-
-                function saveXmlContents() {
-                    source = selectedFolder + '/' + selectedFileName;
-                    if (create()) {
-                        if (write(xmlExportContents)) {
-                            console.log('Esborrar base de dades')
-
-                            // Remove scores in database
-                            removeScoresModel.bindValues = [assessment];
-                            removeScoresModel.select();
-                            while (removeScoresModel.count>0) {
-                                var obj = removeScoresModel.getObjectInRow(0);
-                                removeScoresModel.removeObject(obj['id']);
-                                removeScoresModel.select();
-                            }
-
-                            // Remove the assessment in database
-                            removeAssessmentModel.removeObject(assessment);
-
-                            moveForward();
-                            moveBackwardsEnabled = false;
-                        }
-                    } else {
-                        moveBackwards();
+                    text: qsTr('Esborra')
+                    onClicked: {
+                        removeScoresModel.deleteDatabaseModel();
+                        removeAssessmentModel.deleteDatabaseModel();
+                        moveForward();
                     }
                 }
             }
@@ -833,9 +814,25 @@ Common.SteppedPage {
                 id: removeScoresModel
 
                 filters: ['assessment=?']
+
+                function deleteDatabaseModel() {
+                    // Remove scores in database
+                    removeScoresModel.bindValues = [assessment];
+                    removeScoresModel.select();
+                    while (removeScoresModel.count>0) {
+                        var obj = removeScoresModel.getObjectInRow(0);
+                        removeScoresModel.removeObject(obj['id']);
+                        removeScoresModel.select();
+                    }
+                }
             }
             Models.RubricsAssessmentModel {
                 id: removeAssessmentModel
+
+                function deleteDatabaseModel() {
+                    // Remove the assessment in database
+                    removeAssessmentModel.removeObject(assessment);
+                }
             }
         }
         Rectangle {
