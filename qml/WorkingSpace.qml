@@ -212,8 +212,5 @@ Loader {
         setSource(Qt.resolvedUrl(page + ".qml"), param);
     }
 
-    Component.onCompleted: {
-        loadFirstPage(mainPage, {});
-    }
 }
 
