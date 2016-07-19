@@ -26,7 +26,7 @@ Item {
     signal documentUpdated()
     signal documentSelected(string document)
     signal annotationEditSelected(string annotation, int document)
-    signal documentSourceSelected(string source)
+    signal documentSourceSelected(string source, string mediaType)
 
     Models.DocumentsModel {
         id: documentsModel
@@ -106,7 +106,7 @@ Item {
 
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: documentSourceSelected(source)
+                            onClicked: documentSourceSelected(source, mediaType)
                         }
                     }
                 }
@@ -211,7 +211,7 @@ Item {
                             text: source
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: documentSourceSelected(source)
+                                onClicked: documentSourceSelected(source, mediaType)
                             }
                         }
 

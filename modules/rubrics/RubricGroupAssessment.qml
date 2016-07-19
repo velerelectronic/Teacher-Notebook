@@ -3,24 +3,19 @@ import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import PersonalTypes 1.0
+import RubricXml 1.0
 import 'qrc:///javascript/Debug.js' as Debug
 
 
 Item {
     id: rubricRectangle
 
-    property int assessment
-
-    onAssessmentChanged: console.log('2assessment', assessment)
+    property string rubricFile
 
     property int rubric: -1
-    property string title
-    property string desc
-    property string rubricTitle
-    property string rubricDesc
+    property string rubricTitle: rubricXmlModel.title
+    property string rubricDesc: rubricXmlModel.description
     property string group: ''
-
-    property string annotation: ''
 
     // color: 'gray'
 
@@ -29,7 +24,6 @@ Item {
     property int contentsHeight: units.fingerUnit * 2
     property int contentsWidth: units.fingerUnit * 2
 
-    signal annotationSelected(string annotation)
     signal rubricAssessmentRubricEdit()
     signal rubricAssessmentDetailsEdit()
     signal rubricAssessmentAnnotationEdit()
@@ -40,10 +34,18 @@ Item {
         id: units
     }
 
+    RubricXml {
+        id: rubricXmlModel
+
+        source: rubricFile
+    }
+
     ColumnLayout {
         anchors.fill: parent
 
         Item {
+            // Basic rubric info
+
             Layout.fillWidth: true
             Layout.preferredHeight: childrenRect.height
 
@@ -62,33 +64,6 @@ Item {
                 Text {
                     Layout.preferredHeight: units.fingerUnit
                     Layout.preferredWidth: sectionsWidth
-                    text: qsTr('Avaluació')
-                }
-                Rectangle {
-                    Layout.preferredHeight: units.fingerUnit
-                    Layout.fillWidth: true
-                    color: 'white'
-                    Text {
-                        anchors {
-                            fill: parent
-                            margins: units.nailUnit
-                        }
-                        verticalAlignment: Text.AlignVCenter
-                        font.pixelSize: units.readUnit
-                        elide: Text.ElideRight
-                        text: '<b>' + rubricRectangle.title + '</b> ' + rubricRectangle.desc
-                    }
-                }
-
-                Common.ImageButton {
-                    image: 'edit-153612'
-                    size: units.fingerUnit
-                    onClicked: rubricAssessmentDetailsEdit()
-                }
-
-                Text {
-                    Layout.preferredHeight: units.fingerUnit
-                    Layout.preferredWidth: sectionsWidth
                     text: qsTr('Rúbrica')
                 }
                 Rectangle {
@@ -103,54 +78,21 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                         font.pixelSize: units.readUnit
                         elide: Text.ElideRight
-                        text: rubricRectangle.rubricTitle + rubricRectangle.rubricDesc
+                        text: '<b>' + rubricRectangle.rubricTitle + '</b> ' + rubricRectangle.rubricDesc
                     }
                 }
+
                 Common.ImageButton {
                     image: 'edit-153612'
                     size: units.fingerUnit
-                    onClicked: rubricAssessmentRubricEdit()
-                }
-
-                Text {
-                    Layout.preferredHeight: units.fingerUnit
-                    Layout.preferredWidth: sectionsWidth
-                    text: qsTr('Anotació')
-                }
-                Rectangle {
-                    Layout.preferredHeight: units.fingerUnit
-                    Layout.fillWidth: true
-
-                    color: 'white'
-
-                    Text {
-                        anchors {
-                            fill: parent
-                            margins: units.nailUnit
-                        }
-
-                        verticalAlignment: Text.AlignVCenter
-                        font.pixelSize: units.readUnit
-                        elide: Text.ElideRight
-
-                        text: rubricRectangle.annotation
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: rubricRectangle.annotationSelected(annotation)
-                    }
-                }
-                Common.ImageButton {
-                    image: 'edit-153612'
-                    size: units.fingerUnit
-                    onClicked: rubricAssessmentAnnotationEdit()
+                    onClicked: rubricAssessmentDetailsEdit()
                 }
 
 
                 Text {
                     Layout.preferredHeight: units.fingerUnit
                     Layout.preferredWidth: sectionsWidth
-                    text: qsTr('Grups')
+                    text: qsTr('Avaluacions')
                 }
 
                 Rectangle {
@@ -165,18 +107,16 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                         font.pixelSize: units.readUnit
                         elide: Text.ElideRight
-                        text: rubricRectangle.group
+                        font.italic: true
+                        text: qsTr('(Avaluació única)')
                     }
-                }
-                Common.ImageButton {
-                    image: 'edit-153612'
-                    size: units.fingerUnit
-                    onClicked: rubricAssessmentGroupEdit()
                 }
             }
         }
 
         Item {
+            // Criteria and individuals grid
+
             Layout.fillWidth: true
             Layout.fillHeight: true
 
@@ -231,8 +171,12 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: sectionsHeight
 
+                    property real columnWidth: horizontalHeading.width / Math.max(rubricXmlModel.population.count, 1)
+
                     interactive: false
                     orientation: ListView.Horizontal
+
+                    model: rubricXmlModel.population
 
                     delegate: Rectangle {
                         id: horizontalHeadingCell
@@ -240,7 +184,7 @@ Item {
                         property bool selectedCell: false
 
                         height: sectionsHeight
-                        width: horizontalHeading.width / individualsModel.count
+                        width: horizontalHeading.columnWidth
                         border.color: 'black'
                         color: 'transparent'
                         Text {
@@ -254,7 +198,7 @@ Item {
                             horizontalAlignment: Text.AlignHCenter
                             font.pixelSize: units.readUnit
                             font.bold: true
-                            text: model.name + " " + model.surname
+                            text: model.name
                         }
 
                         MouseArea {
@@ -265,8 +209,6 @@ Item {
                             }
                         }
                     }
-
-                    model: individualsModel
 
                     highlight: Rectangle {
                         color: 'yellow'
@@ -280,15 +222,17 @@ Item {
                     Layout.fillHeight: true
                     Layout.preferredWidth: sectionsWidth
 
+                    property real rowHeight: verticalHeading.height / Math.max(rubricXmlModel.criteria.count, 1)
+
                     interactive: false
                     orientation: ListView.Vertical
 
-                    model: rubricsCriteria
+                    model: rubricXmlModel.criteria
 
                     delegate: Rectangle {
                         id: verticalHeadingCriterium
 
-                        height: verticalHeading.height / rubricsCriteria.count
+                        height: verticalHeading.rowHeight
                         width: verticalHeading.width
                         border.color: 'black'
                         color: 'transparent'
@@ -301,7 +245,7 @@ Item {
                                 Layout.fillWidth: true
                                 clip: true
                                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                text: '<b>' + model.title + '</b>&nbsp;' + model.desc
+                                text: model.identifier + "-" + model.title
                             }
                             Text {
                                 Layout.fillHeight: true
@@ -326,7 +270,7 @@ Item {
                 }
 
                 Rectangle {
-                    id: criteriaList
+                    id: criteriaListForIndividuals
 
                     Layout.fillHeight: true
                     Layout.fillWidth: true
@@ -335,25 +279,19 @@ Item {
                         id: criteriaListColumn
 
                         Repeater {
-                            model: rubricsCriteria
+                            model: rubricXmlModel.criteria
 
                             Rectangle {
                                 id: wholeCriteria
-                                height: criteriaList.height / rubricsCriteria.count
-                                width: criteriaList.width
+                                height: verticalHeading.rowHeight
+                                width: criteriaListForIndividuals.width
 
                                 property bool selectedCellVertically: false
 
                                 border.color: 'black'
                                 color: (selectedCellVertically)?'yellow':'transparent'
 
-                                property string title: model.title
-                                property int verticalIndex: model.index
-                                property int criterium: model.id
-                                property int criteriumIndex: model.index
-                                property bool isCurrentItem: ListView.isCurrentItem
-                                property alias lastScoresModel: rubricIndividualLastScoresModel
-
+                                property string criterium: model.identifier
 
                                 ListView {
                                     id: individualsList
@@ -361,77 +299,63 @@ Item {
                                     anchors.fill: parent
 
                                     property bool enableValues: false
-                                    property string group: rubricRectangle.group
-
-                                    onGroupChanged: console.log('individual group changed',rubricRectangle.group)
 
                                     orientation: ListView.Horizontal
                                     interactive: false
 
-                                    model: Models.RubricsLastScoresModel {
-                                        id: rubricIndividualLastScoresModel
-
-                                        filters: [
-//                                            "group=?",
-                                            "criterium=?",
-                                            "assessment=?"
-                                        ]
-                                        bindValues: [
-//                                            rubricRectangle.group,
-                                            wholeCriteria.criterium,
-                                            assessment
-                                        ]
-
-                                        onCountChanged: console.log('COUNT',count)
-                                        onBindValuesChanged: {
-                                            console.log('BIND VALUES-->', bindValues);
-                                            select();
-                                        }
-                                        Component.onCompleted: select()
-                                    }
+                                    model: rubricXmlModel.population
 
                                     delegate: Rectangle {
                                         id: valuesForIndividual
                                         // The scores for a single individual
 
                                         height: wholeCriteria.height
-                                        width: wholeCriteria.width / individualsModel.count
+                                        width: horizontalHeading.columnWidth
                                         border.color: 'black'
                                         color: 'transparent'
-                                            // ((valuesForIndividual.isCurrentItem) && (wholeCriteria.isCurrentItem))?'#BEF781':'transparent'
 
-                                        property bool isCurrentItem: ListView.isCurrentItem
+                                        property string individual: model.identifier
+                                        property var incubator
 
-                                        //color: (model.index === fixedHeadingsTable.currentHorizontalIndex)?((wholeCriteria.verticalIndex === fixedHeadingsTable.currentVerticalIndex)?'#ffffaa':'yellow'):'transparent'
+                                        Connections {
+                                            target: rubricXmlModel.assessment
 
-                                        // property int criteriumId: model.id
-                                        // property int descriptorId: -1
-                                        // property string definition: ''
-
-                                        Text {
-                                            id: valuesText
-                                            anchors.fill: parent
-                                            horizontalAlignment: Text.AlignHCenter
-                                            verticalAlignment: Text.AlignVCenter
-                                            text: (model.lastScoreId == '')?'':(model.score + ((model.comment !== '')?'*':''))
-                                            clip: true
-                                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                            elide: Text.ElideRight
+                                            onCountChanged: {
+                                                console.log('Count changed and call to fill values', valuesForIndividual.children.length);
+                                                for (var i=0; i<valuesForIndividual.children.length; i++) {
+                                                    var obj = valuesForIndividual.children[i];
+                                                    if (obj['objectName'] == 'ValuesText') {
+                                                        obj.fillValues();
+                                                        console.log('Value filled');
+                                                    }
+                                                }
+                                            }
                                         }
 
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            preventStealing: false
-                                            propagateComposedEvents: true
+                                        Component.onCompleted: {
+                                            valuesForIndividual.incubator = valuesTextComponent.incubateObject(valuesForIndividual, {criterium: wholeCriteria.criterium, individual: valuesForIndividual.individual});
 
-                                            onClicked: {
-                                                rubricAssessmentCriteriumSelected(
-                                                            assessment,
-                                                            wholeCriteria.criterium,
-                                                            model.individual,
-                                                            model.lastScoreId
-                                                        );
+                                            if (valuesForIndividual.incubator == null) {
+                                                console.log('what happens??');
+                                            } else {
+                                                if (valuesForIndividual.incubator.status != Component.Ready) {
+                                                    valuesForIndividual.incubator.onStatusChanged = function(status) {
+                                                        if (status == Component.Ready) {
+                                                            valuesForIndividual.incubator.object.fillValues();
+                                                        } else {
+                                                            if (status == Component.Error) {
+                                                                console.log("ERROR!", valuesForIndividual.incubator.errorString());
+                                                            } else {
+                                                                console.log('OTHERS', status);
+                                                            }
+                                                        }
+                                                    }
+                                                } else {
+                                                    valuesForIndividual.incubator.object.fillValues();
+                                                }
+
                                             }
+
                                         }
                                     }
 
@@ -472,7 +396,7 @@ Item {
 
                     Row {
                         Repeater {
-                            model: totalPointsModel
+                            model: []
 
                             Rectangle {
                                 height: footerTotalRow.height
@@ -489,78 +413,53 @@ Item {
                                 }
                             }
                         }
-                        SqlTableModel {
-                            id: totalPointsModel
-                            tableName: 'rubrics_total_scores'
-                            //fieldNames: ['assessment', 'individual', 'total']
-                            fieldNames: ['assessment', 'individual', 'weight', 'score', 'points']
-                            filters: ["assessment='" + assessment + "'"]
-                            primaryKey: 'id'
-                            sort: 'individual ASC'
-                            Component.onCompleted: {
-                                select();
-                                console.log('TOTAL' + count);
-                                Debug.printSqlModel(totalPointsModel);
-                            }
-                        }
                     }
                 }
             }
         }
     }
 
-    Models.RubricsModel {
-        id: rubricsModel
-    }
+    Component {
+        id: valuesTextComponent
 
-    Models.RubricsAssessmentModel {
-        id: rubricsAssessmentModel
-    }
+        Text {
+            id: mainItem
+            anchors.fill: parent
 
-    SqlTableModel {
-        id: rubricsCriteria
-        tableName: 'rubrics_criteria'
-        fieldNames: ['id', 'title', 'desc', 'rubric', 'ord', 'weight']
-        primaryKey: 'id'
-        sort: 'ord ASC'
-        filters: ["rubric=?"]
-        bindValues: [rubricRectangle.rubric]
-    }
+            objectName: "ValuesText"
 
-    Models.IndividualsModel {
-        id: individualsModel
-        filters: ['"group"=\'' + rubricRectangle.group + "'"]
-        sort: 'id ASC'
+            property string individual
+            property string criterium
+
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            clip: true
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            elide: Text.ElideRight
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {}
+            }
+
+            function fillValues() {
+                var info = "";
+                for (var i=0; i<rubricXmlModel.assessment.count; i++) {
+                    var values = rubricXmlModel.assessment.get(i);
+                    if ((values.criterium == mainItem.criterium) && (values.individual == mainItem.individual)) {
+                        info = values.descriptor + ((values.comment !='')?("\n" + values.comment):'');
+                    }
+                }
+                mainItem.text = info;
+
+            }
+        }
     }
 
     Component.onCompleted: {
         // Get assessment details
 
-        rubricsAssessmentModel.select();
-        var objAssessment = rubricsAssessmentModel.getObject(rubricRectangle.assessment);
-        if ('group' in objAssessment) {
-            rubricRectangle.group = objAssessment['group'];
-            rubricRectangle.annotation = objAssessment['annotation'];
-            rubricRectangle.rubric = objAssessment['rubric'];
-            rubricRectangle.title = objAssessment['title'];
-            rubricRectangle.desc = objAssessment['desc'];
-        }
-
-        // Get rubrics details
-
-        rubricsModel.select();
-
-        var obj = rubricsModel.getObject(rubricRectangle.rubric);
-        if ('title' in obj)
-            rubricTitle = obj['title'];
-        if ('desc' in obj)
-            rubricDesc = obj['desc'];
-
-
-        // Get criteria and individuals
-
-        rubricsCriteria.select();
-        individualsModel.select();
+        rubricXmlModel.loadXml(rubricFile);
     }
 
 }

@@ -20,11 +20,12 @@ class RubricCriteria : public QAbstractListModel {
 
 public:
     enum CriteriumRoles {
-        Title = Qt::UserRole + 1,
-        Description = Qt::UserRole + 2,
-        Weight = Qt::UserRole + 3,
-        Order = Qt::UserRole + 4,
-        Descriptors = Qt::UserRole + 5
+        Identifier = Qt::UserRole + 1,
+        Title = Qt::UserRole + 2,
+        Description = Qt::UserRole + 3,
+        Weight = Qt::UserRole + 4,
+        Order = Qt::UserRole + 5,
+        Descriptors = Qt::UserRole + 6
     };
 
     explicit RubricCriteria(RubricXml *parent = 0);

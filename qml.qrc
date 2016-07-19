@@ -86,6 +86,5 @@
         <file>qml/SingleDocumentModule.qml</file>
         <file>qml/AnnotationsListModule.qml</file>
         <file>qml/RubricsListModule.qml</file>
-        <file>qml/SteppedPage.qml</file>
     </qresource>
 </RCC>

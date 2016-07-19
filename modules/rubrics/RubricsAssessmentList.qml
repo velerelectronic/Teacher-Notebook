@@ -294,37 +294,6 @@ Item {
         }
     }
 
-    Models.IndividualsModel {
-        id: groupsModel
-
-        fieldNames: ['group']
-
-        sort: 'id DESC'
-    }
-
-    Models.RubricsModel {
-        id: rubricsModel
-        Component.onCompleted: select()
-    }
-
-    Models.RubricsAssessmentModel {
-        id: rubricsAssessmentModel
-
-//        searchString: (rubricsListBasicPage.searchString !== '')?rubricsListBasicPage.searchString:undefined
-//        searchFields: rubricsListBasicPage.searchFields
-
-        sort: 'id DESC'
-
-        limit: 100
-        Component.onCompleted: select()
-    }
-
-    Models.ExtendedAnnotations {
-        id: annotationsModel
-
-        Component.onCompleted: select();
-    }
-
     Component.onCompleted: {
         rubricsModel.select();
         rubricsAssessmentModel.select();

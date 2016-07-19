@@ -1,20 +1,24 @@
 #include "rubricassessmentmodel.h"
 
+#include <QDebug>
+#include <QVariantMap>
+
 RubricAssessmentModel::RubricAssessmentModel(RubricXml *parent) : QAbstractListModel(parent)
 {
-
+    innerRoles[Criterium] = "criterium";
+    innerRoles[Individual] = "individual";
+    innerRoles[Descriptor] = "descriptor";
+    innerRoles[Comment] = "comment";
+    innerRoles[Time] = "time";
 }
 
 RubricAssessmentModel::RubricAssessmentModel(const RubricAssessmentModel &original) {
     innerAssessmentDomRoot = original.innerAssessmentDomRoot;
+    innerRoles = original.innerRoles;
 }
 
 RubricAssessmentModel::~RubricAssessmentModel() {
 
-}
-
-int RubricAssessmentModel::count() {
-    return rowCount();
 }
 
 bool RubricAssessmentModel::append(QVariantMap values) {
@@ -32,6 +36,11 @@ bool RubricAssessmentModel::append(QVariantMap values) {
     return true;
 }
 
+int RubricAssessmentModel::count() {
+    return rowCount();
+}
+
+
 QVariant RubricAssessmentModel::data(const QModelIndex &index, int role = Qt::DisplayRole) const {
     QString attribute;
     switch(role) {
@@ -41,8 +50,8 @@ QVariant RubricAssessmentModel::data(const QModelIndex &index, int role = Qt::Di
     case Individual:
         attribute = "individual";
         break;
-    case Level:
-        attribute = "level";
+    case Descriptor:
+        attribute = "descriptor";
         break;
     case Comment:
         attribute = "comment";
@@ -61,6 +70,16 @@ Qt::ItemFlags RubricAssessmentModel::flags(const QModelIndex &index) const {
     return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemNeverHasChildren;
 }
 
+QVariantMap RubricAssessmentModel::get(int index) {
+    QVariantMap result;
+    int i;
+    for (i=Qt::UserRole+1; i<=Qt::UserRole+5; i++) {
+        result.insert(QString(innerRoles[i]), RubricAssessmentModel::data(this->createIndex(index,i), i));
+    }
+    qDebug() << "GET::" << result;
+    return result;
+}
+
 bool RubricAssessmentModel::insertRows(int row, int count, const QModelIndex &parent) {
     return false;
 }
@@ -73,18 +92,18 @@ QString RubricAssessmentModel::periodStart() {
     return innerAssessmentDomRoot.attribute("to", "");
 }
 
+void RubricAssessmentModel::processXmlChanges() {
+    countChanged();
+    periodEndChanged();
+    periodStartChanged();
+}
+
 bool RubricAssessmentModel::removeRows(int row, int count, const QModelIndex &parent) {
     return false;
 }
 
 QHash <int, QByteArray> RubricAssessmentModel::roleNames() const {
-    QHash<int, QByteArray> roles;
-    roles[Criterium] = "criterium";
-    roles[Individual] = "individual";
-    roles[Level] = "level";
-    roles[Comment] = "comment";
-    roles[Time] = "time";
-    return roles;
+    return innerRoles;
 }
 
 int RubricAssessmentModel::rowCount(const QModelIndex &parent) const {

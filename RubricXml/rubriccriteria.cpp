@@ -55,7 +55,7 @@ QVariant RubricCriteria::data(const QModelIndex &index, int role = Qt::DisplayRo
         innerDescriptorsModel->setDomRoot(selectedCriteriumDomElement);
         return QVariant::fromValue(innerDescriptorsModel);
     } else {
-        return QVariant(selectedCriteriumDomElement.attributeNode(fieldNameForRole(role)).value());
+        return QVariant(selectedCriteriumDomElement.attribute(fieldNameForRole(role)));
     }
 }
 
@@ -71,6 +71,8 @@ Qt::ItemFlags RubricCriteria::flags(const QModelIndex &index) const {
 
 QString RubricCriteria::fieldNameForRole(int role) const {
     switch (role) {
+    case Identifier:
+        return "identifier";
     case Title:
         return "title";
     case Description:
@@ -97,6 +99,7 @@ bool RubricCriteria::removeRows(int row, int count, const QModelIndex &parent) {
 
 QHash <int, QByteArray> RubricCriteria::roleNames() const {
     QHash<int, QByteArray> roles;
+    roles[Identifier] = "identifier";
     roles[Title] = "title";
     roles[Description] = "description";
     roles[Weight] = "weight";

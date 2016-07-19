@@ -28,20 +28,37 @@ BasicPage {
 
         ignoreUnknownSignals: true
 
-        onAnnotationSelected: {
-            documentsModel.updateObject(documentId, {annotation: title});
-            documentsModuleSM.changeAnnotation();
-        }
-
         onAnnotationEditSelected: {
             annotationTitle = annotation;
             documentId = document;
             documentsModuleSM.changeAnnotation();
         }
 
+        onAnnotationSelected: {
+            documentsModel.updateObject(documentId, {annotation: title});
+            documentsModuleSM.changeAnnotation();
+        }
+
+        onCloseNewDocument: {
+            documentId = document;
+            documentsListSelected(document);
+        }
+
         onDocumentSelected: {
             documentId = document;
             documentSelected();
+        }
+
+        onDocumentSourceSelected: {
+            console.log('show', source);
+            documentSource = source;
+            switch(mediaType) {
+            case 'Rubric':
+                documentsModuleSM.showRubric();
+                break;
+            default:
+                documentsModuleSM.showDocumentSource();
+            }
         }
 
         onFileSelected: {
@@ -58,21 +75,6 @@ BasicPage {
             showSelectFile();
         }
 
-        onDocumentSourceSelected: {
-            console.log('show', source);
-            documentSource = source;
-            if (/\.rubricxml$/g.test(source)) {
-                // Show Rubric FromFile
-                documentsModule.openPageArgs('RubricsModule', {rubricFile: documentSource});
-            } else {
-                documentsModuleSM.showDocumentSource();
-            }
-        }
-
-        onCloseNewDocument: {
-            documentId = document;
-            documentsListSelected(document);
-        }
     }
 
     DSM.StateMachine {
@@ -85,6 +87,7 @@ BasicPage {
         signal documentsListSelected()
         signal showDocument()
         signal showDocumentSource()
+        signal showRubric()
 
         // Internal properties
 
@@ -111,6 +114,24 @@ BasicPage {
             DSM.SignalTransition {
                 signal: documentsModuleSM.showDocumentSource
                 targetState: documentSourceDisplayState
+            }
+
+            DSM.SignalTransition {
+                signal: documentsModuleSM.showRubric
+                targetState: rubricDisplayState
+            }
+        }
+
+        DSM.State {
+            id: rubricDisplayState
+
+            onEntered: {
+                pushButtonsModel();
+                setSource('qrc:///modules/rubrics/RubricGroupAssessment.qml', {rubricFile: documentSource});
+            }
+
+            onExited: {
+                popButtonsModel();
             }
         }
 

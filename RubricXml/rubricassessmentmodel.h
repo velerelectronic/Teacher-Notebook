@@ -20,7 +20,7 @@ public:
     enum DescriptorRoles {
         Criterium = Qt::UserRole + 1,
         Individual = Qt::UserRole + 2,
-        Level = Qt::UserRole + 3,
+        Descriptor = Qt::UserRole + 3,
         Comment = Qt::UserRole + 4,
         Time = Qt::UserRole + 5
     };
@@ -42,6 +42,7 @@ public:
     // Specific of this new class
     Q_INVOKABLE bool        append(QVariantMap values);
     int                     count();
+    Q_INVOKABLE QVariantMap get(int index);
     QString                 periodEnd();
     QString                 periodStart();
     void                    setDomRoot(QDomElement domroot);
@@ -53,8 +54,12 @@ signals:
     void    periodEndChanged();
     void    periodStartChanged();
 
+public slots:
+    void    processXmlChanges();
+
 private:
     QDomElement             innerAssessmentDomRoot;
+    QHash<int, QByteArray>  innerRoles;
 };
 
 Q_DECLARE_METATYPE(RubricAssessmentModel)

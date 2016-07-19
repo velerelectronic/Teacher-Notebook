@@ -11,6 +11,8 @@ RubricXml::RubricXml(QObject *parent) : QObject(parent)
     innerCriteria = new RubricCriteria(this);
     innerPopulationModel = new RubricPopulationModel(this);
     innerAssessmentModel = new RubricAssessmentModel(this);
+
+    connect(this, SIGNAL(assessmentChanged()), innerAssessmentModel, SLOT(processXmlChanges()));
 }
 
 RubricAssessmentModel *RubricXml::assessment() {
@@ -106,6 +108,9 @@ void RubricXml::setXml(QString string) {
     innerPopulationModel->setDomRoot(mainRubricRoot.elementsByTagName("population").at(0).toElement());
 
     innerAssessmentModel->setDomRoot(mainRubricRoot.elementsByTagName("assessment").at(0).toElement());
+
+    titleChanged();
+    descriptionChanged();
     criteriaChanged();
     populationChanged();
     assessmentChanged();
