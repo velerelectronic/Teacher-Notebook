@@ -7,7 +7,7 @@ Item {
         id: units
     }
 
-    property alias sections: sectionsList.model
+    default property alias sections: sectionsList.model
 
     property bool moveForwardEnabled: true
     property bool moveBackwardsEnabled: true

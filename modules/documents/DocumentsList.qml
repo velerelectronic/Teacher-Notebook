@@ -4,6 +4,7 @@ import QtQml.Models 2.2
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
+import 'qrc:///modules/files' as Files
 import "qrc:///common/FormatDates.js" as FormatDates
 import "qrc:///modules/files/mediaTypes.js" as MediaTypes
 
@@ -256,7 +257,9 @@ Item {
                 Common.SuperposedMenuEntry {
                     height: units.fingerUnit * 1.5
                     text: qsTr('Fitxer')
-                    onClicked: documentsListItem.newDocumentSelected()
+                    onClicked: {
+                        selectFileMenu.showWidget();
+                    }
                 }
                 Common.SuperposedMenuEntry {
                     height: units.fingerUnit * 1.5
@@ -268,6 +271,31 @@ Item {
                     height: units.fingerUnit * 1.5
                     text: qsTr('Adreça web')
                     onClicked: superposedAddMenu.hideWidget()
+                }
+            }
+
+            Common.SuperposedMenu {
+                id: selectFileMenu
+
+                anchoringItem: parent
+                minimumWidth: parent.width
+                minimumHeight: parent.height
+                headerTitle: qsTr('Tria un fitxer')
+
+                Rectangle {
+                    width: parent.width
+                    height: selectFileMenu.height
+
+                    Common.SteppedPage {
+                        id: steppedPage
+                        anchors.fill: parent
+
+                        Files.FileSelector {
+                            width: steppedPage.width
+                            height: steppedPage.height
+                        }
+
+                    }
                 }
             }
         }

@@ -4,6 +4,7 @@ import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///modules/buttons' as Buttons
 
 Item {
     id: basicPageItem
@@ -24,9 +25,7 @@ Item {
     signal openPageArgs(string page, var args)
     signal showMessage(string message)
 
-    property ListModel buttonsModel: ListModel { dynamicRoles: true }
-
-    property var buttonsModelStack: []
+    property alias buttonsModel: buttonsList.buttons
 
     property bool pageClosable: true
 
@@ -38,28 +37,6 @@ Item {
         return basicPageLoader.item[method](parameters);
     }
 
-    function pushButtonsModel() {
-        console.log('In the stack before pushing', buttonsModelStack.length);
-        var newListModel = Qt.createQmlObject("import QtQuick 2.5; ListModel {}", basicPageItem);
-        console.log(newListModel);
-        for (var i=0; i<basicPageItem.buttonsModel.count; i++) {
-            newListModel.append(buttonsModel.get(i));
-        }
-
-        buttonsModelStack.push(newListModel);
-        basicPageItem.buttonsModel.clear();
-        console.log('In the stack after pushing', buttonsModelStack.length);
-    }
-
-    function popButtonsModel() {
-        console.log('pop: ', buttonsModelStack.length);
-        if (buttonsModelStack.length == 0)
-            buttonsModel.clear();
-        else {
-            buttonsModel = buttonsModelStack.pop();
-            console.log(buttonsModelStack.length);
-        }
-    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -96,25 +73,10 @@ Item {
                     text: basicPageItem.pageTitle
                 }
 
-                ListView {
+                Buttons.ButtonsList {
                     id: buttonsList
                     Layout.fillHeight: true
                     Layout.preferredWidth: contentItem.width
-                    spacing: units.fingerUnit
-                    interactive: false
-                    orientation: ListView.Horizontal
-
-                    model: buttonsModel
-
-                    delegate: Common.ImageButton {
-                        width: size
-                        height: width
-                        size: units.fingerUnit
-                        image: model.icon
-                        onClicked: {
-                            model.object[model.method].call(model.object);
-                        }
-                    }
                 }
             }
         }
@@ -286,7 +248,7 @@ Item {
     }
 
     Component.onCompleted: {
-        buttonsModel.append({icon: 'magnifying-glass-481818', object: basicPageItem, method: 'lookFor'});
+//        buttonsModel.append({icon: 'magnifying-glass-481818', object: basicPageItem, method: 'lookFor'});
     }
 }
 

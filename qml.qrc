@@ -43,7 +43,6 @@
         <file>qml/Rubric.qml</file>
         <file>qml/RubricCriteriumEditor.qml</file>
         <file>qml/RubricLevelEditor.qml</file>
-        <file>qml/RubricDetailsEditor.qml</file>
         <file>qml/RubricDescriptorEditor.qml</file>
         <file>qml/Projects.qml</file>
         <file>qml/ProjectEditor.qml</file>
@@ -80,11 +79,11 @@
         <file>qml/AboveMenu.qml</file>
         <file>qml/OmniboxSearch.qml</file>
         <file>qml/ExportManager.qml</file>
-        <file>qml/RubricExperiment.qml</file>
         <file>qml/MenuPageModule.qml</file>
         <file>qml/DocumentsListModule.qml</file>
         <file>qml/SingleDocumentModule.qml</file>
         <file>qml/AnnotationsListModule.qml</file>
         <file>qml/RubricsListModule.qml</file>
+        <file>qml/RubricModule.qml</file>
     </qresource>
 </RCC>

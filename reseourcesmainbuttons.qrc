@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/buttons/ButtonsList.qml</file>
+        <file>modules/buttons/MainButton.qml</file>
+    </qresource>
+</RCC>

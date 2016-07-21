@@ -128,6 +128,7 @@ Item {
                 minimumWidth: units.fingerUnit * 6
 
                 headerTitle: qsTr('Detalls de rúbrica')
+                onCloseRequested: hideWidget()
 
                 Common.SuperposedMenuEntry {
                     text: qsTr('Títol')
@@ -153,6 +154,7 @@ Item {
                 anchoringItem: parent
                 minimumWidth: parent.width / 2
                 headerTitle: qsTr('Edita el títol')
+                onCloseRequested: hideWidget()
 
                 Editors.TextLineEditor {
                     id: titleEditorItem
@@ -195,6 +197,7 @@ Item {
                 anchoringItem: parent
                 minimumWidth: parent.width / 2
                 headerTitle: qsTr('Edita la descripció')
+                onCloseRequested: hideWidget()
 
                 Editors.TextAreaEditor3 {
                     id: descriptionEditorItem

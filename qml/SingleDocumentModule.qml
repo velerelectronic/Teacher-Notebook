@@ -1,7 +1,10 @@
 import QtQuick 2.5
 import QtQml.StateMachine 1.0 as DSM
+import QtQml.Models 2.2
 import PersonalTypes 1.0
 import 'qrc:///models' as Models
+import 'qrc:///common' as Common
+import 'qrc:///modules/buttons' as Buttons
 
 BasicPage {
     id: documentsModule
@@ -12,6 +15,7 @@ BasicPage {
     signal documentSelected()
     signal showDocument()
     signal showSelectFile()
+    signal showRubric(string rubricFile)
 
     property var sharedObject: null
 
@@ -54,7 +58,7 @@ BasicPage {
             documentSource = source;
             switch(mediaType) {
             case 'Rubric':
-                documentsModuleSM.showRubric();
+                documentsModule.showRubric(source);
                 break;
             default:
                 documentsModuleSM.showDocumentSource();
@@ -72,9 +76,32 @@ BasicPage {
         }
 
         onNewDocumentSelected: {
-            showSelectFile();
+            supermenuLoader.headerTitle = qsTr('Tria un document...');
+            menuLoader.setSource('qrc:///modules/files/FileSelector.qml');
         }
+    }
 
+    ObjectModel {
+        Buttons.MainButton {
+            image: 'list-153185'
+            onClicked: documentsModule.reopenDocumentsList()
+        }
+    }
+
+    Common.SuperposedMenu {
+        id: supermenu
+
+        entries: [
+            Loader {
+                id: menuLoader
+                width: parent.width
+                height: parent.height * 2 / 3
+            }
+        ]
+    }
+
+    Component.onCompleted: {
+        setSource('qrc:///modules/documents/ShowDocument.qml', {document: documentId});
     }
 
     DSM.StateMachine {
@@ -96,16 +123,6 @@ BasicPage {
         DSM.State {
             id: singleDocumentState
 
-            onEntered: {
-                pushButtonsModel();
-                setSource('qrc:///modules/documents/ShowDocument.qml', {document: documentId});
-                buttonsModel.append({icon: 'list-153185', object: documentsModule, method: 'reopenDocumentsList'});
-            }
-
-            onExited: {
-                popButtonsModel();
-            }
-
             DSM.SignalTransition {
                 signal: documentsModuleSM.changeAnnotation
                 targetState: changeDocumentAnnotationState
@@ -126,12 +143,7 @@ BasicPage {
             id: rubricDisplayState
 
             onEntered: {
-                pushButtonsModel();
                 setSource('qrc:///modules/rubrics/RubricGroupAssessment.qml', {rubricFile: documentSource});
-            }
-
-            onExited: {
-                popButtonsModel();
             }
         }
 
@@ -139,15 +151,6 @@ BasicPage {
             id: selectFileState
 
             onEntered: {
-                pushButtonsModel();
-                setSource('qrc:///modules/files/FileSelector.qml', {});
-                buttonsModel.append({icon: 'computer-31223', object: mainItem, method: 'gotoParentFolder'});
-                buttonsModel.append({icon: 'info-147927', object: mainItem, method: 'toggleDetails'});
-                buttonsModel.append({icon: 'road-sign-147409', object: documentsModule, method: 'reopenDocumentsList'});
-            }
-
-            onExited: {
-                popButtonsModel();
             }
 
             DSM.SignalTransition {
@@ -160,9 +163,9 @@ BasicPage {
             id: newDocumentState
 
             onEntered: {
-                pushButtonsModel();
-                setSource('qrc:///modules/documents/NewDocument.qml', {title: documentsModuleSM.sourceFile, source: documentsModuleSM.sourceFile});
-                buttonsModel.append({icon: 'road-sign-147409', object: documentsModule, method: 'reopenDocumentsList'});
+                supermenu.headerTitle = qsTr('Nou document');
+                menuLoader.setSource('qrc:///modules/documents/NewDocument.qml', {title: documentsModuleSM.sourceFile, source: documentsModuleSM.sourceFile});
+                supermenu.showWidget();
             }
 
             onExited: {
@@ -214,14 +217,4 @@ BasicPage {
         documentsListSelected(documentId);
     }
 
-    Component.onCompleted: {
-        if (documentId == '') {
-            documentsModuleSM.initialState = selectFileState;
-        } else {
-            documentsModuleSM.initialState = singleDocumentState;
-        }
-        documentsModuleSM.start();
-    }
-
-    Component.onDestruction: popButtonsModel()
 }

@@ -14,6 +14,8 @@ import Qt.labs.folderlistmodel 2.1
 import FileIO 1.0
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///modules/buttons' as Buttons
+
 
 Item {
     id: documentsListPage
@@ -82,6 +84,22 @@ Item {
                     text: qsTr('Selecciona')
                     onClicked: folderSelected(folderList.folder)
                 }
+
+                Buttons.ButtonsList {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: requiredWidth
+
+                    Buttons.MainButton {
+                        image: 'computer-31223'
+                        onClicked: gotoParentFolder()
+                    }
+
+                    Buttons.MainButton {
+                        image: 'info-147927'
+                        onClicked: toggleDetails()
+                    }
+                }
+
             }
         }
 

@@ -61,14 +61,8 @@ BasicPage {
         }
 
         onDocumentSourceSelected: {
-            console.log('show', source);
             documentSource = source;
-            if (/\.rubricxml$/g.test(source)) {
-                // Show Rubric FromFile
-                documentsModule.openPageArgs('RubricsModule', {rubricFile: documentSource});
-            } else {
-                showDocumentSource();
-            }
+            showDocumentSource();
         }
 
         onCloseNewDocument: {

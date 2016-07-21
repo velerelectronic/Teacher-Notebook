@@ -149,6 +149,11 @@ Window {
                 onRubricsListSelected: {
                     appStateMachine.openRubricsList();
                 }
+
+                onShowRubric: {
+                    appStateMachine.rubricFile = rubricFile;
+                    appStateMachine.openSingleRubric();
+                }
             }
 
             function requestClosePage() {
@@ -186,7 +191,7 @@ Window {
 
         property string annotation: ''
         property string document: ''
-        property string rubric: ''
+        property string rubricFile: ''
         property int assessment: -1
 
         // Signals
@@ -269,6 +274,11 @@ Window {
                 signal: appStateMachine.openMainPage
                 targetState: mainMenuState
             }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openSingleRubric
+                targetState: singleRubricState
+            }
         }
 
         DSM.State {
@@ -329,7 +339,7 @@ Window {
             id: rubricsListState
 
             onEntered: {
-                workingSpace.loadSubPage('RubricsListModule', {rubric: appStateMachine.rubric});
+                workingSpace.loadSubPage('RubricsListModule', {rubricFile: appStateMachine.rubricFile});
             }
 
             DSM.SignalTransition {
@@ -347,8 +357,7 @@ Window {
             id: singleRubricState
 
             onEntered: {
-                console.log('inside');
-                workingSpace.loadSubPage('SingleRubricModule', {assessment: appStateMachine.assessment});
+                workingSpace.loadSubPage('RubricModule', {rubricFile: appStateMachine.rubricFile});
             }
 
             DSM.SignalTransition {

@@ -208,7 +208,7 @@ Loader {
     */
 
     function loadSubPage(page, param) {
-        console.log('opening', page, param);
+        console.log('opening', Qt.resolvedUrl(page + ".qml"), param);
         setSource(Qt.resolvedUrl(page + ".qml"), param);
     }
 
