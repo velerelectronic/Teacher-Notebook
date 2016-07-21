@@ -14,6 +14,7 @@ BasicPage {
     signal documentsListSelected(string document)
     signal documentSelected()
     signal showDocument()
+    signal showDocumentSource()
     signal showSelectFile()
     signal showRubric(string rubricFile)
 
@@ -61,7 +62,7 @@ BasicPage {
                 documentsModule.showRubric(source);
                 break;
             default:
-                documentsModuleSM.showDocumentSource();
+                documentsModule.showDocumentSource();
             }
         }
 

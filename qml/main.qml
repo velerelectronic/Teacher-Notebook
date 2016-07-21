@@ -50,6 +50,7 @@
   * Deleted: https://pixabay.com/es/puede-papelera-de-basura-basura-294071/
 
   * Attached: https://pixabay.com/es/clip-de-papel-mantenga-metal-27821/
+  * Rubrics: https://pixabay.com/es/lista-de-comprobaci%C3%B3n-de-verificaci%C3%B3n-154274/#
 */
 
 import QtQuick 2.5

@@ -16,6 +16,8 @@ function imageForMediaType(source, mediaType) {
     case 'pdf':
     case 'txt':
         return 'qrc:///icons/homework-152957.svg';
+    case 'rubric':
+        return 'qrc:///icons/checklist-154274.svg';
     default:
         return 'qrc:///icons/road-sign-147409.svg';
     }
