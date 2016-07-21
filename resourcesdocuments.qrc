@@ -2,7 +2,6 @@
     <qresource prefix="/">
         <file>modules/documents/DocumentsList.qml</file>
         <file>modules/documents/DocumentViewer.qml</file>
-        <file>modules/documents/NewDocument.qml</file>
         <file>modules/documents/ShowDocument.qml</file>
     </qresource>
 </RCC>

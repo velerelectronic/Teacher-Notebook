@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
+import QtQml.Models 2.2
 import 'qrc:///common' as Common
 
 Item {
@@ -7,14 +8,25 @@ Item {
         id: units
     }
 
-    default property alias sections: sectionsList.model
+    default property alias sections: sectionsModel.children
 
     property bool moveForwardEnabled: true
     property bool moveBackwardsEnabled: true
 
+    property string title
+
     ColumnLayout {
         anchors.fill: parent
         spacing: units.nailUnit
+
+        Text {
+            Layout.preferredHeight: contentHeight
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            font.pixelSize: units.readUnit
+            font.bold: true
+            text: title
+        }
 
         ListView {
             id: sectionsList
@@ -29,6 +41,10 @@ Item {
 
             onWidthChanged: recalculateSectionDimensions()
             onHeaderChanged: recalculateSectionDimensions()
+
+            model: ObjectModel {
+                id: sectionsModel
+            }
         }
 
         Item {
@@ -96,11 +112,11 @@ Item {
     }
 
     function recalculateSectionDimensions() {
-        console.log('children count', sections.children.length);
-        for (var i=0; i<sections.children.length; i++) {
+        console.log('children count', sections.length);
+        for (var i=0; i<sections.length; i++) {
             console.log('WxH', sectionsList.width, sectionsList.height);
-            sections.children[i].width = Qt.binding(function() { return sectionsList.width; });
-            sections.children[i].height = Qt.binding(function() { return sectionsList.height; });
+            sections[i].width = Qt.binding(function() { return sectionsList.width; });
+            sections[i].height = Qt.binding(function() { return sectionsList.height; });
         }
 //        sectionsList.currentIndex = 0;
     }

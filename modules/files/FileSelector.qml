@@ -86,8 +86,9 @@ Item {
                 }
 
                 Buttons.ButtonsList {
+                    id: buttonsList
                     Layout.fillHeight: true
-                    Layout.preferredWidth: requiredWidth
+                    Layout.preferredWidth: buttonsList.requiredWidth
 
                     Buttons.MainButton {
                         image: 'computer-31223'
@@ -99,7 +100,6 @@ Item {
                         onClicked: toggleDetails()
                     }
                 }
-
             }
         }
 

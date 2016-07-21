@@ -61,6 +61,11 @@ import PersonalTypes 1.0
 import QtQml.StateMachine 1.0 as DSM
 import 'qrc:///common' as Common
 
+// Three types of navigation between pages
+// 1. Each page links to several pages (but not backwards)
+// 2. Subpages inside a page. When the subpage is closed, the control is transfered to the parent page.
+// 3. Sequential pages. A list of pages interlinked in a linear sequence.
+
 Window {
     id: mainApp
 
@@ -133,7 +138,6 @@ Window {
                 }
 
                 onNewDocumentSelected: {
-                    console.log('HOE')
                     appStateMachine.openNewDocument();
                 }
 
@@ -285,12 +289,27 @@ Window {
             id: newDocumentState
 
             onEntered: {
-                appStateMachine.document = '';
+                workingSpace.loadSubPage('NewDocumentModule', {});
             }
 
-            DSM.TimeoutTransition {
-                timeout: 0
+            DSM.SignalTransition {
+                signal: appStateMachine.openMainPage
+                targetState: mainMenuState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openSingleDocument
                 targetState: singleDocumentState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openDocumentsList
+                targetState: documentsListState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openNewDocument
+                targetState: newDocumentState
             }
         }
 

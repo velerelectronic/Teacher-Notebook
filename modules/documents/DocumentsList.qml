@@ -5,6 +5,7 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///modules/files' as Files
+import 'qrc:///modules/documents' as Documents
 import "qrc:///common/FormatDates.js" as FormatDates
 import "qrc:///modules/files/mediaTypes.js" as MediaTypes
 
@@ -258,46 +259,28 @@ Item {
                     height: units.fingerUnit * 1.5
                     text: qsTr('Fitxer')
                     onClicked: {
-                        selectFileMenu.showWidget();
+                        superposedAddMenu.hideWidget();
+                        newDocumentSelected();
                     }
                 }
                 Common.SuperposedMenuEntry {
                     height: units.fingerUnit * 1.5
                     text: qsTr('Rúbrica')
-                    onClicked: documentsListItem.newRubricSelected()
+                    onClicked: {
+                        superposedAddMenu.hideWidget();
+                        documentsListItem.newRubricSelected();
+                    }
                 }
 
                 Common.SuperposedMenuEntry {
                     height: units.fingerUnit * 1.5
                     text: qsTr('Adreça web')
-                    onClicked: superposedAddMenu.hideWidget()
-                }
-            }
-
-            Common.SuperposedMenu {
-                id: selectFileMenu
-
-                anchoringItem: parent
-                minimumWidth: parent.width
-                minimumHeight: parent.height
-                headerTitle: qsTr('Tria un fitxer')
-
-                Rectangle {
-                    width: parent.width
-                    height: selectFileMenu.height
-
-                    Common.SteppedPage {
-                        id: steppedPage
-                        anchors.fill: parent
-
-                        Files.FileSelector {
-                            width: steppedPage.width
-                            height: steppedPage.height
-                        }
-
+                    onClicked: {
+                        superposedAddMenu.hideWidget();
                     }
                 }
             }
+
         }
     }
 

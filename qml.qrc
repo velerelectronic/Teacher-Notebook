@@ -85,5 +85,6 @@
         <file>qml/AnnotationsListModule.qml</file>
         <file>qml/RubricsListModule.qml</file>
         <file>qml/RubricModule.qml</file>
+        <file>qml/NewDocumentModule.qml</file>
     </qresource>
 </RCC>
