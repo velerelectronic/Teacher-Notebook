@@ -45,5 +45,7 @@
         <file>common/SuperposedWidgetList.qml</file>
         <file>common/SteppedPage.qml</file>
         <file>common/SteppedSection.qml</file>
+        <file>common/SuperposedMenu.qml</file>
+        <file>common/SuperposedMenuEntry.qml</file>
     </qresource>
 </RCC>

@@ -242,68 +242,32 @@ Item {
                     superposedAddMenu.toggleWidget();
                 }
             }
-            Common.SuperposedWidget {
+            Common.SuperposedMenu {
                 id: superposedAddMenu
 
                 anchors.fill: parent
                 anchoringItem: addDocumentButton
 
-                minimumHeight: menuList.contentItem.height
                 minimumWidth: units.fingerUnit * 6
 
                 glowColor: 'black'
+                headerTitle: qsTr('Nou document...')
 
-                ListView {
-                    id: menuList
-                    anchors.fill: parent
+                Common.SuperposedMenuEntry {
+                    height: units.fingerUnit * 1.5
+                    text: qsTr('Fitxer')
+                    onClicked: documentsListItem.newDocumentSelected()
+                }
+                Common.SuperposedMenuEntry {
+                    height: units.fingerUnit * 1.5
+                    text: qsTr('Rúbrica')
+                    onClicked: documentsListItem.newRubricSelected()
+                }
 
-                    headerPositioning: ListView.OverlayHeader
-
-                    header: Common.BoxedText {
-                        width: menuList.width
-                        height: units.fingerUnit
-                        boldFont: true
-                        fontSize: units.readUnit
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: qsTr('Nou document...')
-                    }
-
-                    model: ObjectModel {
-                        Common.BoxedText {
-                            width: menuList.width
-                            height: units.fingerUnit * 1.5
-                            margins: units.nailUnit
-                            text: qsTr('Fitxer')
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: documentsListItem.newDocumentSelected();
-                            }
-                        }
-                        Common.BoxedText {
-                            width: menuList.width
-                            height: units.fingerUnit * 1.5
-                            margins: units.nailUnit
-                            text: qsTr('Rúbrica')
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: documentsListItem.newRubricSelected();
-                            }
-                        }
-
-                        Common.BoxedText {
-                            width: menuList.width
-                            height: units.fingerUnit * 1.5
-                            margins: units.nailUnit
-                            text: qsTr('Adreça web')
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: superposedAddMenu.hideWidget()
-                                // Not available yet
-                            }
-                        }
-                    }
+                Common.SuperposedMenuEntry {
+                    height: units.fingerUnit * 1.5
+                    text: qsTr('Adreça web')
+                    onClicked: superposedAddMenu.hideWidget()
                 }
             }
         }

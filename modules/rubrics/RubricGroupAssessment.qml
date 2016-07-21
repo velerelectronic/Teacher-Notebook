@@ -1,9 +1,11 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
-import 'qrc:///common' as Common
-import 'qrc:///models' as Models
 import PersonalTypes 1.0
 import RubricXml 1.0
+
+import 'qrc:///common' as Common
+import 'qrc:///models' as Models
+import 'qrc:///editors' as Editors
 import 'qrc:///javascript/Debug.js' as Debug
 
 
@@ -41,9 +43,11 @@ Item {
     }
 
     ColumnLayout {
+        z: 2
         anchors.fill: parent
 
         Item {
+            z: 10
             // Basic rubric info
 
             Layout.fillWidth: true
@@ -85,7 +89,10 @@ Item {
                 Common.ImageButton {
                     image: 'edit-153612'
                     size: units.fingerUnit
-                    onClicked: rubricAssessmentDetailsEdit()
+                    onClicked: {
+                        // Edit rubric details
+                        editRubricDetailsMenu.showWidget();
+                    }
                 }
 
 
@@ -109,6 +116,119 @@ Item {
                         elide: Text.ElideRight
                         font.italic: true
                         text: qsTr('(Avaluació única)')
+                    }
+                }
+            }
+
+            Common.SuperposedMenu {
+                id: editRubricDetailsMenu
+                z: 10
+
+                anchoringItem: parent
+                minimumWidth: units.fingerUnit * 6
+
+                headerTitle: qsTr('Detalls de rúbrica')
+
+                Common.SuperposedMenuEntry {
+                    text: qsTr('Títol')
+                    onClicked: {
+                        editRubricDetailsMenu.hideWidget();
+                        editTitleMenu.showWidget();
+                        titleEditorItem.content = rubricTitle;
+                    }
+                }
+
+                Common.SuperposedMenuEntry {
+                    text: qsTr('Descripció')
+                    onClicked: {
+                        editRubricDetailsMenu.hideWidget();
+                        editDescriptionMenu.showWidget();
+                        descriptionEditorItem.content = rubricDesc;
+                    }
+                }
+            }
+
+            Common.SuperposedMenu {
+                id: editTitleMenu
+                anchoringItem: parent
+                minimumWidth: parent.width / 2
+                headerTitle: qsTr('Edita el títol')
+
+                Editors.TextLineEditor {
+                    id: titleEditorItem
+                    width: parent.width
+                    height: units.fingerUnit * 1.5
+                }
+                Rectangle {
+                    width: parent.width
+                    height: units.fingerUnit * 2
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+
+                        spacing: units.fingerUnit
+                        Item {
+                            Layout.fillWidth: true
+                        }
+
+                        Common.TextButton {
+                            Layout.fillHeight: true
+                            text: qsTr('Desa')
+                            onClicked: {
+                                rubricXmlModel.title = titleEditorItem.content;
+                                editTitleMenu.hideWidget();
+                            }
+                        }
+                        Common.TextButton {
+                            Layout.fillHeight: true
+                            text: qsTr('Descarta')
+                            onClicked: {
+                                editTitleMenu.hideWidget();
+                            }
+                        }
+                    }
+                }
+            }
+
+            Common.SuperposedMenu {
+                id: editDescriptionMenu
+                anchoringItem: parent
+                minimumWidth: parent.width / 2
+                headerTitle: qsTr('Edita la descripció')
+
+                Editors.TextAreaEditor3 {
+                    id: descriptionEditorItem
+                    width: parent.width
+                    height: units.fingerUnit * 6
+                    color: 'white'
+                }
+                Rectangle {
+                    width: parent.width
+                    height: units.fingerUnit * 2
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+
+                        spacing: units.fingerUnit
+                        Item {
+                            Layout.fillWidth: true
+                        }
+
+                        Common.TextButton {
+                            Layout.fillHeight: true
+                            text: qsTr('Desa')
+                            onClicked: {
+                                rubricXmlModel.description = descriptionEditorItem.content;
+                                editDescriptionMenu.hideWidget();
+                            }
+                        }
+                        Common.TextButton {
+                            Layout.fillHeight: true
+                            text: qsTr('Descarta')
+                            onClicked: {
+                                editDescriptionMenu.hideWidget();
+                            }
+                        }
                     }
                 }
             }
