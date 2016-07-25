@@ -1,6 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.2
+import QtQuick.Dialogs 1.2
 import ClipboardAdapter 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
@@ -154,7 +155,10 @@ Item {
                                 Layout.preferredWidth: size
                                 image: 'edit-153612'
                                 size: units.fingerUnit * 1.5
-                                onClicked: titleEditWidget.toggleWidget()
+                                onClicked: {
+                                    titleEditor.text = title;
+                                    titleEditDialog.open();
+                                }
                             }
                             Text {
                                 Layout.preferredWidth: contentWidth
@@ -177,7 +181,10 @@ Item {
                                 Layout.preferredWidth: size
                                 image: 'edit-153612'
                                 size: units.fingerUnit * 1.5
-                                onClicked: descEditWidget.toggleWidget()
+                                onClicked: {
+                                    descEditor.text = desc;
+                                    descEditDialog.open();
+                                }
                             }
 
                         }
@@ -242,7 +249,10 @@ Item {
                             text: mediaType
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: mediaTypeEditWidget.showWidget()
+                                onClicked: {
+                                    mediaTypeEditor.text = mediaType;
+                                    mediaTypeEditDialog.open();
+                                }
                             }
                         }
 
@@ -292,120 +302,73 @@ Item {
             }
 
             // Editors
-            Common.SuperposedWidget {
-                id: titleEditWidget
 
-                anchors.fill: parent
-                anchoringItem: titleEditButton
-                margins: units.nailUnit
 
-                minimumWidth: parent.width - 2 * units.fingerUnit
-                minimumHeight: units.fingerUnit * 4
+            Common.SuperposedMenu {
+                id: titleEditDialog
+                title: qsTr('Edita el títol')
+                standardButtons: StandardButton.Save | StandardButton.Cancel
 
-                onShown: titleEditor.text = titleText.text
-
-                Rectangle {
-                    anchors.fill: parent
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
-
-                        Editors.TextAreaEditor3 {
-                            id: titleEditor
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                        }
-                        Common.ImageButton {
-                            Layout.preferredWidth: units.fingerUnit
-                            Layout.fillHeight: true
-                            image: 'floppy-35952'
-                            onClicked: {
-                                titleText.text = titleEditor.text;
-                                saveEditorContents();
-                                titleEditWidget.hideWidget();
-                                showDocumentItem.document = titleEditor.text;
-                                getDocumentDetails();
-                                documentSelected(document);
-                            }
-                        }
-                    }
+                Editors.TextAreaEditor3 {
+                    id: titleEditor
+                    height: units.fingerUnit * 6
+                    width: parent.width
+                    color: 'white'
                 }
-            }
-            Common.SuperposedWidget {
-                id: descEditWidget
 
-                anchors.fill: parent
-                anchoringItem: descEditButton
-                margins: units.nailUnit
-
-                minimumWidth: parent.width - 2 * units.fingerUnit
-                minimumHeight: units.fingerUnit * 4
-
-                onShown: descEditor.text = descText.text
-
-                Rectangle {
-                    anchors.fill: parent
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
-
-                        Editors.TextAreaEditor3 {
-                            id: descEditor
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                        }
-                        Common.ImageButton {
-                            Layout.preferredWidth: units.fingerUnit
-                            Layout.fillHeight: true
-                            image: 'floppy-35952'
-                            onClicked: {
-                                descText.text = descEditor.text;
-                                saveEditorContents();
-                                descEditWidget.hideWidget();
-                                getDocumentDetails();
-                            }
-                        }
-                    }
+                onAccepted: {
+                    titleText.text = titleEditor.text;
+                    saveEditorContents();
+                    titleEditDialog.close();
+                    showDocumentItem.document = titleEditor.text;
+                    getDocumentDetails();
+                    //documentSelected(document);
                 }
             }
 
-            Common.SuperposedWidget {
-                id: mediaTypeEditWidget
 
-                anchors.fill: parent
-                anchoringItem: mediaTypeText
-                margins: units.nailUnit
+            Common.SuperposedMenu {
+                id: descEditDialog
+                title: qsTr('Edita la descripció')
+                standardButtons: StandardButton.Save | StandardButton.Cancel
 
-                minimumWidth: parent.width - 2 * units.fingerUnit
-                minimumHeight: units.fingerUnit * 4
+                Editors.TextAreaEditor3 {
+                    id: descEditor
 
-                onShown: mediaTypeEditor.text = mediaTypeText.text
+                    height: units.fingerUnit * 6
+                    width: parent.width
+                    color: 'white'
+                }
 
-                Rectangle {
-                    anchors.fill: parent
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
-
-                        Editors.TextAreaEditor3 {
-                            id: mediaTypeEditor
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                        }
-                        Common.ImageButton {
-                            Layout.preferredWidth: units.fingerUnit
-                            Layout.fillHeight: true
-                            image: 'floppy-35952'
-                            onClicked: {
-                                mediaTypeText.text = mediaTypeEditor.text;
-                                saveEditorContents();
-                                mediaTypeEditWidget.hideWidget();
-                                getDocumentDetails();
-                            }
-                        }
-                    }
+                onAccepted: {
+                    descText.text = descEditor.text;
+                    saveEditorContents();
+                    descEditDialog.close();
+                    getDocumentDetails();
                 }
             }
+
+            Common.SuperposedMenu {
+                id: mediaTypeEditDialog
+
+                title: qsTr('Edita el tipus de mitjà')
+                standardButtons: StandardButton.Save | StandardButton.Cancel
+
+                Editors.TextAreaEditor3 {
+                    id: mediaTypeEditor
+                    height: units.fingerUnit * 6
+                    width: parent.width
+                    color: 'white'
+                }
+
+                onAccepted: {
+                    mediaTypeText.text = mediaTypeEditor.text;
+                    saveEditorContents();
+                    mediaTypeEditDialog.close();
+                    getDocumentDetails();
+                }
+            }
+
         }
     }
 
@@ -414,19 +377,20 @@ Item {
         console.log('Document', document);
 
         var obj = null;
-        if (document !== '')
+        if (document !== '') {
             obj = documentsModel.getObject(document);
 
-        if (obj !== null) {
-            title = obj['title'];
-            desc = obj['desc'];
-            mediaType = obj['type'];
-            source = obj['source'];
-            hashString = obj['hash'];
+            if (obj != null) {
+                title = obj['title'];
+                desc = obj['desc'];
+                mediaType = obj['type'];
+                source = obj['source'];
+                hashString = obj['hash'];
 
-            concurrentDocumentsModel.insertObject({document: title});
-            var now = new Date();
-            concurrentDocumentsModel.updateObject(title, {lastAccessTime: now.toISOString()});
+                concurrentDocumentsModel.insertObject({document: title});
+                var now = new Date();
+                concurrentDocumentsModel.updateObject(title, {lastAccessTime: now.toISOString()});
+            }
         }
     }
 
@@ -434,7 +398,7 @@ Item {
         var obj = {
             title: titleText.text,
             desc: descText.text,
-            type: mediaTypeEditor.text
+            type: mediaTypeText.text
         }
 
         documentsModel.updateObject(document,obj);

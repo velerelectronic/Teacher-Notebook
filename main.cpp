@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
     // Register rubric classes and types
     qmlRegisterType<RubricXml>("RubricXml", 1, 0, "RubricXml");
-    qmlRegisterType<RubricCriteria>("RubricXml", 1, 0, "RubricCriteria");
+    qmlRegisterType<RubricCriteria>("RubricXml", 1, 0, "RubricCriteriaModel");
     qmlRegisterType<RubricDescriptorsModel>("RubricXml", 1, 0, "RubricDescriptorsModel");
     qmlRegisterType<RubricPopulationModel>("RubricXml", 1, 0, "RubricPopulationModel");
 

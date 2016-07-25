@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
+import QtQuick.Dialogs 1.2
 import PersonalTypes 1.0
 import RubricXml 1.0
 
@@ -90,8 +91,9 @@ Item {
                     image: 'edit-153612'
                     size: units.fingerUnit
                     onClicked: {
+                        editRubricDetailsDialog.open();
                         // Edit rubric details
-                        editRubricDetailsMenu.showWidget();
+                        //editRubricDetailsMenu.showWidget();
                     }
                 }
 
@@ -121,20 +123,16 @@ Item {
             }
 
             Common.SuperposedMenu {
-                id: editRubricDetailsMenu
-                z: 10
+                id: editRubricDetailsDialog
+                title: qsTr('Detalls de rúbrica')
 
-                anchoringItem: parent
-                minimumWidth: units.fingerUnit * 6
-
-                headerTitle: qsTr('Detalls de rúbrica')
-                onCloseRequested: hideWidget()
+                standardButtons: StandardButton.Close
 
                 Common.SuperposedMenuEntry {
                     text: qsTr('Títol')
                     onClicked: {
-                        editRubricDetailsMenu.hideWidget();
-                        editTitleMenu.showWidget();
+                        editRubricDetailsDialog.close();
+                        editTitleDialog.open();
                         titleEditorItem.content = rubricTitle;
                     }
                 }
@@ -142,62 +140,33 @@ Item {
                 Common.SuperposedMenuEntry {
                     text: qsTr('Descripció')
                     onClicked: {
-                        editRubricDetailsMenu.hideWidget();
-                        editDescriptionMenu.showWidget();
+                        editRubricDetailsDialog.close();
+                        editDescriptionDialog.open();
                         descriptionEditorItem.content = rubricDesc;
                     }
                 }
             }
 
             Common.SuperposedMenu {
-                id: editTitleMenu
-                anchoringItem: parent
-                minimumWidth: parent.width / 2
-                headerTitle: qsTr('Edita el títol')
-                onCloseRequested: hideWidget()
+                id: editTitleDialog
+                title: qsTr('Edita el títol')
+                standardButtons: StandardButton.Save | StandardButton.Cancel
 
                 Editors.TextLineEditor {
                     id: titleEditorItem
                     width: parent.width
-                    height: units.fingerUnit * 1.5
-                }
-                Rectangle {
-                    width: parent.width
                     height: units.fingerUnit * 2
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
+                }
 
-                        spacing: units.fingerUnit
-                        Item {
-                            Layout.fillWidth: true
-                        }
-
-                        Common.TextButton {
-                            Layout.fillHeight: true
-                            text: qsTr('Desa')
-                            onClicked: {
-                                rubricXmlModel.title = titleEditorItem.content;
-                                editTitleMenu.hideWidget();
-                            }
-                        }
-                        Common.TextButton {
-                            Layout.fillHeight: true
-                            text: qsTr('Descarta')
-                            onClicked: {
-                                editTitleMenu.hideWidget();
-                            }
-                        }
-                    }
+                onAccepted: {
+                    rubricXmlModel.title = titleEditorItem.content;
                 }
             }
 
             Common.SuperposedMenu {
-                id: editDescriptionMenu
-                anchoringItem: parent
-                minimumWidth: parent.width / 2
-                headerTitle: qsTr('Edita la descripció')
-                onCloseRequested: hideWidget()
+                id: editDescriptionDialog
+                title: qsTr('Edita la descripció')
+                standardButtons: StandardButton.Save | StandardButton.Cancel
 
                 Editors.TextAreaEditor3 {
                     id: descriptionEditorItem
@@ -205,34 +174,9 @@ Item {
                     height: units.fingerUnit * 6
                     color: 'white'
                 }
-                Rectangle {
-                    width: parent.width
-                    height: units.fingerUnit * 2
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
 
-                        spacing: units.fingerUnit
-                        Item {
-                            Layout.fillWidth: true
-                        }
-
-                        Common.TextButton {
-                            Layout.fillHeight: true
-                            text: qsTr('Desa')
-                            onClicked: {
-                                rubricXmlModel.description = descriptionEditorItem.content;
-                                editDescriptionMenu.hideWidget();
-                            }
-                        }
-                        Common.TextButton {
-                            Layout.fillHeight: true
-                            text: qsTr('Descarta')
-                            onClicked: {
-                                editDescriptionMenu.hideWidget();
-                            }
-                        }
-                    }
+                onAccepted: {
+                    rubricXmlModel.description = descriptionEditorItem.content;
                 }
             }
         }
@@ -337,6 +281,13 @@ Item {
                         color: 'yellow'
                     }
                     highlightFollowsCurrentItem: true
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            subPanelItem.load(qsTr('Població de la rúbrica'), 'rubrics/RubricPopulation', {population: rubricXmlModel.population});
+                        }
+                    }
                 }
 
                 ListView {
@@ -390,6 +341,13 @@ Item {
                         color: 'yellow'
                     }
                     highlightFollowsCurrentItem: true
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            subPanelItem.load(qsTr("Criteris d'avaluació"), 'rubrics/RubricCriteria', {criteria: rubricXmlModel.criteria});
+                        }
+                    }
                 }
 
                 Rectangle {
@@ -541,6 +499,65 @@ Item {
             }
         }
     }
+
+    Dialog {
+        id: subPanelItem
+
+        function load(title, page, args) {
+            subPanelItem.title = title;
+            subPanelLoader.setSource("qrc:///modules/" + page + ".qml", args);
+            subPanelItem.open();
+        }
+
+        property string title: ''
+
+        contentItem: Rectangle {
+//            id: subPanelItem
+            z: 3
+            implicitHeight: rubricRectangle.height * 0.8
+            implicitWidth: rubricRectangle.width * 0.8
+//            visible: subPanelItem.enabled
+//            enabled: false
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+                spacing: units.nailUnit
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit * 2
+                    RowLayout {
+                        anchors.fill: parent
+                        spacing: units.nailUnit
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            text: subPanelItem.title
+                        }
+                        Common.ImageButton {
+                            Layout.fillHeight: true
+                            image: 'road-sign-147409'
+                            onClicked: subPanelItem.close()
+                        }
+                    }
+                }
+
+                Loader {
+                    id: subPanelLoader
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                }
+            }
+
+        }
+
+    }
+
 
     Component {
         id: valuesTextComponent

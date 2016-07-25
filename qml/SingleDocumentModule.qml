@@ -49,6 +49,10 @@ BasicPage {
             documentsListSelected(document);
         }
 
+        onDocumentRemoved: {
+            documentsListSelected('');
+        }
+
         onDocumentSelected: {
             documentId = document;
             documentSelected();
@@ -92,13 +96,11 @@ BasicPage {
     Common.SuperposedMenu {
         id: supermenu
 
-        entries: [
             Loader {
                 id: menuLoader
                 width: parent.width
                 height: parent.height * 2 / 3
             }
-        ]
     }
 
     Component.onCompleted: {

@@ -1,63 +1,55 @@
 import QtQuick 2.5
 import QtQml.Models 2.2
 import QtQuick.Layouts 1.1
+import QtQuick.Dialogs 1.2
 import 'qrc:///common' as Common
 
-Common.SuperposedWidget {
+Dialog {
     id: superposedMenu
 
-    minimumHeight: menuList.contentItem.height
-
-    glowColor: 'black'
-
-    signal closeRequested()
-
-    property string headerTitle
     default property alias entries: menuEntriesModel.children
 
-    onCloseRequested: hideWidget()
+    standardButtons: StandardButton.Close
 
-    ListView {
-        id: menuList
-        anchors.fill: parent
+    Rectangle {
+        height: menuList.contentItem.height
+        width: parent.width
 
-        headerPositioning: ListView.OverlayHeader
+        ListView {
+            id: menuList
+            anchors.fill: parent
 
-        interactive: false
+            headerPositioning: ListView.OverlayHeader
 
-        header: Rectangle {
-            width: menuList.width
-            height: units.fingerUnit * 2
+            interactive: false
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: units.nailUnit
-                spacing: units.nailUnit
+            header: Rectangle {
+                width: menuList.width
+                height: units.fingerUnit * 2
 
-                Text {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    font.bold: true
-                    font.pixelSize: units.readUnit
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: headerTitle
-                }
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    spacing: units.nailUnit
 
-                Common.ImageButton {
-                    image: 'road-sign-147409'
-                    Layout.fillHeight: true
-                    onClicked: superposedMenu.closeRequested()
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        font.bold: true
+                        font.pixelSize: units.readUnit
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        text: superposedMenu.title
+                    }
                 }
             }
 
-        }
+            model: ObjectModel {
+                id: menuEntriesModel
+            }
 
-        model: ObjectModel {
-            id: menuEntriesModel
+            spacing: units.nailUnit
         }
-
-        spacing: units.nailUnit
     }
 }

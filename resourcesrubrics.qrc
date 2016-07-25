@@ -2,7 +2,6 @@
     <qresource prefix="/">
         <file>modules/rubrics/RubricAssessmentHistory.qml</file>
         <file>modules/rubrics/RubricGroupAssessment.qml</file>
-        <file>modules/rubrics/RubricGroupAssessmentCriterium.qml</file>
         <file>modules/rubrics/RubricGroupAssessmentDescriptorEditor.qml</file>
         <file>modules/rubrics/RubricsAssessmentList.qml</file>
         <file>modules/rubrics/AddRubricAssessmentComponent.qml</file>
@@ -10,5 +9,7 @@
         <file>modules/rubrics/NewRubricFile.qml</file>
         <file>modules/rubrics/ExportRubricToXml.qml</file>
         <file>modules/rubrics/XmlRubricSave.qml</file>
+        <file>modules/rubrics/RubricPopulation.qml</file>
+        <file>modules/rubrics/RubricCriteria.qml</file>
     </qresource>
 </RCC>
