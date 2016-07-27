@@ -27,12 +27,6 @@ Item {
     property int contentsHeight: units.fingerUnit * 2
     property int contentsWidth: units.fingerUnit * 2
 
-    signal rubricAssessmentRubricEdit()
-    signal rubricAssessmentDetailsEdit()
-    signal rubricAssessmentAnnotationEdit()
-    signal rubricAssessmentGroupEdit()
-    signal rubricAssessmentCriteriumSelected(int criterium)
-
     Common.UseUnits {
         id: units
     }
@@ -226,11 +220,6 @@ Item {
                             text: rubricDesc
                         }
                     }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: rubricDetailsEdit(rubric,rubricTitle,rubricDesc,rubricsModel)
-                    }
                 }
 
                 ListView {
@@ -248,12 +237,10 @@ Item {
                     delegate: Rectangle {
                         id: horizontalHeadingCell
 
-                        property bool selectedCell: false
-
                         height: sectionsHeight
                         width: horizontalHeading.columnWidth
                         border.color: 'black'
-                        color: 'transparent'
+                        color: '#CEF6E3'
                         Text {
                             anchors {
                                 fill: parent
@@ -267,20 +254,7 @@ Item {
                             font.bold: true
                             text: model.name
                         }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                horizontalHeading.currentIndex = model.index;
-                                editRubricAssessmentByIndividual(assessment,model.id);
-                            }
-                        }
                     }
-
-                    highlight: Rectangle {
-                        color: 'yellow'
-                    }
-                    highlightFollowsCurrentItem: true
 
                     MouseArea {
                         anchors.fill: parent
@@ -309,7 +283,7 @@ Item {
                         height: verticalHeading.rowHeight
                         width: verticalHeading.width
                         border.color: 'black'
-                        color: 'transparent'
+                        color: '#F3E2A9'
                         RowLayout {
                             anchors.fill: parent
                             anchors.margins: units.nailUnit
@@ -327,20 +301,7 @@ Item {
                                 text: model.weight
                             }
                         }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                verticalHeading.currentIndex = model.index;
-                                rubricAssessmentCriteriumSelected(model.id);
-                            }
-                        }
                     }
-
-                    highlight: Rectangle {
-                        color: 'yellow'
-                    }
-                    highlightFollowsCurrentItem: true
 
                     MouseArea {
                         anchors.fill: parent
@@ -449,6 +410,12 @@ Item {
                         }
                     }
 
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            subPanelItem.load(qsTr('Avalua'), 'rubrics/FixedCriteriumRubricAssessment', {rubricModel: rubricXmlModel});
+                        }
+                    }
                 }
 
                 Rectangle {
@@ -593,6 +560,19 @@ Item {
                 mainItem.text = info;
 
             }
+        }
+    }
+
+    Common.SuperposedMenu {
+        id: evaluationDialog
+
+        title: qsTr('Avalua')
+
+        Common.SuperposedMenuEntry {
+            text: qsTr("Per criteris d'avaluació")
+        }
+        Common.SuperposedMenuEntry {
+            text: qsTr('Per individus de la població')
         }
     }
 
