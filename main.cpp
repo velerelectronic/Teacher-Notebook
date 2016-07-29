@@ -1,6 +1,15 @@
+#include <QApplication>
+#include <Qt>
+#include <QtCore>
+#include <QWidget>
+#include <QStandardPaths>
+
 #include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QtQml>
+#include <QtQml/QtQml>
+#include <QtQml/QQmlApplicationEngine>
+
+//#include <QtQml>
+
 
 #include "fileio.h"
 #include "xmlmodel.h"

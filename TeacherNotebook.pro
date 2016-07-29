@@ -1,10 +1,11 @@
 TEMPLATE = app
 
-QT += qml \
-    quick \
+QT += core \
+    gui \
     sql \
     xml xmlpatterns svg \
-    multimedia
+    multimedia \
+    qml
 
 SOURCES += main.cpp \
     fileio.cpp \

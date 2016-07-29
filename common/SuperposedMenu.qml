@@ -12,7 +12,7 @@ Dialog {
     standardButtons: StandardButton.Close
 
     Rectangle {
-        height: menuList.contentItem.height
+        implicitHeight: menuList.contentItem.height
         width: parent.width
 
         ListView {

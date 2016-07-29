@@ -4,8 +4,8 @@
 
 #include <QtGui/QGuiApplication>
 #include <QClipboard>
-#include <QQmlExtensionPlugin>
-#include <QQmlExtensionInterface>
+#include <QtQml/QQmlExtensionInterface>
+#include <QtQml/QQmlExtensionPlugin>
 #include <QObject>
 
 class QmlClipboardAdapter : public QObject
