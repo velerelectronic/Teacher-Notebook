@@ -33,6 +33,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
             orientation: ListView.Horizontal
+
             interactive: false
             keyNavigationWraps: false
             clip: true

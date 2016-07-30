@@ -11,6 +11,7 @@ import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.1
 import QtQuick.Dialogs 1.1
 import Qt.labs.folderlistmodel 2.1
+import QtQml.Models 2.2
 import FileIO 1.0
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
@@ -90,14 +91,16 @@ Item {
                     Layout.fillHeight: true
                     Layout.preferredWidth: buttonsList.requiredWidth
 
-                    Buttons.MainButton {
-                        image: 'computer-31223'
-                        onClicked: gotoParentFolder()
-                    }
+                    buttons: ObjectModel {
+                        Buttons.MainButton {
+                            image: 'computer-31223'
+                            onClicked: gotoParentFolder()
+                        }
 
-                    Buttons.MainButton {
-                        image: 'info-147927'
-                        onClicked: toggleDetails()
+                        Buttons.MainButton {
+                            image: 'info-147927'
+                            onClicked: toggleDetails()
+                        }
                     }
                 }
             }

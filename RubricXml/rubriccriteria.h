@@ -46,6 +46,7 @@ public:
     Q_INVOKABLE bool        append(QVariantMap values);
     int                     count();
     Q_INVOKABLE RubricDescriptorsModel *descriptors(int index);
+    Q_INVOKABLE QVariantMap get(int index);
     void                    setDomRoot(QDomElement domroot);
 
 signals:
@@ -57,6 +58,7 @@ private:
 
     QDomElement             innerRubricDomRoot;
     RubricXml               *innerRubricXmlParent;
+    QHash<int, QByteArray>  innerRoles;
 };
 
 #endif // RUBRICCRITERIA_H

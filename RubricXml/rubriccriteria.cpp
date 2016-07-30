@@ -6,6 +6,13 @@
 
 RubricCriteria::RubricCriteria(RubricXml *parent) : QAbstractListModel(parent) {
     innerRubricXmlParent = parent;
+
+    innerRoles[Identifier] = "identifier";
+    innerRoles[Title] = "title";
+    innerRoles[Description] = "description";
+    innerRoles[Weight] = "weight";
+    innerRoles[Order] = "order";
+    innerRoles[Descriptors] = "descriptors";
 }
 
 RubricCriteria::RubricCriteria(const RubricCriteria &original) {
@@ -88,6 +95,15 @@ QString RubricCriteria::fieldNameForRole(int role) const {
     }
 }
 
+QVariantMap RubricCriteria::get(int index) {
+    QVariantMap result;
+    int i;
+    for (i=Qt::UserRole+1; i<=Qt::UserRole+6; i++) {
+        result.insert(QString(innerRoles[i]), RubricCriteria::data(this->createIndex(index,i), i));
+    }
+    return result;
+}
+
 bool RubricCriteria::insertRows(int row, int count, const QModelIndex &parent) {
     return false;
 }
@@ -98,14 +114,7 @@ bool RubricCriteria::removeRows(int row, int count, const QModelIndex &parent) {
 }
 
 QHash <int, QByteArray> RubricCriteria::roleNames() const {
-    QHash<int, QByteArray> roles;
-    roles[Identifier] = "identifier";
-    roles[Title] = "title";
-    roles[Description] = "description";
-    roles[Weight] = "weight";
-    roles[Order] = "order";
-    roles[Descriptors] = "descriptors";
-    return roles;
+    return innerRoles;
 }
 
 int RubricCriteria::rowCount(const QModelIndex &parent) const {

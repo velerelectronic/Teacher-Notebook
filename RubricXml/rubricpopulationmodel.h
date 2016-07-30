@@ -35,6 +35,7 @@ public:
 
     // Specific of this new class
     int                     count();
+    Q_INVOKABLE QVariantMap get(int index);
     void                    setDomRoot(QDomElement domroot);
     Q_INVOKABLE bool        append(QVariantMap values);
 
@@ -45,6 +46,7 @@ public slots:
 
 private:
     QDomElement             innerPopulationDomRoot;
+    QHash<int, QByteArray>  innerRoles;
 
 };
 Q_DECLARE_METATYPE(RubricPopulationModel)

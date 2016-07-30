@@ -5,7 +5,12 @@
 #include "rubriccriteria.h"
 
 RubricDescriptorsModel::RubricDescriptorsModel(QAbstractListModel *parent) : QAbstractListModel(parent) {
-
+    innerRoles[Title] = "title";
+    innerRoles[Description] = "description";
+    innerRoles[Level] = "level";
+    innerRoles[Definition] = "definition";
+    innerRoles[Score] = "score";
+    innerRoles[Identifier] = "identifier";
 }
 
 RubricDescriptorsModel::RubricDescriptorsModel(const RubricDescriptorsModel &original) {
@@ -52,6 +57,8 @@ Qt::ItemFlags RubricDescriptorsModel::flags(const QModelIndex &index) const {
 
 QString RubricDescriptorsModel::fieldNameForRole(int role) const {
     switch (role) {
+    case Identifier:
+        return "identifier";
     case Title:
         return "title";
     case Description:
@@ -67,6 +74,16 @@ QString RubricDescriptorsModel::fieldNameForRole(int role) const {
     }
 }
 
+QVariantMap RubricDescriptorsModel::get(int index) {
+    QVariantMap result;
+    int i;
+    for (i=Qt::UserRole+1; i<=Qt::UserRole+6; i++) {
+        result.insert(QString(innerRoles[i]), RubricDescriptorsModel::data(this->createIndex(index,i), i));
+    }
+    return result;
+}
+
+
 bool RubricDescriptorsModel::insertRows(int row, int count, const QModelIndex &parent) {
     return false;
 }
@@ -77,13 +94,7 @@ bool RubricDescriptorsModel::removeRows(int row, int count, const QModelIndex &p
 }
 
 QHash <int, QByteArray> RubricDescriptorsModel::roleNames() const {
-    QHash<int, QByteArray> roles;
-    roles[Title] = "title";
-    roles[Description] = "description";
-    roles[Level] = "level";
-    roles[Definition] = "definition";
-    roles[Score] = "score";
-    return roles;
+    return innerRoles;
 }
 
 int RubricDescriptorsModel::rowCount(const QModelIndex &parent) const {

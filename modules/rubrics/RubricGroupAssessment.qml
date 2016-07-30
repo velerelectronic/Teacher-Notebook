@@ -472,11 +472,18 @@ Item {
 
         function load(title, page, args) {
             subPanelItem.title = title;
+            subPanelLoader.sourceComponent = undefined;
             subPanelLoader.setSource("qrc:///modules/" + page + ".qml", args);
             subPanelItem.open();
         }
 
         property string title: ''
+
+        standardButtons: StandardButton.Close
+
+        onRejected: {
+            console.log('hola');
+        }
 
         contentItem: Rectangle {
 //            id: subPanelItem
@@ -518,6 +525,11 @@ Item {
                     id: subPanelLoader
                     Layout.fillHeight: true
                     Layout.fillWidth: true
+
+                    Connections {
+                        target: subPanelLoader.item
+                        onClose: subPanelItem.close()
+                    }
                 }
             }
 
@@ -574,6 +586,75 @@ Item {
         Common.SuperposedMenuEntry {
             text: qsTr('Per individus de la població')
         }
+    }
+
+    Common.SuperposedMenu {
+        id: otherActionsDialog
+
+        title: qsTr('Altres accions')
+
+        Common.SuperposedMenuEntry {
+            text: qsTr('Detalls...')
+
+            onClicked: {
+                otherActionsDialog.close();
+                editRubricDetailsDialog.open();
+            }
+        }
+
+        Common.SuperposedMenuEntry {
+            text: qsTr('Població...')
+
+            onClicked: {
+                otherActionsDialog.close();
+                subPanelItem.load(qsTr('Població de la rúbrica'), 'rubrics/RubricPopulation', {population: rubricXmlModel.population});
+            }
+        }
+
+        Common.SuperposedMenuEntry {
+            text: qsTr("Criteris d'avaluació...")
+
+            onClicked: {
+                otherActionsDialog.close();
+                subPanelItem.load(qsTr("Criteris d'avaluació"), 'rubrics/RubricCriteria', {criteria: rubricXmlModel.criteria});
+            }
+        }
+
+        Common.SuperposedMenuEntry {
+            text: qsTr("Avalua...")
+
+            onClicked: {
+                otherActionsDialog.close();
+                subPanelItem.load(qsTr('Avalua'), 'rubrics/FixedCriteriumRubricAssessment', {rubricModel: rubricXmlModel});
+            }
+        }
+
+        Common.SuperposedMenuEntry {
+            text: qsTr('Desa els canvis')
+
+            onClicked: {
+                otherActionsDialog.close();
+                if (rubricXmlModel.saveXmlIntoFile()) {
+
+                }
+            }
+        }
+
+        Common.SuperposedMenuEntry {
+            text: qsTr('Exporta a HTML...')
+            onClicked: {
+                otherActionsDialog.close();
+                subPanelItem.load(qsTr('Exporta la rúbrica a HTML'), 'rubrics/RubricExportHtml', {rubricModel: rubricXmlModel});
+            }
+        }
+
+        Common.SuperposedMenuEntry {
+            text: qsTr('Duplica rúbrica...')
+        }
+    }
+
+    function openOtherActionsMenu() {
+        otherActionsDialog.open();
     }
 
     Component.onCompleted: {

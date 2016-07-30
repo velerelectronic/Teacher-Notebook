@@ -21,7 +21,7 @@ Rectangle {
 
         spacing: units.nailUnit
 
-        model: population
+        model: population // population
 
         clip: true
 
@@ -88,7 +88,14 @@ Rectangle {
 
         onAccepted: {
             if (newIndividualIdentifier.content !== "")
-                population.append({identifier: newIndividualIdentifier.content, name: newIndividualIdentifier.content, group: '', score: '', surname: ''});
+                population.append(
+                            {
+                                identifier: newIndividualIdentifier.content,
+                                name: newIndividualIdentifier.content,
+                                group: '',
+                                faceImage: '',
+                                surname: ''
+                            });
         }
     }
 }

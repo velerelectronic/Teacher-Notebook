@@ -71,6 +71,16 @@ void RubricXml::loadXml() {
     emit xmlChanged();
 }
 
+bool RubricXml::saveXmlIntoFile() {
+    QFile xfile(innerSource);
+
+    if (xfile.open(QIODevice::WriteOnly)) {
+        if (xfile.write(document.toString().toUtf8())>-1)
+            return true;
+    }
+    return false;
+}
+
 void RubricXml::setDescription(QString description) {
     document.elementsByTagName("rubric").at(0).toElement().setAttribute("description", description);
     descriptionChanged();

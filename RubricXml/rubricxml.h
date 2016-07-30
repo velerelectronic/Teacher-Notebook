@@ -37,6 +37,7 @@ public:
     Q_INVOKABLE void    createEmptyRubric();
     Q_INVOKABLE QVariantList getDescriptors(int criterium);
     Q_INVOKABLE void loadXml();
+    Q_INVOKABLE bool saveXmlIntoFile();
     Q_INVOKABLE void setDescriptors(const QVariantList &map);
 
     // Getters

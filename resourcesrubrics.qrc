@@ -12,5 +12,6 @@
         <file>modules/rubrics/RubricCriteria.qml</file>
         <file>modules/rubrics/FixedCriteriumRubricAssessment.qml</file>
         <file>modules/rubrics/FixedIndividualRubricAssessment.qml</file>
+        <file>modules/rubrics/RubricExportHtml.qml</file>
     </qresource>
 </RCC>

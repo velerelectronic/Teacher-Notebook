@@ -22,7 +22,7 @@ public:
         Individual = Qt::UserRole + 2,
         Descriptor = Qt::UserRole + 3,
         Comment = Qt::UserRole + 4,
-        Time = Qt::UserRole + 5
+        Moment = Qt::UserRole + 5
     };
 
     explicit RubricAssessmentModel(RubricXml *parent = 0);

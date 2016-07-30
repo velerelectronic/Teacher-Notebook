@@ -9,7 +9,7 @@ RubricAssessmentModel::RubricAssessmentModel(RubricXml *parent) : QAbstractListM
     innerRoles[Individual] = "individual";
     innerRoles[Descriptor] = "descriptor";
     innerRoles[Comment] = "comment";
-    innerRoles[Time] = "time";
+    innerRoles[Moment] = "moment";
 }
 
 RubricAssessmentModel::RubricAssessmentModel(const RubricAssessmentModel &original) {
@@ -56,8 +56,8 @@ QVariant RubricAssessmentModel::data(const QModelIndex &index, int role = Qt::Di
     case Comment:
         attribute = "comment";
         break;
-    case Time:
-        attribute = "time";
+    case Moment:
+        attribute = "moment";
         break;
     default:
         break;
@@ -76,7 +76,6 @@ QVariantMap RubricAssessmentModel::get(int index) {
     for (i=Qt::UserRole+1; i<=Qt::UserRole+5; i++) {
         result.insert(QString(innerRoles[i]), RubricAssessmentModel::data(this->createIndex(index,i), i));
     }
-    qDebug() << "GET::" << result;
     return result;
 }
 

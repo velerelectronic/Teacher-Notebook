@@ -4,7 +4,9 @@
 #include <QDebug>
 
 RubricPopulationModel::RubricPopulationModel(QObject *parent) : QAbstractListModel(parent) {
-
+    innerRoles[GroupName] = "group";
+    innerRoles[Identifier] = "identifier";
+    innerRoles[Name] = "name";
 }
 
 RubricPopulationModel::RubricPopulationModel(const RubricPopulationModel &original) {
@@ -52,6 +54,16 @@ Qt::ItemFlags RubricPopulationModel::flags(const QModelIndex &index) const {
     return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemNeverHasChildren;
 }
 
+
+QVariantMap RubricPopulationModel::get(int index) {
+    QVariantMap result;
+    int i;
+    for (i=Qt::UserRole+1; i<=Qt::UserRole+3; i++) {
+        result.insert(QString(innerRoles[i]), RubricPopulationModel::data(this->createIndex(index,i), i));
+    }
+    return result;
+}
+
 bool RubricPopulationModel::insertRows(int row, int count, const QModelIndex &parent) {
     return false;
 }
@@ -62,11 +74,7 @@ bool RubricPopulationModel::removeRows(int row, int count, const QModelIndex &pa
 }
 
 QHash <int, QByteArray> RubricPopulationModel::roleNames() const {
-    QHash<int, QByteArray> roles;
-    roles[GroupName] = "group";
-    roles[Identifier] = "identifier";
-    roles[Name] = "name";
-    return roles;
+    return innerRoles;
 }
 
 int RubricPopulationModel::rowCount(const QModelIndex &parent) const {

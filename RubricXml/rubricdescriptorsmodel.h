@@ -13,11 +13,12 @@ class RubricDescriptorsModel: public QAbstractListModel {
 
 public:
     enum DescriptorRoles {
-        Title = Qt::UserRole + 1,
-        Description = Qt::UserRole + 2,
-        Level = Qt::UserRole + 3,
-        Definition = Qt::UserRole + 4,
-        Score = Qt::UserRole + 5
+        Identifier = Qt::UserRole + 1,
+        Title = Qt::UserRole + 2,
+        Description = Qt::UserRole + 3,
+        Level = Qt::UserRole + 4,
+        Definition = Qt::UserRole + 5,
+        Score = Qt::UserRole + 6
     };
 
     explicit RubricDescriptorsModel(QAbstractListModel *parent = 0);
@@ -36,6 +37,7 @@ public:
 
     // Specific of this new class
     int                     count();
+    Q_INVOKABLE QVariantMap get(int index);
     void                    setDomRoot(QDomElement domroot);
 
     Q_INVOKABLE bool        append(QVariantMap values);
@@ -47,6 +49,7 @@ private:
     QString         fieldNameForRole(int role) const;
 
     QDomElement             innerCriteriumDomRoot;
+    QHash<int, QByteArray>  innerRoles;
 };
 
 Q_DECLARE_METATYPE(RubricDescriptorsModel)

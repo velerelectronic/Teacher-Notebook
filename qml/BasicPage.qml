@@ -27,16 +27,12 @@ Item {
 
     property alias buttonsModel: buttonsList.buttons
 
+
     property bool pageClosable: true
 
     function setSource(source, parameters) {
         basicPageLocation.setSource(source, parameters);
     }
-
-    function invokeSubPageFunction(method, parameters) {
-        return basicPageLoader.item[method](parameters);
-    }
-
 
     ColumnLayout {
         anchors.fill: parent
@@ -175,26 +171,6 @@ Item {
                     leftMargin: anchors.bottomMargin
                     rightMargin: anchors.bottomMargin
                 }
-
-                Connections {
-                    target: subPageloader.item
-                    onButtonsModelChanged: subPageloader.copyButtonsModel()
-                }
-                onLoaded: {
-                    subPageloader.copyButtonsModel();
-                }
-
-                function copyButtonsModel() {
-                    console.log('copying buttons model');
-                    basicPageItem.buttonsModel.clear();
-                    if ((item !== null) && (typeof item.buttons !== 'undefined')) {
-                        var buttonsModel = item.buttonsModel;
-                        for (var i=0; i<buttonsModel.count; i++) {
-                            console.log(buttonsModel.count, i);
-                            basicPageItem.buttonsModel.append(buttonsModel.get(i));
-                        }
-                    }
-                }
             }
 
         }
@@ -248,7 +224,7 @@ Item {
     }
 
     Component.onCompleted: {
-//        buttonsModel.append({icon: 'magnifying-glass-481818', object: basicPageItem, method: 'lookFor'});
+
     }
 }
 
