@@ -5,8 +5,9 @@ import Qt.labs.folderlistmodel 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
+import 'qrc:///modules/basic' as Basic
 
-BasicPage {
+Basic.BasicPage {
     id: backup
     pageTitle: qsTr('Gestor de dades')
     property string document: ''

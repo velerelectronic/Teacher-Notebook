@@ -4,9 +4,11 @@ import QtQml.Models 2.2
 import PersonalTypes 1.0
 import 'qrc:///models' as Models
 import 'qrc:///common' as Common
+import 'qrc:///modules/basic' as Basic
 import 'qrc:///modules/buttons' as Buttons
+import 'qrc:///modules/documents' as Documents
 
-BasicPage {
+Basic.BasicPage {
     id: documentsModule
 
     pageTitle: qsTr('Vista de document')
@@ -17,8 +19,6 @@ BasicPage {
     signal showDocumentSource()
     signal showSelectFile()
     signal showRubric(string rubricFile)
-
-    property var sharedObject: null
 
     property string documentId: ""
     property string documentSource: ''
@@ -86,25 +86,15 @@ BasicPage {
         }
     }
 
-    ObjectModel {
+    buttonsModel: ObjectModel {
         Buttons.MainButton {
             image: 'list-153185'
             onClicked: documentsModule.reopenDocumentsList()
         }
     }
 
-    Common.SuperposedMenu {
-        id: supermenu
-
-            Loader {
-                id: menuLoader
-                width: parent.width
-                height: parent.height * 2 / 3
-            }
-    }
-
-    Component.onCompleted: {
-        setSource('qrc:///modules/documents/ShowDocument.qml', {document: documentId});
+    sourceComponent: Documents.ShowDocument {
+        document: documentId
     }
 
     function reopenDocumentsList() {

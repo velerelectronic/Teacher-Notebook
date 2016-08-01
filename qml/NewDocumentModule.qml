@@ -5,13 +5,14 @@ import FileIO 1.0
 import CryptographicHash 1.0
 
 import 'qrc:///common' as Common
+import 'qrc:///modules/basic' as Basic
 import 'qrc:///modules/files' as Files
 import 'qrc:///modules/documents' as Documents
 import 'qrc:///models' as Models
 import "qrc:///javascript/Storage.js" as Storage
 
 
-BasicPage {
+Basic.BasicPage {
     id: addNewDocumentItem
 
     pageTitle: qsTr('Afegir un nou document')

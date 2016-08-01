@@ -1,9 +1,10 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.1
+import 'qrc:///modules/basic' as Basic
 import 'qrc:///common' as Common
 
 
-BasicPage {
+Basic.BasicPage {
     pageTitle: qsTr('Rellotge');
 
     Common.UseUnits { id: units }

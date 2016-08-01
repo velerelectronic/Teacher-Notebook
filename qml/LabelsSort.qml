@@ -5,10 +5,11 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 import 'qrc:///models' as Models
+import 'qrc:///modules/basic' as Basic
 import "qrc:///javascript/Storage.js" as Storage
 import "qrc:///common/FormatDates.js" as FormatDates
 
-BasicPage {
+Basic.BasicPage {
     id: labelsSortPage
     pageTitle: qsTr('Ordenacions');
 

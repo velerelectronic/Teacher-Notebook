@@ -212,11 +212,16 @@ Window {
         signal openSingleDocument()
         signal openSingleRubric()
 
+        signal hola(string document)
+
         DSM.State {
             id: mainMenuState
 
+            // Main options
+
             onEntered: {
                 workingSpace.loadSubPage('MenuPageModule', {});
+//                workingSpace.item.documentSelected.connect(appStateMachine.hola);
             }
 
             DSM.SignalTransition {
@@ -225,6 +230,11 @@ Window {
             }
 
             DSM.SignalTransition {
+                //signal: workingSpace.item.documentSelected
+                //onTriggered: {
+                //    console.log('hola2', document)
+                //}
+
                 signal: appStateMachine.openSingleDocument
                 targetState: singleDocumentState
             }
@@ -241,156 +251,135 @@ Window {
         }
 
         DSM.State {
-            id: documentsListState
+            id: specificTaskPageState
 
-            onEntered: {
-                workingSpace.loadSubPage('DocumentsListModule', {documentId: appStateMachine.document});
-            }
+            // Specific pages for specific tasks
 
-            DSM.SignalTransition {
-                signal: appStateMachine.openMainPage
-                targetState: mainMenuState
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openSingleDocument
-                targetState: singleDocumentState
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openNewDocument
-                targetState: newDocumentState
-            }
-        }
-
-        DSM.State {
-            id: singleDocumentState
-
-            onEntered: {
-                workingSpace.loadSubPage('SingleDocumentModule', {documentId: appStateMachine.document});
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openDocumentsList
-                targetState: documentsListState
-            }
+            initialState: documentsListState
 
             DSM.SignalTransition {
                 signal: appStateMachine.openMainPage
                 targetState: mainMenuState
             }
 
-            DSM.SignalTransition {
-                signal: appStateMachine.openSingleRubric
-                targetState: singleRubricState
+            DSM.State {
+                id: documentsListState
+
+                onEntered: {
+                    workingSpace.loadSubPage('DocumentsListModule', {documentId: appStateMachine.document});
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openSingleDocument
+                    targetState: singleDocumentState
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openNewDocument
+                    targetState: newDocumentState
+                }
             }
+
+            DSM.State {
+                id: singleDocumentState
+
+                onEntered: {
+                    workingSpace.loadSubPage('SingleDocumentModule', {documentId: appStateMachine.document});
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openDocumentsList
+                    targetState: documentsListState
+                }
+
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openSingleRubric
+                    targetState: singleRubricState
+                }
+            }
+
+            DSM.State {
+                id: newDocumentState
+
+                onEntered: {
+                    workingSpace.loadSubPage('NewDocumentModule', {});
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openSingleDocument
+                    targetState: singleDocumentState
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openDocumentsList
+                    targetState: documentsListState
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openNewDocument
+                    targetState: newDocumentState
+                }
+            }
+
+            DSM.State {
+                id: annotationsListState
+
+                onEntered: {
+                    workingSpace.loadSubPage('AnnotationsListModule', {annotation: appStateMachine.annotation});
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openSingleAnnotation
+                    targetState: singleAnnotationState
+                }
+            }
+
+            DSM.State {
+                id: singleAnnotationState
+
+                onEntered: {
+                    workingSpace.loadSubPage('SingleAnnotationModule', {annotation: appStateMachine.annotation});
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openAnnotationsList
+                    targetState: annotationsListState
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openSingleRubric
+                    targetState: singleRubricState
+                }
+            }
+
+            DSM.State {
+                id: rubricsListState
+
+                onEntered: {
+                    workingSpace.loadSubPage('RubricsListModule', {rubricFile: appStateMachine.rubricFile});
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openSingleRubric
+                    targetState: singleRubricState
+                }
+            }
+
+            DSM.State {
+                id: singleRubricState
+
+                onEntered: {
+                    workingSpace.loadSubPage('RubricModule', {rubricFile: appStateMachine.rubricFile});
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openRubricsList
+                    targetState: rubricsListState
+                }
+            }
+
         }
-
-        DSM.State {
-            id: newDocumentState
-
-            onEntered: {
-                workingSpace.loadSubPage('NewDocumentModule', {});
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openMainPage
-                targetState: mainMenuState
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openSingleDocument
-                targetState: singleDocumentState
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openDocumentsList
-                targetState: documentsListState
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openNewDocument
-                targetState: newDocumentState
-            }
-        }
-
-        DSM.State {
-            id: annotationsListState
-
-            onEntered: {
-                workingSpace.loadSubPage('AnnotationsListModule', {annotation: appStateMachine.annotation});
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openSingleAnnotation
-                targetState: singleAnnotationState
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openMainPage
-                targetState: mainMenuState
-            }
-        }
-
-        DSM.State {
-            id: singleAnnotationState
-
-            onEntered: {
-                workingSpace.loadSubPage('SingleAnnotationModule', {annotation: appStateMachine.annotation});
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openAnnotationsList
-                targetState: annotationsListState
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openMainPage
-                targetState: mainMenuState
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openSingleRubric
-                targetState: singleRubricState
-            }
-        }
-
-        DSM.State {
-            id: rubricsListState
-
-            onEntered: {
-                workingSpace.loadSubPage('RubricsListModule', {rubricFile: appStateMachine.rubricFile});
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openSingleRubric
-                targetState: singleRubricState
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openMainPage
-                targetState: mainMenuState
-            }
-        }
-
-        DSM.State {
-            id: singleRubricState
-
-            onEntered: {
-                workingSpace.loadSubPage('RubricModule', {rubricFile: appStateMachine.rubricFile});
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openRubricsList
-                targetState: rubricsListState
-            }
-
-            DSM.SignalTransition {
-                signal: appStateMachine.openMainPage
-                targetState: mainMenuState
-            }
-        }
-
     }
 
     Component.onCompleted: {

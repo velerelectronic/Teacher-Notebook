@@ -5,9 +5,10 @@ import Qt.labs.folderlistmodel 2.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
+import 'qrc:///modules/basic' as Basic
 import 'qrc:///components' as Components
 
-BasicPage {
+Basic.BasicPage {
     id: exportManager
 
     pageTitle: qsTr('Exportador')

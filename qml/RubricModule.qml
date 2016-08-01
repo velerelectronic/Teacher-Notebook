@@ -3,8 +3,10 @@ import QtQml.Models 2.2
 import PersonalTypes 1.0
 import 'qrc:///models' as Models
 import 'qrc:///modules/buttons' as Buttons
+import 'qrc:///modules/rubrics' as Rubrics
+import 'qrc:///modules/basic' as Basic
 
-BasicPage {
+Basic.BasicPage {
     id: rubricModule
 
     pageTitle: qsTr('Rúbrica')
@@ -20,7 +22,8 @@ BasicPage {
         }
     }
 
-    Component.onCompleted: {
-        setSource('qrc:///modules/rubrics/RubricGroupAssessment.qml', {rubricFile: rubricFile});
+
+    Rubrics.RubricGroupAssessment {
+        rubricFile: rubricModule.rubricFile
     }
 }

@@ -17,7 +17,6 @@ DatabaseBackup {
     function createTables() {
         dataBck.dropTable('projects');
 
-        //dataBck.dropTable('rubrics_criteria');
         dataBck.createTable('extended_annotations','title TEXT PRIMARY KEY, created TEXT, desc TEXT, project TEXT, labels TEXT, start TEXT, end TEXT, state INTEGER');
 
         dataBck.createTable('savedAnnotationsSearches', 'id INTEGER PRIMARY KEY, title TEXT UNIQUE NOT NULL, desc TEXT, terms TEXT, created TEXT');

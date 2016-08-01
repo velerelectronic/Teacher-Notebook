@@ -4,10 +4,11 @@ import QtQuick.Controls 1.1
 import PersonalTypes 1.0
 import QtGraphicalEffects 1.0
 import 'qrc:///common' as Common
+import 'qrc:///modules/basic' as Basic
 import 'qrc:///models' as Models
 import "qrc:///javascript/Storage.js" as Storage
 
-Item {
+Basic.BasicPage {
     id: menuPage
     property string pageTitle: qsTr('Teacher Notebook');
 
@@ -159,7 +160,6 @@ Item {
         menuModel.append({caption: qsTr('Documents'), submenu: {object: menuPage, method: 'getDocumentsOptions'}});
         menuModel.append({caption: qsTr('Anotacions'), submenu: {object: menuPage, method: 'getSortLabels'}});
         menuModel.append({caption: qsTr('Taules'), submenu: {object: menuPage, method: 'getSortLabelsForTables'}});
-        menuModel.append({caption: qsTr('Rúbriques'), submenu: {object: menuPage, method: 'getRubricsOptions'}});
         menuModel.append({caption: qsTr('Altres eines'), submenu: {object: menuPage, method: 'getOtherToolsList'}});
 
         menuModel.append({caption: qsTr('Espai de treball'), page: 'WorkSpace', parameters: {}, submenu: {object: menuPage, method: ''}});
@@ -213,13 +213,6 @@ Item {
             var sortLabel = labelsSortModel.getObjectInRow(i);
             subMenuElements.append({title: title, caption: sortLabel.title, page: 'CombinedAnnotationsTable', parameters: {sortLabels: sortLabel.labels}});
         }
-    }
-
-    function getRubricsOptions(title) {
-        subMenuElements.append({title: title, caption: qsTr('Avaluació'), method: 'rubricsListSelected', parameters: {}});
-        subMenuElements.append({title: title, caption: qsTr('Definicions'), method: 'rubricDefinitionsSelected', parameters: {}});
-        subMenuElements.append({title: title, caption: qsTr('Grups'), page: 'groupsListSelected', parameters: {}});
-        subMenuElements.append({title: title, caption: qsTr('Informes'), page: 'reportsListSelected', parameters: {}});
     }
 
     function getOtherToolsList() {

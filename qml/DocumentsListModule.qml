@@ -2,8 +2,10 @@ import QtQuick 2.5
 import QtQml.StateMachine 1.0 as DSM
 import PersonalTypes 1.0
 import 'qrc:///models' as Models
+import 'qrc:///modules/documents' as Documents
+import 'qrc:///modules/basic' as Basic
 
-BasicPage {
+Basic.BasicPage {
     id: documentsModule
 
     pageTitle: qsTr('Documents')
@@ -70,8 +72,7 @@ BasicPage {
         }
     }
 
-
-    Component.onCompleted: {
-        setSource('qrc:///modules/documents/DocumentsList.qml', {selectedIdentifier: documentId});
+    sourceComponent: Documents.DocumentsList {
+        selectedIdentifier: documentId
     }
 }

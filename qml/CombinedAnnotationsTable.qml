@@ -4,8 +4,9 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 import 'qrc:///models' as Models
+import 'qrc:///modules/basic' as Basic
 
-BasicPage {
+Basic.BasicPage {
     id: combinedTable
 
     pageTitle: qsTr("Quadre d'anotacions")

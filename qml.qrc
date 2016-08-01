@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>qml/ArisenWidget.qml</file>
         <file>qml/Clock.qml</file>
         <file>qml/DataMan.qml</file>
         <file>qml/GanttItem.qml</file>
@@ -40,17 +39,9 @@
         <file>qml/AssessmentByCategories.qml</file>
         <file>qml/AssessmentSystem.qml</file>
         <file>qml/TasksSystem.qml</file>
-        <file>qml/Rubric.qml</file>
-        <file>qml/RubricCriteriumEditor.qml</file>
-        <file>qml/RubricLevelEditor.qml</file>
-        <file>qml/RubricDescriptorEditor.qml</file>
         <file>qml/Projects.qml</file>
         <file>qml/ProjectEditor.qml</file>
-        <file>qml/RubricAssessmentEditor.qml</file>
         <file>qml/BasicDatabase.qml</file>
-        <file>qml/GroupsIndividuals.qml</file>
-        <file>qml/GroupIndividualEditor.qml</file>
-        <file>qml/ShowResource.qml</file>
         <file>qml/CollectionInspector.qml</file>
         <file>qml/CollectionInspectorItem.qml</file>
         <file>qml/EditTextItemInspector.qml</file>
@@ -65,15 +56,10 @@
         <file>qml/ModelImporter.qml</file>
         <file>qml/EventCharacteristicsEditor.qml</file>
         <file>qml/EditDeleteItemInspector.qml</file>
-        <file>qml/ShowRubricGroupAssessmentByIndividual.qml</file>
         <file>qml/WorkingSpace.qml</file>
         <file>qml/ShowExtendedAnnotation.qml</file>
         <file>qml/EditDateTimeItemInspector2.qml</file>
-        <file>qml/BasicPage.qml</file>
         <file>qml/ShowTimeTable.qml</file>
-        <file>qml/RubricsDefinitionsList.qml</file>
-        <file>qml/RubricsGroupsList.qml</file>
-        <file>qml/RubricsReportsList.qml</file>
         <file>qml/CombinedAnnotationsTable.qml</file>
         <file>qml/LabelsSort.qml</file>
         <file>qml/AboveMenu.qml</file>
@@ -83,7 +69,6 @@
         <file>qml/DocumentsListModule.qml</file>
         <file>qml/SingleDocumentModule.qml</file>
         <file>qml/AnnotationsListModule.qml</file>
-        <file>qml/RubricsListModule.qml</file>
         <file>qml/RubricModule.qml</file>
         <file>qml/NewDocumentModule.qml</file>
     </qresource>

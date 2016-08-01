@@ -19,6 +19,7 @@ Item {
     signal documentSelected(string document)
     signal documentSourceSelected(string source)
 
+
     property int requiredHeight: documentsListView.contentItem.height
 
     property string selectedIdentifier
@@ -287,5 +288,6 @@ Item {
             target: newDocumentDialog.mainItem
         }
     }
+
 }
 

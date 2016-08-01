@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/basic/BasicPage.qml</file>
+    </qresource>
+</RCC>

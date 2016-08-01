@@ -3,13 +3,14 @@ import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.1
 import QtQuick.Dialogs 1.2
+import 'qrc:///modules/basic' as Basic
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import "qrc:///javascript/Storage.js" as Storage
 import "qrc:///common/FormatDates.js" as FormatDates
 import PersonalTypes 1.0
 
-BasicPage {
+Basic.BasicPage {
     id: annotationEditor
     pageTitle: qsTr("Editor d'anotacions (esteses)")
 

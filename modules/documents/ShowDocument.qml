@@ -29,6 +29,7 @@ Item {
     signal annotationEditSelected(string annotation, int document)
     signal documentSourceSelected(string source, string mediaType)
 
+
     Models.DocumentsModel {
         id: documentsModel
     }
@@ -38,7 +39,6 @@ Item {
     }
 
     onDocumentChanged: getDocumentDetails()
-
 
     ColumnLayout {
         anchors.fill: parent
@@ -407,4 +407,5 @@ Item {
 
 
     Component.onCompleted: getDocumentDetails();
+
 }
