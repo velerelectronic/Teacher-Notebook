@@ -97,19 +97,12 @@ Item {
     Common.SuperposedWidget {
         id: superposedWidget
 
-        anchoringItem: parent
-        margins: units.nailUnit
-
         Loader {
             id: superposedWidgetLoader
 
             anchors.fill: parent
         }
 
-        onInteriorClicked: {
-            console.log('interior');
-            closeSuperposedMenu();
-        }
     }
 
     MouseArea {

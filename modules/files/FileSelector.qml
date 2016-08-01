@@ -80,7 +80,7 @@ Item {
                 Button {
                     id: selectButton
                     visible: selectDirectory
-                    Layout.preferredWidth: units.fingerUnit * 5
+                    Layout.preferredWidth: (selectDirectory)?units.fingerUnit * 5:0
                     Layout.fillHeight: true
                     text: qsTr('Selecciona')
                     onClicked: folderSelected(folderList.folder)
@@ -219,6 +219,7 @@ Item {
                     Button {
                         Layout.fillHeight: true
                         Layout.preferredWidth: (selectDocument)?units.fingerUnit * 3:0
+                        visible: ((model.fileIsDir && selectDirectory) || (!model.fileIsDir && selectFiles))
                         clip: true
                         text: qsTr('Selecciona')
                         onClicked: {

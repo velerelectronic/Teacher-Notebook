@@ -467,73 +467,8 @@ Item {
         }
     }
 
-    Dialog {
+    Common.SuperposedWidget {
         id: subPanelItem
-
-        function load(title, page, args) {
-            subPanelItem.title = title;
-            subPanelLoader.sourceComponent = undefined;
-            subPanelLoader.setSource("qrc:///modules/" + page + ".qml", args);
-            subPanelItem.open();
-        }
-
-        property string title: ''
-
-        standardButtons: StandardButton.Close
-
-        onRejected: {
-            console.log('hola');
-        }
-
-        contentItem: Rectangle {
-//            id: subPanelItem
-            z: 3
-            implicitHeight: rubricRectangle.height * 0.8
-            implicitWidth: rubricRectangle.width * 0.8
-//            visible: subPanelItem.enabled
-//            enabled: false
-
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: units.nailUnit
-                spacing: units.nailUnit
-
-                Item {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: units.fingerUnit * 2
-                    RowLayout {
-                        anchors.fill: parent
-                        spacing: units.nailUnit
-                        Text {
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                            font.pixelSize: units.readUnit
-                            font.bold: true
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            text: subPanelItem.title
-                        }
-                        Common.ImageButton {
-                            Layout.fillHeight: true
-                            image: 'road-sign-147409'
-                            onClicked: subPanelItem.close()
-                        }
-                    }
-                }
-
-                Loader {
-                    id: subPanelLoader
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-
-                    Connections {
-                        target: subPanelLoader.item
-                        onClose: subPanelItem.close()
-                    }
-                }
-            }
-
-        }
 
     }
 

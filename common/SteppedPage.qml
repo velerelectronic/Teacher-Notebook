@@ -103,13 +103,11 @@ Item {
     }
 
     function moveForward() {
-        if (moveForwardEnabled)
-            sectionsList.incrementCurrentIndex();
+        sectionsList.incrementCurrentIndex();
     }
 
     function moveBackwards() {
-        if (moveBackwardsEnabled)
-            sectionsList.decrementCurrentIndex();
+        sectionsList.decrementCurrentIndex();
     }
 
     function recalculateSectionDimensions() {

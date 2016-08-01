@@ -241,33 +241,29 @@ Item {
                 size: units.fingerUnit * 2
                 imageSource: 'plus-24844'
                 onClicked: {
-                    superposedAddMenu.toggleWidget();
+                    superposedAddMenu.open();
                 }
             }
             Common.SuperposedMenu {
                 id: superposedAddMenu
 
-                anchors.fill: parent
-                anchoringItem: addDocumentButton
-
-                minimumWidth: units.fingerUnit * 6
-
-                glowColor: 'black'
-                headerTitle: qsTr('Nou document...')
+                title: qsTr('Nou document...')
 
                 Common.SuperposedMenuEntry {
                     height: units.fingerUnit * 1.5
                     text: qsTr('Fitxer')
                     onClicked: {
-                        superposedAddMenu.hideWidget();
-                        newDocumentSelected();
+                        superposedAddMenu.close();
+                        newDocumentDialog.load(qsTr('Nou document'), 'documents/NewDocument', {});
+                        newDocumentDialog.open();
+//                        newDocumentSelected();
                     }
                 }
                 Common.SuperposedMenuEntry {
                     height: units.fingerUnit * 1.5
                     text: qsTr('Rúbrica')
                     onClicked: {
-                        superposedAddMenu.hideWidget();
+                        superposedAddMenu.close();
                         documentsListItem.newRubricSelected();
                     }
                 }
@@ -276,7 +272,7 @@ Item {
                     height: units.fingerUnit * 1.5
                     text: qsTr('Adreça web')
                     onClicked: {
-                        superposedAddMenu.hideWidget();
+                        superposedAddMenu.close();
                     }
                 }
             }
@@ -284,5 +280,12 @@ Item {
         }
     }
 
+    Common.SuperposedWidget {
+        id: newDocumentDialog
+
+        Connections {
+            target: newDocumentDialog.mainItem
+        }
+    }
 }
 

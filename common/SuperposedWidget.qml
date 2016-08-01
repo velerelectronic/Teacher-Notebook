@@ -1,96 +1,78 @@
 import QtQuick 2.5
-import QtGraphicalEffects 1.0
 import QtQml.Models 2.2
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.1
 
-Item {
-    property int minimumHeight: 0
-    property int minimumWidth: 0
-    property Item anchoringItem: null
-    property string glowColor: 'black'
-    property int margins: 0
+import 'qrc:///common' as Common
 
-    default property alias subwidget: superposedWidget.children
-    visible: false
+Dialog {
+    id: superposedWidget
 
-    signal shown()
-    signal hidden()
-
-    signal interiorClicked()
-
-    MouseArea {
-        anchors.fill: parent
-        onPressed: mouse.accepted = true
+    Common.UseUnits {
+        id: units
     }
 
-    Item {
-        id: superposedWidget
+    property int parentWidth: parent.width
+    property int parentHeight: parent.height
 
-        // Parent is the enclosing Item
-        // MaximumHeight is parent's total height
-        // MaximumWidth is parent's total width
+    property Item mainItem
 
-        property int maximumHeight: parent.height
-        property int maximumWidth: parent.width
+    standardButtons: StandardButton.Close
 
-        width: minimumWidth
-        height: minimumHeight
+    function load(title, page, args) {
+        superposedWidget.title = title;
+        subPanelLoader.sourceComponent = undefined;
+        subPanelLoader.setSource("qrc:///modules/" + page + ".qml", args);
+        superposedWidget.open();
+    }
 
-        /*
-        anchors {
-            top: (anchoringItem.y + anchoringItem.height + height < enclosingItem.height)?anchoringItem.bottom:undefined
-            left: (anchoringItem.x + anchoringItem.width + width < enclosingItem.width)?anchoringItem.right:undefined
-            bottom: (anchoringItem.y + anchoringItem.height + height >= enclosingItem.height)?anchoringItem.top:undefined
-            right: (anchoringItem.x + anchoringItem.width + width >= enclosingItem.width)?anchoringItem.left:undefined
-        }
-        */
+    contentItem: Rectangle {
+        implicitHeight: parentHeight * 0.8
+        implicitWidth: parentWidth * 0.8
 
-        MouseArea {
+        ColumnLayout {
             anchors.fill: parent
-            onClicked: {
-                console.log('INT');
-                interiorClicked();
+            anchors.margins: units.nailUnit
+            spacing: units.nailUnit
+
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: units.fingerUnit * 2
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: units.nailUnit
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        text: superposedWidget.title
+                    }
+                    Common.ImageButton {
+                        Layout.fillHeight: true
+                        image: 'road-sign-147409'
+                        onClicked: superposedWidget.close()
+                    }
+                }
+            }
+
+            Loader {
+                id: subPanelLoader
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+
+                Connections {
+                    target: subPanelLoader.item
+                    ignoreUnknownSignals: true
+
+                    onDiscarded: superposedWidget.close()
+                }
             }
         }
 
-        RectangularGlow {
-            anchors.fill: parent
-            glowRadius: units.nailUnit
-            spread: 0.2
-            color: glowColor
-        }
-
-        function setPosition() {
-            var obj = parent.mapFromItem(anchoringItem, anchoringItem.width / 2, anchoringItem.height / 2);
-
-            // Calculate proper position for the widget in order to show it completely
-            var posX = obj.x - superposedWidget.width;
-            if (posX < margins)
-                posX = margins;
-            superposedWidget.x = posX;
-
-            var posY = obj.y - superposedWidget.height;
-            if (posY < margins)
-                posY = margins;
-            superposedWidget.y = posY;
-        }
     }
 
-    function hideWidget() {
-        visible = false;
-        hidden();
-    }
-
-    function showWidget() {
-        visible = true;
-        superposedWidget.setPosition();
-        shown();
-    }
-
-    function toggleWidget() {
-        if (visible)
-            hideWidget();
-        else
-            showWidget();
-    }
 }
 
