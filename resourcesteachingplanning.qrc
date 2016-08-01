@@ -1,5 +1,9 @@
-import QtQuick 2.0
-
-Item {
-
-}
+<RCC>
+    <qresource prefix="/">
+        <file>modules/teachingplanning/Planning2.qml</file>
+        <file>modules/teachingplanning/PlanningSubSection.qml</file>
+        <file>modules/teachingplanning/PlanningMainSection.qml</file>
+        <file>modules/teachingplanning/TeachingPlanning.qml</file>
+        <file>modules/teachingplanning/PlanningCollector.qml</file>
+    </qresource>
+</RCC>

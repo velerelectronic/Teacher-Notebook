@@ -305,7 +305,7 @@ Item {
         var page = '';
         switch(extensio) {
         case 'xml':
-            fileSelected('ProgramacioAula',document);
+            fileSelected('TeachingPlanning',document);
             break;
 
         case 'jpg':

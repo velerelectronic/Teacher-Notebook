@@ -4,26 +4,11 @@
         <file>qml/DataMan.qml</file>
         <file>qml/GanttItem.qml</file>
         <file>qml/main.qml</file>
-        <file>qml/PageWidget.qml</file>
         <file>qml/Researcher.qml</file>
-        <file>qml/Schedule.qml</file>
-        <file>qml/ScheduleItem.qml</file>
-        <file>qml/ShowAnnotation.qml</file>
-        <file>qml/ShowEvent.qml</file>
         <file>qml/StopWatch.qml</file>
         <file>qml/TimeController.qml</file>
         <file>qml/Whiteboard.qml</file>
-        <file>qml/ProgramacioAula.qml</file>
         <file>qml/ImageMapper.qml</file>
-        <file>qml/PlanningMainSection.qml</file>
-        <file>qml/PlanningSubSection.qml</file>
-        <file>qml/QuickAnnotation.qml</file>
-        <file>qml/FeedView.qml</file>
-        <file>qml/FeedWEIB.qml</file>
-        <file>qml/LoadingBox.qml</file>
-        <file>qml/CachedModel.qml</file>
-        <file>qml/FeedDelegate.qml</file>
-        <file>qml/PageCollection.qml</file>
         <file>qml/TextViewer.qml</file>
         <file>qml/MultipleGrid.qml</file>
         <file>qml/AssessmentGrid.qml</file>
@@ -34,13 +19,9 @@
         <file>qml/WorkSpace.qml</file>
         <file>qml/Calendar-ant.qml</file>
         <file>qml/GanttDiagram.qml</file>
-        <file>qml/Planning2.qml</file>
-        <file>qml/PlanningCollector.qml</file>
         <file>qml/AssessmentByCategories.qml</file>
         <file>qml/AssessmentSystem.qml</file>
         <file>qml/TasksSystem.qml</file>
-        <file>qml/Projects.qml</file>
-        <file>qml/ProjectEditor.qml</file>
         <file>qml/BasicDatabase.qml</file>
         <file>qml/CollectionInspector.qml</file>
         <file>qml/CollectionInspectorItem.qml</file>
@@ -48,9 +29,7 @@
         <file>qml/EditTextAreaInspector.qml</file>
         <file>qml/EditStateItemInspector.qml</file>
         <file>qml/EditDateTimeItemInspector.qml</file>
-        <file>qml/EditFakeItemInspector.qml</file>
         <file>qml/EditListItemInspector.qml</file>
-        <file>qml/EditImageItemInspector.qml</file>
         <file>qml/CameraShoot.qml</file>
         <file>qml/CharacteristicsList.qml</file>
         <file>qml/ModelImporter.qml</file>
@@ -62,9 +41,7 @@
         <file>qml/ShowTimeTable.qml</file>
         <file>qml/CombinedAnnotationsTable.qml</file>
         <file>qml/LabelsSort.qml</file>
-        <file>qml/AboveMenu.qml</file>
         <file>qml/OmniboxSearch.qml</file>
-        <file>qml/ExportManager.qml</file>
         <file>qml/MenuPageModule.qml</file>
         <file>qml/DocumentsListModule.qml</file>
         <file>qml/SingleDocumentModule.qml</file>

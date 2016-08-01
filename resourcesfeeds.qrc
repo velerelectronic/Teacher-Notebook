@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/feeds/FeedDelegate.qml</file>
+        <file>modules/feeds/FeedView.qml</file>
+        <file>modules/feeds/FeedWEIB.qml</file>
+        <file>modules/feeds/CachedModel.qml</file>
+        <file>modules/feeds/LoadingBox.qml</file>
+    </qresource>
+</RCC>

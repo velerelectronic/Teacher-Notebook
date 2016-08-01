@@ -38,7 +38,8 @@ RESOURCES += qml.qrc \
     resourcesrubrics.qrc \
     reseourcesmainbuttons.qrc \
     resourcesbasic.qrc \
-    resourcesteachingplanning.qrc
+    resourcesteachingplanning.qrc \
+    resourcesfeeds.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =

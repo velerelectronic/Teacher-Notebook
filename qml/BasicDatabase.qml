@@ -26,8 +26,6 @@ DatabaseBackup {
 
         dataBck.createTable('labelsSort', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT, labels TEXT');
 
-        dataBck.createTable('projects','id INTEGER PRIMARY KEY, name TEXT, desc TEXT');
-
 
         //dataBck.dropTable('resources');
         //dataBck.dropTable('documentsSources');
