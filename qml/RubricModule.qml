@@ -23,7 +23,7 @@ Basic.BasicPage {
     }
 
 
-    Rubrics.RubricGroupAssessment {
+    sourceComponent: Rubrics.RubricGroupAssessment {
         rubricFile: rubricModule.rubricFile
     }
 }
