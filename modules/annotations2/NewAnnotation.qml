@@ -16,6 +16,7 @@ Rectangle {
     signal showMessage(string message)
     signal newTimetableAnnotationSelected(string labels)
     signal close()
+    signal discarded()
     signal openAnnotation(string title)
 
     property string labels: ''
@@ -100,7 +101,7 @@ Rectangle {
                     Layout.preferredWidth: parent.width / 4
                     height: units.fingerUnit
                     title: qsTr('Cancela')
-                    onClicked: close()
+                    onClicked: discarded()
                 }
             }
         }

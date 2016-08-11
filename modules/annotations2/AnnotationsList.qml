@@ -17,15 +17,21 @@ Rectangle {
     }
 
     property string document: ''
+    property alias count: docAnnotationsModel.count
     signal annotationSelected(int annotation)
 
+    property int requiredHeight: docAnnotationsList.contentItem.height + docAnnotationsList.anchors.margins * 2 + docAnnotationsList.bottomMargin
     color: 'gray'
+
+    property Item frameItem
 
     ListView {
         id: docAnnotationsList
 
         anchors.fill: parent
         anchors.margins: units.nailUnit
+
+        bottomMargin: addAnnotationButton.size
 
         model: Models.DocumentAnnotations {
             id: docAnnotationsModel
@@ -135,6 +141,7 @@ Rectangle {
         }
 
         Common.SuperposedButton {
+            id: addAnnotationButton
             anchors {
                 right: parent.right
                 bottom: parent.bottom
@@ -150,6 +157,9 @@ Rectangle {
 
     Common.SuperposedWidget {
         id: newAnnotationDialog
+
+        parentWidth: frameItem.width
+        parentHeight: frameItem.height
     }
 
     Component.onCompleted: docAnnotationsModel.update()

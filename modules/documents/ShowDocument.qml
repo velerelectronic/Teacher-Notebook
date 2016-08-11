@@ -268,8 +268,12 @@ Item {
                     caption: qsTr('Anotacions')
 
                     Annotations.AnnotationsList {
+                        id: annotationsList
+
                         width: parent.width
-                        height: units.fingerUnit * 10
+                        height: requiredHeight
+
+                        frameItem: showDocumentItem
 
                         document: showDocumentItem.document
 
@@ -286,9 +290,26 @@ Item {
                         width: parent.width
                         height: units.fingerUnit * 2
                         text: qsTr('Elimina document (immediatament)')
-                        onClicked: {
-                            documentsModel.removeObject(showDocumentItem.title);
-                            documentRemoved();
+                        enabled: annotationsList.count == 0
+                        onClicked: confirmDeletionDialog.open()
+
+                        Common.SuperposedMenu {
+                            id: confirmDeletionDialog
+
+                            standardButtons: StandardButton.Yes | StandardButton.No
+
+                            title: qsTr('Confirmes eliminar aquest document?')
+
+                            Text {
+                                font.pixelSize: units.readUnit
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                text: '<p><b>' + document + '</b></p><p>' + desc + '</p>'
+                            }
+
+                            onYes: {
+                                documentsModel.removeObject(showDocumentItem.title);
+                                documentRemoved();
+                            }
                         }
                     }
                 }
