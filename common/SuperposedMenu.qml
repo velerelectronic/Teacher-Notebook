@@ -9,11 +9,14 @@ Dialog {
 
     default property alias entries: menuEntriesModel.children
 
+    property int parentWidth: parent.width
+    property int parentHeight: parent.height
+
     standardButtons: StandardButton.Close
 
     Rectangle {
-        implicitHeight: menuList.contentItem.height
-        width: parent.width
+        implicitHeight: Math.min(parentHeight * 0.8, menuList.contentItem.height)
+        implicitWidth: parentWidth * 0.8
 
         ListView {
             id: menuList
@@ -21,11 +24,15 @@ Dialog {
 
             headerPositioning: ListView.OverlayHeader
 
-            interactive: false
+            interactive: true
+            clip: true
+
+            boundsBehavior: ListView.StopAtBounds
 
             header: Rectangle {
                 width: menuList.width
                 height: units.fingerUnit * 2
+                z: 2
 
                 RowLayout {
                     anchors.fill: parent

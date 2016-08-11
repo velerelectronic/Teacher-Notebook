@@ -2,10 +2,13 @@ import QtQuick 2.0
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.1
 import Qt.labs.folderlistmodel 2.1
+import QtQml.Models 2.2
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///modules/basic' as Basic
+import 'qrc:///modules/buttons' as Buttons
+import 'qrc:///modules/database' as Database
 
 Basic.BasicPage {
     id: backup
@@ -24,6 +27,13 @@ Basic.BasicPage {
 
     DatabaseBackup {
         id: fileDb
+    }
+
+    buttonsModel: ObjectModel {
+        Buttons.MainButton {
+            image: 'outline-27146'
+            onClicked: superposedMenu.showTable()
+        }
     }
 
     mainPage: ColumnLayout {
@@ -68,14 +78,15 @@ Basic.BasicPage {
             delegate: Rectangle {
                 border.color: 'black'
                 color: 'white'
-                height: Math.max(units.fingerUnit * 2,file.height)
+//                height: Math.max(units.fingerUnit * 2,file.height)
+                height: Math.max(file.height,details.height)
                 width: parent.width
 
                 RowLayout {
                     anchors.top: parent.top
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    height: Math.max(file.height,details.height)
+//                    height: Math.max(file.height,details.height)
                     Text {
                         id: file
                         Layout.fillWidth: true
@@ -144,6 +155,30 @@ Basic.BasicPage {
             id: resultsArea
             Layout.fillWidth: true
             Layout.preferredHeight: units.fingerUnit * 4
+        }
+    }
+
+
+    Common.SuperposedWidget {
+        id: superposedMenu
+
+        title: qsTr('Dades de taula')
+
+        function showTable() {
+            var param = {
+                tableName: 'extended_annotations',
+                fieldNames: [
+                    'title',
+                    'created',
+                    'desc',
+                    'project',
+                    'labels',
+                    'start',
+                    'end',
+                    'state'
+                ]
+            };
+            superposedMenu.load(qsTr('Dades de taula'), 'database/TableInfo', param);
         }
     }
 

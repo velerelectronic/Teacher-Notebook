@@ -127,6 +127,10 @@ Window {
                     appStateMachine.openSingleAnnotation();
                 }
 
+                onDatabaseManagerSelected: {
+                    appStateMachine.openDatabaseManager();
+                }
+
                 onDocumentsListSelected: {
                     if (typeof document !== 'undefined')
                         appStateMachine.document = document;
@@ -155,9 +159,18 @@ Window {
                     appStateMachine.openRubricsList();
                 }
 
-                onShowRubric: {
-                    appStateMachine.rubricFile = rubricFile;
-                    appStateMachine.openSingleRubric();
+                onShowDocumentSource: {
+                    appStateMachine.documentSource = source;
+                    switch(mediaType) {
+                    case 'Rubric':
+                        appStateMachine.openSingleRubric();
+                        break;
+                    case 'TeachingPlanning':
+                        appStateMachine.openSingleTeachingPlanning();
+                        break;
+                    default:
+                        appStateMachine.openSingleDocument();
+                    }
                 }
             }
 
@@ -194,14 +207,16 @@ Window {
 
         // Shared variable across states
 
-        property string annotation: ''
+        property int annotation
         property string document: ''
         property string rubricFile: ''
         property int assessment: -1
+        property string documentSource: ''
 
         // Signals
 
         signal openAnnotationsList()
+        signal openDatabaseManager()
         signal openDocumentsList()
         signal openMainPage()
         signal openRubricsList()
@@ -211,6 +226,7 @@ Window {
         signal openSingleAnnotation()
         signal openSingleDocument()
         signal openSingleRubric()
+        signal openSingleTeachingPlanning()
 
         signal hola(string document)
 
@@ -247,6 +263,11 @@ Window {
             DSM.SignalTransition {
                 signal: appStateMachine.openRubricsList
                 targetState: rubricsListState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openDatabaseManager
+                targetState: databaseManagerState
             }
         }
 
@@ -297,6 +318,16 @@ Window {
                     signal: appStateMachine.openSingleRubric
                     targetState: singleRubricState
                 }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openSingleTeachingPlanning
+                    targetState: singleTeachingPlanningState
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openSingleAnnotation
+                    targetState: singleAnnotationState
+                }
             }
 
             DSM.State {
@@ -339,12 +370,17 @@ Window {
                 id: singleAnnotationState
 
                 onEntered: {
-                    workingSpace.loadSubPage('SingleAnnotationModule', {annotation: appStateMachine.annotation});
+                    workingSpace.loadSubPage('ShowAnnotationModule', {annotation: appStateMachine.annotation});
                 }
 
                 DSM.SignalTransition {
                     signal: appStateMachine.openAnnotationsList
                     targetState: annotationsListState
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openSingleDocument
+                    targetState: singleDocumentState
                 }
 
                 DSM.SignalTransition {
@@ -370,7 +406,7 @@ Window {
                 id: singleRubricState
 
                 onEntered: {
-                    workingSpace.loadSubPage('RubricModule', {rubricFile: appStateMachine.rubricFile});
+                    workingSpace.loadSubPage('RubricModule', {rubricFile: appStateMachine.documentSource});
                 }
 
                 DSM.SignalTransition {
@@ -379,6 +415,26 @@ Window {
                 }
             }
 
+            DSM.State {
+                id: singleTeachingPlanningState
+
+                onEntered: {
+                    workingSpace.loadSubPage('TeachingPlanningModule', {planningFile: appStateMachine.documentSource});
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openRubricsList
+                    targetState: documentsListState
+                }
+            }
+
+            DSM.State {
+                id: databaseManagerState
+
+                onEntered: {
+                    workingSpace.loadSubPage('DataMan', {});
+                }
+            }
         }
     }
 

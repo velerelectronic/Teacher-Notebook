@@ -13,12 +13,12 @@ Basic.BasicPage {
 
     pageTitle: qsTr('Vista de document')
 
+    signal annotationSelected(int annotation)
     signal documentsListSelected(string document)
     signal documentSelected()
     signal showDocument()
-    signal showDocumentSource()
+    signal showDocumentSource(string source, string mediaType)
     signal showSelectFile()
-    signal showRubric(string rubricFile)
 
     property string documentId: ""
     property string documentSource: ''
@@ -40,8 +40,7 @@ Basic.BasicPage {
         }
 
         onAnnotationSelected: {
-            documentsModel.updateObject(documentId, {annotation: title});
-            documentsModuleSM.changeAnnotation();
+            documentsModule.annotationSelected(annotation);
         }
 
         onCloseNewDocument: {
@@ -59,15 +58,7 @@ Basic.BasicPage {
         }
 
         onDocumentSourceSelected: {
-            console.log('show', source);
-            documentSource = source;
-            switch(mediaType) {
-            case 'Rubric':
-                documentsModule.showRubric(source);
-                break;
-            default:
-                documentsModule.showDocumentSource();
-            }
+            documentsModule.showDocumentSource(source, mediaType);
         }
 
         onFileSelected: {

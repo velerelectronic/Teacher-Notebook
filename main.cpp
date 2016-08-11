@@ -8,13 +8,13 @@
 #include <QtQml/QtQml>
 #include <QtQml/QQmlApplicationEngine>
 
+#include <QXmlQuery>
 //#include <QtQml>
 
 
 #include "fileio.h"
-#include "xmlmodel.h"
 #include "imagedata.h"
-#include "teachingplanning.h"
+#include "TeachingPlanning/teachingplanning.h"
 #include "SqlTableModel2/sqltablemodel.h"
 #include "databasebackup.h"
 #include "standardpaths.h"
@@ -58,12 +58,6 @@ int main(int argc, char *argv[])
 
     qRegisterMetaType<RubricDescriptorsModel>();
 
-    QStringList list;
-    list << QString("A1") << QString("B2") << QString("B3");
-
-    XmlModel model2;
-    model2.setStringList(list);
-
     QQmlApplicationEngine engine;
 
     QSqlDatabase db;
@@ -102,9 +96,19 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("globalResourcesModel",&resourcesModel);
     engine.rootContext()->setContextProperty("globalResourcesAnnotationsModel",&resourcesAnnotationsModel);
 
-    engine.rootContext()->setContextProperty("tmp",&model2);
-
     engine.load(QUrl(QStringLiteral("qrc:///qml/main.qml")));
+
+    QXmlQuery query;
+    QStringList result;
+    QBuffer buffer;
+    buffer.setData(QString("<planning><basicdata>hola</basicdata><basicdata>dos</basicdata></planning>").toUtf8());
+    qDebug() << buffer.data();
+    buffer.open(QIODevice::ReadOnly);
+
+    query.bindVariable("myDoc", &buffer);
+    query.setQuery("doc($myDoc)/planning/basicdata[1=1]/string()");
+    query.evaluateTo(&result);
+    qDebug() << "RESULT " << result;
 
     return app.exec();
 }

@@ -9,12 +9,9 @@ QT += core \
 
 SOURCES += main.cpp \
     fileio.cpp \
-    xmlmodel.cpp \
-    teachingplanning.cpp \
     imagedata.cpp \
     databasebackup.cpp \
     standardpaths.cpp \
-    XmlGrid/xmlgrid.cpp \
     MarkDownParser/markdownparser.cpp \
     SqlTableModel2/sqltablemodel.cpp \
     CryptographicHash/cryptographichash.cpp \
@@ -22,7 +19,9 @@ SOURCES += main.cpp \
     RubricXml/rubriccriteria.cpp \
     RubricXml/rubricdescriptorsmodel.cpp \
     RubricXml/rubricassessmentmodel.cpp \
-    RubricXml/rubricpopulationmodel.cpp
+    RubricXml/rubricpopulationmodel.cpp \
+    TeachingPlanning/teachingplanning.cpp \
+    TeachingPlanning/xmlmodel.cpp
 
 RESOURCES += qml.qrc \
     icons.qrc \
@@ -39,7 +38,9 @@ RESOURCES += qml.qrc \
     reseourcesmainbuttons.qrc \
     resourcesbasic.qrc \
     resourcesteachingplanning.qrc \
-    resourcesfeeds.qrc
+    resourcesfeeds.qrc \
+    resourcesdatabase.qrc \
+    resourcesannotations2.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -49,12 +50,9 @@ include(deployment.pri)
 
 HEADERS += \
     fileio.h \
-    xmlmodel.h \
-    teachingplanning.h \
     imagedata.h \
     databasebackup.h \
     standardpaths.h \
-    XmlGrid/xmlgrid.h \
     MarkDownParser/markdownparser.h \
     ClipboardAdapter/qmlclipboardadapter.h \
     SqlTableModel2/sqltablemodel.h \
@@ -63,7 +61,9 @@ HEADERS += \
     RubricXml/rubriccriteria.h \
     RubricXml/rubricdescriptorsmodel.h \
     RubricXml/rubricassessmentmodel.h \
-    RubricXml/rubricpopulationmodel.h
+    RubricXml/rubricpopulationmodel.h \
+    TeachingPlanning/teachingplanning.h \
+    TeachingPlanning/xmlmodel.h
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 

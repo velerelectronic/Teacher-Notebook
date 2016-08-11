@@ -14,6 +14,7 @@ Basic.BasicPage {
 
     signal annotationsListSelected()
     signal annotationSelected(string annotation)
+    signal databaseManagerSelected()
     signal documentsListSelected()
     signal documentSelected(string document)
     signal reportSelected(string report)
@@ -216,7 +217,9 @@ Basic.BasicPage {
     }
 
     function getOtherToolsList() {
-        subMenuElements.append({caption: qsTr('Gestor de dades'), page: 'DataMan', parameters: {}});
+        subMenuElements.clear();
+
+        subMenuElements.append({caption: qsTr('Gestor de dades'), method: 'databaseManagerSelected', parameters: {}});
         subMenuElements.append({caption: qsTr('Exportador'), page: 'ExportManager', parameters: {}});
         subMenuElements.append({caption: qsTr('! Recerca de coneixement'), page: 'Researcher', parameters: {}, submenu: {object: menuPage, method: ''}});
         subMenuElements.append({caption: qsTr('Feeds'), page: 'FeedWEIB', parameters: {}});

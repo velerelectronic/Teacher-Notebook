@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/annotations2/NewAnnotation.qml</file>
+        <file>modules/annotations2/AnnotationsList.qml</file>
+        <file>modules/annotations2/ShowAnnotation.qml</file>
+        <file>modules/annotations2/StateDisplay.qml</file>
+        <file>modules/annotations2/StateEditor.qml</file>
+    </qresource>
+</RCC>

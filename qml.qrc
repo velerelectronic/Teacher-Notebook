@@ -48,5 +48,7 @@
         <file>qml/AnnotationsListModule.qml</file>
         <file>qml/RubricModule.qml</file>
         <file>qml/NewDocumentModule.qml</file>
+        <file>qml/TeachingPlanningModule.qml</file>
+        <file>qml/ShowAnnotationModule.qml</file>
     </qresource>
 </RCC>

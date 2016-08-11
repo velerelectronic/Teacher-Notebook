@@ -17,6 +17,7 @@ RubricCriteria::RubricCriteria(RubricXml *parent) : QAbstractListModel(parent) {
 
 RubricCriteria::RubricCriteria(const RubricCriteria &original) {
     innerRubricXmlParent = original.innerRubricXmlParent;
+    innerRoles = original.innerRoles;
 }
 
 RubricCriteria::~RubricCriteria() {

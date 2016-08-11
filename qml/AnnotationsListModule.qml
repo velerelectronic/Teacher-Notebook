@@ -9,10 +9,11 @@ import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 import 'qrc:///models' as Models
 import 'qrc:///modules/annotations' as AnnotationsComponents
+import 'qrc:///modules/basic' as Basic
 import "qrc:///common/FormatDates.js" as FormatDates
 
 
-BasicPage {
+Basic.BasicPage {
     id: annotationView
 
     pageTitle: qsTr('Anotació')
@@ -60,6 +61,11 @@ BasicPage {
         Component.onCompleted: select()
     }
 
+    mainPage: AnnotationsComponents.RelatedAnnotations {
+
+        onAnnotationSelected: superposedWidget.openAnnotation(title)
+    }
+
     Connections {
         target: mainItem
 
@@ -103,17 +109,6 @@ BasicPage {
             annotationView.labels = mainItem.labels;
             lastItemSelected = annotationView;
             showNewAnnotation();
-        }
-
-        onNewRubricAssessment: {
-            annotationSM.identifier = annotation;
-            annotationView.newRubricAssessment();
-        }
-
-        onRubricAssessmentSelected: {
-            console.log('---');
-            annotationSM.assessment = assessment;
-            annotationSM.openRubricAssessment();
         }
 
     }
@@ -604,8 +599,16 @@ BasicPage {
         }
     }
 
+    Common.SuperposedWidget {
+        id: superposedWidget
+
+        function openAnnotation(annotation) {
+            load(qsTr('Anotació'), 'annotations/ShowAnnotation', {identifier: annotation});
+        }
+    }
+
     Component.onCompleted: {
-        annotationSM.start();
+//        annotationSM.start();
     }
 }
 

@@ -1,44 +1,53 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.2
+import QtQuick.Dialogs 1.2
+
+import ClipboardAdapter 1.0
+import PersonalTypes 1.0
+
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
+import 'qrc:///editors' as Editors
 import 'qrc:///modules/annotations' as AnnotationsComponents
-import ClipboardAdapter 1.0
 
 Item {
     id: showAnnotationItem
 
-    signal annotationSelected(string title)
-    signal annotationDescriptionSelected(string description, var widget)
+    signal annotationSelected(int annotation)
     signal annotationLabelsSelected(string labels)
     signal annotationPeriodSelected(string start, string end)
-    signal annotationStateSelected(int stateValue)
-    signal annotationTitleSelected(var widget)
     signal attachmentsSelected()
+    signal documentSelected(string document)
+    signal newRubricAssessment(string annotation)
     signal resourceSelected(int resource)
     signal rubricAssessmentSelected(int assessment)
-    signal newRubricAssessment(string annotation)
     signal showRelatedAnnotations()
     signal showRelatedAnnotationsByLabels()
     signal showRelatedAnnotationsByPeriod()
 
     property var sharedObject: null
 
-    property string identifier: ''
+    property int identifier
+    property string title: ''
     property string descText: ''
     property string labels: ''
     property string periodStart: ''
     property string periodEnd: ''
     property int stateValue: 0
+    property string document: ''
 
     Common.UseUnits {
         id: units
     }
 
-    Models.ExtendedAnnotations {
-        id: relatedAnnotationsSimpleModel
+    Models.DocumentAnnotations {
+        id: annotationsModel
         //limit: 6
+    }
+
+    MarkDownParser {
+        id: parser
     }
 
     ColumnLayout {
@@ -82,7 +91,7 @@ Item {
                     Rectangle {
                         id: headerData
                         width: parent.width
-                        height: Math.max(units.fingerUnit, childrenRect.height)
+                        height: childrenRect.height
                         border.color: 'black'
 
                         GridLayout {
@@ -94,8 +103,8 @@ Item {
 
                             columns: 3
 
-                            columnSpacing: units.nailUnit
-                            rowSpacing: units.nailUnit
+                            columnSpacing: units.nailUnit * 2
+                            rowSpacing: units.nailUnit * 2
 
                             Text {
                                 width: headerData.width / 2
@@ -108,8 +117,8 @@ Item {
                                 height: contentHeight
                                 verticalAlignment: Text.AlignVCenter
                                 font.pixelSize: units.readUnit
-                                text: showAnnotationItem.identifier
                                 elide: Text.ElideRight
+                                text: showAnnotationItem.title
                             }
                             Item {
                                 width: units.fingerUnit * 2
@@ -187,7 +196,7 @@ Item {
                                 font.pixelSize: units.readUnit
                                 text: qsTr('Estat:')
                             }
-                            AnnotationsComponents.StateComponent {
+                            StateDisplay {
                                 id: stateComponent
 
                                 Layout.preferredWidth: units.fingerUnit * 2
@@ -195,13 +204,30 @@ Item {
 
                                 stateValue: showAnnotationItem.stateValue
 
-                                onClicked: {
-                                    console.log('edit state');
-                                    annotationStateSelected(showAnnotationItem.stateValue);
-                                }
+                                onClicked: stateEditorDialog.open()
                             }
                             Item {
                                 width: units.fingerUnit * 2
+                            }
+
+                            Text {
+                                Layout.preferredHeight: documentText.height
+                                Layout.alignment: Qt.AlignVCenter
+                                font.pixelSize: units.readUnit
+                                text: qsTr('Document:')
+                            }
+                            Text {
+                                id: documentText
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Math.max(contentHeight, units.fingerUnit * 2)
+                                Layout.alignment: Qt.AlignVCenter
+                                font.pixelSize: units.readUnit
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                text: document
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: documentSelected(document);
+                                }
                             }
                         }
                     }
@@ -234,8 +260,9 @@ Item {
                                 }
                                 size: units.fingerUnit
                                 image: 'edit-153612'
-                                onClicked: annotationTitleSelected(changeTitleButton)
+                                onClicked: titleEditorDialog.open()
                             }
+                            text: showAnnotationItem.title
                         }
                         Rectangle {
                             id: barTitleSeparator
@@ -262,7 +289,7 @@ Item {
 
                                 size: units.fingerUnit
                                 image: 'edit-153612'
-                                onClicked: annotationDescriptionSelected(descText, changeDescriptionButton)
+                                onClicked: descEditorDialog.open()
                             }
                         }
                     }
@@ -299,7 +326,7 @@ Item {
                                 clip: true
 
                                 rightMargin: units.fingerUnit * 3
-                                model: relatedAnnotationsSimpleModel
+                                model: annotationsModel
 
                                 spacing: units.nailUnit
 
@@ -318,7 +345,7 @@ Item {
                                     }
                                     MouseArea {
                                         anchors.fill: parent
-                                        onClicked: annotationSelected(model.title)
+                                        onClicked: annotationSelected(model.id)
                                     }
                                 }
                                 footer: Common.ImageButton {
@@ -404,8 +431,8 @@ Item {
 
 
     function getText() {
-        if (showAnnotationItem.identifier != '') {
-            annotationsModel.filters = ["title = ?"];
+        if (showAnnotationItem.identifier > -1) {
+            annotationsModel.filters = ["id = ?"];
             annotationsModel.bindValues = [showAnnotationItem.identifier];
 
         } else {
@@ -426,22 +453,22 @@ Item {
         if (annotationsModel.count>0) {
             var obj;
             obj = annotationsModel.getObjectInRow(0);
-            identifier = obj['title'];
             startText.text = qsTr('Inici: ') + obj['start'];
             endText.text = qsTr('Final: ') + obj['end'];
             labelsText.text = '# ' + obj['labels'];
             labels = obj['labels'];
-            titleText.text = showAnnotationItem.identifier;
+            showAnnotationItem.title = obj['title'];
             showAnnotationItem.labels = "" + obj['labels'];
             periodStart = obj['start'];
             periodEnd = obj['end'];
             descText = obj['desc'];
             contentText.text = parser.toHtml(obj['desc']);
             stateValue = obj['state'];
+            document = obj['document'];
         }
 
         // Look for related annotations in labels and period
-        relatedAnnotationsSimpleModel.sort = 'start ASC, end ASC, title ASC';
+        annotationsModel.sort = 'start ASC, end ASC, title ASC';
         var labelsArray = showAnnotationItem.labels.trim().split(' ');
         var labelFilter = [];
         for (var i=0; i<labelsArray.length; i++) {
@@ -453,13 +480,13 @@ Item {
         var notitleFilter = "(title != '')"
         var differentTitle = "(title != ?)"
 
-        relatedAnnotationsSimpleModel.filters = [notitleFilter,differentTitle,periodFilter + ((labelFilterString != "")?" OR (" + labelFilterString + ")":'')];
+        annotationsModel.filters = [notitleFilter,differentTitle,periodFilter + ((labelFilterString != "")?" OR (" + labelFilterString + ")":'')];
         labelsArray.unshift(showAnnotationItem.periodStart);
         labelsArray.unshift(showAnnotationItem.periodStart);
         labelsArray.unshift(identifier);
-        relatedAnnotationsSimpleModel.bindValues = labelsArray;
+        annotationsModel.bindValues = labelsArray;
         console.log("LABELS array",labelsArray);
-        relatedAnnotationsSimpleModel.select();
+        annotationsModel.select();
     }
 
     function copyAnnotationDescription() {
@@ -473,6 +500,67 @@ Item {
 
     QClipboard {
         id: clipboard
+    }
+
+    Common.SuperposedMenu {
+        id: titleEditorDialog
+
+        parentWidth: parent.width
+
+        title: qsTr('Edia el títol')
+        standardButtons: StandardButton.Save | StandardButton.Cancel
+
+        Editors.TextAreaEditor3 {
+            id: titleEditor
+            width: parent.width
+            content: showAnnotationItem.title;
+        }
+
+        onAccepted: {
+            annotationsModel.updateObject(identifier, {title: titleEditor.content});
+            getText();
+        }
+    }
+
+    Common.SuperposedMenu {
+        id: descEditorDialog
+
+        parentWidth: parent.width
+
+        title: qsTr('Edia la descripció')
+        standardButtons: StandardButton.Save | StandardButton.Cancel
+
+        Editors.TextAreaEditor3 {
+            id: descEditor
+            width: parent.width
+            content: showAnnotationItem.descText;
+        }
+
+        onAccepted: {
+            annotationsModel.updateObject(identifier, {desc: descEditor.content});
+            getText();
+        }
+    }
+
+    Common.SuperposedMenu {
+        id: stateEditorDialog
+
+        parentWidth: parent.width
+
+        title: qsTr("Edia l'estat")
+        standardButtons: StandardButton.Save | StandardButton.Cancel
+
+        StateEditor {
+            id: stateEditor
+
+            width: parent.width
+            content: showAnnotationItem.stateValue
+        }
+
+        onAccepted: {
+            annotationsModel.updateObject(identifier, {state: stateEditor.content});
+            getText();
+        }
     }
 
     Component.onCompleted: getText()

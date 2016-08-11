@@ -6,6 +6,7 @@ import ClipboardAdapter 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///editors' as Editors
+import 'qrc:///modules/annotations2' as Annotations
 import "qrc:///modules/files/mediaTypes.js" as MediaTypes
 
 Item {
@@ -23,10 +24,11 @@ Item {
     property string contents: ''
     property string hashString: ''
 
+    signal annotationEditSelected(string annotation, int document)
+    signal annotationSelected(int annotation)
     signal documentRemoved()
     signal documentUpdated()
     signal documentSelected(string document)
-    signal annotationEditSelected(string annotation, int document)
     signal documentSourceSelected(string source, string mediaType)
 
 
@@ -265,23 +267,14 @@ Item {
                     captionSize: units.readUnit
                     caption: qsTr('Anotacions')
 
-                    ListView {
+                    Annotations.AnnotationsList {
                         width: parent.width
                         height: units.fingerUnit * 10
-                        delegate: Text {
-                            height: units.fingerUnit * 3
-                            verticalAlignment: Text.AlignVCenter
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            font.pixelSize: units.readUnit
-                            text: model.annotation
 
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: annotationEditSelected(annotation, document)
-                            }
-                        }
+                        document: showDocumentItem.document
+
+                        onAnnotationSelected: showDocumentItem.annotationSelected(annotation)
                     }
-
                 }
 
                 Common.BasicSection {

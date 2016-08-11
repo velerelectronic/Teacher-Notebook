@@ -18,6 +18,7 @@ Rectangle {
     signal openAnnotation(string title)
 
     property string labels: ''
+    property string document: ''
 
     Models.ExtendedAnnotations {
         id: annotationsModel

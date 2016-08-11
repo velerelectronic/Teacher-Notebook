@@ -32,6 +32,7 @@ DatabaseBackup {
 
         dataBck.createTable('documentsSources', 'title TEXT PRIMARY KEY, desc TEXT, created TEXT, source TEXT, hash TEXT, type TEXT, contents TEXT');
         dataBck.createTable('concurrentDocuments', 'document TEXT PRIMARY KEY, lastAccessTime TEXT, parameters TEXT');
+        dataBck.createTable('documentAnnotations', 'id INTEGER PRIMARY KEY, document TEXT, title TEXT, desc TEXT, created TEXT, labels TEXT, start TEXT, end TEXT, state INTEGER');
 
         //dataBck.createTable('resources','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, type TEXT, source TEXT, contents BLOB, hash TEXT, annotation TEXT');
 
@@ -42,5 +43,4 @@ DatabaseBackup {
         dataBck.createTable('assessmentGrid','id INTEGER PRIMARY KEY, created TEXT, moment TEXT, "group" TEXT, individual TEXT, variable TEXT, value TEXT, comment TEXT');
         dataBck.createView('individuals_groups','SELECT "group" FROM individuals_list GROUP BY "group"');
     }
-
 }
