@@ -255,8 +255,7 @@ Item {
                     text: qsTr('Fitxer')
                     onClicked: {
                         superposedAddMenu.close();
-                        newDocumentDialog.load(qsTr('Nou document'), 'documents/NewDocument', {});
-                        newDocumentDialog.open();
+                        newDocumentDialog.openNewDocument();
 //                        newDocumentSelected();
                     }
                 }
@@ -284,8 +283,23 @@ Item {
     Common.SuperposedWidget {
         id: newDocumentDialog
 
+        function openNewDocument() {
+            newDocumentDialog.load(qsTr('Nou document'), 'documents/NewDocument', {});
+            newDocumentDialog.open();
+        }
+
         Connections {
             target: newDocumentDialog.mainItem
+            ignoreUnknownSignals: true
+
+            onDocumentsListSelected: {
+                documentsModel.select();
+                newDocumentDialog.close();
+            }
+
+            onDocumentSelected: documentSelected(document)
+
+            onNewDocumentSelected: newDocumentDialog.openNewDocument()
         }
     }
 

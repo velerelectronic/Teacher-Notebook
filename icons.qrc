@@ -55,5 +55,7 @@
         <file>icons/pin-23620.svg</file>
         <file>icons/checklist-154274.svg</file>
         <file>icons/garbage-1295900.svg</file>
+        <file>icons/question-mark-40876.svg</file>
+        <file>icons/box-147574.svg</file>
     </qresource>
 </RCC>

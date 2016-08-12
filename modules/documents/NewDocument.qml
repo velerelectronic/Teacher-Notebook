@@ -15,7 +15,7 @@ Item {
     id: addNewDocumentItem
 
     signal documentSelected(string document)
-    signal documenstListSelected()
+    signal documentsListSelected()
     signal newDocumentSelected()
     signal discarded()
 
@@ -29,7 +29,7 @@ Item {
     Models.DocumentsModel {
         id: documentsModel
 
-        searchFields: ['title']
+        filters: ['title=?']
     }
 
     FileIO {
@@ -41,7 +41,7 @@ Item {
     }
 
     function acquireDocument() {
-        if ((file !== '') && (documentName !== '')) {
+        if (documentName !== '') {
             selectedFile.source = file;
 
             console.log('Document source', source);
@@ -57,8 +57,8 @@ Item {
                 desc: qsTr('Edita la descripció...'),
                 source: file,
                 contents: '',
-                type: extension.toUpperCase(),
-                hash: hash.md5(selectedFile.read())
+                type: (file !== '')?extension.toUpperCase():'',
+                hash: (file !== '')?hash.md5(selectedFile.read()):''
             }
             console.log('new doc', JSON.stringify(obj));
             documentsModel.insertObject(obj);
@@ -73,6 +73,47 @@ Item {
 
         moveForwardEnabled: false
         moveBackwardsEnabled: false
+
+        Rectangle {
+            height: steppedPage.height
+            width: steppedPage.width
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+                Common.Button {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    text: qsTr('Buit')
+
+                    onClicked: {
+                        steppedPage.moveForward();
+                        steppedPage.moveForward();
+                    }
+                }
+
+                Common.Button {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    text: qsTr('Fitxer')
+
+                    onClicked: {
+                        steppedPage.moveForward();
+                    }
+                }
+
+                Common.Button {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    text: qsTr('Adreça web')
+
+                    onClicked: discarded()
+                }
+            }
+        }
 
         Files.FileSelector {
             height: steppedPage.height
@@ -101,8 +142,8 @@ Item {
                     Layout.fillWidth: true
                     text: documentName
                     onPerformSearch: {
-                        documentName = text;
-                        documentsModel.searchString = text;
+                        documentName = text.trim();
+                        documentsModel.bindValues = [documentName];
                         documentsModel.select();
                     }
                 }
@@ -133,7 +174,7 @@ Item {
                 Text {
                     id: infoText
 
-                    property bool correct: (documentsModel.count == 0) && (documentName !== '') && (file !== '')
+                    property bool correct: (documentsModel.count == 0) && (documentName !== '')
                     Layout.preferredHeight: units.fingerUnit
                     Layout.fillWidth: true
                     font.pixelSize: units.readUnit
@@ -175,7 +216,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: units.fingerUnit * 2
                     text: qsTr('Llista de documents')
-                    onClicked: documenstListSelected()
+                    onClicked: documentsListSelected()
                 }
                 Common.TextButton {
                     Layout.fillWidth: true

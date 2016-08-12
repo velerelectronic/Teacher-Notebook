@@ -203,9 +203,13 @@ Rectangle {
     Common.SuperposedWidget {
         id: importDialog
 
+        parentWidth: newAnnotationItem.width / 0.8
+        parentHeight: newAnnotationItem.height / 0.8
+
         function openImportAnnotationsDialog() {
             load(qsTr('Importa anotacions antigues'), 'annotations/RelatedAnnotations', {autoImport: true, document: newAnnotationItem.document});
         }
+
 
         Connections {
             target: importDialog.mainItem

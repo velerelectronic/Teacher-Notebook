@@ -3,6 +3,8 @@ function imageForMediaType(source, mediaType) {
     if ((mediaType == null) && (typeof mediaType === 'undefined'))
         mediaType = "";
     switch(mediaType.toLowerCase()) {
+    case '':
+        return 'qrc:///icons/box-147574.svg';
     case 'bmp':
     case 'gif':
     case 'jpg':
@@ -19,7 +21,7 @@ function imageForMediaType(source, mediaType) {
     case 'rubric':
         return 'qrc:///icons/checklist-154274.svg';
     default:
-        return 'qrc:///icons/road-sign-147409.svg';
+        return 'qrc:///icons/question-mark-40876.svg';
     }
 }
 

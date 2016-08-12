@@ -53,6 +53,8 @@
   * Rubrics: https://pixabay.com/es/lista-de-comprobaci%C3%B3n-de-verificaci%C3%B3n-154274/#
 
   * Trash: https://pixabay.com/es/de-basura-icono-basura-papelera-1295900/#
+  * Unkwown: https://pixabay.com/es/signo-de-interrogaci%C3%B3n-pregunta-40876/
+  * Empty document: https://pixabay.com/es/cuadro-caja-de-cart%C3%B3n-cart%C3%B3n-147574/
 */
 
 import QtQuick 2.5
