@@ -70,6 +70,15 @@ Rectangle {
                 }
                 Text {
                     Layout.fillHeight: true
+                    Layout.preferredWidth: docAnnotationsHeader.width / 6
+                    font.pixelSize: units.readUnit
+                    font.bold: true
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    verticalAlignment: Text.AlignVCenter
+                    text: qsTr('Etiquetes')
+                }
+                Text {
+                    Layout.fillHeight: true
                     Layout.preferredWidth: docAnnotationsHeader.width / 3 - stateHeading.width
                     font.pixelSize: units.readUnit
                     font.bold: true
@@ -106,8 +115,19 @@ Rectangle {
                     Layout.fillHeight: true
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
                     verticalAlignment: Text.AlignVCenter
                     text: '<b>' + model.title + '</b>&nbsp;' + model.desc + ''
+                }
+                Text {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: singleAnnotationLayout.width / 6
+                    font.pixelSize: units.readUnit
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
+                    color: 'green'
+                    text: model.labels
                 }
                 Text {
                     Layout.fillHeight: true

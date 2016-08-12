@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
+import QtQuick.Dialogs 1.2
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 
@@ -20,7 +21,11 @@ Item {
     property string trashedState: "state < 0"
     property string anyState: "1=1"
 
+    property bool autoImport: false
+    property string document: ''
+
     signal annotationSelected(string title)
+    signal annotationImported(string title)
     signal newAnnotation()
 
     Common.UseUnits {
@@ -229,7 +234,10 @@ Item {
                         onClicked: {
                             relatedAnnotations.mainIdentifier = model.title;
                             console.log('MAIN->', relatedAnnotations.mainIdentifier);
-                            annotationSelected(model.title);
+                            if (autoImport)
+                                importConfirmationDialog.askImportConfirmation(model.title);
+                            else
+                                annotationSelected(model.title);
                         }
                     }
                 }
@@ -309,5 +317,55 @@ Item {
             }
         }
         console.log('main index', relatedAnnotationsView.listIndex);
+    }
+
+    Common.SuperposedMenu {
+        id: importConfirmationDialog
+
+        title: qsTr("Vols importar aquesta anotació?")
+
+        standardButtons: StandardButton.Yes | StandardButton.No
+
+        property string annotationTitle
+
+        function askImportConfirmation(annotation) {
+            importConfirmationDialog.annotationTitle = annotation;
+            importConfirmationDialog.open();
+        }
+
+        Text {
+            font.pixelSize: units.readUnit
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            text: qsTr("Amb l'anotació «" + importConfirmationDialog.annotationTitle + "» es realitzaran dues accions:\n1. S'adjuntarà al document «" + document + "».\n2. S'esborrarà l'anotació de la taula original.\nVols continuar?")
+        }
+
+        onYes: importSingleAnnotation(importConfirmationDialog.annotationTitle, document)
+    }
+
+    function importSingleAnnotation(annotation, doc) {
+        // Import a single annotation and remove it
+
+        console.log('Importing', annotation, 'into', doc);
+        var annotationObj = relatedAnnotationsModel.getObject(annotation);
+        if (annotation == annotationObj['title']) {
+            var newAnnotationObj = {
+                document: doc,
+                title: annotationObj['title'],
+                desc: annotationObj['desc'],
+                labels: annotationObj['labels'],
+                start: annotationObj['start'],
+                end: annotationObj['end'],
+                state: annotationObj['state']
+            };
+
+            documentAnnotationsModel.insertObject(newAnnotationObj);
+            relatedAnnotationsModel.removeObject(annotation);
+            relatedAnnotations.annotationImported(annotation);
+        }
+        refreshAnnotationsList();
+    }
+
+    Models.DocumentAnnotations {
+        id: documentAnnotationsModel
     }
 }

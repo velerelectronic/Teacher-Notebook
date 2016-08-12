@@ -51,6 +51,8 @@
 
   * Attached: https://pixabay.com/es/clip-de-papel-mantenga-metal-27821/
   * Rubrics: https://pixabay.com/es/lista-de-comprobaci%C3%B3n-de-verificaci%C3%B3n-154274/#
+
+  * Trash: https://pixabay.com/es/de-basura-icono-basura-papelera-1295900/#
 */
 
 import QtQuick 2.5

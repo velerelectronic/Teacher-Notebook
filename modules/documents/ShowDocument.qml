@@ -92,7 +92,7 @@ Item {
                                 right: parent.right
                                 bottom: parent.bottom
                             }
-                            height: Math.max(imageSubText.height, units.fingerUnit) + 2 * units.nailUnit
+                            height: Math.max(imageSubText.height, units.fingerUnit * 2) + 2 * units.nailUnit
                             opacity: 0.5
                         }
                         Text {
@@ -101,15 +101,28 @@ Item {
                             anchors.margins: units.nailUnit
                             height: contentHeight
                             horizontalAlignment: Text.AlignLeft
+                            verticalAlignment: Text.AlignVCenter
                             font.pixelSize: units.readUnit
                             color: 'white'
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.bold: true
                             text: showDocumentItem.title
                         }
 
                         MouseArea {
                             anchors.fill: parent
                             onClicked: documentSourceSelected(source, mediaType)
+                        }
+
+                        Common.ImageButton {
+                            anchors {
+                                top: background.top
+                                right: background.right
+                            }
+                            enabled: annotationsList.count == 0
+                            image: 'garbage-1295900'
+                            size: units.fingerUnit * 1.5
+                            onClicked: confirmDeletionDialog.open()
                         }
                     }
                 }
@@ -281,38 +294,6 @@ Item {
                     }
                 }
 
-                Common.BasicSection {
-                    padding: units.fingerUnit
-                    captionSize: units.readUnit
-                    caption: qsTr('Eliminar')
-
-                    Common.Button {
-                        width: parent.width
-                        height: units.fingerUnit * 2
-                        text: qsTr('Elimina document (immediatament)')
-                        enabled: annotationsList.count == 0
-                        onClicked: confirmDeletionDialog.open()
-
-                        Common.SuperposedMenu {
-                            id: confirmDeletionDialog
-
-                            standardButtons: StandardButton.Yes | StandardButton.No
-
-                            title: qsTr('Confirmes eliminar aquest document?')
-
-                            Text {
-                                font.pixelSize: units.readUnit
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                text: '<p><b>' + document + '</b></p><p>' + desc + '</p>'
-                            }
-
-                            onYes: {
-                                documentsModel.removeObject(showDocumentItem.title);
-                                documentRemoved();
-                            }
-                        }
-                    }
-                }
             }
 
             // Editors
@@ -417,6 +398,27 @@ Item {
 
         documentsModel.updateObject(document,obj);
         console.log('saved');
+    }
+
+    Common.SuperposedMenu {
+        id: confirmDeletionDialog
+
+        standardButtons: StandardButton.Yes | StandardButton.No
+
+        title: qsTr('Confirmes eliminar aquest document?')
+
+        Text {
+            font.pixelSize: units.readUnit
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            text: '<p><b>' + document + '</b></p><p>' + desc + '</p>'
+        }
+
+        onYes: {
+            if (annotationsList.count == 0) {
+                documentsModel.removeObject(showDocumentItem.title);
+                documentRemoved();
+            }
+        }
     }
 
 

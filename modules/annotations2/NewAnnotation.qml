@@ -147,7 +147,10 @@ Rectangle {
                     Layout.preferredWidth: size
                     size: units.fingerUnit
                     image: 'upload-25068'
-                    onClicked: importAnnotations()
+                    onClicked: {
+                        close();
+                        importDialog.openImportAnnotationsDialog();
+                    }
                 }
                 Text {
                     Layout.fillHeight: true
@@ -197,7 +200,19 @@ Rectangle {
         menuList.model = timetableModel;
     }
 
-    function importAnnotations() {
-        importAnnotations(['title','desc','image'],annotationsModel,[]);
+    Common.SuperposedWidget {
+        id: importDialog
+
+        function openImportAnnotationsDialog() {
+            load(qsTr('Importa anotacions antigues'), 'annotations/RelatedAnnotations', {autoImport: true, document: newAnnotationItem.document});
+        }
+
+        Connections {
+            target: importDialog.mainItem
+
+            onAnnotationImported: {
+                annotationsModel.select();
+            }
+        }
     }
 }

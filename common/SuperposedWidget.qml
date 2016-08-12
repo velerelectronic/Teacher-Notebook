@@ -15,7 +15,7 @@ Dialog {
     property int parentWidth: parent.width
     property int parentHeight: parent.height
 
-    property Item mainItem
+    property Item mainItem: subPanelLoader.item
 
     standardButtons: StandardButton.Close
 
