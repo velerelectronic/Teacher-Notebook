@@ -554,6 +554,7 @@ Item {
             id: stateEditor
 
             width: parent.width
+            height: units.fingerUnit * 3
             content: showAnnotationItem.stateValue
         }
 

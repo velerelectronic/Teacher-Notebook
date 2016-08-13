@@ -50,5 +50,6 @@
         <file>qml/NewDocumentModule.qml</file>
         <file>qml/TeachingPlanningModule.qml</file>
         <file>qml/ShowAnnotationModule.qml</file>
+        <file>qml/AnnotationsListModule2.qml</file>
     </qresource>
 </RCC>

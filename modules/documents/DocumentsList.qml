@@ -293,11 +293,14 @@ Item {
             ignoreUnknownSignals: true
 
             onDocumentsListSelected: {
-                documentsModel.select();
                 newDocumentDialog.close();
+                documentsModel.select();
             }
 
-            onDocumentSelected: documentSelected(document)
+            onDocumentSelected: {
+                newDocumentDialog.close();
+                documentSelected(document);
+            }
 
             onNewDocumentSelected: newDocumentDialog.openNewDocument()
         }

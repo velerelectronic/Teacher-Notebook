@@ -9,6 +9,7 @@ import 'qrc:///models' as Models
 import "qrc:///javascript/Storage.js" as Storage
 import "qrc:///common/FormatDates.js" as FormatDates
 import 'qrc:///modules/annotations2' as Annotations
+import 'qrc:///modules/buttons' as Buttons
 import PersonalTypes 1.0
 
 Basic.BasicPage {
@@ -17,11 +18,19 @@ Basic.BasicPage {
 
     signal annotationSelected(int annotation)
     signal documentSelected(string document)
+    signal annotationsListSelected2()
 
     property bool embedded
     property int annotation
 
     pageClosable: true
+
+    buttonsModel: ObjectModel {
+        Buttons.MainButton {
+            image: 'list-153185'
+            onClicked: showAnnotationModule.annotationsListSelected2()
+        }
+    }
 
     mainPage: Annotations.ShowAnnotation {
         identifier: showAnnotationModule.annotation

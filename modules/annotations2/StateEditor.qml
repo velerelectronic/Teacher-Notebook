@@ -10,6 +10,8 @@ Common.AbstractEditor {
     property var annotationContent
     property string content
 
+    signal stateValueChanged(string value)
+
     onContentChanged: {
         annotationContent = {};
         annotationContent['state'] = content;
@@ -21,6 +23,8 @@ Common.AbstractEditor {
         orientation: ListView.Horizontal
 
         model: statesModel
+        spacing: units.fingerUnit
+
         highlight: Rectangle {
             height: units.fingerUnit * 2
             width: height
@@ -34,6 +38,7 @@ Common.AbstractEditor {
                 annotationStateEditor.content = model.stateValue;
                 stateButtonsList.currentIndex = model.index;
                 annotationStateEditor.setChanges(true);
+                stateValueChanged(model.stateValue);
             }
             Connections {
                 target: annotationStateEditor

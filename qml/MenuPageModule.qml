@@ -13,6 +13,7 @@ Basic.BasicPage {
     property string pageTitle: qsTr('Teacher Notebook');
 
     signal annotationsListSelected()
+    signal annotationsListSelected2()
     signal annotationSelected(string annotation)
     signal databaseManagerSelected()
     signal documentsListSelected()
@@ -205,6 +206,7 @@ Basic.BasicPage {
         labelsSortModel.select();
         subMenuElements.append({title: title, caption: qsTr('Ordenacions'), method: 'LabelsSort', parameters: null});
         subMenuElements.append({title: title, caption: qsTr('Anotacions'), method: 'annotationsListSelected', parameters: null});
+        subMenuElements.append({title: title, caption: qsTr('Anotacions 2'), method: 'annotationsListSelected2', parameters: null});
     }
 
     function getSortLabelsForTables(title) {

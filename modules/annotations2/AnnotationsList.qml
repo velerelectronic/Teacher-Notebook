@@ -17,8 +17,11 @@ Rectangle {
     }
 
     property string document: ''
+    property string stateValue: ''
+
     property alias count: docAnnotationsModel.count
     signal annotationSelected(int annotation)
+    property alias interactive: docAnnotationsList.interactive
 
     property int requiredHeight: docAnnotationsList.contentItem.height + docAnnotationsList.anchors.margins * 2 + docAnnotationsList.bottomMargin
     color: 'gray'
@@ -37,11 +40,38 @@ Rectangle {
             id: docAnnotationsModel
 
             function update() {
+                var stateFilter = '';
+                switch(stateValue) {
+                case '':
+                    stateFilter = '1=1';
+                    break;
+                case '1':
+                    stateFilter = "state='1'";
+                    break;
+                case '2':
+                    stateFilter = "state='2'";
+                    break;
+                case '3':
+                    stateFilter = "state='3'";
+                    break;
+                case '4':
+                    stateFilter = "state='4'";
+                    break;
+                case '-1':
+                    stateFilter = "state<'0'";
+                    break;
+                case '0':
+                default:
+                    stateFilter = "state='0' OR state='1' OR state='' OR state IS NULL";
+                    break;
+                }
+
                 if (document !== '') {
-                    docAnnotationsModel.filters = ['document=?'];
+                    docAnnotationsModel.filters = ['document=?',stateFilter];
                     docAnnotationsModel.bindValues = [document];
                 } else {
-                    docAnnotationsModel.filters = [];
+                    docAnnotationsModel.filters = [stateFilter];
+                    docAnnotationsModel.bindValues = [];
                 }
                 docAnnotationsModel.select();
                 console.log('compte', docAnnotationsModel.count);
@@ -55,49 +85,70 @@ Rectangle {
             id: docAnnotationsHeader
             color: '#C4FFA9'
             width: docAnnotationsList.width
-            height: units.fingerUnit * 2
-            RowLayout {
+            height: units.fingerUnit * 4
+            ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: units.nailUnit
-                Text {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: qsTr('Títol i descripció')
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: docAnnotationsHeader.width / 6
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    verticalAlignment: Text.AlignVCenter
-                    text: qsTr('Etiquetes')
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: docAnnotationsHeader.width / 3 - stateHeading.width
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    verticalAlignment: Text.AlignVCenter
-                    text: qsTr('Termini')
-                }
-                Text {
-                    id: stateHeading
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: Math.max(units.fingerUnit, stateHeading.contentWidth)
 
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: qsTr('Estat')
+                StateEditor {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit * 2
+
+                    onStateValueChanged: {
+                        stateValue = value;
+
+                        docAnnotationsModel.update();
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: qsTr('Títol i descripció')
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: docAnnotationsHeader.width / 6
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            verticalAlignment: Text.AlignVCenter
+                            text: qsTr('Etiquetes')
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: docAnnotationsHeader.width / 3 - stateHeading.width
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            verticalAlignment: Text.AlignVCenter
+                            text: qsTr('Termini')
+                        }
+                        Text {
+                            id: stateHeading
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: Math.max(units.fingerUnit, stateHeading.contentWidth)
+
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: qsTr('Estat')
+                        }
+                    }
                 }
             }
+
         }
 
         delegate: Rectangle {

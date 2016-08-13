@@ -126,6 +126,10 @@ Window {
                     appStateMachine.openAnnotationsList();
                 }
 
+                onAnnotationsListSelected2: {
+                    appStateMachine.openAnnotationsList2();
+                }
+
                 onAnnotationSelected: {
                     appStateMachine.annotation = annotation;
                     appStateMachine.openSingleAnnotation();
@@ -220,6 +224,7 @@ Window {
         // Signals
 
         signal openAnnotationsList()
+        signal openAnnotationsList2()
         signal openDatabaseManager()
         signal openDocumentsList()
         signal openMainPage()
@@ -265,6 +270,12 @@ Window {
             }
 
             DSM.SignalTransition {
+                signal: appStateMachine.openAnnotationsList2
+                targetState: annotationsListState2
+            }
+
+
+            DSM.SignalTransition {
                 signal: appStateMachine.openRubricsList
                 targetState: rubricsListState
             }
@@ -285,6 +296,11 @@ Window {
             DSM.SignalTransition {
                 signal: appStateMachine.openMainPage
                 targetState: mainMenuState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openAnnotationsList2
+                targetState: annotationsListState2
             }
 
             DSM.State {
@@ -362,6 +378,19 @@ Window {
 
                 onEntered: {
                     workingSpace.loadSubPage('AnnotationsListModule', {annotation: appStateMachine.annotation});
+                }
+
+                DSM.SignalTransition {
+                    signal: appStateMachine.openSingleAnnotation
+                    targetState: singleAnnotationState
+                }
+            }
+
+            DSM.State {
+                id: annotationsListState2
+
+                onEntered: {
+                    workingSpace.loadSubPage('AnnotationsListModule2', {});
                 }
 
                 DSM.SignalTransition {
