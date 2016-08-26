@@ -3,9 +3,11 @@ import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.1
 import PersonalTypes 1.0
 import QtGraphicalEffects 1.0
+import QtQml.Models 2.2
 import 'qrc:///common' as Common
 import 'qrc:///modules/basic' as Basic
 import 'qrc:///models' as Models
+import 'qrc:///modules/annotations2' as Annotations
 import "qrc:///javascript/Storage.js" as Storage
 
 Basic.BasicPage {
@@ -44,143 +46,170 @@ Basic.BasicPage {
             text: 'Teacher Notebook'
         }
 
-        ListView {
-            id: menuList
+        Common.HorizontalStaticMenu {
+            id: optionsMenu
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit * 2
 
+            spacing: units.nailUnit
+            underlineColor: 'orange'
+            underlineWidth: units.nailUnit
+
+            sectionsModel: mainSectionsModel
+            connectedList: partsList
+        }
+
+        ListView {
+            id: partsList
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            spacing: units.nailUnit
+            visible: partsList.enabled
+
             clip: true
 
-            orientation: ListView.Vertical
+            spacing: units.fingerUnit
 
-            model: ListModel {
-                id: menuModel
-            }
+            model: ObjectModel {
+                id: mainSectionsModel
 
-            delegate: Rectangle {
-                id: menuItemRect
+                Common.BasicSection {
+                    width: partsList.width
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+                    caption: qsTr('Recents')
 
-                width: menuList.width
-                height: captionText.height + subMenuList.height + 2 * captionText.anchors.margins
+                    ColumnLayout {
+                        width: parent.width
+                        height: Math.max(recentDocumentsGrid.contentItem.height, units.fingerUnit * 2) + units.fingerUnit * 2
+                        spacing: units.fingerUnit
 
-                color: (isCurrentItem)?'#D8F6CE':'white'
+                        ListView {
+                            id: recentDocumentsGrid
 
-                property var submenu: subMenuElements
-                property bool isCurrentItem: ListView.isCurrentItem
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
 
-                function resetCurrentSubMenu() {
-                    subMenuList.currentIndex = -1;
-                }
+                            spacing: units.nailUnit
+                            orientation: ListView.Horizontal
 
-                Text {
-                    id: captionText
-                    anchors {
-                        top: parent.top
-                        left: parent.left
-                        right: parent.right
-                    }
-                    anchors.margins: units.nailUnit
-                    height: units.fingerUnit
+                            model: ListModel {
+                                id: recentElements
+                            }
 
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
-                    maximumLineCount: 2
-                    font.bold: menuItemRect.isCurrentItem
-                    text: model.caption
+                            delegate: Rectangle {
+                                width: units.fingerUnit * 4
+                                height: units.fingerUnit * 2
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            menuList.currentIndex = model.index;
-                        }
-                    }
-                }
+                                border.color: 'black'
+                                Text {
+                                    anchors.fill: parent
+                                    anchors.margins: units.nailUnit
+                                    text: model.title
+                                    verticalAlignment: Text.AlignVCenter
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                    elide: Text.ElideRight
+                                    maximumLineCount: 2
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        documentSelected(model.document);
+                                    }
+                                }
+                            }
 
-                ListView {
-                    id: subMenuList
-                    anchors {
-                        top: captionText.bottom
-                        left: parent.left
-                        right: parent.right
-                    }
-                    height: (menuItemRect.isCurrentItem)?units.fingerUnit * 3:0
+                            Component.onCompleted: {
+                                concurrentDocuments.select();
+                                recentElements.clear();
 
-                    property int subIndexCandidate: -1
-                    orientation: ListView.Horizontal
-
-                    spacing: units.nailUnit
-
-                    model: (menuItemRect.isCurrentItem)?subMenuElements:[]
-                    delegate: Rectangle {
-                        width: units.fingerUnit * 4
-                        height: units.fingerUnit * 2
-
-                        border.color: 'black'
-                        Text {
-                            anchors.fill: parent
-                            anchors.margins: units.nailUnit
-                            text: model.caption
-                            verticalAlignment: Text.AlignVCenter
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            elide: Text.ElideRight
-                            maximumLineCount: 2
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                console.log('model', model, model.title, model.caption, model.parameters);
-                                if (model.parameters == null) {
-                                    menuPage[model.method].call(menuPage);
-                                } else {
-                                    menuPage[model.method].call(menuPage, model.parameters);
+                                for (var i=0; i<Math.min(concurrentDocuments.count, 9); i++) {
+                                    var documentObject = concurrentDocuments.getObjectInRow(i);
+                                    recentElements.append({title: documentObject['document'], document: documentObject['document']});
                                 }
                             }
                         }
+
+                        Button {
+                            Layout.preferredHeight: units.fingerUnit
+                            text: qsTr('Llista de documents')
+                            onClicked: documentsListSelected()
+                        }
                     }
                 }
-            }
-            onCurrentIndexChanged: {
-                subMenuElements.clear();
 
-                if (currentIndex>-1) {
-                    menuList.currentItem.resetCurrentSubMenu();
+                Common.BasicSection {
+                    width: partsList.width
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+                    caption: qsTr('Avui')
 
-                    var itemObject = menuModel.get(currentIndex);
-                    if (itemObject.submenu.method !== '') {
-                        itemObject.submenu.object[itemObject.submenu.method](itemObject.caption);
+                    ColumnLayout {
+                        width: parent.width
+                        height: menuPage.height * 0.67
+
+                        Annotations.AnnotationsList {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            filterPeriod: true
+                        }
+                        Button {
+                            text: qsTr('Totes les anotacions')
+                            onClicked: annotationsListSelected2()
+                        }
+                    }
+                }
+
+                Common.BasicSection {
+                    width: partsList.width
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+                    caption: qsTr('Opcions')
+                }
+
+                Common.BasicSection {
+                    width: partsList.width
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+                    caption: qsTr('Avançat')
+
+                    Flow {
+                        width: parent.width
+                        height: childrenRect.height
+                        spacing: units.fingerUnit
+
+                        Button {
+                            text: qsTr('Gestor de dades')
+                            onClicked: databaseManagerSelected();
+                        }
+                        Button {
+                            text: qsTr('Exportador')
+                            //, page: 'ExportManager', parameters: {}});
+                        }
+                        Button {
+                            text: qsTr('! Recerca de coneixement')
+                            // page: 'Researcher', parameters: {}, submenu: {object: menuPage, method: ''}});
+                        }
+                        Button {
+                            text: qsTr('Feeds')
+                            //, page: 'FeedWEIB', parameters: {}});
+                        }
+                        Button {
+                            text: qsTr('Rellotge')
+                            //, page: 'TimeController', parameters: {}});
+                        }
+                        Button {
+                            text: qsTr('Espai de treball')
+                            //, page: 'WorkSpace', parameters: {}, submenu: {object: menuPage, method: ''}});
+                        }
+                        Button {
+                            text: qsTr('Pissarra')
+                            //, page: 'Whiteboard', parameters: {}, submenu: {object: menuPage, method: ''}});
+                        }
                     }
                 }
             }
         }
-    }
-
-
-    Component.onCompleted: {
-        menuModel.append({caption: qsTr('Documents'), submenu: {object: menuPage, method: 'getDocumentsOptions'}});
-        menuModel.append({caption: qsTr('Anotacions'), submenu: {object: menuPage, method: 'getSortLabels'}});
-        menuModel.append({caption: qsTr('Taules'), submenu: {object: menuPage, method: 'getSortLabelsForTables'}});
-        menuModel.append({caption: qsTr('Altres eines'), submenu: {object: menuPage, method: 'getOtherToolsList'}});
-
-        menuModel.append({caption: qsTr('Espai de treball'), page: 'WorkSpace', parameters: {}, submenu: {object: menuPage, method: ''}});
-        menuModel.append({caption: qsTr('Pissarra'), page: 'Whiteboard', parameters: {}, submenu: {object: menuPage, method: ''}});
-        menuModel.append({caption: qsTr('Documents'), page: 'DocumentsList', parameters: {}, submenu: {object: menuPage, method: ''}});
-    }
-
-    ListModel {
-        id: subMenuElements
-
-        dynamicRoles: true
-    }
-
-    Models.SavedAnnotationsSearchesModel {
-        id: savedAnnotationsModel
-    }
-
-    Models.LabelsSortModel {
-        id: labelsSortModel
     }
 
     Models.ConcurrentDocuments {
@@ -189,42 +218,4 @@ Basic.BasicPage {
         sort: 'lastAccessTime DESC'
     }
 
-    function getDocumentsOptions(title) {
-        concurrentDocuments.select();
-        subMenuElements.clear();
-
-        for (var i=0; i<concurrentDocuments.count; i++) {
-            var documentObject = concurrentDocuments.getObjectInRow(i);
-            subMenuElements.append({title: title, caption: documentObject['document'], method: "documentSelected", parameters: documentObject['document']});
-        }
-
-        subMenuElements.append({title: title, caption: qsTr('Llista'), method: 'documentsListSelected', parameters: null});
-    }
-
-    function getSortLabels(title) {
-        console.log('get saved searcges');
-        labelsSortModel.select();
-        subMenuElements.append({title: title, caption: qsTr('Ordenacions'), method: 'LabelsSort', parameters: null});
-        subMenuElements.append({title: title, caption: qsTr('Anotacions'), method: 'annotationsListSelected', parameters: null});
-        subMenuElements.append({title: title, caption: qsTr('Anotacions 2'), method: 'annotationsListSelected2', parameters: null});
-    }
-
-    function getSortLabelsForTables(title) {
-        console.log('get saved searcges');
-        labelsSortModel.select();
-        for (var i=0; i<labelsSortModel.count; i++) {
-            var sortLabel = labelsSortModel.getObjectInRow(i);
-            subMenuElements.append({title: title, caption: sortLabel.title, page: 'CombinedAnnotationsTable', parameters: {sortLabels: sortLabel.labels}});
-        }
-    }
-
-    function getOtherToolsList() {
-        subMenuElements.clear();
-
-        subMenuElements.append({caption: qsTr('Gestor de dades'), method: 'databaseManagerSelected', parameters: {}});
-        subMenuElements.append({caption: qsTr('Exportador'), page: 'ExportManager', parameters: {}});
-        subMenuElements.append({caption: qsTr('! Recerca de coneixement'), page: 'Researcher', parameters: {}, submenu: {object: menuPage, method: ''}});
-        subMenuElements.append({caption: qsTr('Feeds'), page: 'FeedWEIB', parameters: {}});
-        subMenuElements.append({caption: qsTr('Rellotge'), page: 'TimeController', parameters: {}});
-    }
 }

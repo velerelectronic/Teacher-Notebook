@@ -19,6 +19,13 @@ Rectangle {
     property string document: ''
     property string stateValue: ''
 
+    property string periodFilter: ''
+    property string periodFilterString: 'start>=? AND end<?'
+    property string periodStart: ''
+    property string periodEnd: ''
+
+    property bool filterPeriod: false
+
     property alias count: docAnnotationsModel.count
     signal annotationSelected(int annotation)
     property alias interactive: docAnnotationsList.interactive
@@ -66,13 +73,28 @@ Rectangle {
                     break;
                 }
 
+                // Update filters and bind values
+
+                var newFilter = [];
+                var newBindValues = [];
+                newFilter.push(stateFilter);
+
                 if (document !== '') {
-                    docAnnotationsModel.filters = ['document=?',stateFilter];
-                    docAnnotationsModel.bindValues = [document];
-                } else {
-                    docAnnotationsModel.filters = [stateFilter];
-                    docAnnotationsModel.bindValues = [];
+                    newFilter.push('document=?');
+                    newBindValues.push(document);
                 }
+                if (filterPeriod) {
+                    var today = new Date();
+                    newFilter.push(periodFilterString);
+                    periodStart = today.toYYYYMMDDFormat();
+                    today.setDate(today.getDate()+1);
+                    periodEnd = today.toYYYYMMDDFormat();
+                    newBindValues.push(periodStart, periodEnd);
+                }
+
+                docAnnotationsModel.filters = newFilter;
+                docAnnotationsModel.bindValues = newBindValues;
+
                 docAnnotationsModel.select();
                 console.log('compte', docAnnotationsModel.count);
             }
@@ -89,14 +111,36 @@ Rectangle {
             ColumnLayout {
                 anchors.fill: parent
 
-                StateEditor {
+                Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: units.fingerUnit * 2
 
-                    onStateValueChanged: {
-                        stateValue = value;
+                    RowLayout {
+                        anchors.fill: parent
+                        spacing: units.fingerUnit
 
-                        docAnnotationsModel.update();
+                        StateEditor {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+
+                            onStateValueChanged: {
+                                stateValue = value;
+
+                                docAnnotationsModel.update();
+                            }
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            font.pixelSize: units.readUnit
+                            text: (filterPeriod)?(qsTr('Des de ') + periodStart):''
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            font.pixelSize: units.readUnit
+                            text: (filterPeriod)?(qsTr('Fins a ') + periodEnd):''
+                        }
                     }
                 }
 

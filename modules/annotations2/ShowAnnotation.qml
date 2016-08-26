@@ -9,7 +9,7 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///editors' as Editors
-import 'qrc:///modules/annotations' as AnnotationsComponents
+import 'qrc:///modules/documents' as Documents
 
 Item {
     id: showAnnotationItem
@@ -164,7 +164,7 @@ Item {
                                 Layout.preferredWidth: size
                                 size: units.fingerUnit
                                 image: 'edit-153612'
-                                onClicked: annotationPeriodSelected(periodStart, periodEnd)
+                                onClicked: periodEditorDialog.openPeriodEditor()
                             }
 
                             Text {
@@ -228,6 +228,14 @@ Item {
                                     anchors.fill: parent
                                     onClicked: documentSelected(document);
                                 }
+                            }
+                            Common.ImageButton {
+                                id: changeDocumentButton
+                                image: 'edit-153612'
+                                size: units.fingerUnit
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: size
+                                onClicked: documentEditorDialog.open()
                             }
                         }
                     }
@@ -507,7 +515,7 @@ Item {
 
         parentWidth: parent.width
 
-        title: qsTr('Edia el títol')
+        title: qsTr('Edita el títol')
         standardButtons: StandardButton.Save | StandardButton.Cancel
 
         Editors.TextAreaEditor3 {
@@ -527,7 +535,7 @@ Item {
 
         parentWidth: parent.width
 
-        title: qsTr('Edia la descripció')
+        title: qsTr('Edita la descripció')
         standardButtons: StandardButton.Save | StandardButton.Cancel
 
         Editors.TextAreaEditor3 {
@@ -547,7 +555,7 @@ Item {
 
         parentWidth: parent.width
 
-        title: qsTr("Edia l'estat")
+        title: qsTr("Edita l'estat")
         standardButtons: StandardButton.Save | StandardButton.Cancel
 
         StateEditor {
@@ -563,6 +571,55 @@ Item {
             getText();
         }
     }
+
+    Common.SuperposedMenu {
+        id: periodEditorDialog
+
+        title: qsTr('Editor de període de temps')
+
+        standardButtons: StandardButton.Save | StandardButton.Cancel
+
+        function openPeriodEditor() {
+            periodEditorItem.setContent(periodStart, periodEnd);
+            periodEditorDialog.open();
+        }
+
+        PeriodEditor {
+            id: periodEditorItem
+
+            width: parent.width
+            height: showAnnotationItem.height * 0.8
+        }
+
+        onAccepted: {
+            var start = periodEditorItem.resultContent.start;
+            var end = periodEditorItem.resultContent.end;
+            annotationsModel.updateObject(identifier, {start: start, end: end});
+            getText();
+        }
+    }
+
+    Common.SuperposedMenu {
+        id: documentEditorDialog
+
+        property string selectedDocument: ''
+
+        title: qsTr('Mou a un altre document')
+        standardButtons: StandardButton.Save | StandardButton.Cancel
+
+        Documents.DocumentsList {
+            width: parent.width
+            height: showAnnotationItem.height * 0.8
+
+            onDocumentSelected: documentEditorDialog.selectedDocument = document;
+        }
+
+        onAccepted: {
+            annotationsModel.updateObject(identifier, {document: documentEditorDialog.selectedDocument});
+            getText();
+        }
+    }
+
 
     Component.onCompleted: getText()
 }

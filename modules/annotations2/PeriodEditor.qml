@@ -7,15 +7,15 @@ import 'qrc:///editors' as Editors
 Common.AbstractEditor {
     id: periodEditorItem
 
-    property string identifier
-    property var annotationContent
-    property var content
+    property var resultContent
 
-    onContentChanged: {
+    function setContent(startString, endString) {
+        console.log('setting', startString, endString);
+
         var re = /([0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2})|([0-9]{1,2}\:[0-9]{1,2}(?:\:[0-9]{1,2})?)/g;
 
         var start = new Date();
-        var parts = content.start.match(re);
+        var parts = startString.match(re);
         if ((parts == null) || (parts.length == 0)) {
             startDateCheckbox.checked = false;
         } else {
@@ -32,8 +32,7 @@ Common.AbstractEditor {
         startTimePicker.setDateTime(start);
 
         var end = new Date();
-        console.log('content change', content.end);
-        var parts = content.end.match(re);
+        var parts = endString.match(re);
         console.log(parts);
         if ((parts == null) || (parts.length == 0)) {
             endDateCheckbox.checked = false;
@@ -144,6 +143,8 @@ Common.AbstractEditor {
             Layout.fillWidth: true
             Layout.preferredHeight: width
 
+            property bool switchHours: true
+
             function setDateTime(date) {
                 startHours.selectedIndex = date.getHours()-1;
                 startMinutes.selectedIndex = date.getMinutes() / startMinutes.step;
@@ -152,28 +153,37 @@ Common.AbstractEditor {
             function getTime() {
                 var date = new Date();
                 date.setHours(startHours.selectedIndex + 1);
-                date.setMinutes(startMinutes.selectedIndex * startMinutes.step);
+                date.setMinutes(((startMinutes.selectedIndex>-1)?startMinutes.selectedIndex:0) * startMinutes.step);
                 return date;
             }
 
             Common.WheelClock {
                 id: startHours
                 anchors.fill: parent
+
+                visible: startTimePicker.switchHours
                 from: 1
                 to: 23
                 step: 1
                 angleStepOffset: 1
-                onSelectedIndexChanged: copyContentsToParentEditor()
+                onSelectedIndexChanged: {
+                    copyContentsToParentEditor();
+                    startTimePicker.switchHours = false;
+                }
             }
             Common.WheelClock {
                 id: startMinutes
                 anchors.fill: parent
-                anchors.margins: units.fingerUnit
+
+                visible: !startTimePicker.switchHours
                 from: 0
                 to: 11
                 step: 5
                 angleStepOffset: 0
-                onSelectedIndexChanged: copyContentsToParentEditor()
+                onSelectedIndexChanged: {
+                    copyContentsToParentEditor();
+                    startTimePicker.switchHours = true;
+                }
             }
         }
 
@@ -218,8 +228,8 @@ Common.AbstractEditor {
             }
         }
 
-        periodEditorItem.annotationContent = {start: start, end: end};
-        periodEditorItem.content = {start: start, end: end};
+        periodEditorItem.resultContent = {start: start, end: end};
+        periodEditorItem.setContent(start, end);
         periodEditorItem.setChanges(true);
     }
 }

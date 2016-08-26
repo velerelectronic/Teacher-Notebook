@@ -5,7 +5,6 @@
         <file>modules/annotations/TitleEditorComponent.qml</file>
         <file>modules/annotations/NewAnnotation.qml</file>
         <file>modules/annotations/NewAnnotationFromTimetable.qml</file>
-        <file>modules/annotations/PeriodEditorComponent.qml</file>
         <file>modules/annotations/ShowAnnotation.qml</file>
         <file>modules/annotations/RelatedAnnotations.qml</file>
         <file>modules/annotations/AnnotationsHistory.qml</file>
