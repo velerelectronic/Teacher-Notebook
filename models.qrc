@@ -11,5 +11,7 @@
         <file>models/DocumentsModel.qml</file>
         <file>models/ConcurrentDocuments.qml</file>
         <file>models/DocumentAnnotations.qml</file>
+        <file>models/CategorizedElementsModel.qml</file>
+        <file>models/RelatedListsModel.qml</file>
     </qresource>
 </RCC>

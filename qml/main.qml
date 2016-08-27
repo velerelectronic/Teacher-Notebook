@@ -158,6 +158,10 @@ Window {
                     appStateMachine.openMainPage();
                 }
 
+                onRelatedListsSelected: {
+                    appStateMachine.openRelatedLists();
+                }
+
                 onRubricSelected: {
                     appStateMachine.assessment = assessment;
                     appStateMachine.openSingleRubric();
@@ -232,6 +236,7 @@ Window {
         signal openNewAnnotation()
         signal openNewDocument()
         signal openNewRubric()
+        signal openRelatedLists()
         signal openSingleAnnotation()
         signal openSingleDocument()
         signal openSingleRubric()
@@ -274,6 +279,10 @@ Window {
                 targetState: annotationsListState2
             }
 
+            DSM.SignalTransition {
+                signal: appStateMachine.openSingleAnnotation
+                targetState: singleAnnotationState
+            }
 
             DSM.SignalTransition {
                 signal: appStateMachine.openRubricsList
@@ -283,6 +292,11 @@ Window {
             DSM.SignalTransition {
                 signal: appStateMachine.openDatabaseManager
                 targetState: databaseManagerState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openRelatedLists
+                targetState: relatedListsState
             }
         }
 
@@ -466,6 +480,14 @@ Window {
 
                 onEntered: {
                     workingSpace.loadSubPage('DataMan', {});
+                }
+            }
+
+            DSM.State {
+                id: relatedListsState
+
+                onEntered: {
+                    workingSpace.loadSubPage('RelatedListsModule', {});
                 }
             }
         }

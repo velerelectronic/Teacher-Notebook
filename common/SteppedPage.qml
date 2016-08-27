@@ -3,7 +3,7 @@ import QtQuick.Layouts 1.1
 import QtQml.Models 2.2
 import 'qrc:///common' as Common
 
-Item {
+Rectangle {
     Common.UseUnits {
         id: units
     }
@@ -14,6 +14,8 @@ Item {
     property bool moveBackwardsEnabled: true
 
     property string title
+
+    color: 'transparent'
 
     ColumnLayout {
         anchors.fill: parent

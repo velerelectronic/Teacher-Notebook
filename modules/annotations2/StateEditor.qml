@@ -26,13 +26,13 @@ Common.AbstractEditor {
         spacing: units.fingerUnit
 
         highlight: Rectangle {
-            height: units.fingerUnit * 2
+            height: stateButtonsList.height
             width: height
             color: 'yellow'
         }
 
         delegate: Common.ImageButton {
-            size: units.fingerUnit * 2
+            size: stateButtonsList.height
             image: model.image
             onClicked: {
                 annotationStateEditor.content = model.stateValue;

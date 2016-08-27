@@ -14,6 +14,7 @@ Basic.BasicPage {
     pageTitle: qsTr('Vista de document')
 
     signal annotationSelected(int annotation)
+    signal annotationsListSelected2()
     signal documentsListSelected(string document)
     signal documentSelected()
     signal showDocument()
@@ -41,6 +42,10 @@ Basic.BasicPage {
 
         onAnnotationSelected: {
             documentsModule.annotationSelected(annotation);
+        }
+
+        onAnnotationsListSelected2: {
+            documentsModule.annotationsListSelected2();
         }
 
         onCloseNewDocument: {

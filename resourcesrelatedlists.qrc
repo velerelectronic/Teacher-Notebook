@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/relatedlists/CategorizedElements.qml</file>
+        <file>modules/relatedlists/ImportElements.qml</file>
+        <file>modules/relatedlists/ImportRelatedLists.qml</file>
+    </qresource>
+</RCC>

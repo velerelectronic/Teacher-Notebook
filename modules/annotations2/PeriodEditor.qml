@@ -1,59 +1,372 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.4
+import QtQuick.Dialogs 1.2
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 
 Common.AbstractEditor {
     id: periodEditorItem
 
+    Common.UseUnits {
+        id: units
+    }
+
     property var resultContent
+
+    property var startDateObject
+    property bool startDateIsDefined: false
+    property bool startTimeIsDefined: false
+    property var endDateObject
+    property bool endDateIsDefined: false
+    property bool endTimeIsDefined: false
+
+    function acquireDateAndTime(dateTimeString) {
+        // It returns:
+        // * Object: date Object
+        // * dateDefined: true if object contains a valid date
+        // * timeDefined: true if object contains both valid date and time
+
+        var returnObject = new Date();
+        var returnDateDefined = false;
+        var returnTimeDefined = false;
+
+        var re = /([0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2})|([0-9]{1,2}\:[0-9]{1,2}(?:\:[0-9]{1,2})?)/g;
+
+        var parts = dateTimeString.match(re);
+
+        if ((parts !== null) && (parts.length > 0)) {
+            returnObject.fromYYYYMMDDFormat(parts[0]);
+            returnDateDefined = true;
+            if (parts.length > 1) {
+                returnObject.fromHHMMFormat(parts[1]);
+                returnTimeDefined = true;
+            }
+        }
+        return {
+            object: returnObject,
+            dateDefined: returnDateDefined,
+            timeDefined: returnTimeDefined
+        };
+    }
 
     function setContent(startString, endString) {
         console.log('setting', startString, endString);
 
-        var re = /([0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2})|([0-9]{1,2}\:[0-9]{1,2}(?:\:[0-9]{1,2})?)/g;
+        var startObj = acquireDateAndTime(startString);
+        startDateObject = startObj.object;
+        startDateIsDefined = startObj.dateDefined;
+        startTimeIsDefined = startObj.timeDefined;
 
-        var start = new Date();
-        var parts = startString.match(re);
-        if ((parts == null) || (parts.length == 0)) {
-            startDateCheckbox.checked = false;
-        } else {
-            startDateCheckbox.checked = true;
-            start.fromYYYYMMDDFormat(parts[0]);
-            if (parts.length == 1) {
-                startTimeCheckbox.checked = false;
-            } else {
-                startTimeCheckbox.checked = true;
-                start.fromHHMMFormat(parts[1]);
-            }
-        }
-        startDate.selectedDate = start;
-        startTimePicker.setDateTime(start);
+        var endObj = acquireDateAndTime(endString);
+        endDateObject = endObj.object;
+        endDateIsDefined = endObj.dateDefined;
+        endTimeIsDefined = endObj.timeDefined;
 
-        var end = new Date();
-        var parts = endString.match(re);
-        console.log(parts);
-        if ((parts == null) || (parts.length == 0)) {
-            endDateCheckbox.checked = false;
-        } else {
-            endDateCheckbox.checked = true;
-            end.fromYYYYMMDDFormat(parts[0]);
-            if (parts.length == 1) {
-                endTimeCheckbox.checked = false;
-            } else {
-                endTimeCheckbox.checked = true;
-                end.fromHHMMFormat(parts[1]);
-            }
-        }
-        endDate.selectedDate = end;
-        endTimePicker.setDateTime(end);
+        printDateTime();
+    }
 
-        startReadableText.text = (startDateCheckbox.checked)?((start.toShortReadableDate()) + ((startTimeCheckbox.checked)?(qsTr(" a les ") + start.toTimeSpecificFormat()):'')):qsTr('No especificat');
-        endReadableText.text = (endDateCheckbox.checked)?((end.toShortReadableDate()) + ((endTimeCheckbox.checked)?(qsTr(" a les ") + end.toTimeSpecificFormat()):'')):qsTr('No especificat');
+    function printDateTime() {
+        startDateText.text = (startDateIsDefined)?(startDateObject.toLongDate()):qsTr('No definit');
+        startTimeText.text = (startTimeIsDefined)?(startDateObject.toHHMMFormat()):qsTr('No definit');
+
+        endDateText.text = (endDateIsDefined)?(endDateObject.toLongDate()):qsTr('No definit');
+        endTimeText.text = (endTimeIsDefined)?(endDateObject.toHHMMFormat()):qsTr('No definit');
     }
 
     GridLayout {
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+        height: childrenRect.height
+
+        columns: 3
+        columnSpacing: units.fingerUnit
+        rowSpacing: units.fingerUnit
+        rows: 4
+        flow: GridLayout.TopToBottom
+
+        Text {
+            Layout.preferredHeight: units.fingerUnit * 4
+            Layout.preferredWidth: parent.width / 3
+            Layout.rowSpan: 2
+
+            font.pixelSize: units.readUnit
+            font.bold: true
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            text: qsTr('Comença')
+        }
+        Text {
+            Layout.preferredHeight: units.fingerUnit * 4
+            Layout.preferredWidth: parent.width / 3
+            Layout.rowSpan: 2
+
+            font.pixelSize: units.readUnit
+            font.bold: true
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            text: qsTr('Acaba')
+        }
+        Text {
+            id: startDateText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.fillWidth: true
+            font.pixelSize: units.readUnit
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+        }
+        Text {
+            id: startTimeText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.fillWidth: true
+            font.pixelSize: units.readUnit
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+        }
+        Text {
+            id: endDateText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.fillWidth: true
+            font.pixelSize: units.readUnit
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+        }
+        Text {
+            id: endTimeText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.fillWidth: true
+            font.pixelSize: units.readUnit
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+        }
+        Button {
+            Layout.preferredHeight: units.fingerUnit * 4
+            Layout.preferredWidth: parent.height / 3
+            Layout.rowSpan: 2
+
+            text: qsTr('Canvia')
+
+            onClicked: periodChangeDialog.openStartChange()
+        }
+        Button {
+            Layout.preferredHeight: units.fingerUnit * 4
+            Layout.preferredWidth: parent.height / 3
+            Layout.rowSpan: 2
+
+            text: qsTr('Canvia')
+
+            onClicked: periodChangeDialog.openEndChange()
+        }
+    }
+
+    Common.SuperposedMenu {
+        id: periodChangeDialog
+
+        title: qsTr('Canvia')
+
+        property bool isStart
+
+        function openStartChange() {
+            title = qsTr('Canvia inici');
+            isStart = true;
+            open();
+        }
+
+        function openEndChange() {
+            title = qsTr('Canvia final');
+            isStart = false;
+            open();
+        }
+
+        Common.SuperposedMenuEntry {
+            text: qsTr('Ajorna un dia')
+            onClicked: {
+                if (periodChangeDialog.isStart) {
+                    startDateObject.setDate(startDateObject.getDate()+1);
+                    printDateTime();
+                } else {
+                    endDateObject.setDate(endDateObject.getDate()+1);
+                    printDateTime();
+                }
+                periodChangeDialog.close();
+            }
+        }
+        Common.SuperposedMenuEntry {
+            text: qsTr('Ajorna una setmana')
+            onClicked: {
+                if (periodChangeDialog.isStart) {
+                    startDateObject.setDate(startDateObject.getDate()+7);
+                    printDateTime();
+                } else {
+                    endDateObject.setDate(endDateObject.getDate()+7);
+                    printDateTime();
+                }
+                periodChangeDialog.close();
+            }
+        }
+        Common.SuperposedMenuEntry {
+            text: qsTr('Ajorna un mes')
+            onClicked: {
+                if (periodChangeDialog.isStart) {
+                    startDateObject.setMonth(startDateObject.getMonth()+1);
+                    printDateTime();
+                } else {
+                    endDateObject.setMonth(endDateObject.getMonth()+1);
+                    printDateTime();
+                }
+                periodChangeDialog.close();
+            }
+        }
+        Common.SuperposedMenuEntry {
+            text: qsTr('Ajorna un any')
+            onClicked: {
+                if (periodChangeDialog.isStart) {
+                    startDateObject.setFullYear(startDateObject.getFullYear()+1);
+                    printDateTime();
+                } else {
+                    endDateObject.setFullYear(endDateObject.getFullYear()+1);
+                    printDateTime();
+                }
+                periodChangeDialog.close();
+            }
+        }
+        Rectangle {
+            height: units.nailUnit
+            width: parent.width
+            color: 'gray'
+        }
+
+        Common.SuperposedMenuEntry {
+            text: qsTr('Tria una data')
+
+            onClicked: {
+                periodChangeDialog.close();
+                if (periodChangeDialog.isStart) {
+                    dateChangeDialog.openStartDateSelector();
+                } else {
+                    dateChangeDialog.openEndDateSelector();
+                }
+            }
+        }
+        Common.SuperposedMenuEntry {
+            text: qsTr('Esborra data')
+            onClicked: {
+                if (periodChangeDialog.isStart) {
+                    startDateIsDefined = false;
+                    startTimeIsDefined = false;
+                } else {
+                    endDateIsDefined = false;
+                    endTimeIsDefined = false;
+                }
+                printDateTime();
+                periodChangeDialog.close();
+            }
+        }
+        Rectangle {
+            height: units.nailUnit
+            width: parent.width
+            color: 'gray'
+        }
+        Common.SuperposedMenuEntry {
+            text: qsTr('Tria una hora')
+
+            onClicked: {
+                periodChangeDialog.close();
+                if (periodChangeDialog.isStart) {
+                    timeChangeDialog.openStartTimeSelector();
+                } else {
+                    timeChangeDialog.openEndTimeSelector();
+                }
+            }
+        }
+        Common.SuperposedMenuEntry {
+            text: qsTr('Esborra hora')
+            onClicked: {
+                if (periodChangeDialog.isStart) {
+                    startTimeIsDefined = false;
+                } else {
+                    endTimeIsDefined = false;
+                }
+                printDateTime();
+                periodChangeDialog.close();
+            }
+        }
+    }
+
+    Common.SuperposedMenu {
+        id: dateChangeDialog
+
+        property bool isStart
+        standardButtons: StandardButton.Cancel
+
+        function openStartDateSelector() {
+            isStart = true;
+            open();
+        }
+
+        function openEndDateSelector() {
+            isStart = false;
+            open();
+        }
+
+        Calendar {
+            id: calendarPicker
+
+            onSelectedDateChanged: {
+                var date = calendarPicker.selectedDate;
+                if (dateChangeDialog.isStart) {
+                    startDateObject.setDate(date.getDate());
+                    startDateObject.setMonth(date.getMonth());
+                    startDateObject.setFullYear(date.getFullYear());
+                    startDateIsDefined = true;
+                } else {
+                    endDateObject.setDate(date.getDate());
+                    endDateObject.setMonth(date.getMonth());
+                    endDateObject.setFullYear(date.getFullYear());
+                    endDateIsDefined = true;
+                }
+                printDateTime();
+                dateChangeDialog.close();
+            }
+        }
+    }
+
+    Common.SuperposedMenu {
+        id: timeChangeDialog
+
+        property bool isStart
+        standardButtons: StandardButton.Save | StandardButton.Cancel
+
+        function openStartTimeSelector() {
+            isStart = true;
+            open();
+        }
+
+        function openEndTimeSelector() {
+            isStart = false;
+            open();
+        }
+
+        Editors.TimePicker {
+            id: timePicker
+        }
+
+        onAccepted: {
+            var time = timePicker.getTime();
+            if (timeChangeDialog.isStart) {
+                startTimeIsDefined = true;
+                startDateObject.setHours(time.getHours());
+                startDateObject.setMinutes(time.getMinutes());
+                startDateObject.setSeconds(time.getSeconds());
+            } else {
+                endTimeIsDefined = true;
+                endDateObject.setHours(time.getHours());
+                endDateObject.setMinutes(time.getMinutes());
+                endDateObject.setSeconds(time.getSeconds());
+            }
+            printDateTime();
+        }
+    }
+
+    GridLayout {
+        visible: false
         anchors.fill: parent
         columns: 2
         columnSpacing: units.fingerUnit
@@ -97,27 +410,6 @@ Common.AbstractEditor {
         CheckBox {
             id: endDateCheckbox
             text: qsTr('Especificar data')
-
-            onClicked: periodEditorItem.copyContentsToParentEditor()
-        }
-
-        Calendar {
-            id: startDate
-            Layout.fillWidth: true
-            Layout.preferredHeight: width
-
-            enabled: startDateCheckbox.checked
-
-            onClicked: periodEditorItem.copyContentsToParentEditor()
-        }
-
-        Calendar {
-            id: endDate
-
-            Layout.fillWidth: true
-            Layout.preferredHeight: width
-
-            enabled: endDateCheckbox.checked
 
             onClicked: periodEditorItem.copyContentsToParentEditor()
         }
@@ -187,49 +479,27 @@ Common.AbstractEditor {
             }
         }
 
-        /*
-        Editors.TimePicker {
-            id: startTimePicker
-
-            Layout.fillWidth: true
-            Layout.preferredHeight: width
-
-            enabled: startTimeCheckbox.checked
-
-            onUpdatedByUser: periodEditorItem.copyContentsToParentEditor()
-        }
-        */
-
-        Editors.TimePicker {
-            id: endTimePicker
-
-            Layout.fillWidth: true
-            Layout.preferredHeight: width
-
-            enabled: endTimeCheckbox.checked
-
-            onUpdatedByUser: periodEditorItem.copyContentsToParentEditor()
-        }
     }
 
-    function copyContentsToParentEditor() {
-        var start = "";
-        if (startDateCheckbox.checked) {
-            start = startDate.selectedDate.toYYYYMMDDFormat();
-            if (startTimeCheckbox.checked) {
-                start +=  " " + startTimePicker.getTime().toHHMMFormat();
+    function getStartDateString() {
+        var startString = "";
+        if (startDateIsDefined) {
+            startString += startDateObject.toYYYYMMDDFormat();
+            if (startTimeIsDefined) {
+                startString += " " + startDateObject.toHHMMFormat();
             }
         }
-        var end = "";
-        if (endDateCheckbox.checked) {
-            end = endDate.selectedDate.toYYYYMMDDFormat();
-            if (endTimeCheckbox.checked) {
-                end += " " + endTimePicker.getTime().toHHMMFormat();
-            }
-        }
+        return startString;
+    }
 
-        periodEditorItem.resultContent = {start: start, end: end};
-        periodEditorItem.setContent(start, end);
-        periodEditorItem.setChanges(true);
+    function getEndDateString() {
+        var endString = "";
+        if (endDateIsDefined) {
+            endString += endDateObject.toYYYYMMDDFormat();
+            if (endTimeIsDefined) {
+                endString += " " + endDateObject.toHHMMFormat();
+            }
+        }
+        return endString;
     }
 }

@@ -592,8 +592,8 @@ Item {
         }
 
         onAccepted: {
-            var start = periodEditorItem.resultContent.start;
-            var end = periodEditorItem.resultContent.end;
+            var start = periodEditorItem.getStartDateString();
+            var end = periodEditorItem.getEndDateString();
             annotationsModel.updateObject(identifier, {start: start, end: end});
             getText();
         }

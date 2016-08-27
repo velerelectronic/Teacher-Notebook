@@ -187,7 +187,9 @@ QVariant SqlTableModel2::insertObject(const QVariantMap &object) {
     QVariant lastId = query.lastInsertId();
 
     qDebug() << "INSERT" << query.lastQuery();
+    qDebug() << object;
     updated();
+    qDebug() << "Last ID " << lastId;
     return lastId;
 }
 

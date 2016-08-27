@@ -38,9 +38,16 @@ DatabaseBackup {
 
         dataBck.createTable('timetables', 'id INTEGER PRIMARY KEY, annotation TEXT, periodTime INTEGER NOT NULL, periodDay INTEGER NOT NULL, title TEXT NOT NULL, startTime TEXT, endTime TEXT');
 
+        // Tables categorizedElements and relatedLists work together as a pair
+
+        dataBck.createTable('categorizedElements', 'id INTEGER PRIMARY KEY, category TEXT, element TEXT, description TEXT');
+//        dataBck.dropTable('relatedLists');
+        dataBck.createTable('relatedLists', 'id INTEGER PRIMARY KEY, mainCategory TEXT, mainElement TEXT, relatedCategory TEXT, relatedElement TEXT, relationship TEXT');
+
         // Assessment
         // dataBck.dropTable('assessmentGrid');
         dataBck.createTable('assessmentGrid','id INTEGER PRIMARY KEY, created TEXT, moment TEXT, "group" TEXT, individual TEXT, variable TEXT, value TEXT, comment TEXT');
         dataBck.createView('individuals_groups','SELECT "group" FROM individuals_list GROUP BY "group"');
+
     }
 }

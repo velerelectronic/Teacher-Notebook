@@ -51,5 +51,6 @@
         <file>qml/TeachingPlanningModule.qml</file>
         <file>qml/ShowAnnotationModule.qml</file>
         <file>qml/AnnotationsListModule2.qml</file>
+        <file>qml/RelatedListsModule.qml</file>
     </qresource>
 </RCC>

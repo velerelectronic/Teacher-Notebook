@@ -16,10 +16,11 @@ Basic.BasicPage {
 
     signal annotationsListSelected()
     signal annotationsListSelected2()
-    signal annotationSelected(string annotation)
+    signal annotationSelected(int annotation)
     signal databaseManagerSelected()
     signal documentsListSelected()
     signal documentSelected(string document)
+    signal relatedListsSelected()
     signal reportSelected(string report)
     signal reportsListSelected()
     signal rubricsListSelected()
@@ -144,19 +145,16 @@ Basic.BasicPage {
                     captionSize: units.readUnit
                     caption: qsTr('Avui')
 
-                    ColumnLayout {
+                    Annotations.AnnotationsList {
+                        id: annotationsList
                         width: parent.width
-                        height: menuPage.height * 0.67
+                        height: requiredHeight
+                        inline: true
+                        filterPeriod: true
 
-                        Annotations.AnnotationsList {
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                            filterPeriod: true
-                        }
-                        Button {
-                            text: qsTr('Totes les anotacions')
-                            onClicked: annotationsListSelected2()
-                        }
+                        frameItem: menuPage
+                        onAnnotationSelected: menuPage.annotationSelected(annotation)
+                        onAnnotationsListSelected2: menuPage.annotationsListSelected2()
                     }
                 }
 
@@ -177,6 +175,11 @@ Basic.BasicPage {
                         width: parent.width
                         height: childrenRect.height
                         spacing: units.fingerUnit
+
+                        Button {
+                            text: qsTr('Llistes relacionades')
+                            onClicked: relatedListsSelected()
+                        }
 
                         Button {
                             text: qsTr('Gestor de dades')

@@ -26,6 +26,7 @@ Item {
 
     signal annotationEditSelected(string annotation, int document)
     signal annotationSelected(int annotation)
+    signal annotationsListSelected2()
     signal documentRemoved()
     signal documentUpdated()
     signal documentSelected(string document)
@@ -286,11 +287,14 @@ Item {
                         width: parent.width
                         height: requiredHeight
 
+                        inline: true
+
                         frameItem: showDocumentItem
 
                         document: showDocumentItem.document
 
                         onAnnotationSelected: showDocumentItem.annotationSelected(annotation)
+                        onAnnotationsListSelected2: showDocumentItem.annotationsListSelected2()
                     }
                 }
 
