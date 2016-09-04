@@ -209,6 +209,10 @@ Basic.BasicPage {
                             text: qsTr('Pissarra')
                             //, page: 'Whiteboard', parameters: {}, submenu: {object: menuPage, method: ''}});
                         }
+                        Button {
+                            text: qsTr('Collatz')
+                            onClicked: collatz()
+                        }
                     }
                 }
             }
@@ -221,4 +225,33 @@ Basic.BasicPage {
         sort: 'lastAccessTime DESC'
     }
 
+    function collatz() {
+        console.log('Inici de Collatz');
+        for (var i=-1; i>=-2000000; i--) {
+            var terms = [];
+            var array = nextCollatzTerm(terms, i);
+            if ((array.indexOf(-1) < 0) && (array.indexOf(-5) < 0) && (array.indexOf(-17) <0)) {
+                console.log('Inici', i);
+                console.log(array);
+                console.log('Final', i);
+            }
+        }
+        console.log('final de Collatz');
+    }
+
+    function nextCollatzTerm(previous, i) {
+        previous.push(i);
+        var r;
+        if (i % 2 == 0) {
+            r = i / 2;
+        } else {
+            r = 3*i + 1;
+        }
+        if (previous.indexOf(r) >= 0) {
+            previous.push('finish');
+            return previous;
+        } else {
+            return nextCollatzTerm(previous, r);
+        }
+    }
 }

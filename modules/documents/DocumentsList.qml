@@ -1,6 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.2
+import QtQuick.Controls 2.0
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
@@ -27,6 +28,8 @@ Item {
     Models.DocumentsModel {
         id: documentsModel
 
+        property bool filteredByTypes: (filters.length > 0)
+
         searchFields: ['title','desc','type','source','hash']
 
         limit: 30
@@ -36,6 +39,16 @@ Item {
         Component.onCompleted: {
             select();
         }
+    }
+
+    Models.DocumentsModel {
+        id: documentsTypesModel
+
+        searchFields: documentsModel.searchFields
+
+        limit: documentsModel.limit
+
+        sort: documentsModel.sort
     }
 
     ColumnLayout {
@@ -57,22 +70,24 @@ Item {
                 id: documentsHeader
 
                 width: documentsListView.width
-                height: units.fingerUnit * 2 + units.nailUnit
+                height: flowLayout.height + units.nailUnit * 2
                 z: 2
 
-                GridLayout {
-                    anchors.fill: parent
-                    anchors.margins: units.nailUnit
-                    columnSpacing: units.nailUnit
-                    rowSpacing: columnSpacing
+                Flow {
+                    id: flowLayout
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
+                        margins: units.nailUnit
+                    }
+                    height: childrenRect.height
 
-                    rows: 2
-                    columns: 4
+                    spacing: units.fingerUnit
 
                     Common.SearchBox {
-                        Layout.fillWidth: true
+                        width: (flowLayout.width > units.fingerUnit * 10)?units.fingerUnit * 8:flowLayout.width
                         Layout.preferredHeight: units.fingerUnit
-                        Layout.columnSpan: parent.columns
 
                         onPerformSearch: {
                             documentsModel.searchString = text;
@@ -80,45 +95,72 @@ Item {
                         }
                     }
 
-                    Item {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: units.fingerUnit * 4
+                    Button {
+                        text: qsTr('Tipus') + ((documentsModel.filteredByTypes)?' *':'')
+                        height: units.fingerUnit
+
+                        onClicked: documentTypesMenu.openTypesFilter()
                     }
 
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: documentsHeader.width / 4
-                        font.pixelSize: units.readUnit
-                        font.bold: true
-                        text: qsTr('Títol i descripció')
-                        verticalAlignment: Text.AlignVCenter
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        elide: Text.ElideRight
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        font.pixelSize: units.readUnit
-                        font.bold: true
-                        text: qsTr('Origen')
-                        verticalAlignment: Text.AlignVCenter
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        elide: Text.ElideRight
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: documentsHeader.width / 4
-                        font.pixelSize: units.readUnit
-                        font.bold: true
-                        text: qsTr('Tipus')
-                        verticalAlignment: Text.AlignVCenter
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        elide: Text.ElideRight
+                    RowLayout {
+                        width: flowLayout.width
+                        height: units.fingerUnit
+
+                        Item {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: units.fingerUnit * 4
+                        }
+
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: documentsHeader.width / 4
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            text: qsTr('Títol i descripció')
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            elide: Text.ElideRight
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            text: qsTr('Origen')
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            elide: Text.ElideRight
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: documentsHeader.width / 4
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            text: qsTr('Tipus')
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            elide: Text.ElideRight
+                        }
                     }
                 }
+
             }
 
             headerPositioning: ListView.OverlayHeader
+
+            footerPositioning: ListView.OverlayFooter
+            footer: Rectangle {
+                z: 2
+                width: documentsListView.width
+                height: units.fingerUnit
+                Text {
+                    anchors.fill: parent
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    font.pixelSize: units.readUnit
+                    text: qsTr('Hi ha ') + documentsModel.count + qsTr(' documents.')
+                }
+            }
 
             delegate: Rectangle {
                 id: documentItem
@@ -306,5 +348,85 @@ Item {
         }
     }
 
+    Common.SuperposedMenu {
+        id: documentTypesMenu
+
+        title: qsTr('Tipus de documents')
+
+        property var model
+
+        ListView {
+            id: typesList
+            width: parent.width
+            height: documentsListItem.height / 2
+            spacing: units.nailUnit
+
+            model: documentTypesMenu.model
+
+            delegate: Rectangle {
+                id: typeRect
+                objectName: 'documentTypeItem'
+                width: typesList.width
+                height: units.fingerUnit
+                property bool selected: false
+                property string type: modelData
+
+                color: (selected)?'yellow': 'white'
+
+                Text {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    text: modelData
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: typeRect.selected = !typeRect.selected
+                }
+            }
+        }
+
+        Common.SuperposedMenuEntry {
+            text: qsTr('Filtra els tipus seleccionats')
+            onClicked: {
+                var filterTypesArray = [];
+                for (var i=0; i<typesList.contentItem.children.length; i++) {
+                    var object = typesList.contentItem.children[i];
+                    if ((object['objectName'] == 'documentTypeItem') && (object['selected'])) {
+                        filterTypesArray.push(object['type']);
+                    }
+                }
+
+                if (filterTypesArray.length == 0) {
+                    documentsModel.filters = [];
+                    documentsModel.bindValues = [];
+                } else {
+                    var filterPrepare = [];
+                    for (var i=0; i<filterTypesArray.length; i++)
+                        filterPrepare.push('?');
+                    console.log(filterTypesArray);
+                    documentsModel.filters = ['type IN (' + filterPrepare.join(',') + ')'];
+                    documentsModel.bindValues = filterTypesArray;
+                }
+                documentsModel.select();
+                documentTypesMenu.close();
+            }
+        }
+
+
+        function openTypesFilter() {
+            var typesArray = [];
+            for (var i=0; i<documentsModel.count; i++) {
+                var object = documentsModel.getObjectInRow(i);
+                var documentType = object['type'];
+                if (typesArray.indexOf(documentType) < 0) {
+                    typesArray.push(documentType);
+                }
+            }
+            typesArray.sort();
+            documentTypesMenu.model = typesArray;
+            open();
+        }
+    }
 }
 
