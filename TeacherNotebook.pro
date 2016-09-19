@@ -41,7 +41,9 @@ RESOURCES += qml.qrc \
     resourcesfeeds.qrc \
     resourcesdatabase.qrc \
     resourcesannotations2.qrc \
-    resourcesrelatedlists.qrc
+    resourcesrelatedlists.qrc \
+    resourcespagesfolder.qrc \
+    resourcescalendar.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =

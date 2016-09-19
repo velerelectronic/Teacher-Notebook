@@ -10,6 +10,7 @@ function imageForMediaType(source, mediaType) {
     case 'jpg':
     case 'jpeg':
     case 'png':
+    case 'svg':
         return source;
     case 'csv':
     case 'doc':

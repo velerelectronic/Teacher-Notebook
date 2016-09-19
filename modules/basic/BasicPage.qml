@@ -16,6 +16,7 @@ Item {
     property Component mainPage
     property alias mainItem: basicPageLocation.item
 
+    property bool headingCollapse: false
     property int padding: 0
     property alias sourceComponent: basicPageLocation.sourceComponent
 
@@ -33,61 +34,70 @@ Item {
         basicPageLocation.setSource(source, parameters);
     }
 
-    ColumnLayout {
-        anchors.fill: parent
 
-        Item {
-            Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit * 1.5
+    Item {
+        id: heading
 
-            RowLayout {
-                anchors.fill: parent
-                Common.ImageButton {
-                    Layout.preferredWidth: units.fingerUnit
-                    Layout.preferredHeight: units.fingerUnit
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+        height: units.fingerUnit * 1.5
 
-                    size: units.fingerUnit
+        RowLayout {
+            anchors.fill: parent
+            Common.ImageButton {
+                Layout.preferredWidth: units.fingerUnit
+                Layout.preferredHeight: units.fingerUnit
 
-                    image: (basicPageItem.isSubPage)?'arrow-145769':'small-41255'
-                    onClicked: {
-                        if (basicPageItem.isSubPage)
-                            closePage();
-                        else
-                            basicPageItem.openMainPage();
-                    }
-                }
+                size: units.fingerUnit
 
-                Text {
-                    id: title
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: parent.height
-                    font.bold: true
-                    font.pixelSize: units.glanceUnit
-                    verticalAlignment: Text.AlignVCenter
-                    font.family: "Tahoma"
-                    text: basicPageItem.pageTitle
-                }
-
-                Buttons.ButtonsList {
-                    id: buttonsList
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: contentItem.width
+                image: (basicPageItem.isSubPage)?'arrow-145769':'small-41255'
+                onClicked: {
+                    if (basicPageItem.isSubPage)
+                        closePage();
+                    else
+                        basicPageItem.openMainPage();
                 }
             }
+
+            Text {
+                id: title
+                Layout.fillWidth: true
+                Layout.preferredHeight: parent.height
+                font.bold: true
+                font.pixelSize: units.glanceUnit
+                verticalAlignment: Text.AlignVCenter
+                font.family: "Tahoma"
+                text: basicPageItem.pageTitle
+                visible: !headingCollapse
+            }
+
+            Buttons.ButtonsList {
+                id: buttonsList
+                Layout.fillHeight: true
+                Layout.preferredWidth: contentItem.width
+            }
         }
-        Loader {
-            id: basicPageLocation
+    }
+    Loader {
+        id: basicPageLocation
 
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            sourceComponent: mainPage
-            clip: true
+        anchors {
+            top: (headingCollapse)?parent.top:heading.bottom
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
 
-            onLoaded: {
-                if (typeof basicPageLocation.item !== 'undefined') {
-                    basicPageLocation.item.width = basicPageLocation.width;
-                    basicPageLocation.item.height = basicPageLocation.height;
-                }
+        sourceComponent: mainPage
+        clip: true
+
+        onLoaded: {
+            if (typeof basicPageLocation.item !== 'undefined') {
+                basicPageLocation.item.width = basicPageLocation.width;
+                basicPageLocation.item.height = basicPageLocation.height;
             }
         }
     }

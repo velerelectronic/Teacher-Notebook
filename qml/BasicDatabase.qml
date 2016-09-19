@@ -44,6 +44,9 @@ DatabaseBackup {
 //        dataBck.dropTable('relatedLists');
         dataBck.createTable('relatedLists', 'id INTEGER PRIMARY KEY, mainCategory TEXT, mainElement TEXT, relatedCategory TEXT, relatedElement TEXT, relationship TEXT');
 
+        dataBck.createTable('pagesFolderContexts', 'id TEXT PRIMARY KEY');
+        dataBck.createTable('pagesFolderSections', 'id INTEGER PRIMARY KEY, title TEXT, context TEXT, position INTEGER, page TEXT, parameters TEXT');
+
         // Assessment
         // dataBck.dropTable('assessmentGrid');
         dataBck.createTable('assessmentGrid','id INTEGER PRIMARY KEY, created TEXT, moment TEXT, "group" TEXT, individual TEXT, variable TEXT, value TEXT, comment TEXT');

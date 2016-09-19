@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/calendar/YearView.qml</file>
+        <file>modules/calendar/MonthView.qml</file>
+    </qresource>
+</RCC>

@@ -78,12 +78,24 @@ Item {
                     Image {
                         id: imageRepresentation
 
+                        property var modes: [Image.PreserveAspectFit,Image.PreserveAspectCrop]
                         fillMode: Image.PreserveAspectFit
                         width: parent.width
-                        height: parent.width * 0.75
+                        height: Math.max(parent.width * 0.75, sourceSize.height * width / sourceSize.width)
                         horizontalAlignment: Image.AlignHCenter
                         verticalAlignment: Image.AlignVCenter
                         source: MediaTypes.imageForMediaType(showDocumentItem.source, showDocumentItem.mediaType)
+
+                        function rotateFillMode() {
+                            console.log('rotating', imageRepresentation.fillMode);
+                            console.log(imageRepresentation.modes[(imageRepresentation.modes.indexOf(imageRepresentation.fillMode)+1) % imageRepresentation.modes.length]);
+                            imageRepresentation.fillMode = imageRepresentation.modes[(imageRepresentation.modes.indexOf(imageRepresentation.fillMode)+1) % imageRepresentation.modes.length];
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: imageRepresentation.rotateFillMode()
+                        }
 
                         Rectangle {
                             id: background
@@ -96,34 +108,36 @@ Item {
                             height: Math.max(imageSubText.height, units.fingerUnit * 2) + 2 * units.nailUnit
                             opacity: 0.5
                         }
-                        Text {
-                            id: imageSubText
+                        RowLayout {
                             anchors.fill: background
                             anchors.margins: units.nailUnit
-                            height: contentHeight
-                            horizontalAlignment: Text.AlignLeft
-                            verticalAlignment: Text.AlignVCenter
-                            font.pixelSize: units.readUnit
-                            color: 'white'
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            font.bold: true
-                            text: showDocumentItem.title
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: documentSourceSelected(source, mediaType)
-                        }
-
-                        Common.ImageButton {
-                            anchors {
-                                top: background.top
-                                right: background.right
+                            spacing: units.fingerUnit
+                            Text {
+                                id: imageSubText
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: contentHeight
+                                horizontalAlignment: Text.AlignLeft
+                                verticalAlignment: Text.AlignVCenter
+                                font.pixelSize: units.readUnit
+                                color: 'white'
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                font.bold: true
+                                text: showDocumentItem.title
                             }
-                            enabled: annotationsList.count == 0
-                            image: 'garbage-1295900'
-                            size: units.fingerUnit * 1.5
-                            onClicked: confirmDeletionDialog.open()
+                            Common.ImageButton {
+                                Layout.fillHeight: true
+                                enabled: annotationsList.count == 0
+                                image: 'garbage-1295900'
+                                size: units.fingerUnit * 1.5
+                                onClicked: confirmDeletionDialog.open()
+                            }
+                            Common.ImageButton {
+                                Layout.fillHeight: true
+                                enabled: annotationsList.count == 0
+                                image: 'box-24557'
+                                size: units.fingerUnit * 1.5
+                                onClicked: documentSourceSelected(source, mediaType)
+                            }
                         }
                     }
                 }
@@ -379,7 +393,12 @@ Item {
         if (document !== '') {
             obj = documentsModel.getObject(document);
 
-            if (obj != null) {
+            console.log('object for show document', obj, typeof obj);
+            for (var prop in obj) {
+                console.log(prop, "-->", obj[prop]);
+            }
+
+            if ('title' in obj) {
                 title = obj['title'];
                 desc = obj['desc'];
                 mediaType = obj['type'];

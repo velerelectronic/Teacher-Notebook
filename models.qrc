@@ -13,5 +13,7 @@
         <file>models/DocumentAnnotations.qml</file>
         <file>models/CategorizedElementsModel.qml</file>
         <file>models/RelatedListsModel.qml</file>
+        <file>models/PagesFolderContextsModel.qml</file>
+        <file>models/PagesFolderSectionsModel.qml</file>
     </qresource>
 </RCC>

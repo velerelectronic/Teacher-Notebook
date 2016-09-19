@@ -20,6 +20,7 @@ Basic.BasicPage {
     signal databaseManagerSelected()
     signal documentsListSelected()
     signal documentSelected(string document)
+    signal pagesFolderSelected()
     signal relatedListsSelected()
     signal reportSelected(string report)
     signal reportsListSelected()
@@ -135,6 +136,12 @@ Basic.BasicPage {
                             Layout.preferredHeight: units.fingerUnit
                             text: qsTr('Llista de documents')
                             onClicked: documentsListSelected()
+                        }
+
+                        Button {
+                            Layout.preferredHeight: units.fingerUnit * 2
+                            text: qsTr('Carpeta')
+                            onClicked: pagesFolderSelected()
                         }
                     }
                 }

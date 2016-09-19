@@ -52,5 +52,6 @@
         <file>qml/ShowAnnotationModule.qml</file>
         <file>qml/AnnotationsListModule2.qml</file>
         <file>qml/RelatedListsModule.qml</file>
+        <file>qml/PagesFolderModule.qml</file>
     </qresource>
 </RCC>

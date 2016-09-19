@@ -55,6 +55,9 @@
   * Trash: https://pixabay.com/es/de-basura-icono-basura-papelera-1295900/#
   * Unkwown: https://pixabay.com/es/signo-de-interrogaci%C3%B3n-pregunta-40876/
   * Empty document: https://pixabay.com/es/cuadro-caja-de-cart%C3%B3n-cart%C3%B3n-147574/
+
+  * Move up: https://pixabay.com/es/hasta-hacia-arriba-flecha-verde-97614/
+  * Move down: https://pixabay.com/es/descargar-abajo-flecha-en-virtud-de-97606/
 */
 
 import QtQuick 2.5
@@ -65,6 +68,7 @@ import QtQuick.Dialogs 1.1
 import PersonalTypes 1.0
 import QtQml.StateMachine 1.0 as DSM
 import 'qrc:///common' as Common
+import 'qrc:///modules/files' as Files
 
 // Three types of navigation between pages
 // 1. Each page links to several pages (but not backwards)
@@ -158,6 +162,10 @@ Window {
                     appStateMachine.openMainPage();
                 }
 
+                onPagesFolderSelected: {
+                    appStateMachine.openPagesFolder();
+                }
+
                 onRelatedListsSelected: {
                     appStateMachine.openRelatedLists();
                 }
@@ -181,7 +189,7 @@ Window {
                         appStateMachine.openSingleTeachingPlanning();
                         break;
                     default:
-                        appStateMachine.openSingleDocument();
+                        Qt.openUrlExternally(source);
                     }
                 }
             }
@@ -232,6 +240,7 @@ Window {
         signal openDatabaseManager()
         signal openDocumentsList()
         signal openMainPage()
+        signal openPagesFolder()
         signal openRubricsList()
         signal openNewAnnotation()
         signal openNewDocument()
@@ -297,6 +306,11 @@ Window {
             DSM.SignalTransition {
                 signal: appStateMachine.openRelatedLists
                 targetState: relatedListsState
+            }
+
+            DSM.SignalTransition {
+                signal: appStateMachine.openPagesFolder
+                targetState: pagesFolderState
             }
         }
 
@@ -488,6 +502,14 @@ Window {
 
                 onEntered: {
                     workingSpace.loadSubPage('RelatedListsModule', {});
+                }
+            }
+
+            DSM.State {
+                id: pagesFolderState
+
+                onEntered: {
+                    workingSpace.loadSubPage('PagesFolderModule', {});
                 }
             }
         }
