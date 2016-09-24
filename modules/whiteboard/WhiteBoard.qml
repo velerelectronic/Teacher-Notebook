@@ -21,270 +21,402 @@ Item {
         onPressed: mouse.accepted = true;
     }
 
-    Rectangle {
-        anchors.centerIn: parent
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: units.nailUnit
+        spacing: units.nailUnit
 
-        border.color: 'black'
-        width: Math.min(parent.width, parent.height)
-        height: width * 0.75 // 4:3 ratio
+        Item {
+            Layout.preferredHeight: units.fingerUnit * 1.5
+            Layout.fillWidth: true
+            RowLayout {
+                id: buttonsRow
 
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: units.nailUnit
-            spacing: units.nailUnit
+                anchors.fill: parent
+                spacing: units.nailUnit
 
-            Item {
-                Layout.preferredHeight: units.fingerUnit * 1.5
-                Layout.fillWidth: true
-                RowLayout {
-                    id: buttonsRow
+                Common.ImageButton {
+                    id: pencilButton
 
-                    anchors.fill: parent
-                    spacing: units.nailUnit
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
 
-                    Button {
-                        id: pencilButton
+                    property bool active: !eraserButton.active
 
-                        Layout.fillHeight: true
-                        text: qsTr('Llapis')
-                        checkable: true
-                        checked: true
-                        onCheckedChanged: {
-                            if (pencilButton.checked)
-                                eraserButton.checked = false;
-                        }
-                    }
-                    Common.ImageButton {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: size
-                        image: 'paintbrush-153754'
-                        size: buttonsRow.height
-                        onClicked: lineWidthDialog.open()
-                    }
-                    Common.ImageButton {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: size
-                        size: buttonsRow.height
-                        image: 'palette-23406'
-                        onClicked: colourSelectorDialog.open()
-                    }
-
-                    Button {
-                        id: eraserButton
-                        Layout.fillHeight: true
-                        text: qsTr('Goma')
-                        checkable: true
-                        onCheckedChanged: {
-                            if (eraserButton.checked)
-                                pencilButton.checked = false;
-                        }
-                    }
-                    Button {
-                        id: eraserWidthButton
-                        Layout.fillHeight: true
-                        text: qsTr('Mida')
-                        onClicked: eraserWidthDialog.open();
-                    }
-                    Text {
-                        id: fileNameText
-
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                    }
-                    Button {
-                        text: qsTr('Desa')
-                        Layout.fillHeight: true
-                        onClicked: {
-                            if (selectedFile !== '') {
-                                console.log('Saving to', selectedFile);
-                                console.log(canvas.toDataURL());
-                                imageFile.source = selectedFile;
-                                imageFile.write(canvas.toDataURL());
-                            }
-                        }
-                    }
-                    Button {
-                        Layout.fillHeight: true
-                        text: qsTr('Carrega')
-                        onClicked: loadFileDialog.loadFile()
-                    }
-                    Button {
-                        Layout.fillHeight: true
-                        text: qsTr('Importa')
-                        onClicked: loadFileDialog.importImage()
+                    image: 'pen-147569'
+                    size: buttonsRow.height
+                    onClicked: {
+                        eraserButton.active = false;
                     }
                 }
-            }
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
 
-            Image {
-                id: canvasImage
-
-                visible: false
-                onStatusChanged: {
-                    if (canvasImage.status == Image.Ready)
-                        canvas.loadCanvasImage();
+                    image: 'washing-36666'
+                    size: buttonsRow.height
+                    onClicked: lineWidthDialog.open()
                 }
-            }
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
+                    size: buttonsRow.height
+                    image: 'palette-23406'
+                    onClicked: colourSelectorDialog.open()
 
-            FileIO {
-                id: imageFile
-            }
+                    color: canvas.strokeColor
+                }
 
-            Canvas {
-                id: canvas
-                Layout.fillHeight: true
-                Layout.fillWidth: true
+                Common.ImageButton {
+                    id: eraserButton
 
-                clip: true
-
-                property var points
-                property real lineWidth: units.nailUnit
-                property real eraserWidth: units.nailUnit * 3
-                property string strokeColor: '#000000'
-                property var initialImage
-                property string importedFile
-
-                MouseArea {
-                    id: mousePointer
-
-                    anchors.fill: parent
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
 
                     property bool active: false
 
-                    onPressed: {
-                        if ((mouse.x>=0) && (mouse.y>=0) && (mouse.x<canvas.width) && (canvas.y<canvas.height)) {
-                            mouse.accepted = true;
-                            canvas.points = [];
-                            canvas.points.push(Qt.point(mouse.x, mouse.y));
-                            active = true;
+                    size: buttonsRow.height
+                    image: 'erase-34105'
+                    onClicked: {
+                        eraserButton.active = true;
+                    }
+                }
+
+                Button {
+                    id: eraserWidthButton
+                    Layout.fillHeight: true
+                    text: qsTr('Mida')
+                    onClicked: eraserWidthDialog.open();
+                }
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
+                    size: buttonsRow.height
+                    image: 'undo-97591'
+                    color: (canvas.canvasHistoryIndex == 0)?'grey':'white'
+                    onClicked: canvas.gotoPreviousCanvas()
+                }
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
+                    size: buttonsRow.height
+                    image: 'redo-97589'
+                    color: (canvas.canvasHistoryIndex >= canvas.canvasHistoryLength)?'grey':'white'
+                    onClicked: canvas.gotoNextCanvas()
+                }
+
+                Common.ImageButton {
+                    id: moveToolButton
+
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
+                    size: buttonsRow.height
+                    image: 'arrows-145992'
+                    property bool active: false
+                    color: (active)?'yellow':'white'
+                    onClicked: {
+                        moveToolButton.active = !moveToolButton.active;
+                    }
+                }
+
+                Text {
+                    id: fileNameText
+
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+
+                    font.pixelSize: units.readUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    text: selectedFile
+                }
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
+                    size: buttonsRow.height
+                    image: 'floppy-35952'
+                    color: (canvas.canvasHistoryIndex == 0)?'grey':'white'
+                    onClicked: {
+                        if (selectedFile !== '') {
+                            console.log('Saving to', selectedFile);
+                            console.log(canvas.toDataURL());
+                            imageFile.source = selectedFile;
+                            imageFile.write(canvas.toDataURL());
                         }
                     }
-                    onPositionChanged: {
-                        if (mousePointer.active) {
-                            if ((mouse.x>=0) && (mouse.y>=0) && (mouse.x<canvas.width) && (canvas.y<canvas.height)) {
-                                canvas.points.push(Qt.point(mouse.x, mouse.y));
-                                if (eraserButton.checked) {
-                                    eraseCircle.reposition(mouse.x,mouse.y)
-                                    eraseCircle.visible = true;
-                                    canvas.erasePoints();
-                                } else {
-                                    eraseCircle.visible = false;
-                                    canvas.paintPoints();
-                                }
-                            }
-                        }
-                    }
-                    onReleased: {
-                        eraseCircle.visible = false;
-                        if (eraserButton.checked)
-                            canvas.erasePoints();
-                        else
-                            canvas.paintPoints();
-
-                        active = false;
-                    }
                 }
 
-                Rectangle {
-                    id: eraseCircle
-
-                    visible: false
-                    border.color: 'black'
-                    color: 'transparent'
-                    width: canvas.eraserWidth * 2
-                    height: canvas.eraserWidth * 2
-                    radius: canvas.eraserWidth
-
-                    function reposition(x,y) {
-                        eraseCircle.x = x - eraseCircle.width / 2
-                        eraseCircle.y = y - eraseCircle.height / 2
-                    }
+                Button {
+                    Layout.fillHeight: true
+                    text: qsTr('Carrega')
+                    onClicked: loadFileDialog.loadFile()
                 }
-
-                function paintPoints() {
-                    var ctx = canvas.getContext("2d");
-                    //ctx.fillStyle = Qt.rgba(1, 0, 0, 1);
-
-                    var l = canvas.points.length;
-                    switch(l) {
-                    case 0:
-                        break;
-                    case 1:
-                        drawSinglePoint(ctx,points[0]);
-                        break;
-                    default:
-                        var point1 = canvas.points[l-2];
-                        var point2 = canvas.points[l-1];
-                        drawSinglePoint(ctx,point1);
-                        drawSinglePoint(ctx,point2);
-                        ctx.beginPath();
-                        ctx.lineWidth = canvas.lineWidth;
-                        ctx.lineJoin = "round";
-                        ctx.strokeStyle = canvas.strokeColor;
-                        ctx.moveTo(point1.x, point1.y);
-                        ctx.lineTo(point2.x, point2.y);
-                        ctx.stroke();
-                        var left = Math.min(point1.x, point2.x);
-                        var top = Math.min(point1.y,point2.y);
-                        var width = Math.max(point1.x, point2.x) - left;
-                        var height = Math.max(point1.y, point2.y) - top;
-
-                        markDirty(Qt.rect(left, top, width, height));
-                    }
-                }
-
-                function drawSinglePoint(ctx,point) {
-                    ctx.beginPath();
-                    ctx.lineWidth = canvas.lineWidth / 2;
-                    ctx.lineJoin = "round";
-                    ctx.strokeStyle = canvas.strokeColor;
-                    ctx.fillStyle = canvas.strokeColor;
-                    ctx.arc(point.x, point.y, canvas.lineWidth/4, 0, 2 * Math.PI);
-                    ctx.stroke();
-                    markDirty(Qt.rect(point.x-canvas.lineWidth/2,point.y-canvas.lineWidth/2,canvas.lineWidth,canvas.lineWidth));
-                }
-
-                function erasePoints() {
-                    var ctx = canvas.getContext("2d");
-
-                    var singlePoint = points[canvas.points.length-1];
-                    ctx.beginPath();
-                    ctx.lineWidth = canvas.eraserWidth;
-                    ctx.lineJoin = "round";
-                    ctx.strokeStyle = '#FFFFFF';
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.arc(singlePoint.x, singlePoint.y, canvas.eraserWidth / 2, 0, 2 * Math.PI);
-                    ctx.stroke();
-                    markDirty(Qt.rect(singlePoint.x-canvas.eraserWidth,singlePoint.y-canvas.eraserWidth,10,10));
-                }
-
-                function loadContents() {
-                    imageFile.source = selectedFile;
-                    canvasImage.source = imageFile.read();
-                    //canvas.initialImage = canvas.loadImage(selectedFile);
-                }
-
-                function loadCanvasImage() {
-                    console.log('image loaded');
-                    var ctx = canvas.getContext("2d");
-                    ctx.drawImage(canvasImage, 0, 0);
-//                    ctx.stroke();
-                    markDirty(Qt.rect(0,0,canvas.width,canvas.height));
-                }
-
-                function importImage(imageSource) {
-                    canvas.importedFile = imageSource;
-                    canvas.loadImage(imageSource);
-                }
-
-                onImageLoaded: {
-                    var ctx = canvas.getContext("2d");
-                    ctx.drawImage(canvas.importedFile, 0, 0);
-                    markDirty(Qt.rect(0,0,canvas.width,canvas.height));
+                Button {
+                    Layout.fillHeight: true
+                    text: qsTr('Importa')
+                    onClicked: loadFileDialog.importImage()
                 }
             }
         }
 
+        FileIO {
+            id: imageFile
+        }
+
+        Flickable {
+            id: flickableCanvas
+
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+
+            clip: true
+
+            interactive: moveToolButton.active
+
+            contentWidth: exteriorPage.width
+            contentHeight: exteriorPage.height
+
+            contentX: exteriorPage.margins
+            contentY: exteriorPage.margins
+
+            Item {
+                id: exteriorPage
+
+                property real margins: Math.min(flickableCanvas.width, flickableCanvas.height) / 5
+
+                width: fullPage.width + margins * 2
+                height: fullPage.height + margins * 2
+
+                Rectangle {
+                    id: fullPage
+                    color: 'white'
+                    anchors.centerIn: parent
+                    width: flickableCanvas.width
+                    height: flickableCanvas.height
+
+                    Canvas {
+                        id: canvas
+
+                        anchors.fill: parent
+
+                        property var points
+                        property real lineWidth: units.nailUnit
+                        property real eraserWidth: units.nailUnit * 3
+                        property string strokeColor: '#000000'
+                        property var initialImage
+                        property string importedFile
+
+                        property var canvasHistory: []
+                        property int canvasHistoryIndex: -1
+                        property int canvasHistoryLength: canvasHistory.length
+
+                        MouseArea {
+                            id: mousePointer
+
+                            anchors.fill: parent
+                            enabled: !flickableCanvas.interactive
+
+                            property bool active: false
+
+                            onPressed: {
+                                if ((mouse.x>=0) && (mouse.y>=0) && (mouse.x<canvas.width) && (canvas.y<canvas.height)) {
+                                    mouse.accepted = true;
+                                    canvas.points = [];
+                                    canvas.points.push(Qt.point(mouse.x, mouse.y));
+                                    active = true;
+                                }
+                            }
+                            onPositionChanged: {
+                                if (mousePointer.active) {
+                                    if ((mouse.x>=0) && (mouse.y>=0) && (mouse.x<canvas.width) && (canvas.y<canvas.height)) {
+                                        canvas.points.push(Qt.point(mouse.x, mouse.y));
+                                        if (eraserButton.active) {
+                                            eraseCircle.reposition(mouse.x,mouse.y)
+                                            eraseCircle.visible = true;
+                                            canvas.erasePoints();
+                                        } else {
+                                            eraseCircle.visible = false;
+                                            canvas.paintPoints();
+                                        }
+                                    } else {
+                                        eraseCircle.visible = false;
+                                        if (eraserButton.active)
+                                            canvas.erasePoints();
+                                        else
+                                            canvas.paintPoints();
+
+                                        active = false;
+                                        canvas.addCanvasToHistory();
+                                    }
+                                }
+                            }
+                            onReleased: {
+                                eraseCircle.visible = false;
+                                if (eraserButton.active)
+                                    canvas.erasePoints();
+                                else
+                                    canvas.paintPoints();
+
+                                active = false;
+                                canvas.addCanvasToHistory();
+                            }
+
+                        }
+
+
+                        Rectangle {
+                            id: eraseCircle
+
+                            visible: false
+                            border.color: 'black'
+                            color: 'transparent'
+                            width: canvas.eraserWidth * 2
+                            height: canvas.eraserWidth * 2
+                            radius: canvas.eraserWidth
+
+                            function reposition(x,y) {
+                                eraseCircle.x = x - eraseCircle.width / 2
+                                eraseCircle.y = y - eraseCircle.height / 2
+                            }
+                        }
+
+                        function paintPoints() {
+                            var ctx = canvas.getContext("2d");
+                            //ctx.fillStyle = Qt.rgba(1, 0, 0, 1);
+
+                            var l = canvas.points.length;
+                            switch(l) {
+                            case 0:
+                                break;
+                            case 1:
+                                drawSinglePoint(ctx,points[0]);
+                                break;
+                            default:
+                                var point1 = canvas.points[l-2];
+                                var point2 = canvas.points[l-1];
+                                drawSinglePoint(ctx,point1);
+                                drawSinglePoint(ctx,point2);
+                                ctx.beginPath();
+                                ctx.lineWidth = canvas.lineWidth;
+                                ctx.lineJoin = "round";
+                                ctx.strokeStyle = canvas.strokeColor;
+                                ctx.moveTo(point1.x, point1.y);
+                                ctx.lineTo(point2.x, point2.y);
+                                ctx.stroke();
+                                var left = Math.min(point1.x, point2.x);
+                                var top = Math.min(point1.y,point2.y);
+                                var width = Math.max(point1.x, point2.x) - left;
+                                var height = Math.max(point1.y, point2.y) - top;
+
+                                markDirty(Qt.rect(left, top, width, height));
+                            }
+                        }
+
+                        function drawSinglePoint(ctx,point) {
+                            ctx.beginPath();
+                            ctx.lineWidth = canvas.lineWidth / 2;
+                            ctx.lineJoin = "round";
+                            ctx.strokeStyle = canvas.strokeColor;
+                            ctx.fillStyle = canvas.strokeColor;
+                            ctx.arc(point.x, point.y, canvas.lineWidth/4, 0, 2 * Math.PI);
+                            ctx.stroke();
+                            markDirty(Qt.rect(point.x-canvas.lineWidth/2,point.y-canvas.lineWidth/2,canvas.lineWidth,canvas.lineWidth));
+                        }
+
+                        function erasePoints() {
+                            var ctx = canvas.getContext("2d");
+
+                            var singlePoint = points[canvas.points.length-1];
+                            ctx.beginPath();
+                            ctx.lineWidth = canvas.eraserWidth;
+                            ctx.lineJoin = "round";
+                            ctx.strokeStyle = '#FFFFFF';
+                            ctx.fillStyle = '#FFFFFF';
+                            ctx.arc(singlePoint.x, singlePoint.y, canvas.eraserWidth / 2, 0, 2 * Math.PI);
+                            ctx.stroke();
+                            markDirty(Qt.rect(singlePoint.x-canvas.eraserWidth,singlePoint.y-canvas.eraserWidth,10,10));
+                        }
+
+                        function loadContents() {
+                            imageFile.source = selectedFile;
+                            canvasImage.source = imageFile.read();
+                            //canvas.initialImage = canvas.loadImage(selectedFile);
+                        }
+
+                        function loadCanvasFromLoadedImage() {
+                            var ctx = canvas.getContext("2d");
+                            ctx.clearRect(0,0,canvas.width,canvas.height);
+                            ctx.drawImage(canvasImage, 0, 0);
+                            markDirty(Qt.rect(0,0,canvas.width,canvas.height));
+                        }
+
+                        function importImage(imageSource) {
+                            canvas.importedFile = imageSource;
+                            canvasImage.source = imageSource;
+                            canvas.loadImage(imageSource);
+                        }
+
+                        function addCanvasToHistory() {
+                            while (canvas.canvasHistoryIndex < canvas.canvasHistory.length-1) {
+                                canvas.canvasHistory.pop();
+                            }
+
+                            var data = canvas.toDataURL('image/png');
+
+                            canvas.canvasHistory.push(data);
+                            canvas.canvasHistoryIndex = canvas.canvasHistoryIndex + 1;
+                            canvas.canvasHistoryLength = canvas.canvasHistory.length;
+                        }
+
+                        function gotoPreviousCanvas() {
+                            if (canvas.canvasHistoryIndex>0) {
+                                canvas.canvasHistoryIndex = canvas.canvasHistoryIndex - 1;
+                                canvasImage.source = canvas.canvasHistory[canvas.canvasHistoryIndex];
+                            }
+                        }
+
+                        function gotoNextCanvas() {
+                            if (canvas.canvasHistoryIndex < canvas.canvasHistoryLength-1) {
+                                canvas.canvasHistoryIndex = canvas.canvasHistoryIndex + 1;
+                                canvasImage.source = canvas.canvasHistory[canvas.canvasHistoryIndex];
+                            }
+                        }
+
+                        onImageLoaded: {
+                            var ctx = canvas.getContext("2d");
+                            ctx.drawImage(canvas.importedFile, 0, 0);
+                            markDirty(Qt.rect(0,0,canvas.width,canvas.height));
+                            addCanvasToHistory();
+                        }
+
+                        Component.onCompleted: {
+                            var ctx = canvas.getContext("2d");
+                            ctx.clearRect(0,0,canvas.width,canvas.height);
+                            markDirty(Qt.rect(0,0,canvas.width,canvas.height));
+                            addCanvasToHistory();
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+
+    Image {
+        id: canvasImage
+
+        visible: false
+
+        fillMode: Image.Pad
+        onStatusChanged: {
+            if (canvasImage.status == Image.Ready) {
+                var newW = canvasImage.sourceSize.width;
+                var newH = canvasImage.sourceSize.height;
+                fullPage.width = Math.max(fullPage.width,newW);
+                fullPage.height = Math.max(fullPage.height,newH);
+                canvas.loadCanvasFromLoadedImage();
+            }
+        }
     }
 
     Common.SuperposedMenu {

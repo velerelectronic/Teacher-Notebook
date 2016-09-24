@@ -151,9 +151,10 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        pagesModel.append({page: 'documents/ShowDocument', title: 'Document', parameters: JSON.stringify(['document'])});
-        pagesModel.append({page: 'annotations2/AnnotationsList', title: 'Anotacions', parameters: []});
-        pagesModel.append({page: 'calendar/YearView', title: 'Calendari anual', parameters: JSON.stringify(['fullyear'])});
-        pagesModel.append({page: 'files/Gallery', title: "Galeria d'imatges", parameters: JSON.stringify(['folder', 'numberOfColumns'])});
+        pagesModel.append({page: 'documents/ShowDocument', title: qsTr('Document'), parameters: JSON.stringify(['document'])});
+        pagesModel.append({page: 'annotations2/AnnotationsList', title: qsTr('Anotacions'), parameters: []});
+        pagesModel.append({page: 'calendar/YearView', title: qsTr('Calendari anual'), parameters: JSON.stringify(['fullyear'])});
+        pagesModel.append({page: 'files/Gallery', title: qsTr("Galeria d'imatges"), parameters: JSON.stringify(['folder', 'numberOfColumns'])});
+        pagesModel.append({page: 'whiteboard/WhiteBoard', title: qsTr('Pissarra'), parameters: JSON.stringify(['baseDirectory'])});
     }
 }

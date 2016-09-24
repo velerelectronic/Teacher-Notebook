@@ -1,12 +1,13 @@
 import QtQuick 2.2
 
-Item {
+Rectangle {
     id: imageButton
     property string image
     property string selectedImage: ''
     property int size: units.fingerUnit
     property bool available: true
     signal clicked
+    color: 'transparent'
 
 //    clip: true
 

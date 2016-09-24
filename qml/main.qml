@@ -61,6 +61,9 @@
 
   * Colour: https://pixabay.com/es/paleta-pinta-colores-de-madera-23406/
   * Pencil type: https://pixabay.com/es/pincel-l%C3%A1piz-artes-artista-153754/
+  * Pencil tool: https://pixabay.com/es/pluma-l%C3%A1piz-color-brown-dibujar-147569/
+  * Dot width: https://pixabay.com/es/lavado-signo-secador-cuadrados-36666/
+  * Move tool: https://pixabay.com/es/flechas-direcciones-hasta-abajo-145992/
 */
 
 import QtQuick 2.5
@@ -71,8 +74,6 @@ import QtQuick.Dialogs 1.1
 import PersonalTypes 1.0
 import QtQml.StateMachine 1.0 as DSM
 import 'qrc:///common' as Common
-import 'qrc:///modules/files' as Files
-import 'qrc:///modules/whiteboard' as WhiteBoard
 
 // Three types of navigation between pages
 // 1. Each page links to several pages (but not backwards)
@@ -221,10 +222,6 @@ Window {
             internalMargins: units.nailUnit
             fontSize: units.readUnit
             interval: 2000
-        }
-
-        WhiteBoard.WhiteBoard {
-            anchors.fill: parent
         }
     }
 
