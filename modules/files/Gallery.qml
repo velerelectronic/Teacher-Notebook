@@ -38,69 +38,24 @@ Rectangle {
         }
     }
 
-    Rectangle {
+    FileViewer {
         id: bigImageItem
-
-        anchors.fill: parent
         z: 2
+        anchors.fill: parent
 
         visible: false
         color: 'white'
 
-        property string fileURL
-
-        Image {
-            id: bigImageView
-            anchors.fill: parent
-            fillMode: Image.PreserveAspectFit
-            source: bigImageItem.fileURL
-
-            Text {
-                anchors.fill: parent
-                font.pixelSize: units.readUnit
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                text: (bigImageView.status == Image.Error)?(qsTr('No reconegut') + "\n" + bigImageItem.fileURL):''
-            }
-        }
-
-
-        RowLayout {
-            anchors.fill: parent
-
-            MouseArea {
-                Layout.fillHeight: true
-                Layout.preferredWidth: bigImageView.width / 4
-                onClicked: {
-                    folderView.currentIndex = (folderView.currentIndex>0)?folderView.currentIndex-1:-1;
-                }
-            }
-            MouseArea {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-
-                onClicked: bigImageItem.close()
-                onPressAndHold: Qt.openUrlExternally(bigImageItem.fileURL)
-            }
-            MouseArea {
-                Layout.fillHeight: true
-                Layout.preferredWidth: bigImageView.width / 4
-                onClicked: {
-                    folderView.currentIndex = (folderView.currentIndex<folderView.count-1)?folderView.currentIndex+1:-1;
-                }
-            }
-        }
-
-        function load() {
-//            bigImageView.source = bigImageItem.fileURL;
-            bigImageItem.visible = true;
-        }
-
-        function close() {
-            bigImageItem.fileURL = '';
-            bigImageItem.visible = false;
+        onClosed: {
             folderView.currentIndex = -1;
+        }
+
+        onGotoPrevious: {
+            folderView.currentIndex = (folderView.currentIndex>0)?folderView.currentIndex-1:-1;
+        }
+
+        onGotoNext: {
+            folderView.currentIndex = (folderView.currentIndex<folderView.count-1)?folderView.currentIndex+1:-1;
         }
     }
 

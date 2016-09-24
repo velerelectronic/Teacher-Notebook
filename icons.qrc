@@ -59,5 +59,7 @@
         <file>icons/box-147574.svg</file>
         <file>icons/up-97614.svg</file>
         <file>icons/download-97606.svg</file>
+        <file>icons/paintbrush-153754.svg</file>
+        <file>icons/palette-23406.svg</file>
     </qresource>
 </RCC>

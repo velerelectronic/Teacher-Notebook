@@ -58,6 +58,9 @@
 
   * Move up: https://pixabay.com/es/hasta-hacia-arriba-flecha-verde-97614/
   * Move down: https://pixabay.com/es/descargar-abajo-flecha-en-virtud-de-97606/
+
+  * Colour: https://pixabay.com/es/paleta-pinta-colores-de-madera-23406/
+  * Pencil type: https://pixabay.com/es/pincel-l%C3%A1piz-artes-artista-153754/
 */
 
 import QtQuick 2.5
@@ -69,6 +72,7 @@ import PersonalTypes 1.0
 import QtQml.StateMachine 1.0 as DSM
 import 'qrc:///common' as Common
 import 'qrc:///modules/files' as Files
+import 'qrc:///modules/whiteboard' as WhiteBoard
 
 // Three types of navigation between pages
 // 1. Each page links to several pages (but not backwards)
@@ -217,6 +221,10 @@ Window {
             internalMargins: units.nailUnit
             fontSize: units.readUnit
             interval: 2000
+        }
+
+        WhiteBoard.WhiteBoard {
+            anchors.fill: parent
         }
     }
 

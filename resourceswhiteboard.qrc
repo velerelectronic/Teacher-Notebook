@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/whiteboard/WhiteBoard.qml</file>
+    </qresource>
+</RCC>

@@ -3,5 +3,6 @@
         <file>modules/files/FileSelector.qml</file>
         <file>modules/files/mediaTypes.js</file>
         <file>modules/files/Gallery.qml</file>
+        <file>modules/files/FileViewer.qml</file>
     </qresource>
 </RCC>
