@@ -4,6 +4,7 @@
 #include <QTextStream>
 #include <QDebug>
 #include <QString>
+#include <QPixmap>
 
 FileIO::FileIO(QObject *parent) :
     QObject(parent)
@@ -101,6 +102,29 @@ bool FileIO::write(const QString& data)
 
     file.close();
 
+    return true;
+}
+
+bool FileIO::writePngImage(const QString &data) {
+    if (mSource.isEmpty()) {
+        return false;
+    }
+    QFile file(mSource);
+    if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
+        return false;
+    }
+
+    QString suffix;
+    QString prefix("data:image/png;base64,");
+    if (data.startsWith(prefix)) {
+        suffix = data.mid(prefix.length());
+    }
+
+    QImage image;
+    image.loadFromData(QByteArray::fromBase64(suffix.toLatin1()), "PNG");
+    image.save(&file, "PNG");
+
+    file.close();
     return true;
 }
 

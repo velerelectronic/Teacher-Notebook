@@ -22,6 +22,7 @@ public:
     Q_INVOKABLE bool create();
     Q_INVOKABLE QString read();
     Q_INVOKABLE bool write(const QString& data);
+    Q_INVOKABLE bool writePngImage(const QString &data);
     Q_INVOKABLE bool append(const QString& data);
 
     QString source();

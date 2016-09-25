@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>modules/whiteboard/WhiteBoard.qml</file>
+        <file>modules/whiteboard/WhiteboardWithZoom.qml</file>
     </qresource>
 </RCC>

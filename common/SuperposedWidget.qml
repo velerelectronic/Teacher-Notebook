@@ -67,8 +67,14 @@ Dialog {
                     target: subPanelLoader.item
                     ignoreUnknownSignals: true
 
-                    onClose: superposedWidget.close()
-                    onDiscarded: superposedWidget.close()
+                    onClose: {
+                        subPanelLoader.sourceComponent = undefined;
+                        superposedWidget.close();
+                    }
+                    onDiscarded: {
+                        subPanelLoader.sourceComponent = undefined;
+                        superposedWidget.close();
+                    }
                 }
             }
         }

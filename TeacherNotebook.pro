@@ -5,7 +5,8 @@ QT += core \
     sql \
     xml xmlpatterns svg \
     multimedia \
-    qml
+    qml \
+    quick
 
 SOURCES += main.cpp \
     fileio.cpp \

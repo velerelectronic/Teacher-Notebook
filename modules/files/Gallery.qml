@@ -57,6 +57,8 @@ Rectangle {
         onGotoNext: {
             folderView.currentIndex = (folderView.currentIndex<folderView.count-1)?folderView.currentIndex+1:-1;
         }
+
+        onEditorRequested: editorWidget.openWhiteBoardEditor(fileURL)
     }
 
     ColumnLayout {
@@ -180,35 +182,33 @@ Rectangle {
                     }
                 }
 
-                Component {
-                    id: fileImageComponent
+                Image {
+                    id: fileImage
 
-                    Image {
-                        id: fileImage
+                    z: 1
+                    anchors.fill: parent
+                    asynchronous: true
 
-                        z: 1
-                        anchors.fill: parent
-                        fillMode: Image.PreserveAspectFit
-                        horizontalAlignment: Image.AlignLeft
-                        verticalAlignment: Image.AlignHCenter
+                    fillMode: Image.PreserveAspectFit
+                    horizontalAlignment: Image.AlignLeft
+                    verticalAlignment: Image.AlignHCenter
 
-                        property string ext: ''
+                    property string ext: ''
 
-                        Component.onCompleted: {
-                            fileImage.ext = folderListModel.getFileExtension(model.fileURL).toLowerCase();
-                            switch(fileImage.ext) {
-                            case 'bmp':
-                            case 'jpg':
-                            case 'jpeg':
-                            case 'gif':
-                            case 'png':
-                            case 'svg':
-                                fileImage.source = model.fileURL;
-                                break;
-                            default:
-                                notRecognisedText.visible = true;
-                                break;
-                            }
+                    Component.onCompleted: {
+                        fileImage.ext = folderListModel.getFileExtension(model.fileURL).toLowerCase();
+                        switch(fileImage.ext) {
+                        case 'bmp':
+                        case 'jpg':
+                        case 'jpeg':
+                        case 'gif':
+                        case 'png':
+                        case 'svg':
+                            fileImage.source = model.fileURL;
+                            break;
+                        default:
+                            notRecognisedText.visible = true;
+                            break;
                         }
                     }
                 }
@@ -225,10 +225,6 @@ Rectangle {
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     text: qsTr('No reconegut');
-                }
-
-                Component.onCompleted: {
-                    var incubator = fileImageComponent.incubateObject(singleFileRect, {});
                 }
             }
         }
@@ -251,6 +247,23 @@ Rectangle {
         function getFileExtension(name) {
             var match = /(?:\.)([^.]+)$/.exec(name);
             return match[1];
+        }
+    }
+
+    Common.SuperposedWidget {
+        id: editorWidget
+
+        parentWidth: parent.width * 0.8
+        parentHeight: parent.height * 0.8
+
+        function openWhiteBoardEditor(file) {
+            load(qsTr('Edita imatge'), 'whiteboard/WhiteboardWithZoom', {selectedFile: file});
+        }
+
+        Connections {
+            target: editorWidget.mainItem
+
+            onSavedImage: bigImageItem.reload()
         }
     }
 }

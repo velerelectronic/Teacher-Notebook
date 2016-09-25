@@ -74,6 +74,7 @@ import QtQuick.Dialogs 1.1
 import PersonalTypes 1.0
 import QtQml.StateMachine 1.0 as DSM
 import 'qrc:///common' as Common
+import 'qrc:///modules/whiteboard' as Whiteboard
 
 // Three types of navigation between pages
 // 1. Each page links to several pages (but not backwards)

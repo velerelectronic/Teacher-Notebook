@@ -11,6 +11,7 @@ Rectangle {
     signal closed()
     signal gotoPrevious()
     signal gotoNext()
+    signal editorRequested()
 
     Common.UseUnits {
         id: units
@@ -22,6 +23,7 @@ Rectangle {
 
         fillMode: Image.PreserveAspectFit
         source: fileURL
+        cache: false
 
         MouseArea {
             anchors.fill: parent
@@ -72,6 +74,13 @@ Rectangle {
                     Layout.fillHeight: true
                     Layout.preferredWidth: height
                     image: 'edit-153612'
+                    onClicked: editorRequested()
+                }
+
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: height
+                    image: 'edit-153612'
                     onClicked: Qt.openUrlExternally(fileURL)
                 }
 
@@ -99,5 +108,11 @@ Rectangle {
 
     function load() {
         visible = true;
+    }
+
+    function reload() {
+        var aux = fileURL;
+        fileURL = '';
+        fileURL = aux;
     }
 }
