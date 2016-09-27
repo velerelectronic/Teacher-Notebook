@@ -10,6 +10,7 @@ Rectangle {
     property alias showDirs: folderListModel.showDirs
     property string rootDir
     property alias folder: folderListModel.folder
+    property string selectedFile: ''
 
     property int numberOfColumns: 3
 
@@ -38,32 +39,104 @@ Rectangle {
         }
     }
 
-    FileViewer {
-        id: bigImageItem
-        z: 2
+    StackView {
+        id: stackView
+
         anchors.fill: parent
 
-        visible: false
-        color: 'white'
+        initialItem: galleryColumnLayout
 
-        onClosed: {
-            folderView.currentIndex = -1;
+        Item {
+            z: 2
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+            }
+            height: units.fingerUnit * 1.5
+
+            visible: stackView.depth>1
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+                spacing: units.nailUnit
+
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: height
+                    image: 'road-sign-147409'
+                    onClicked: {
+                        stackView.pop()
+                    }
+                }
+
+                Text {
+                    id: titleText
+
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+
+                    font.pixelSize: units.readUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
         }
 
-        onGotoPrevious: {
-            folderView.currentIndex = (folderView.currentIndex>0)?folderView.currentIndex-1:-1;
+        function getFileViewerItem() {
+            return find(function(item,index) {
+                return item.objectName == 'FileViewer';
+            });
         }
 
-        onGotoNext: {
-            folderView.currentIndex = (folderView.currentIndex<folderView.count-1)?folderView.currentIndex+1:-1;
+        function loadImageViewer() {
+            if (!getFileViewerItem()) {
+                console.log(Qt.resolvedUrl('FileViewer.qml'));
+                push(Qt.resolvedUrl('FileViewer.qml'), {objectName: 'FileViewer', fileURL: selectedFile});
+            }
         }
 
-        onEditorRequested: editorWidget.openWhiteBoardEditor(fileURL)
+        function loadWhiteboardEditor(file) {
+            var args = {selectedFile: file};
+            push(Qt.resolvedUrl('../whiteboard/WhiteboardWithZoom.qml'), args);
+        }
+
+        Connections {
+            target: stackView.currentItem
+            ignoreUnknownSignals: true
+
+            // Connections for FileViewer
+
+            onClosed: {
+                folderView.currentIndex = -1;
+            }
+
+            onGotoPrevious: {
+                folderView.currentIndex = (folderView.currentIndex>0)?folderView.currentIndex-1:-1;
+            }
+
+            onGotoNext: {
+                folderView.currentIndex = (folderView.currentIndex<folderView.count-1)?folderView.currentIndex+1:-1;
+            }
+
+            onEditorRequested: stackView.loadWhiteboardEditor(file)
+
+            // Connections with the whiteboard
+
+            onSavedImage: {
+                var obj = stackView.getFileViewerItem();
+                if (obj) {
+                    obj.reload();
+                }
+            }
+
+            onClose: stackView.pop();
+        }
     }
 
     ColumnLayout {
-        anchors.fill: parent
-        z: 1
+        id: galleryColumnLayout
 
         Item {
             Layout.fillWidth: true
@@ -123,9 +196,9 @@ Rectangle {
 
             onCurrentIndexChanged: {
                 if (currentIndex<0)
-                    bigImageItem.close();
+                    stackView.pop();
                 else
-                    bigImageItem.load();
+                    stackView.loadImageViewer();
             }
 
             delegate: Item {
@@ -178,7 +251,10 @@ Rectangle {
 
                 onIsCurrentItemChanged: {
                     if (singleFileItem.isCurrentItem) {
-                        bigImageItem.fileURL = model.fileURL;
+                        var obj = stackView.find(function(item,index) {
+                            return item.objectName == 'FileViewer'
+                        });
+                        obj.fileURL = model.fileURL;
                     }
                 }
 
@@ -186,7 +262,7 @@ Rectangle {
                     id: fileImage
 
                     z: 1
-                    anchors.fill: parent
+                    anchors.fill: singleFileRect
                     asynchronous: true
 
                     fillMode: Image.PreserveAspectFit
@@ -247,23 +323,6 @@ Rectangle {
         function getFileExtension(name) {
             var match = /(?:\.)([^.]+)$/.exec(name);
             return match[1];
-        }
-    }
-
-    Common.SuperposedWidget {
-        id: editorWidget
-
-        parentWidth: parent.width * 0.8
-        parentHeight: parent.height * 0.8
-
-        function openWhiteBoardEditor(file) {
-            load(qsTr('Edita imatge'), 'whiteboard/WhiteboardWithZoom', {selectedFile: file});
-        }
-
-        Connections {
-            target: editorWidget.mainItem
-
-            onSavedImage: bigImageItem.reload()
         }
     }
 }

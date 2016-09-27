@@ -11,7 +11,7 @@ Rectangle {
     signal closed()
     signal gotoPrevious()
     signal gotoNext()
-    signal editorRequested()
+    signal editorRequested(string file)
 
     Common.UseUnits {
         id: units
@@ -24,6 +24,7 @@ Rectangle {
         fillMode: Image.PreserveAspectFit
         source: fileURL
         cache: false
+        asynchronous: true
 
         MouseArea {
             anchors.fill: parent
@@ -54,7 +55,13 @@ Rectangle {
 
             RowLayout {
                 anchors.fill: parent
+                anchors.leftMargin: buttonsBar.height + spacing
                 spacing: units.fingerUnit
+
+                Item {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                }
 
                 Common.ImageButton {
                     Layout.fillHeight: true
@@ -74,7 +81,7 @@ Rectangle {
                     Layout.fillHeight: true
                     Layout.preferredWidth: height
                     image: 'edit-153612'
-                    onClicked: editorRequested()
+                    onClicked: editorRequested(fileURL);
                 }
 
                 Common.ImageButton {
@@ -84,30 +91,9 @@ Rectangle {
                     onClicked: Qt.openUrlExternally(fileURL)
                 }
 
-                Item {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                }
-
-                Common.ImageButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: height
-                    image: 'road-sign-147409'
-                    onClicked: close();
-                }
             }
         }
 
-    }
-
-    function close() {
-        fileURL = '';
-        visible = false;
-        closed();
-    }
-
-    function load() {
-        visible = true;
     }
 
     function reload() {

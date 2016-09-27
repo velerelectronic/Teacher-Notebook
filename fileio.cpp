@@ -109,6 +109,9 @@ bool FileIO::writePngImage(const QString &data) {
     if (mSource.isEmpty()) {
         return false;
     }
+    if (!mSource.toLower().endsWith(".png")) {
+        mSource = mSource + ".png";
+    }
     QFile file(mSource);
     if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
         return false;
@@ -125,6 +128,7 @@ bool FileIO::writePngImage(const QString &data) {
     image.save(&file, "PNG");
 
     file.close();
+    sourceChanged();
     return true;
 }
 

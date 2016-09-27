@@ -64,6 +64,7 @@
   * Pencil tool: https://pixabay.com/es/pluma-l%C3%A1piz-color-brown-dibujar-147569/
   * Dot width: https://pixabay.com/es/lavado-signo-secador-cuadrados-36666/
   * Move tool: https://pixabay.com/es/flechas-direcciones-hasta-abajo-145992/
+  * Zoom tool: https://pixabay.com/es/zoom-enfoque-desplazamiento-acci%C3%B3n-27958/
 */
 
 import QtQuick 2.5
