@@ -249,6 +249,8 @@ Rectangle {
                     anchors.fill: singleFileRect
                     asynchronous: true
 
+                    sourceSize: Qt.size(width, height)
+
                     fillMode: Image.PreserveAspectFit
                     horizontalAlignment: Image.AlignLeft
                     verticalAlignment: Image.AlignHCenter

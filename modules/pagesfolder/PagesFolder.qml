@@ -395,10 +395,13 @@ Item {
                             }
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: {
-                                    pageLoader.page = model.page;
-                                    pageLoader.parameters = model.parameters;
-                                    pageLoader.loadContents();
+                                onClicked: pageLoader.loadPage(model.page, JSON.parse(model.parameters));
+                                onPressAndHold: {
+                                    if ((model.index > 0) && (lastPagesModel.count>=2)) {
+                                        var prevObj = lastPagesModel.get(model.index-1);
+                                        lastPagesModel.remove(model.index);
+                                        pageLoader.loadPage(prevObj.page, JSON.parse(prevObj.parameters));
+                                    }
                                 }
                             }
                         }
@@ -445,7 +448,19 @@ Item {
                         }
 
                         function appendToLastPages(title, page, param) {
-                            lastPagesModel.append({title: title, page: page, parameters: param});
+                            var i=0;
+                            var found = false;
+                            while (i<lastPagesModel.count) {
+                                var pageObj = lastPagesModel.get(i);
+                                if (pageObj.page == page) {
+                                    lastPagesModel.setProperty(i, "parameters", param);
+                                    found = true;
+                                }
+                                i++;
+                            }
+
+                            if (!found)
+                                lastPagesModel.append({title: title, page: page, parameters: param});
                         }
 
                         Connections {

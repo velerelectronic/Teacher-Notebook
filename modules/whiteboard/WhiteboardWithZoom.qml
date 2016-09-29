@@ -35,14 +35,15 @@ Item {
             Image {
                 id: mainCanvas
 
+                visible: true
                 anchors.fill: parent
                 fillMode: Image.PreserveAspectFit
 
                 cache: false
 
-                property real factor: Math.min(mainCanvas.width / mainCanvas.implicitWidth, mainCanvas.height / mainCanvas.implicitHeight)
+                property real factor: Math.min(mainCanvas.width / Math.max(mainCanvas.implicitWidth,1), mainCanvas.height / Math.max(mainCanvas.implicitHeight,1))
 
-                onFactorChanged: console.log('factor', factor)
+                onFactorChanged: console.log('factor mainCanvas', factor)
 
                 Item {
                     id: allowableRegion
@@ -235,17 +236,6 @@ Item {
                     }
                 }
 
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Carrega')
-                    onClicked: loadFileDialog.loadFile()
-                }
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Importa')
-                    onClicked: loadFileDialog.importImage()
-                }
-
                 Text {
                     Layout.fillHeight: true
                     Layout.preferredWidth: contentWidth
@@ -297,13 +287,14 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            color: 'pink'
+            color: 'yellow'
 
             clip: true
 
             Canvas {
                 id: zoomCanvas
 
+                z: 10
                 width: canvasImage.implicitWidth
                 height: canvasImage.implicitHeight
 
@@ -311,29 +302,34 @@ Item {
 
                 transformOrigin: Item.TopLeft
 
-                property bool firstTMP: true
-
                 property var points: []
                 property real lineWidth: units.nailUnit
                 property real eraserWidth: units.nailUnit * 3
                 property string strokeColor: '#000000'
-                property var initialImage
 
                 property var canvasHistory: []
                 property var canvasHistory2: []
                 property int canvasHistoryIndex: -1
                 property int canvasHistoryLength: canvasHistory.length
-                property bool firstRun: true
+                property bool backgroundLoaded: false
 
-                property bool copyingToMainCanvas: false
+                onImageLoaded: {
+                    loadBackgroundImage();
+                    addCanvasToHistory();
+                }
 
-                function redrawImage() {
-                    console.log('redraw');
-                    var ctx = zoomCanvas.getContext("2d");
-                    //ctx.clearRect(0,0,zoomCanvas.width,zoomCanvas.height);
-                    ctx.drawImage(canvasImage, 0, 0, zoomCanvas.width, zoomCanvas.height);
-                    zoomCanvas.markDirty(Qt.rect(0,0,zoomCanvas.width,zoomCanvas.height));
-//                    zoomCanvas.markDirty(Qt.rect(0,0,canvasImage.implicitWidth,canvasImage.implicitHeight));
+                function loadBackgroundImage() {
+                    console.log('about to load background');
+                    if (!backgroundLoaded) {
+                        loadImage(selectedFile);
+                        console.log('loading background');
+                        var ctx = zoomCanvas.getContext("2d");
+                        ctx.save();
+                        ctx.drawImage(canvasImage, 0, 0, canvasImage.implicitWidth, canvasImage.implicitHeight);
+                        ctx.restore();
+                        requestPaint();
+                        backgroundLoaded = true;
+                    }
                 }
 
                 MouseArea {
@@ -411,6 +407,19 @@ Item {
                     }
                 }
 
+                function copyZoomToMainCanvas() {
+                    /*
+                    var zoomCtx = zoomCanvas.getContext("2d");
+                    var imageData = zoomCtx.getImageData(0,0,zoomCanvas.width,zoomCanvas.height);
+
+                    var mainCtx = mainCanvas2.getContext("2d");
+                    mainCtx.putImageData(imageData, 0, 0, 0, 0, mainCanvas2.width, mainCanvas2.height);
+                    mainCanvas2.requestPaint();
+                    */
+
+                    mainCanvas.source = zoomCanvas.toDataURL();
+                }
+
                 function paintPoints() {
                     var ctx = zoomCanvas.getContext("2d");
                     //ctx.fillStyle = Qt.rgba(1, 0, 0, 1);
@@ -477,23 +486,12 @@ Item {
                         zoomCanvas.canvasHistory.pop();
                     }
 
-                    /*
-                    var ctx = zoomCanvas.getContext("2d");
-                    var data = ctx.getImageData(0,0,zoomCanvas.width,zoomCanvas.height);
-                    console.log('data', data.width, data.height);
-                    for (var i=0; i<20; i++) {
-                        console.log(data.data[i]);
-                    }
-                    */
-
-                    var data = zoomCanvas.toDataURL('image/png');
+                    copyZoomToMainCanvas();
 
                     zoomCanvas.canvasHistory.push(data);
                     var newLength = zoomCanvas.canvasHistory.length;
                     zoomCanvas.canvasHistoryLength = newLength;
                     zoomCanvas.canvasHistoryIndex = newLength-1;
-                    mainCanvas.source = data;
-                    requestPaint();
                 }
 
                 function gotoPreviousCanvas() {
@@ -530,11 +528,7 @@ Item {
 
                 function clearCanvas() {
                     copyCanvasTimer.stop();
-                    addCanvasToHistory();
-                    var ctx = zoomCanvas.getContext("2d");
-                    ctx.clearRect(0,0,zoomCanvas.width,zoomCanvas.height);
-                    ctx.drawImage(canvasImage, 0, 0); // mainCanvas.canvasSize.width, mainCanvas.canvasSize.height);
-                    requestPaint();
+                    console.log('clear canvas');
                     addCanvasToHistory();
                 }
 
@@ -545,9 +539,11 @@ Item {
                 }
 
                 /*
-                onPaint: {
-                    var ctx = getContext("2d");
-                    var data = ctx.getImageData(0, 0, width, height);
+//                    var ctx = getContext("2d");
+                    var ctx = zoomCanvas.getContext("2d");
+                    //ctx.clearRect(0,0,zoomCanvas.width,zoomCanvas.height);
+                    ctx.drawImage(canvasImage, 0, 0, canvasImage.implicitWidth, canvasImage.implicitHeight);
+//                    requestPaint();
                     canvasHistory2.push(data);
                 }
                 */
@@ -601,8 +597,7 @@ Item {
             if (status == Image.Ready) {
                 zoomCanvas.width = canvasImage.implicitWidth;
                 zoomCanvas.height = canvasImage.implicitHeight;
-                console.log('about to redraw');
-                zoomCanvas.redrawImage();
+                zoomCanvas.loadImage(selectedFile);
             }
         }
     }
@@ -836,7 +831,6 @@ Item {
 
     Component.onCompleted: {
         canvasImage.source = '';
-        mainCanvas.source = selectedFile;
         canvasImage.source = selectedFile;
 //        mainCanvas.source = zoomCanvas.toDataURL();
     }
