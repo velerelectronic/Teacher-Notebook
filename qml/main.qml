@@ -75,7 +75,7 @@ import QtQuick.Dialogs 1.1
 import PersonalTypes 1.0
 import QtQml.StateMachine 1.0 as DSM
 import 'qrc:///common' as Common
-import 'qrc:///modules/whiteboard' as Whiteboard
+import 'qrc:///modules/pagesfolder' as PagesFolder
 
 // Three types of navigation between pages
 // 1. Each page links to several pages (but not backwards)
@@ -112,9 +112,15 @@ Window {
         color: '#F2F2F2'
         anchors.fill: parent
 
+        PagesFolder.PagesFolder {
+            anchors.fill: parent
+            anchors.margins: units.nailUnit
+        }
+
         WorkingSpace {
             id: workingSpace
 
+            visible: false
             anchors.fill: parent
             anchors.margins: units.nailUnit * 2
 

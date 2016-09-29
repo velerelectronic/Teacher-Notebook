@@ -14,6 +14,8 @@ Rectangle {
 
     property int numberOfColumns: 3
 
+    signal imageViewerSelected(string file)
+
     color: 'gray'
 
     Common.UseUnits {
@@ -190,16 +192,7 @@ Rectangle {
             cellWidth: Math.floor(folderView.width / numberOfColumns)
             cellHeight: Math.min(folderView.cellWidth,folderView.height / 2)
 
-            currentIndex: -1
-
             property int spacing: units.nailUnit / 2
-
-            onCurrentIndexChanged: {
-                if (currentIndex<0)
-                    stackView.pop();
-                else
-                    stackView.loadImageViewer();
-            }
 
             delegate: Item {
                 id: singleFileItem
@@ -245,16 +238,7 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        folderView.currentIndex = model.index;
-                    }
-                }
-
-                onIsCurrentItemChanged: {
-                    if (singleFileItem.isCurrentItem) {
-                        var obj = stackView.find(function(item,index) {
-                            return item.objectName == 'FileViewer'
-                        });
-                        obj.fileURL = model.fileURL;
+                        imageViewerSelected(model.fileURL)
                     }
                 }
 

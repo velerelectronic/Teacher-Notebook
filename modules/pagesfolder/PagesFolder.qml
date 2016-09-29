@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
+import QtQuick.Dialogs 1.2
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
@@ -9,6 +10,9 @@ import 'qrc:///modules/basic' as Basic
 import 'qrc:///modules/pagesfolder' as PagesFolder
 
 Item {
+    id: pagesFolderItem
+
+    signal reloadPage()
     property string selectedContext: ''
     property int selectedSection: sectionsList.currentIndex
 
@@ -136,6 +140,14 @@ Item {
             onClicked: {
                 sectionOptionsDialog.close();
                 sectionsListDialog.openReordering();
+            }
+        }
+
+        Common.SuperposedMenuEntry {
+            text: qsTr('Recarrega')
+            onClicked: {
+                sectionOptionsDialog.close();
+                reloadPage();
             }
         }
     }
@@ -351,48 +363,121 @@ Item {
                 property bool isCurrentItem: (sectionPages.currentIndex == model.index)
                 visible: isCurrentItem
 
-                MouseArea {
-                    id: mouseAreaPrevent
+                ListModel {
+                    id: lastPagesModel
+                }
+
+                ColumnLayout {
                     anchors.fill: parent
-                    // The view should only be draggable on the sides
-                    anchors.leftMargin: units.fingerUnit
-                    anchors.rightMargin: units.fingerUnit
-                    propagateComposedEvents: false
-                    preventStealing: true
-                    onPressed: {
-                        console.log('ohhh')
-                        mouse.accepted = true;
+
+                    ListView {
+                        id: previousPagesList
+
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit * 2
+
+                        orientation: ListView.Horizontal
+                        spacing: units.nailUnit
+
+                        model: lastPagesModel
+
+                        delegate: Rectangle {
+                            border.color: 'black'
+                            height: previousPagesList.height
+                            width: height * 2
+
+                            Text {
+                                anchors.fill: parent
+                                anchors.margins: units.nailUnit
+                                font.pixelSize: units.readUnit
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                text: model.title
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    pageLoader.page = model.page;
+                                    pageLoader.parameters = model.parameters;
+                                    pageLoader.loadContents();
+                                }
+                            }
+                        }
+                    }
+
+                    Loader {
+                        id: pageLoader
+                        z: 2
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+
+                        property string page: model.page
+                        property string parameters: model.parameters
+
+                        function trytoLoadContents() {
+                            if (pageLoader.sourceComponent !== null) {
+                                if (pageLoader.item.changes)
+                                    confirmDiscardChangesDialog.open();
+                            } else {
+                                pageLoader.appendToLastPages(pageLoader.page, pageLoader.page, pageLoader.parameters);
+                                pageLoader.loadContents();
+                            }
+
+                        }
+
+                        function loadContents() {
+                            var paramArray = {};
+                            if (pageLoader.parameters != '') {
+                                paramArray = JSON.parse(pageLoader.parameters);
+                            }
+                            pageLoader.setSource('qrc:///modules/' + pageLoader.page + '.qml', paramArray);
+                        }
+
+                        function reloadContents() {
+                            pageLoader.sourceComponent = undefined;
+                            loadContents();
+                        }
+
+                        function loadPage(page, param) {
+                            pageLoader.page = page;
+                            pageLoader.parameters = JSON.stringify(param);
+                            appendToLastPages(page, page, JSON.stringify(param));
+                            pageLoader.setSource('qrc:///modules/' + page + '.qml', param);
+                        }
+
+                        function appendToLastPages(title, page, param) {
+                            lastPagesModel.append({title: title, page: page, parameters: param});
+                        }
+
+                        Connections {
+                            target: pagesFolderItem
+
+                            onReloadPage: pageLoader.trytoLoadContents()
+                        }
+
+                        PageConnections {
+                            target: pageLoader.item
+                            destination: pageLoader
+                        }
                     }
                 }
 
-                Loader {
-                    id: pageLoader
-                    z: 2
-                    anchors.fill: parent
+                MessageDialog {
+                    id: confirmDiscardChangesDialog
 
-                    function loadContents() {
-                        console.log('loading contents');
-                        var paramArray = {};
-                        if (model.parameters != '') {
-                            paramArray = JSON.parse(model.parameters);
-                        }
-                        pageLoader.setSource('qrc:///modules/' + model.page + '.qml', paramArray);
-                        loadPageButton.visible = false;
+                    title: qsTr('Canviar de pàgina')
+                    text: qsTr("Si canvies de pàgina, es perdran els canvis. Estàs segur de voler continuar?")
+
+                    standardButtons: StandardButton.Yes | StandardButton.No
+
+                    onYes: {
+                        pageLoader.reloadContents();
                     }
+
+                    onNo: confirmCloseDialog.close()
                 }
 
                 onIsCurrentItemChanged: {
-                    if (pageLoader.sourceComponent == null) {
-                        console.log('loading...');
-                        pageLoader.loadContents();
-                    }
-                }
-
-                Text {
-                    id: loadPageButton
-
-                    anchors.centerIn: parent
-                    text: qsTr('Carregant...')
+                    pageLoader.trytoLoadContents()
                 }
             }
         }

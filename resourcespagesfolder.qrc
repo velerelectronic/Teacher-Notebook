@@ -4,5 +4,6 @@
         <file>modules/pagesfolder/NewPageSection.qml</file>
         <file>modules/pagesfolder/TitleSectionEditor.qml</file>
         <file>modules/pagesfolder/SectionsList.qml</file>
+        <file>modules/pagesfolder/PageConnections.qml</file>
     </qresource>
 </RCC>

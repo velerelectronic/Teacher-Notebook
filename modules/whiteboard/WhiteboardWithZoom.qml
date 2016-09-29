@@ -73,9 +73,6 @@ Item {
 
                             zoomCanvas.x = (-selectionRect.x / mainCanvas.factor) * zoomCanvas.scale;
                             zoomCanvas.y = (-selectionRect.y / mainCanvas.factor) * zoomCanvas.scale;
-
-                            console.log('zoom canvas', zoomCanvas.x, zoomCanvas.y);
-//                            zoomCanvas.redrawImage();
                         }
 
                         onPressed: {
@@ -317,12 +314,13 @@ Item {
                 property bool firstTMP: true
 
                 property var points: []
-                property real lineWidth: units.nailUnit / scale
-                property real eraserWidth: units.nailUnit * 3 / scale
+                property real lineWidth: units.nailUnit
+                property real eraserWidth: units.nailUnit * 3
                 property string strokeColor: '#000000'
                 property var initialImage
 
                 property var canvasHistory: []
+                property var canvasHistory2: []
                 property int canvasHistoryIndex: -1
                 property int canvasHistoryLength: canvasHistory.length
                 property bool firstRun: true
@@ -330,11 +328,11 @@ Item {
                 property bool copyingToMainCanvas: false
 
                 function redrawImage() {
+                    console.log('redraw');
                     var ctx = zoomCanvas.getContext("2d");
-                    ctx.clearRect(0,0,zoomCanvas.width,zoomCanvas.height);
+                    //ctx.clearRect(0,0,zoomCanvas.width,zoomCanvas.height);
                     ctx.drawImage(canvasImage, 0, 0, zoomCanvas.width, zoomCanvas.height);
                     zoomCanvas.markDirty(Qt.rect(0,0,zoomCanvas.width,zoomCanvas.height));
-                    console.log('redraw');
 //                    zoomCanvas.markDirty(Qt.rect(0,0,canvasImage.implicitWidth,canvasImage.implicitHeight));
                 }
 
@@ -355,6 +353,7 @@ Item {
                             zoomCanvas.points = [];
                             zoomCanvas.points.push(Qt.point(mouse.x, mouse.y));
                             active = true;
+                            copyCanvasTimer.stop();
                         }
                     }
                     onPositionChanged: {
@@ -391,7 +390,7 @@ Item {
                             zoomCanvas.paintPoints();
 
                         active = false;
-                        zoomCanvas.addCanvasToHistory();
+                        copyCanvasTimer.restart();
                     }
 
                 }
@@ -434,18 +433,18 @@ Item {
 
                 function drawSinglePoint(ctx,point) {
                     ctx.beginPath();
-                    ctx.lineWidth = zoomCanvas.lineWidth / 2;
+                    ctx.lineWidth = zoomCanvas.lineWidth / 2 / scale;
                     ctx.lineJoin = "round";
                     ctx.strokeStyle = zoomCanvas.strokeColor;
                     ctx.fillStyle = zoomCanvas.strokeColor;
-                    ctx.arc(point.x, point.y, zoomCanvas.lineWidth/4, 0, 2 * Math.PI);
+                    ctx.arc(point.x, point.y, zoomCanvas.lineWidth/4 / scale, 0, 2 * Math.PI);
                     ctx.stroke();
-                    markDirty(Qt.rect(point.x-zoomCanvas.lineWidth/2,point.y-zoomCanvas.lineWidth/2,zoomCanvas.lineWidth,zoomCanvas.lineWidth));
+                    markDirty(Qt.rect(point.x-zoomCanvas.lineWidth/2 / scale,point.y-zoomCanvas.lineWidth/2/scale,zoomCanvas.lineWidth/scale,zoomCanvas.lineWidth/scale));
                 }
 
                 function drawLineBetweenTwoPoints(ctx,point1,point2) {
                     ctx.beginPath();
-                    ctx.lineWidth = zoomCanvas.lineWidth;
+                    ctx.lineWidth = zoomCanvas.lineWidth / scale;
                     ctx.lineJoin = "round";
                     ctx.strokeStyle = zoomCanvas.strokeColor;
                     ctx.moveTo(point1.x, point1.y);
@@ -464,7 +463,7 @@ Item {
 
                     var singlePoint = points[zoomCanvas.points.length-1];
                     ctx.beginPath();
-                    ctx.lineWidth = zoomCanvas.eraserWidth;
+                    ctx.lineWidth = zoomCanvas.eraserWidth / scale;
                     ctx.lineJoin = "round";
                     ctx.strokeStyle = '#FFFFFF';
                     ctx.fillStyle = '#FFFFFF';
@@ -478,21 +477,41 @@ Item {
                         zoomCanvas.canvasHistory.pop();
                     }
 
+                    /*
+                    var ctx = zoomCanvas.getContext("2d");
+                    var data = ctx.getImageData(0,0,zoomCanvas.width,zoomCanvas.height);
+                    console.log('data', data.width, data.height);
+                    for (var i=0; i<20; i++) {
+                        console.log(data.data[i]);
+                    }
+                    */
+
                     var data = zoomCanvas.toDataURL('image/png');
 
                     zoomCanvas.canvasHistory.push(data);
-                    zoomCanvas.canvasHistoryIndex = zoomCanvas.canvasHistoryIndex + 1;
-                    zoomCanvas.canvasHistoryLength = zoomCanvas.canvasHistory.length;
+                    var newLength = zoomCanvas.canvasHistory.length;
+                    zoomCanvas.canvasHistoryLength = newLength;
+                    zoomCanvas.canvasHistoryIndex = newLength-1;
                     mainCanvas.source = data;
+                    requestPaint();
                 }
 
                 function gotoPreviousCanvas() {
                     console.log('current history', zoomCanvas.canvasHistoryIndex);
                     if (zoomCanvas.canvasHistoryIndex>0) {
-                        zoomCanvas.canvasHistoryIndex = zoomCanvas.canvasHistoryIndex - 1;
-                        var data = zoomCanvas.canvasHistory[zoomCanvas.canvasHistoryIndex];
+                        var newIndex = zoomCanvas.canvasHistoryIndex - 1;
+                        zoomCanvas.canvasHistoryIndex = newIndex;
+                        var data = zoomCanvas.canvasHistory[newIndex];
                         mainCanvas.source = data;
                         canvasImage.source = data;
+
+                        /*
+                        var data = canvasHistory2.pop();
+                        var ctx = getContext("2d");
+                        ctx.drawImage(data, 0, 0, width, height);
+                        */
+
+                        requestPaint();
                         console.log('next history', zoomCanvas.canvasHistoryIndex);
                     }
                 }
@@ -504,11 +523,14 @@ Item {
                         var data = zoomCanvas.canvasHistory[zoomCanvas.canvasHistoryIndex];
                         mainCanvas.source = data;
                         canvasImage.source = data;
+                        requestPaint();
                         console.log('next history', zoomCanvas.canvasHistoryIndex);
                     }
                 }
 
                 function clearCanvas() {
+                    copyCanvasTimer.stop();
+                    addCanvasToHistory();
                     var ctx = zoomCanvas.getContext("2d");
                     ctx.clearRect(0,0,zoomCanvas.width,zoomCanvas.height);
                     ctx.drawImage(canvasImage, 0, 0); // mainCanvas.canvasSize.width, mainCanvas.canvasSize.height);
@@ -522,12 +544,28 @@ Item {
                     }
                 }
 
-                onPainted: console.log('painted now');
+                /*
+                onPaint: {
+                    var ctx = getContext("2d");
+                    var data = ctx.getImageData(0, 0, width, height);
+                    canvasHistory2.push(data);
+                }
+                */
 
             }
 
         }
 
+    }
+
+    Timer {
+        id: copyCanvasTimer
+
+        interval: 500
+
+        onTriggered: {
+            zoomCanvas.addCanvasToHistory();
+        }
     }
 
     Image {
@@ -541,6 +579,7 @@ Item {
         asynchronous: false
 
         onStatusChanged: {
+            console.log('selected file', canvasImage.source);
             console.log('image status', status);
             switch(status) {
             case Image.Null:
@@ -743,41 +782,62 @@ Item {
         parentHeight: whiteboardWithZoom.height
 
         Common.SuperposedMenuEntry {
+            text: '800%'
+            onClicked: {
+                zoomCanvas.scale = 8;
+                zoomSelectorDialog.close();
+            }
+        }
+
+        Common.SuperposedMenuEntry {
+            text: '600%'
+            onClicked: {
+                zoomCanvas.scale = 6;
+                zoomSelectorDialog.close();
+            }
+        }
+
+        Common.SuperposedMenuEntry {
             text: '400%'
             onClicked: {
                 zoomCanvas.scale = 4;
+                zoomSelectorDialog.close();
             }
         }
         Common.SuperposedMenuEntry {
             text: '200%'
             onClicked: {
                 zoomCanvas.scale = 2;
+                zoomSelectorDialog.close();
             }
         }
         Common.SuperposedMenuEntry {
             text: qsTr('100% - Original')
             onClicked: {
                 zoomCanvas.scale = 1;
+                zoomSelectorDialog.close();
             }
         }
         Common.SuperposedMenuEntry {
             text: qsTr('50%')
             onClicked: {
                 zoomCanvas.scale = 0.5;
+                zoomSelectorDialog.close();
             }
         }
         Common.SuperposedMenuEntry {
             text: qsTr('25%')
             onClicked: {
                 zoomCanvas.scale = 0.25;
+                zoomSelectorDialog.close();
             }
         }
     }
 
     Component.onCompleted: {
         canvasImage.source = '';
+        mainCanvas.source = selectedFile;
         canvasImage.source = selectedFile;
-        mainCanvas.source = '';
-        mainCanvas.source = zoomCanvas.toDataURL();
+//        mainCanvas.source = zoomCanvas.toDataURL();
     }
 }
