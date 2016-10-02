@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>modules/whiteboard/WhiteBoard.qml</file>
         <file>modules/whiteboard/WhiteboardWithZoom.qml</file>
+        <file>modules/whiteboard/CanvasHistory.qml</file>
     </qresource>
 </RCC>

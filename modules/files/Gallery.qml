@@ -41,104 +41,26 @@ Rectangle {
         }
     }
 
-    StackView {
-        id: stackView
-
-        anchors.fill: parent
-
-        initialItem: galleryColumnLayout
-
-        Item {
-            z: 2
-            anchors {
-                top: parent.top
-                left: parent.left
-                right: parent.right
-            }
-            height: units.fingerUnit * 1.5
-
-            visible: stackView.depth>1
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: units.nailUnit
-                spacing: units.nailUnit
-
-                Common.ImageButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: height
-                    image: 'road-sign-147409'
-                    onClicked: {
-                        stackView.pop()
-                    }
-                }
-
-                Text {
-                    id: titleText
-
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    verticalAlignment: Text.AlignVCenter
-                }
-            }
+    function gotoPrevious() {
+        var index = folderListModel.indexOf(selectedFile);
+        if (index > 0) {
+            selectedFile = folderListModel.get(index-1, "fileURL");
+            imageViewerSelected(selectedFile);
         }
+    }
 
-        function getFileViewerItem() {
-            return find(function(item,index) {
-                return item.objectName == 'FileViewer';
-            });
-        }
-
-        function loadImageViewer() {
-            if (!getFileViewerItem()) {
-                console.log(Qt.resolvedUrl('FileViewer.qml'));
-                push(Qt.resolvedUrl('FileViewer.qml'), {objectName: 'FileViewer', fileURL: selectedFile});
-            }
-        }
-
-        function loadWhiteboardEditor(file) {
-            var args = {selectedFile: file};
-            push(Qt.resolvedUrl('../whiteboard/WhiteboardWithZoom.qml'), args);
-        }
-
-        Connections {
-            target: stackView.currentItem
-            ignoreUnknownSignals: true
-
-            // Connections for FileViewer
-
-            onClosed: {
-                folderView.currentIndex = -1;
-            }
-
-            onGotoPrevious: {
-                folderView.currentIndex = (folderView.currentIndex>0)?folderView.currentIndex-1:-1;
-            }
-
-            onGotoNext: {
-                folderView.currentIndex = (folderView.currentIndex<folderView.count-1)?folderView.currentIndex+1:-1;
-            }
-
-            onEditorRequested: stackView.loadWhiteboardEditor(file)
-
-            // Connections with the whiteboard
-
-            onSavedImage: {
-                var obj = stackView.getFileViewerItem();
-                if (obj) {
-                    obj.reload();
-                }
-            }
-
-            onClose: stackView.pop();
+    function gotoNext() {
+        var index = folderListModel.indexOf(selectedFile);
+        if (index < folderListModel.count-1) {
+            selectedFile = folderListModel.get(index+1, "fileURL");
+            imageViewerSelected(selectedFile);
         }
     }
 
     ColumnLayout {
         id: galleryColumnLayout
+
+        anchors.fill: parent
 
         Item {
             Layout.fillWidth: true
@@ -194,13 +116,14 @@ Rectangle {
 
             property int spacing: units.nailUnit / 2
 
-            delegate: Item {
+            delegate: Rectangle {
                 id: singleFileItem
                 width: folderView.cellWidth
                 height: folderView.cellHeight
 
-                property bool isCurrentItem: folderView.currentIndex == model.index
+                property bool isCurrentItem: model.fileURL == selectedFile
 
+                color: (isCurrentItem)?'yellow':'transparent'
                 Rectangle {
                     id: singleFileRect
                     z: 1
@@ -238,7 +161,8 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        imageViewerSelected(model.fileURL)
+                        selectedFile = model.fileURL;
+                        imageViewerSelected(selectedFile);
                     }
                 }
 

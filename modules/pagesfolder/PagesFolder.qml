@@ -342,6 +342,8 @@ Item {
     Item {
         id: sectionPages
 
+        z: 3
+
         anchors {
             top: contextSelectorItem.bottom
             left: parent.left
@@ -354,125 +356,77 @@ Item {
         Repeater {
             model: sectionsModel
 
-            Item {
-                id: pageItem
+            Loader {
+                id: pageLoader
 
-                z: 1
-                anchors.fill: parent
+                anchors.fill: sectionPages
 
-                property bool isCurrentItem: (sectionPages.currentIndex == model.index)
-                visible: isCurrentItem
+                property string page: model.page
+                property string parameters: model.parameters
+                visible: model.index == selectedSection
 
-                ListModel {
-                    id: lastPagesModel
+                function loadContents() {
+                    var paramArray = {};
+                    if (pageLoader.parameters != '') {
+                        paramArray = JSON.parse(pageLoader.parameters);
+                    }
+                    pageLoader.setSource('qrc:///modules/' + pageLoader.page + '.qml', paramArray);
                 }
 
-                ColumnLayout {
+                function reloadContents() {
+                    pageLoader.sourceComponent = undefined;
+                    loadContents();
+                }
+
+                Connections {
+                    target: pagesFolderItem
+
+                    onReloadPage: pageLoader.trytoLoadContents()
+                }
+
+                PageConnections {
+                    id: pageConnections
+
+                    target: pageLoader.item
+                    destination: subPageFolder
+                }
+
+                SubPageFolder {
+                    id: subPageFolder
+                    z: 4
+
                     anchors.fill: parent
+                    primarySource: pageLoader.item
 
-                    ListView {
-                        id: previousPagesList
-
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: units.fingerUnit * 2
-
-                        orientation: ListView.Horizontal
-                        spacing: units.nailUnit
-
-                        model: lastPagesModel
-
-                        delegate: Rectangle {
-                            border.color: 'black'
-                            height: previousPagesList.height
-                            width: height * 2
-
-                            Text {
-                                anchors.fill: parent
-                                anchors.margins: units.nailUnit
-                                font.pixelSize: units.readUnit
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                text: model.title
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: pageLoader.loadPage(model.page, JSON.parse(model.parameters));
-                                onPressAndHold: {
-                                    if ((model.index > 0) && (lastPagesModel.count>=2)) {
-                                        var prevObj = lastPagesModel.get(model.index-1);
-                                        lastPagesModel.remove(model.index);
-                                        pageLoader.loadPage(prevObj.page, JSON.parse(prevObj.parameters));
-                                    }
-                                }
-                            }
-                        }
+                    onCloseRequested: {
+                        console.log('closing')
+                        subPageFolder.state = 'hidden';
                     }
+                }
 
-                    Loader {
-                        id: pageLoader
-                        z: 2
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
+                onVisibleChanged: {
+                    if (visible) {
+                        loadContents();
+                    }
+                }
 
-                        property string page: model.page
-                        property string parameters: model.parameters
+                onLoaded: {
+//                    pageConnections.primarySource = pageLoader.item;
+                }
 
-                        function trytoLoadContents() {
-                            if (pageLoader.sourceComponent !== null) {
-                                if (pageLoader.item.changes)
-                                    confirmDiscardChangesDialog.open();
-                            } else {
-                                pageLoader.appendToLastPages(pageLoader.page, pageLoader.page, pageLoader.parameters);
-                                pageLoader.loadContents();
-                            }
+                Common.ImageButton {
+                    id: subPagePositionImage
 
-                        }
-
-                        function loadContents() {
-                            var paramArray = {};
-                            if (pageLoader.parameters != '') {
-                                paramArray = JSON.parse(pageLoader.parameters);
-                            }
-                            pageLoader.setSource('qrc:///modules/' + pageLoader.page + '.qml', paramArray);
-                        }
-
-                        function reloadContents() {
-                            pageLoader.sourceComponent = undefined;
-                            loadContents();
-                        }
-
-                        function loadPage(page, param) {
-                            pageLoader.page = page;
-                            pageLoader.parameters = JSON.stringify(param);
-                            appendToLastPages(page, page, JSON.stringify(param));
-                            pageLoader.setSource('qrc:///modules/' + page + '.qml', param);
-                        }
-
-                        function appendToLastPages(title, page, param) {
-                            var i=0;
-                            var found = false;
-                            while (i<lastPagesModel.count) {
-                                var pageObj = lastPagesModel.get(i);
-                                if (pageObj.page == page) {
-                                    lastPagesModel.setProperty(i, "parameters", param);
-                                    found = true;
-                                }
-                                i++;
-                            }
-
-                            if (!found)
-                                lastPagesModel.append({title: title, page: page, parameters: param});
-                        }
-
-                        Connections {
-                            target: pagesFolderItem
-
-                            onReloadPage: pageLoader.trytoLoadContents()
-                        }
-
-                        PageConnections {
-                            target: pageLoader.item
-                            destination: pageLoader
-                        }
+                    z: 5
+                    anchors {
+                        top: pageLoader.top
+                        left: pageLoader.left
+                    }
+                    size: units.fingerUnit * 2
+                    image: 'outline-27146'
+                    visible: subPageFolder.state == 'maximized'
+                    onClicked: {
+                        subPageFolder.state = (subPageFolder.state == 'minimized')?'maximized':'minimized';
                     }
                 }
 
@@ -490,13 +444,9 @@ Item {
 
                     onNo: confirmCloseDialog.close()
                 }
-
-                onIsCurrentItemChanged: {
-                    pageLoader.trytoLoadContents()
-                }
             }
+
+
         }
-
-
     }
 }

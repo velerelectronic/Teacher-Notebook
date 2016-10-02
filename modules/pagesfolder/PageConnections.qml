@@ -1,7 +1,8 @@
-import QtQuick 2.0
+import QtQuick 2.7
 
 Connections {
     property Item destination
+    property Item primarySource
 
     ignoreUnknownSignals: true
 
@@ -16,4 +17,13 @@ Connections {
 
     onEditorRequested: destination.loadPage('whiteboard/WhiteboardWithZoom', {selectedFile: file});
     onImageViewerSelected: destination.loadPage('files/FileViewer', {fileURL: file});
+
+    /*
+    onGotoPrevious: {
+        //primarySource.gotoPrevious();
+    }
+    onGotoNext: {
+        //primarySource.gotoNext();
+    }
+    */
 }

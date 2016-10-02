@@ -176,10 +176,11 @@ Item {
 
                             size: buttonsRow.height
                             image: 'undo-97591'
-                            enabled: zoomCanvas.canvasHistoryIndex > 0
+                            enabled: canvasHistory.canUndo
                             color: (enabled)?'white':'gray'
                             onClicked: {
-                                zoomCanvas.gotoPreviousCanvas();
+                                copyCanvasTimer.stop();
+                                canvasHistory.setPreviousCanvas(zoomCanvas, mainCanvas);
                             }
                         }
                         Common.ImageButton {
@@ -187,10 +188,11 @@ Item {
                             height: size
                             size: buttonsRow.height
                             image: 'redo-97589'
-                            enabled: zoomCanvas.canvasHistoryIndex < zoomCanvas.canvasHistoryLength
+                            enabled: canvasHistory.canRedo
                             color: (enabled)?'white':'gray'
                             onClicked: {
-                                zoomCanvas.gotoNextCanvas();
+                                copyCanvasTimer.stop();
+                                canvasHistory.setNextCanvas(zoomCanvas, mainCanvas);
                             }
                         }
                         Common.ImageButton {
@@ -291,6 +293,10 @@ Item {
 
             clip: true
 
+            CanvasHistory {
+                id: canvasHistory
+            }
+
             Canvas {
                 id: zoomCanvas
 
@@ -307,15 +313,16 @@ Item {
                 property real eraserWidth: units.nailUnit * 3
                 property string strokeColor: '#000000'
 
-                property var canvasHistory: []
-                property var canvasHistory2: []
-                property int canvasHistoryIndex: -1
-                property int canvasHistoryLength: canvasHistory.length
+                property bool firstTime: true
                 property bool backgroundLoaded: false
 
                 onImageLoaded: {
-                    loadBackgroundImage();
-                    addCanvasToHistory();
+                    if (firstTime) {
+                        loadBackgroundImage();
+                        canvasHistory.addCanvas(zoomCanvas);
+                        zoomCanvas.copyZoomToMainCanvas();
+                        firstTime = false;
+                    }
                 }
 
                 function loadBackgroundImage() {
@@ -481,62 +488,21 @@ Item {
                     markDirty(Qt.rect(singlePoint.x-zoomCanvas.eraserWidth,singlePoint.y-zoomCanvas.eraserWidth,10,10));
                 }
 
-                function addCanvasToHistory() {
-                    while (zoomCanvas.canvasHistoryIndex < zoomCanvas.canvasHistory.length-1) {
-                        zoomCanvas.canvasHistory.pop();
-                    }
-
-                    copyZoomToMainCanvas();
-
-                    zoomCanvas.canvasHistory.push(data);
-                    var newLength = zoomCanvas.canvasHistory.length;
-                    zoomCanvas.canvasHistoryLength = newLength;
-                    zoomCanvas.canvasHistoryIndex = newLength-1;
-                }
-
-                function gotoPreviousCanvas() {
-                    console.log('current history', zoomCanvas.canvasHistoryIndex);
-                    if (zoomCanvas.canvasHistoryIndex>0) {
-                        var newIndex = zoomCanvas.canvasHistoryIndex - 1;
-                        zoomCanvas.canvasHistoryIndex = newIndex;
-                        var data = zoomCanvas.canvasHistory[newIndex];
-                        mainCanvas.source = data;
-                        canvasImage.source = data;
-
-                        /*
-                        var data = canvasHistory2.pop();
-                        var ctx = getContext("2d");
-                        ctx.drawImage(data, 0, 0, width, height);
-                        */
-
-                        requestPaint();
-                        console.log('next history', zoomCanvas.canvasHistoryIndex);
-                    }
-                }
-
-                function gotoNextCanvas() {
-                    console.log('current history', zoomCanvas.canvasHistoryIndex);
-                    if (zoomCanvas.canvasHistoryIndex < zoomCanvas.canvasHistoryLength-1) {
-                        zoomCanvas.canvasHistoryIndex = zoomCanvas.canvasHistoryIndex + 1;
-                        var data = zoomCanvas.canvasHistory[zoomCanvas.canvasHistoryIndex];
-                        mainCanvas.source = data;
-                        canvasImage.source = data;
-                        requestPaint();
-                        console.log('next history', zoomCanvas.canvasHistoryIndex);
-                    }
-                }
 
                 function clearCanvas() {
                     copyCanvasTimer.stop();
                     console.log('clear canvas');
-                    addCanvasToHistory();
+                    canvasHistory.addCanvas(zoomCanvas);
+                    copyZoomToMainCanvas();
                 }
 
+                /*
                 onAvailableChanged: {
                     if (available) {
                         clearCanvas();
                     }
                 }
+                */
 
                 /*
 //                    var ctx = getContext("2d");
@@ -560,7 +526,9 @@ Item {
         interval: 500
 
         onTriggered: {
-            zoomCanvas.addCanvasToHistory();
+            canvasHistory.addCanvas(zoomCanvas);
+            zoomCanvas.copyZoomToMainCanvas();
+
         }
     }
 
@@ -830,7 +798,6 @@ Item {
     }
 
     Component.onCompleted: {
-        canvasImage.source = '';
         canvasImage.source = selectedFile;
 //        mainCanvas.source = zoomCanvas.toDataURL();
     }
