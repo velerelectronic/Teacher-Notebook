@@ -9,13 +9,19 @@ Connections {
     onAnnotationsListSelected2: destination.loadPage('annotations2/AnnotationsList', {interactive: true})
     onAnnotationSelected: destination.loadPage('annotations2/ShowAnnotation', {identifier: annotation});
     onDateSelected: {
-        var dateString = fullyear + "" + (month<9?'0':'') + (month+1) + "" + (date<10?'0':date);
-        console.log(dateString);
-        destination.loadPage('annotations2/AnnotationsList', {interactive: true, periodStart: dateString, periodEnd: dateString, filterPeriod: true});
+        var dateObject = new Date(fullyear, month, date, 0, 0, 0, 0);
+        var startDateString = dateObject.toYYYYMMDDFormat();
+        dateObject.setDate(dateObject.getDate()+1);
+        var endDateString = dateObject.toYYYYMMDDFormat();
+        console.log('date selected', startDateString, endDateString);
+        destination.loadPage('annotations2/AnnotationsList', {interactive: true, periodStart: startDateString, periodEnd: endDateString, filterPeriod: true});
     }
     onDocumentSelected: destination.loadPage('documents/ShowDocument', {document: document});
 
-    onEditorRequested: destination.loadPage('whiteboard/WhiteboardWithZoom', {selectedFile: file});
+    onEditorRequested: {
+        destination.loadPage('whiteboard/ImageBoard', {selectedFile: file});
+        //destination.loadPage('whiteboard/WhiteboardWithZoom', {selectedFile: file});
+    }
     onImageViewerSelected: destination.loadPage('files/FileViewer', {fileURL: file});
 
     /*

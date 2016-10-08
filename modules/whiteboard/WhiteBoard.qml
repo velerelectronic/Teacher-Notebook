@@ -1,287 +1,342 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 2.0
+import QtQuick.Dialogs 1.2
+import QtQml.Models 2.2
 import FileIO 1.0
 import 'qrc:///common' as Common
-import 'qrc:///modules/files' as Files
 
-
-Item {
+Rectangle {
     id: whiteBoardItem
 
-    property string baseDirectory
     property string selectedFile
+    property var rectangle
+    property var transformedRectangle
+
+    signal savedImage()
+    signal savingImage()
 
     Common.UseUnits {
         id: units
     }
 
-    MouseArea {
-        anchors.fill: parent
-        onPressed: mouse.accepted = true;
+    Image {
+        id: basicImage
+
+        source: selectedFile
+
+        visible: false
+    }
+
+    FileIO {
+        id: imageFile
     }
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: units.nailUnit
-        spacing: units.nailUnit
-
         Item {
-            Layout.preferredHeight: units.fingerUnit * 1.5
             Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit * 1.5
+
             RowLayout {
                 id: buttonsRow
 
                 anchors.fill: parent
-                spacing: units.nailUnit
 
-                Common.ImageButton {
-                    id: pencilButton
-
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: size
-
-                    property bool active: !eraserButton.active
-
-                    image: 'pen-147569'
-                    size: buttonsRow.height
-                    onClicked: {
-                        eraserButton.active = false;
-                    }
-                }
-                Common.ImageButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: size
-
-                    image: 'washing-36666'
-                    size: buttonsRow.height
-                    onClicked: lineWidthDialog.open()
-                }
-                Common.ImageButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: size
-                    size: buttonsRow.height
-                    image: 'palette-23406'
-                    onClicked: colourSelectorDialog.open()
-
-                    color: canvas.strokeColor
-                }
-
-                Common.ImageButton {
-                    id: eraserButton
-
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: size
-
-                    property bool active: false
-
-                    size: buttonsRow.height
-                    image: 'erase-34105'
-                    onClicked: {
-                        eraserButton.active = true;
-                    }
-                }
-
-                Button {
-                    id: eraserWidthButton
-                    Layout.fillHeight: true
-                    text: qsTr('Mida')
-                    onClicked: eraserWidthDialog.open();
-                }
-                Common.ImageButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: size
-                    size: buttonsRow.height
-                    image: 'undo-97591'
-                    color: (canvas.canvasHistoryIndex == 0)?'grey':'white'
-                    onClicked: canvas.gotoPreviousCanvas()
-                }
-                Common.ImageButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: size
-                    size: buttonsRow.height
-                    image: 'redo-97589'
-                    color: (canvas.canvasHistoryIndex >= canvas.canvasHistoryLength)?'grey':'white'
-                    onClicked: canvas.gotoNextCanvas()
-                }
-
-                Common.ImageButton {
-                    id: moveToolButton
-
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: size
-                    size: buttonsRow.height
-                    image: 'arrows-145992'
-                    property bool active: false
-                    color: (active)?'yellow':'white'
-                    onClicked: {
-                        moveToolButton.active = !moveToolButton.active;
-                    }
-                }
-
-                Text {
-                    id: fileNameText
-
+                ListView {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
 
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: selectedFile
+                    orientation: ListView.Horizontal
+                    clip: true
+
+                    spacing: units.nailUnit
+                    model: ObjectModel {
+                        id: buttonsModel
+
+                        Common.ImageButton {
+                            id: pencilButton
+
+                            width: size
+                            height: size
+
+                            property bool active: !eraserButton.active
+
+                            image: 'pen-147569'
+                            size: buttonsRow.height
+                            onClicked: {
+                                eraserButton.active = false;
+                            }
+                        }
+                        Common.ImageButton {
+                            width: size
+                            height: size
+
+                            image: 'washing-36666'
+                            size: buttonsRow.height
+                            onClicked: lineWidthDialog.open()
+                        }
+                        Common.ImageButton {
+                            width: size
+                            height: size
+                            size: buttonsRow.height
+                            image: 'palette-23406'
+                            onClicked: colourSelectorDialog.open()
+
+                            color: zoomCanvas.strokeColor
+                        }
+
+                        Common.ImageButton {
+                            id: eraserButton
+
+                            width: size
+                            height: size
+
+                            property bool active: false
+
+                            size: buttonsRow.height
+                            image: 'erase-34105'
+                            onClicked: {
+                                eraserButton.active = true;
+                            }
+                        }
+
+                        Button {
+                            id: eraserWidthButton
+                            width: units.fingerUnit * 2
+
+                            height: buttonsRow.height
+                            text: qsTr('Mida')
+                            onClicked: eraserWidthDialog.open();
+                        }
+                        Common.ImageButton {
+                            width: size
+                            height: size
+
+                            size: buttonsRow.height
+                            image: 'undo-97591'
+                            enabled: canvasHistory.canUndo
+                            color: (enabled)?'white':'gray'
+                            onClicked: {
+                                zoomCanvas.lastSubImage = canvasHistory.setPreviousCanvas();
+                                zoomCanvas.resetBackground = true;
+                                zoomCanvas.canvasImageNeedsToBeSaved = true;
+                                zoomCanvas.requestPaint();
+                            }
+                        }
+                        Common.ImageButton {
+                            width: size
+                            height: size
+                            size: buttonsRow.height
+                            image: 'redo-97589'
+                            enabled: canvasHistory.canRedo
+                            color: (enabled)?'white':'gray'
+                            onClicked: {
+                                zoomCanvas.lastSubImage = canvasHistory.setNextCanvas(zoomCanvas);
+                                zoomCanvas.canvasImageNeedsToBeSaved = true;
+                                zoomCanvas.requestPaint();
+                            }
+                        }
+                        Common.ImageButton {
+                            width: size
+                            height: size
+                            size: buttonsRow.height
+                            image: 'zoom-27958'
+                            onClicked: {
+                                zoomSelectorDialog.open();
+                            }
+                        }
+                    }
                 }
+
                 Common.ImageButton {
                     Layout.fillHeight: true
                     Layout.preferredWidth: size
                     size: buttonsRow.height
                     image: 'floppy-35952'
-                    color: (canvas.canvasHistoryIndex == 0)?'grey':'white'
+                    color: (zoomCanvas.canvasHistoryIndex == 0)?'grey':'white'
                     onClicked: {
-                        if (selectedFile !== '') {
-                            console.log('Saving to', selectedFile);
-                            console.log(canvas.toDataURL());
-                            imageFile.source = selectedFile;
-                            imageFile.write(canvas.toDataURL());
-                        }
+                        imageFile.source = selectedFile;
+                        imageFile.addExtension("png");
+                        confirmSaveDialog.open();
                     }
-                }
-
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Carrega')
-                    onClicked: loadFileDialog.loadFile()
-                }
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('Importa')
-                    onClicked: loadFileDialog.importImage()
                 }
             }
         }
 
-        FileIO {
-            id: imageFile
-        }
-
-        Flickable {
-            id: flickableCanvas
+        Item {
+            id: canvasSubArea
 
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            clip: true
+            property real factor: Math.min(parent.width / rectangle.width, parent.height / rectangle.height)
 
-            interactive: moveToolButton.active
+            CanvasHistory {
+                id: canvasHistory
+            }
 
-            contentWidth: fullPage.width
-            contentHeight: fullPage.height
+            Canvas {
+                id: zoomCanvas
 
-            property real margins: Math.min(flickableCanvas.width, flickableCanvas.height) / 5
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                }
 
-            leftMargin: flickableCanvas.margins
-            rightMargin: flickableCanvas.margins
-            topMargin: flickableCanvas.margins
-            bottomMargin: flickableCanvas.margins
+                scale: parent.factor
+                transformOrigin: Item.TopLeft
 
-            onContentXChanged: canvas.canvasWindow = Qt.rect(contentX, contentY, fullPage.width, fullPage.height)
-            onContentYChanged: canvas.canvasWindow = Qt.rect(contentX, contentY, fullPage.width, fullPage.height)
+                width: parent.width / parent.factor
+                height: parent.height / parent.factor
 
-            Rectangle {
-                id: fullPage
-                color: 'white'
-                width: units.fingerUnit * 5
-                height: units.fingerUnit * 5
+                property var points: []
+                property real lineWidth: units.nailUnit
+                property real eraserWidth: units.nailUnit * 3
+                property string strokeColor: '#000000'
 
-                Canvas {
-                    id: canvas
+                property bool firstTime: true
+                property bool backgroundLoaded: false
+
+                property bool drawToolSelected: pencilButton.active
+                property bool canvasImageNeedsToBeSaved: false
+
+                property bool putCanvasIntoHistory: false
+                property bool resetBackground: false
+                property var lastSubImage: null
+
+                MouseArea {
+                    id: mousePointer
 
                     anchors.fill: parent
 
-                    property var points
-                    property real lineWidth: units.nailUnit
-                    property real eraserWidth: units.nailUnit * 3
-                    property string strokeColor: '#000000'
-                    property var initialImage
+                    onPressed: {
+                        var maxX = zoomCanvas.width;
+                        var maxY = zoomCanvas.height;
 
-                    property var canvasHistory: []
-                    property int canvasHistoryIndex: -1
-                    property int canvasHistoryLength: canvasHistory.length
-                    property bool firstRun: true
-
-                    MouseArea {
-                        id: mousePointer
-
-                        anchors.fill: parent
-                        enabled: !flickableCanvas.interactive
-
-                        property bool active: false
-
-                        onPressed: {
-                            if ((mouse.x>=0) && (mouse.y>=0) && (mouse.x<canvas.width) && (canvas.y<canvas.height)) {
-                                mouse.accepted = true;
-                                canvas.points = [];
-                                canvas.points.push(Qt.point(mouse.x, mouse.y));
-                                active = true;
-                            }
+                        if ((mouse.x>=0) && (mouse.y>=0) && (mouse.x<maxX) && (mouse.y<maxY)) {
+                            mouse.accepted = true;
+                            zoomCanvas.points = [];
+                            zoomCanvas.points.push(Qt.point(mouse.x, mouse.y));
+                            zoomCanvas.requestPaint();
                         }
-                        onPositionChanged: {
-                            if (mousePointer.active) {
-                                if ((mouse.x>=0) && (mouse.y>=0) && (mouse.x<canvas.width) && (canvas.y<canvas.height)) {
-                                    canvas.points.push(Qt.point(mouse.x, mouse.y));
-                                    if (eraserButton.active) {
-                                        eraseCircle.reposition(mouse.x,mouse.y)
-                                        eraseCircle.visible = true;
-                                        canvas.erasePoints();
-                                    } else {
-                                        eraseCircle.visible = false;
-                                        canvas.paintPoints();
-                                    }
-                                } else {
-                                    eraseCircle.visible = false;
-                                    if (eraserButton.active)
-                                        canvas.erasePoints();
-                                    else
-                                        canvas.paintPoints();
+                    }
+                    onPositionChanged: {
+                        var maxX = zoomCanvas.width;
+                        var maxY = zoomCanvas.height;
 
-                                    active = false;
-                                    canvas.addCanvasToHistory();
-                                }
+                        if ((mouse.x>=0) && (mouse.y>=0) && (mouse.x<maxX) && (mouse.y<maxY)) {
+                            console.log('new point', mouse.x, mouse.y);
+                            zoomCanvas.points.push(Qt.point(mouse.x, mouse.y));
+                            if (eraserButton.active) {
+                                eraseRect.reposition(mouse.x,mouse.y)
+                                eraseRect.visible = true;
+                            } else {
+                                eraseRect.visible = false;
                             }
-                        }
-                        onReleased: {
-                            eraseCircle.visible = false;
+                            zoomCanvas.requestPaint();
+                        } else {
+                            eraseRect.visible = false;
                             if (eraserButton.active)
-                                canvas.erasePoints();
+                                zoomCanvas.erasePoints();
                             else
-                                canvas.paintPoints();
+                                zoomCanvas.paintPoints();
 
                             active = false;
-                            canvas.addCanvasToHistory();
-                        }
-
-                    }
-
-
-                    Rectangle {
-                        id: eraseCircle
-
-                        visible: false
-                        border.color: 'black'
-                        color: 'transparent'
-                        width: canvas.eraserWidth * 2
-                        height: canvas.eraserWidth * 2
-                        radius: canvas.eraserWidth
-
-                        function reposition(x,y) {
-                            eraseCircle.x = x - eraseCircle.width / 2
-                            eraseCircle.y = y - eraseCircle.height / 2
                         }
                     }
+                    onReleased: {
+                        eraseRect.visible = false;
+                        zoomCanvas.points.push(Qt.point(mouse.x, mouse.y));
+                        if (eraserButton.active) {
+                        }
+                        else {
+//                            zoomCanvas.paintPoints();
+                        }
+                        zoomCanvas.putCanvasIntoHistory = true;
+                        zoomCanvas.requestPaint();
+                    }
 
-                    function paintPoints() {
-                        var ctx = canvas.getContext("2d");
-                        //ctx.fillStyle = Qt.rgba(1, 0, 0, 1);
+                }
 
-                        var l = canvas.points.length;
+                Rectangle {
+                    id: eraseRect
+
+                    visible: false
+                    border.color: 'black'
+                    color: 'transparent'
+                    width: zoomCanvas.eraserWidth * 2
+                    height: zoomCanvas.eraserWidth * 2
+
+                    function reposition(x,y) {
+                        eraseRect.x = x - eraseRect.width / 2
+                        eraseRect.y = y - eraseRect.height / 2
+                    }
+                }
+
+
+                onAvailableChanged: initCanvas()
+
+                function initCanvas() {
+                    var ctx = getContext("2d");
+                    console.log('rect', rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+                    ctx.clearRect(0,0,zoomCanvas.width, zoomCanvas.height);
+                    ctx.drawImage(basicImage, rectangle.x, rectangle.y, width, height, 0, 0, width, height);
+                    lastSubImage = ctx.getImageData(0, 0, zoomCanvas.width, zoomCanvas.height);
+                    putCanvasIntoHistory = true;
+                }
+
+                onPaint: {
+                    console.log('painting');
+                    var ctx = zoomCanvas.getContext("2d");
+
+                    if (zoomCanvas.resetBackground) {
+                        zoomCanvas.resetBackground = false;
+                        ctx.clearRect(0,0,zoomCanvas.width, zoomCanvas.height);
+                        zoomCanvas.points = [];
+                        console.log('reset background');
+                    }
+
+                    if (lastSubImage != null) {
+                        console.log('New put image data');
+                        ctx.drawImage(lastSubImage, 0, 0);
+                    }
+
+                    if (drawToolSelected) {
+                        var l = zoomCanvas.points.length;
+                        if (l>0) {
+                            drawSinglePoint(ctx, zoomCanvas.points[0]);
+
+                            while (l>1) {
+                                var point1 = zoomCanvas.points.shift();
+                                drawLineBetweenTwoPoints(ctx, point1, zoomCanvas.points[0]);
+                                l--;
+                            }
+                            drawSinglePoint(ctx, zoomCanvas.points[0]);
+                        }
+                    } else {
+                        for (var i=0; i<points.length; i++) {
+                            erasePoint(ctx, points[i]);
+                        }
+                    }
+
+                    // Grab an image of the canvas for the next paint iteration
+
+                    lastSubImage = ctx.getImageData(0, 0, zoomCanvas.width, zoomCanvas.height);
+                    if (putCanvasIntoHistory) {
+                        putCanvasIntoHistory = false;
+                        canvasHistory.addCanvas(lastSubImage);
+                    }
+
+                    console.log('end painting');
+                }
+
+                function paintPoints() {
+                    var ctx = zoomCanvas.getContext("2d");
+                    //ctx.fillStyle = Qt.rgba(1, 0, 0, 1);
+
+                    if (drawToolSelected) {
+                        var l = zoomCanvas.points.length;
                         switch(l) {
                         case 0:
                             break;
@@ -289,154 +344,67 @@ Item {
                             drawSinglePoint(ctx,points[0]);
                             break;
                         default:
-                            var point1 = canvas.points[l-2];
-                            var point2 = canvas.points[l-1];
+                            var point1 = zoomCanvas.points[l-2];
+                            var point2 = zoomCanvas.points[l-1];
                             drawSinglePoint(ctx,point1);
                             drawSinglePoint(ctx,point2);
-                            ctx.beginPath();
-                            ctx.lineWidth = canvas.lineWidth;
-                            ctx.lineJoin = "round";
-                            ctx.strokeStyle = canvas.strokeColor;
-                            ctx.moveTo(point1.x, point1.y);
-                            ctx.lineTo(point2.x, point2.y);
-                            ctx.stroke();
-                            var left = Math.min(point1.x, point2.x);
-                            var top = Math.min(point1.y,point2.y);
-                            var width = Math.max(point1.x, point2.x) - left;
-                            var height = Math.max(point1.y, point2.y) - top;
-
-                            markDirty(Qt.rect(left, top, width, height));
+                            drawLineBetweenTwoPoints(ctx,point1, point2);
                         }
+                    } else {
                     }
+                }
 
-                    function drawSinglePoint(ctx,point) {
-                        ctx.beginPath();
-                        ctx.lineWidth = canvas.lineWidth / 2;
+                function drawSinglePoint(ctx,point) {
+                    ctx.beginPath();
+                    if (drawToolSelected) {
+                        ctx.lineWidth = zoomCanvas.lineWidth / 2 / scale;
                         ctx.lineJoin = "round";
-                        ctx.strokeStyle = canvas.strokeColor;
-                        ctx.fillStyle = canvas.strokeColor;
-                        ctx.arc(point.x, point.y, canvas.lineWidth/4, 0, 2 * Math.PI);
-                        ctx.stroke();
-                        markDirty(Qt.rect(point.x-canvas.lineWidth/2,point.y-canvas.lineWidth/2,canvas.lineWidth,canvas.lineWidth));
-                    }
-
-                    function erasePoints() {
-                        var ctx = canvas.getContext("2d");
-
-                        var singlePoint = points[canvas.points.length-1];
-                        ctx.beginPath();
-                        ctx.lineWidth = canvas.eraserWidth;
+                        ctx.strokeStyle = zoomCanvas.strokeColor;
+                        ctx.fillStyle = zoomCanvas.strokeColor;
+                        ctx.arc(point.x, point.y, zoomCanvas.lineWidth/4 / scale, 0, 2 * Math.PI);
+                    } else {
+                        ctx.lineWidth = zoomCanvas.eraserWidth / scale;
                         ctx.lineJoin = "round";
                         ctx.strokeStyle = '#FFFFFF';
                         ctx.fillStyle = '#FFFFFF';
-                        ctx.arc(singlePoint.x, singlePoint.y, canvas.eraserWidth / 2, 0, 2 * Math.PI);
-                        ctx.stroke();
-                        markDirty(Qt.rect(singlePoint.x-canvas.eraserWidth,singlePoint.y-canvas.eraserWidth,10,10));
+                        ctx.arc(point.x, point.y, zoomCanvas.eraserWidth / 2 / scale, 0, 2 * Math.PI);
+
                     }
-
-                    function loadContents() {
-                        imageFile.source = selectedFile;
-                        canvasImage.source = imageFile.read();
-                        //canvas.initialImage = canvas.loadImage(selectedFile);
-                    }
-
-                    Connections {
-                        target: canvasImage
-
-                        onCanvasImageLoaded: canvas.loadCanvasFromLoadedImage()
-                    }
-
-                    function loadCanvasFromLoadedImage() {
-                        var ctx = canvas.getContext("2d");
-                        ctx.clearRect(0,0,canvas.width,canvas.height);
-                        ctx.drawImage(canvasImage, 0, 0);
-                        markDirty(Qt.rect(0,0,canvas.width,canvas.height));
-                        addCanvasToHistory();
-                    }
-
-                    function importImage(imageSource) {
-                        canvasImage.source = imageSource;
-//                        canvas.loadImage(imageSource);
-                    }
-
-                    function addCanvasToHistory() {
-                        while (canvas.canvasHistoryIndex < canvas.canvasHistory.length-1) {
-                            canvas.canvasHistory.pop();
-                        }
-
-                        var data = canvas.toDataURL('image/png');
-
-                        canvas.canvasHistory.push(data);
-                        canvas.canvasHistoryIndex = canvas.canvasHistoryIndex + 1;
-                        canvas.canvasHistoryLength = canvas.canvasHistory.length;
-                    }
-
-                    function gotoPreviousCanvas() {
-                        if (canvas.canvasHistoryIndex>0) {
-                            canvas.canvasHistoryIndex = canvas.canvasHistoryIndex - 1;
-                            canvasImage.source = canvas.canvasHistory[canvas.canvasHistoryIndex];
-                        }
-                    }
-
-                    function gotoNextCanvas() {
-                        if (canvas.canvasHistoryIndex < canvas.canvasHistoryLength-1) {
-                            canvas.canvasHistoryIndex = canvas.canvasHistoryIndex + 1;
-                            canvasImage.source = canvas.canvasHistory[canvas.canvasHistoryIndex];
-                        }
-                    }
-
-                    function clearCanvas() {
-                        var ctx = canvas.getContext("2d");
-                        ctx.clearRect(0,0,canvas.width,canvas.height);
-                        markDirty(Qt.rect(0,0,canvas.width,canvas.height));
-                        importImage(selectedFile);
-                    }
-
-                    onImageLoaded: {
-                        var ctx = canvas.getContext("2d");
-                        ctx.drawImage(canvasImage, 0, 0);
-                        markDirty(Qt.rect(0,0,canvas.width,canvas.height));
-                        addCanvasToHistory();
-                    }
-
-                    onAvailableChanged: {
-                        if ((available) && (firstRun)) {
-                            firstRun = false;
-                            clearCanvas();
-                        }
-                    }
-                }
-            }
-
-        }
-
-    }
-
-    Image {
-        id: canvasImage
-
-        visible: false
-
-        signal canvasImageLoaded()
-
-        fillMode: Image.Pad
-
-        onStatusChanged: {
-            if (canvasImage.status == Image.Ready) {
-                var newW = canvasImage.sourceSize.width;
-                var newH = canvasImage.sourceSize.height;
-                console.log('new WxH', newW, newH);
-                if (fullPage.width < newW) {
-                    fullPage.width = newW;
+                    ctx.stroke();
                 }
 
-                if (fullPage.height < newH) {
-                    fullPage.height = newH;
+                function drawLineBetweenTwoPoints(ctx,point1,point2) {
+                    ctx.beginPath();
+                    if (drawToolSelected) {
+                        ctx.lineWidth = zoomCanvas.lineWidth / scale;
+                        ctx.lineJoin = "round";
+                        ctx.strokeStyle = zoomCanvas.strokeColor;
+                    } else {
+                        ctx.lineWidth = zoomCanvas.eraserWidth * 2 / scale;
+                        ctx.lineJoin = "round";
+                        ctx.strokeStyle = '#FFFFFF';
+                        ctx.fillStyle = '#FFFFFF';
+                    }
+                    ctx.moveTo(point1.x, point1.y);
+                    ctx.lineTo(point2.x, point2.y);
+                    ctx.stroke();
                 }
 
-                canvas.canvasSize = Qt.size(newW, newH);
+                function erasePoint(ctx, point) {
+                    var imageX = Math.floor(point.x - eraserWidth);
+                    var imageY = Math.floor(point.y - eraserWidth);
+                    var imageWidth = Math.floor(eraserWidth * 2);
+                    var imageHeight = imageWidth;
+                    ctx.drawImage(basicImage, rectangle.x + imageX, rectangle.y + imageY, imageWidth, imageHeight, imageX, imageY, imageWidth, imageHeight);
+                }
 
-                canvasImageLoaded();
+                function clearCanvas() {
+                    console.log('clear canvas');
+                    canvasHistory.addCanvas(zoomCanvas.lastSubImage);
+                    copyZoomToMainCanvas();
+                }
+
+
             }
         }
     }
@@ -451,28 +419,28 @@ Item {
         Common.SuperposedMenuEntry {
             text: qsTr('Mida *')
             onClicked: {
-                canvas.lineWidth = units.nailUnit;
+                zoomCanvas.lineWidth = units.nailUnit;
                 lineWidthDialog.close();
             }
         }
         Common.SuperposedMenuEntry {
             text: qsTr('Mida **')
             onClicked: {
-                canvas.lineWidth = units.nailUnit * 2;
+                zoomCanvas.lineWidth = units.nailUnit * 2;
                 lineWidthDialog.close();
             }
         }
         Common.SuperposedMenuEntry {
             text: qsTr('Mida ***')
             onClicked: {
-                canvas.lineWidth = units.nailUnit * 3;
+                zoomCanvas.lineWidth = units.nailUnit * 3;
                 lineWidthDialog.close();
             }
         }
         Common.SuperposedMenuEntry {
             text: qsTr('Mida ****')
             onClicked: {
-                canvas.lineWidth = units.nailUnit * 4;
+                zoomCanvas.lineWidth = units.nailUnit * 4;
                 lineWidthDialog.close();
             }
         }
@@ -488,28 +456,28 @@ Item {
         Common.SuperposedMenuEntry {
             text: qsTr('Mida *')
             onClicked: {
-                canvas.eraserWidth = units.nailUnit;
+                zoomCanvas.eraserWidth = units.nailUnit;
                 eraserWidthDialog.close();
             }
         }
         Common.SuperposedMenuEntry {
             text: qsTr('Mida **')
             onClicked: {
-                canvas.eraserWidth = units.nailUnit * 2;
+                zoomCanvas.eraserWidth = units.nailUnit * 2;
                 eraserWidthDialog.close();
             }
         }
         Common.SuperposedMenuEntry {
             text: qsTr('Mida ***')
             onClicked: {
-                canvas.eraserWidth = units.nailUnit * 3;
+                zoomCanvas.eraserWidth = units.nailUnit * 3;
                 eraserWidthDialog.close();
             }
         }
         Common.SuperposedMenuEntry {
             text: qsTr('Mida ****')
             onClicked: {
-                canvas.eraserWidth = units.nailUnit * 4;
+                zoomCanvas.eraserWidth = units.nailUnit * 4;
                 eraserWidthDialog.close();
             }
         }
@@ -529,7 +497,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    canvas.strokeColor = parent.color;
+                    zoomCanvas.strokeColor = parent.color;
                     colourSelectorDialog.close();
                 }
             }
@@ -541,7 +509,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    canvas.strokeColor = parent.color;
+                    zoomCanvas.strokeColor = parent.color;
                     colourSelectorDialog.close();
                 }
             }
@@ -553,7 +521,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    canvas.strokeColor = parent.color;
+                    zoomCanvas.strokeColor = parent.color;
                     colourSelectorDialog.close();
                 }
             }
@@ -565,7 +533,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    canvas.strokeColor = parent.color;
+                    zoomCanvas.strokeColor = parent.color;
                     colourSelectorDialog.close();
                 }
             }
@@ -577,7 +545,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    canvas.strokeColor = parent.color;
+                    zoomCanvas.strokeColor = parent.color;
                     colourSelectorDialog.close();
                 }
             }
@@ -589,7 +557,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    canvas.strokeColor = parent.color;
+                    zoomCanvas.strokeColor = parent.color;
                     colourSelectorDialog.close();
                 }
             }
@@ -601,46 +569,133 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    canvas.strokeColor = parent.color;
+                    zoomCanvas.strokeColor = parent.color;
                     colourSelectorDialog.close();
                 }
             }
         }
     }
 
-    Common.SuperposedWidget {
-        id: loadFileDialog
+    Common.SuperposedMenu {
+        id: zoomSelectorDialog
 
-        title: qsTr('Carrega fitxer')
+        title: qsTr('Ampliació o reducció')
+        parentWidth: whiteBoardItem.width
+        parentHeight: whiteBoardItem.height
 
-        property bool importFile: false
-
-        function loadFile() {
-            load(qsTr('Carrega fitxer'), 'files/FileSelector', {initialDirectory: baseDirectory, selectFiles: true});
-            importFile = false;
+        Common.SuperposedMenuEntry {
+            text: '800%'
+            onClicked: {
+                zoomCanvas.scale = 8;
+                zoomSelectorDialog.close();
+            }
         }
 
-        function importImage() {
-            load(qsTr('Importa una imatge'), 'files/FileSelector', {initialDirectory: baseDirectory, selectFiles: true});
-            importFile = true;
+        Common.SuperposedMenuEntry {
+            text: '600%'
+            onClicked: {
+                zoomCanvas.scale = 6;
+                zoomSelectorDialog.close();
+            }
         }
 
-        Connections {
-            target: loadFileDialog.mainItem
-
-            onFileSelected: {
-                if (loadFileDialog.importFile) {
-                    if (selectedFile == '')
-                        selectedFile = file;
-                    loadFileDialog.close();
-                    canvas.importImage(file);
-                } else {
-                    whiteBoardItem.selectedFile = file;
-                    loadFileDialog.close();
-                    canvas.loadContents();
-                }
+        Common.SuperposedMenuEntry {
+            text: '400%'
+            onClicked: {
+                zoomCanvas.scale = 4;
+                zoomSelectorDialog.close();
+            }
+        }
+        Common.SuperposedMenuEntry {
+            text: '200%'
+            onClicked: {
+                zoomCanvas.scale = 2;
+                zoomSelectorDialog.close();
+            }
+        }
+        Common.SuperposedMenuEntry {
+            text: qsTr('100% - Original')
+            onClicked: {
+                zoomCanvas.scale = 1;
+                zoomSelectorDialog.close();
+            }
+        }
+        Common.SuperposedMenuEntry {
+            text: qsTr('50%')
+            onClicked: {
+                zoomCanvas.scale = 0.5;
+                zoomSelectorDialog.close();
+            }
+        }
+        Common.SuperposedMenuEntry {
+            text: qsTr('25%')
+            onClicked: {
+                zoomCanvas.scale = 0.25;
+                zoomSelectorDialog.close();
             }
         }
     }
 
+    Canvas {
+        id: temporaryCanvas
+
+        // Object required to get the zoomCanvas contents, put them on the original image and then save the result into a file.
+
+        property bool saveRequested: false
+
+        visible: false
+
+        function startConversion() {
+            canvasSize.width = basicImage.implicitWidth;
+            canvasSize.height = basicImage.implicitHeight;
+            width = canvasSize.width;
+            height = canvasSize.height;
+            console.log('request paint');
+            requestPaint();
+        }
+
+        onPaint: {
+            console.log('painting...');
+            var ctx = getContext("2d");
+            ctx.drawImage(basicImage, 0, 0);
+            var imageOnTop = zoomCanvas.lastSubImage;
+            ctx.drawImage(imageOnTop, rectangle.x, rectangle.y);
+        }
+
+        onPainted: {
+            if (!saveRequested) {
+                saveRequested = true;
+                var data = temporaryCanvas.toDataURL();
+                imageFile.writePngImage(data);
+                console.log('saved...');
+                savedImageDialog.open();
+                savedImage();
+                saveRequested = false;
+            }
+        }
+    }
+
+    MessageDialog {
+        id: confirmSaveDialog
+
+        title: qsTr("Confirma desat d'imatge")
+
+        text: qsTr("Es desarà la imatge sobre el fitxer «") + imageFile.source + qsTr("». Vols continuar?")
+
+        standardButtons: StandardButton.Ok | StandardButton.Cancel
+
+        onAccepted: {
+            if (selectedFile !== '') {
+                temporaryCanvas.startConversion();
+            }
+        }
+    }
+
+    MessageDialog {
+        id: savedImageDialog
+
+        title: qsTr("Imatge desada")
+
+        text: qsTr("La imatge s'ha desada amb el nom «") + imageFile.source + qsTr("».")
+    }
 }

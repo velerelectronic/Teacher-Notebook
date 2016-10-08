@@ -12,6 +12,14 @@ FileIO::FileIO(QObject *parent) :
 
 }
 
+bool FileIO::addExtension(const QString &extension) {
+    QString newExtension = "." + extension;
+    if (!mSource.toLower().endsWith(newExtension.toLower())) {
+        mSource = mSource + newExtension;
+        sourceChanged();
+    }
+}
+
 bool FileIO::create() {
     if (mSource.isEmpty()) {
         return false;
@@ -108,9 +116,6 @@ bool FileIO::write(const QString& data)
 bool FileIO::writePngImage(const QString &data) {
     if (mSource.isEmpty()) {
         return false;
-    }
-    if (!mSource.toLower().endsWith(".png")) {
-        mSource = mSource + ".png";
     }
     QFile file(mSource);
     if (!file.open(QFile::WriteOnly | QFile::Truncate)) {

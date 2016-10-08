@@ -21,6 +21,8 @@ Rectangle {
 
     property string labels: ''
     property string document: ''
+    property string periodStart: ''
+    property string periodEnd: ''
 
     property SqlTableModel annotationsModel
 
@@ -173,8 +175,8 @@ Rectangle {
         var date = (new Date()).toYYYYMMDDHHMMFormat();
         var newObj = {
             labels: flowRepeater.model.join(' ').trim(),
-            start: date,
-            end: date,
+            start: (periodStart == '')?date:periodStart,
+            end: (periodEnd == '')?date:periodEnd,
             document: newAnnotationItem.document
         }
 

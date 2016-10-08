@@ -15,9 +15,16 @@ Dialog {
     property int parentWidth: parent.width
     property int parentHeight: parent.height
 
+    property bool autoDestroy: true
     property Item mainItem: subPanelLoader.item
 
     standardButtons: StandardButton.Close
+
+    onVisibilityChanged: {
+        if ((!visible) && (autoDestroy)) {
+            subPanelLoader.sourceComponent = undefined;
+        }
+    }
 
     function load(title, page, args) {
         superposedWidget.title = title;

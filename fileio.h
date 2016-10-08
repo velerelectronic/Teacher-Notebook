@@ -24,6 +24,7 @@ public:
     Q_INVOKABLE bool write(const QString& data);
     Q_INVOKABLE bool writePngImage(const QString &data);
     Q_INVOKABLE bool append(const QString& data);
+    Q_INVOKABLE bool addExtension(const QString& extension);
 
     QString source();
     QString filePath();

@@ -56,6 +56,11 @@ Item {
 
         color: 'white'
 
+        MouseArea {
+            anchors.fill: parent
+            onPressed: mouse.accepted = true;
+        }
+
         Loader {
             id: subPageLoader
             anchors.fill: parent

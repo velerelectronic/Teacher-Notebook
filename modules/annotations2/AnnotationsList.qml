@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.2
 import QtQuick.Controls 2.0
+import QtQuick.Dialogs 1.2
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
@@ -21,7 +22,7 @@ Rectangle {
     property string stateValue: ''
 
     property string periodFilter: ''
-    property string periodFilterString: 'start>=? AND end<?'
+    property string periodFilterString: '(start>=? AND end<?) OR (start<? AND end>=?) OR (start>=? AND start<?) OR (end>=? AND end<?)'
     property string periodStart: ''
     property string periodEnd: ''
 
@@ -62,6 +63,11 @@ Rectangle {
                         anchors.margins: units.nailUnit
                         spacing: units.fingerUnit
 
+                        Item {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: height
+                        }
+
                         StateEditor {
                             Layout.fillHeight: true
                             Layout.fillWidth: true
@@ -86,15 +92,23 @@ Rectangle {
 
                         Text {
                             Layout.fillHeight: true
-                            Layout.fillWidth: true
+                            Layout.preferredWidth: contentWidth
                             font.pixelSize: units.readUnit
                             text: (filterPeriod)?(qsTr('Des de ') + periodStart):''
                         }
                         Text {
                             Layout.fillHeight: true
-                            Layout.fillWidth: true
+                            Layout.preferredWidth: contentWidth
                             font.pixelSize: units.readUnit
                             text: (filterPeriod)?(qsTr('Fins a ') + periodEnd):''
+                        }
+
+                        Common.ImageButton {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: height
+                            size: height
+                            image: 'cog-147414'
+                            onClicked: annotationsListOptionsDialog.open();
                         }
                     }
                 }
@@ -202,12 +216,16 @@ Rectangle {
                         newBindValues.push(document);
                     }
                     if (filterPeriod) {
-                        var today = new Date();
+                        if ((periodStart == '') && (periodEnd == '')) {
+                            var today = new Date();
+                            periodStart = today.toYYYYMMDDFormat();
+                            today.setDate(today.getDate()+1);
+                            periodEnd = today.toYYYYMMDDFormat();
+                        }
                         newFilter.push(periodFilterString);
-                        periodStart = today.toYYYYMMDDFormat();
-                        today.setDate(today.getDate()+1);
-                        periodEnd = today.toYYYYMMDDFormat();
-                        newBindValues.push(periodStart, periodEnd);
+                        for (var repeat=1; repeat<=4; repeat++) {
+                            newBindValues.push(periodStart, periodEnd);
+                        }
                     }
 
                     docAnnotationsModel.filters = newFilter;
@@ -310,7 +328,7 @@ Rectangle {
                 size: units.fingerUnit * 2
                 imageSource: 'plus-24844'
                 onClicked: {
-                    newAnnotationDialog.load(qsTr('Nova anotació'), 'annotations2/NewAnnotation', {document: document, annotationsModel: docAnnotationsModel});
+                    newAnnotationDialog.load(qsTr('Nova anotació'), 'annotations2/NewAnnotation', {document: document, annotationsModel: docAnnotationsModel, periodStart: periodStart, periodEnd: periodEnd});
                 }
             }
 
@@ -318,11 +336,78 @@ Rectangle {
 
     }
 
+    function getDeletedInSelectedAnnotations() {
+        var selectedObjects = [];
+        for (var i=0; i<docAnnotationsModel.count; i++) {
+            var object = docAnnotationsModel.getObjectInRow(i);
+            if (object['state'] < 0) {
+                selectedObjects.push(object['id']);
+            }
+        }
+        return selectedObjects;
+    }
+
+    function destroyDeletedInSelectedAnnotations(selectedObjects) {
+        var item = selectedObjects.pop();
+        while (item) {
+            docAnnotationsModel.removeObject(item);
+            item = selectedObjects.pop();
+        }
+        docAnnotationsModel.update();
+    }
+
     Common.SuperposedWidget {
         id: newAnnotationDialog
 
         parentWidth: frameItem.width
         parentHeight: frameItem.height
+    }
+
+    Common.SuperposedMenu {
+        id: annotationsListOptionsDialog
+
+        parentWidth: frameItem.width
+        parentHeight: frameItem.height
+
+        Common.SuperposedMenuEntry {
+            text: qsTr('Treu filtre de dates')
+            onClicked: {
+                annotationsListOptionsDialog.close();
+                filterPeriod = false;
+                docAnnotationsModel.update();
+            }
+        }
+
+        Common.SuperposedMenuEntry {
+            text: qsTr('Destrueix anotacions eliminades')
+            onClicked: {
+                annotationsListOptionsDialog.close();
+                confirmDestructionDialog.openConfirmation();
+            }
+        }
+    }
+
+    MessageDialog {
+        id: confirmDestructionDialog
+
+        property var selectedAnnotations: []
+        property int annotationsNumber: 0
+
+        title: qsTr('Confirma la destrucció')
+
+        text: qsTr("Es destruiran ") + annotationsNumber + qsTr(" anotacions. Vols continuar?")
+
+        standardButtons: StandardButton.Ok | StandardButton.Cancel
+        onAccepted: {
+            destroyDeletedInSelectedAnnotations(selectedAnnotations);
+        }
+
+        function openConfirmation() {
+            var selectedObjects = getDeletedInSelectedAnnotations();
+            selectedAnnotations = selectedObjects;
+            annotationsNumber = selectedObjects.length;
+            open();
+        }
     }
 
     Component.onCompleted: docAnnotationsModel.update()
