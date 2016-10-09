@@ -6,6 +6,8 @@ Item {
     id: subPageFolderItem
 
     signal closeRequested()
+    signal publishMessage(string message)
+
     property alias loader: subPageLoader
     property Item primarySource
 
@@ -65,13 +67,15 @@ Item {
             id: subPageLoader
             anchors.fill: parent
 
+            clip: true
+
             property string page: ''
             property string parameters: ''
 
             PageConnections {
                 target: subPageLoader.item
                 destination: subPageFolderItem
-//                primarySource: subPageFolderItem.primarySource
+                primarySource: subPageFolderItem
             }
 
         }

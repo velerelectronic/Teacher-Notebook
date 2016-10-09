@@ -24,6 +24,11 @@ Connections {
     }
     onImageViewerSelected: destination.loadPage('files/FileViewer', {fileURL: file});
 
+    onPublishMessage: {
+        console.log('publicat dins pageconnections')
+        primarySource.publishMessage(message);
+    }
+
     /*
     onGotoPrevious: {
         //primarySource.gotoPrevious();

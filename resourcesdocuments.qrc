@@ -4,5 +4,6 @@
         <file>modules/documents/DocumentViewer.qml</file>
         <file>modules/documents/ShowDocument.qml</file>
         <file>modules/documents/NewDocument.qml</file>
+        <file>modules/documents/DocumentsMosaic.qml</file>
     </qresource>
 </RCC>

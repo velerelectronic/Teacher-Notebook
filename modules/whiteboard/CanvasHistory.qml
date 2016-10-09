@@ -66,4 +66,9 @@ Item {
     }
 
 
+    function initHistory() {
+        canvasArray = [];
+        canvasArrayIndex = -1;
+        canvasArrayLength = 0;
+    }
 }

@@ -15,6 +15,7 @@ Item {
     signal reloadPage()
     property string selectedContext: ''
     property int selectedSection: sectionsList.currentIndex
+    property int sectionId
 
     onSelectedContextChanged: {
         sectionsModel.reselect();
@@ -124,6 +125,7 @@ Item {
             text: qsTr('Edita els paràmetres')
             onClicked: {
                 sectionOptionsDialog.close();
+                parametersDialog.openParametersEditor();
             }
         }
 
@@ -207,6 +209,16 @@ Item {
                 sectionsModel.reselect();
                 sectionsList.chooseSection(0);
             }
+        }
+    }
+
+    Common.SuperposedWidget {
+        id: parametersDialog
+
+        title: qsTr('Edita els paràmetres')
+
+        function openParametersEditor() {
+            parametersDialog.load(qsTr('Edita els paràmetres'), 'pagesfolder/ParametersEditor', {sectionId: sectionId});
         }
     }
 
@@ -314,6 +326,7 @@ Item {
                 anchors.fill: parent
                 onClicked: {
                     sectionsList.chooseSection(model.index);
+                    sectionId = model.id;
                 }
                 onPressAndHold: {
                     sectionOptionsDialog.openSectionOptions(model.id, model.title);
@@ -364,6 +377,7 @@ Item {
                 property string page: model.page
                 property string parameters: model.parameters
                 visible: model.index == selectedSection
+                clip: true
 
                 function loadContents() {
                     var paramArray = {};
@@ -384,17 +398,26 @@ Item {
                     onReloadPage: pageLoader.trytoLoadContents()
                 }
 
+                Connections {
+                    target: pageLoader.item
+                    ignoreUnknownSignals: true
+
+                    onPublishMessage: informationMessage.publishMessage(message)
+                }
+
                 PageConnections {
                     id: pageConnections
 
                     target: pageLoader.item
                     destination: subPageFolder
+                    primarySource: pagesFolderItem
                 }
 
                 SubPageFolder {
                     id: subPageFolder
                     z: 4
 
+                    clip: true
                     anchors.fill: parent
                     primarySource: pageLoader.item
 
@@ -402,6 +425,8 @@ Item {
                         console.log('closing')
                         subPageFolder.state = 'hidden';
                     }
+
+                    onPublishMessage: informationMessage.publishMessage(message)
                 }
 
                 onVisibleChanged: {
@@ -447,6 +472,17 @@ Item {
             }
 
 
+        }
+    }
+
+    Basic.InformationMessages {
+        id: informationMessage
+
+        z: 200
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
         }
     }
 }

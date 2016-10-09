@@ -114,7 +114,7 @@ Window {
 
         PagesFolder.PagesFolder {
             anchors.fill: parent
-            anchors.margins: units.nailUnit
+            anchors.margins: units.nailUnit            
         }
 
         WorkingSpace {

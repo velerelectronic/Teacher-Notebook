@@ -11,25 +11,73 @@ Rectangle {
 
     property string selectedFile
     property var rectangle
-    property var transformedRectangle
 
-    signal savedImage()
+    signal savedImage(string file)
     signal savingImage()
 
     Common.UseUnits {
         id: units
     }
 
-    Image {
-        id: basicImage
+    Component {
+        id: imageComponent
 
-        source: selectedFile
+        Image {
+            id: basicImage
 
+            objectName: 'basicImage'
+            asynchronous: false
+
+            source: "file://" + imageFile.source
+        }
+    }
+
+    Loader {
+        id: basicImageLoader
+
+        sourceComponent: undefined
         visible: false
+
+        property bool imageReady: (item !== null) && (item.objectName == 'basicImage') && (item.source !== '') && (item.status == Image.Ready)
+
+
+        /*
+        onImageReadyChanged: {
+            if (imageReady) {
+                console.log('image STATUS', item.status)
+                zoomCanvas.initCanvas(basicImageLoader.item);
+                console.log(item.implicitWidth, item.implicitHeight);
+
+            }
+        }
+
+        function resetImage() {
+            if (basicImageLoader.item !== null)
+                basicImageLoader.item.destroy();
+
+            basicImageLoader.sourceComponent = undefined;
+            console.log('reset image');
+            console.log('object name 1', (item !== null)?(item.objectName):'');
+            basicImageLoader.sourceComponent = imageComponent;
+            console.log('object name 2', (item !== null)?(item.objectName):'');
+        }
+        */
     }
 
     FileIO {
         id: imageFile
+
+        function resetFile() {
+            imageFile.source = selectedFile;
+            imageFile.addExtension("png");
+        }
+
+        Component.onCompleted: resetFile()
+
+        onSourceChanged: {
+            console.log('new source', source);
+            zoomCanvas.initCanvas()
+        }
     }
 
     ColumnLayout {
@@ -156,8 +204,6 @@ Rectangle {
                     image: 'floppy-35952'
                     color: (zoomCanvas.canvasHistoryIndex == 0)?'grey':'white'
                     onClicked: {
-                        imageFile.source = selectedFile;
-                        imageFile.addExtension("png");
                         confirmSaveDialog.open();
                     }
                 }
@@ -195,15 +241,15 @@ Rectangle {
                 property real eraserWidth: units.nailUnit * 3
                 property string strokeColor: '#000000'
 
-                property bool firstTime: true
-                property bool backgroundLoaded: false
-
                 property bool drawToolSelected: pencilButton.active
                 property bool canvasImageNeedsToBeSaved: false
 
                 property bool putCanvasIntoHistory: false
-                property bool resetBackground: false
                 property var lastSubImage: null
+
+                property var backgroundImage: null
+                property bool resetBackground: false
+                property bool beingPainted: false
 
                 MouseArea {
                     id: mousePointer
@@ -275,60 +321,84 @@ Rectangle {
                 }
 
 
-                onAvailableChanged: initCanvas()
+                function createImageObject() {
+                    //unloadImage(backgroundImage);
+                    if (backgroundImage !== null)
+                        backgroundImage.destroy();
+
+                    backgroundImage = imageComponent.createObject(zoomCanvas, {visible: false});
+                    //loadImage(backgroundImage)
+                }
 
                 function initCanvas() {
-                    var ctx = getContext("2d");
-                    console.log('rect', rectangle.x, rectangle.y, rectangle.width, rectangle.height);
-                    ctx.clearRect(0,0,zoomCanvas.width, zoomCanvas.height);
-                    ctx.drawImage(basicImage, rectangle.x, rectangle.y, width, height, 0, 0, width, height);
-                    lastSubImage = ctx.getImageData(0, 0, zoomCanvas.width, zoomCanvas.height);
-                    putCanvasIntoHistory = true;
+                    console.log('>>> init canvas');
+                    resetBackground = true;
+                    requestPaint();
+                }
+
+                onBeingPaintedChanged: {
+                    if (!beingPainted) {
+                        if (resetBackground) {
+                            requestPaint();
+                        }
+                    }
                 }
 
                 onPaint: {
-                    console.log('painting');
-                    var ctx = zoomCanvas.getContext("2d");
+                    if ((!temporaryCanvas.converting) && (!beingPainted)) {
+                        beingPainted = true;
+                        console.log('painting');
+                        var ctx = zoomCanvas.getContext("2d");
 
-                    if (zoomCanvas.resetBackground) {
-                        zoomCanvas.resetBackground = false;
-                        ctx.clearRect(0,0,zoomCanvas.width, zoomCanvas.height);
-                        zoomCanvas.points = [];
-                        console.log('reset background');
-                    }
+                        if (zoomCanvas.resetBackground) {
+                            zoomCanvas.resetBackground = false;
 
-                    if (lastSubImage != null) {
-                        console.log('New put image data');
-                        ctx.drawImage(lastSubImage, 0, 0);
-                    }
-
-                    if (drawToolSelected) {
-                        var l = zoomCanvas.points.length;
-                        if (l>0) {
-                            drawSinglePoint(ctx, zoomCanvas.points[0]);
-
-                            while (l>1) {
-                                var point1 = zoomCanvas.points.shift();
-                                drawLineBetweenTwoPoints(ctx, point1, zoomCanvas.points[0]);
-                                l--;
+                            lastSubImage = null;
+                            createImageObject();
+                            console.log('>>> init canvas INSIDE');
+                            canvasHistory.initHistory();
+                            console.log('rect', rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+                            ctx.clearRect(0,0,zoomCanvas.width, zoomCanvas.height);
+                            ctx.drawImage(backgroundImage, rectangle.x, rectangle.y, zoomCanvas.width, zoomCanvas.height, 0, 0, zoomCanvas.width, zoomCanvas.height);
+                            putCanvasIntoHistory = true;
+                        } else {
+                            if (lastSubImage != null) {
+                                console.log('New put image data');
+                                ctx.drawImage(lastSubImage, 0, 0);
                             }
-                            drawSinglePoint(ctx, zoomCanvas.points[0]);
+
+                            if (drawToolSelected) {
+                                var l = zoomCanvas.points.length;
+                                if (l>0) {
+                                    drawSinglePoint(ctx, zoomCanvas.points[0]);
+
+                                    while (l>1) {
+                                        var point1 = zoomCanvas.points.shift();
+                                        drawLineBetweenTwoPoints(ctx, point1, zoomCanvas.points[0]);
+                                        l--;
+                                    }
+                                    drawSinglePoint(ctx, zoomCanvas.points[0]);
+                                }
+                            } else {
+                                for (var i=0; i<points.length; i++) {
+                                    erasePoint(ctx, points[i]);
+                                }
+                            }
                         }
-                    } else {
-                        for (var i=0; i<points.length; i++) {
-                            erasePoint(ctx, points[i]);
+
+
+                        // Grab an image of the canvas for the next paint iteration
+
+                        lastSubImage = ctx.getImageData(0, 0, zoomCanvas.width, zoomCanvas.height);
+                        if (putCanvasIntoHistory) {
+                            putCanvasIntoHistory = false;
+                            canvasHistory.addCanvas(lastSubImage);
                         }
+
+                        console.log('end painting');
+                        beingPainted = false;
                     }
 
-                    // Grab an image of the canvas for the next paint iteration
-
-                    lastSubImage = ctx.getImageData(0, 0, zoomCanvas.width, zoomCanvas.height);
-                    if (putCanvasIntoHistory) {
-                        putCanvasIntoHistory = false;
-                        canvasHistory.addCanvas(lastSubImage);
-                    }
-
-                    console.log('end painting');
                 }
 
                 function paintPoints() {
@@ -395,7 +465,7 @@ Rectangle {
                     var imageY = Math.floor(point.y - eraserWidth);
                     var imageWidth = Math.floor(eraserWidth * 2);
                     var imageHeight = imageWidth;
-                    ctx.drawImage(basicImage, rectangle.x + imageX, rectangle.y + imageY, imageWidth, imageHeight, imageX, imageY, imageWidth, imageHeight);
+                    ctx.drawImage(backgroundImage, rectangle.x + imageX, rectangle.y + imageY, imageWidth, imageHeight, imageX, imageY, imageWidth, imageHeight);
                 }
 
                 function clearCanvas() {
@@ -405,6 +475,41 @@ Rectangle {
                 }
 
 
+            }
+
+
+            MoveCanvasBorders {
+                id: canvasBorders
+
+                anchors.fill: parent
+
+                maximumBorder: units.fingerUnit * 2
+                color: 'gray'
+
+                onTopBorderClicked: {
+                    temporaryCanvas.convertAndSave()
+                    rectangle.y = Math.max(rectangle.y - Math.floor(canvasSubArea.height / 2 / zoomCanvas.scale), 0);
+                    console.log("up");
+                    zoomCanvas.initCanvas();
+                }
+                onBottomBorderClicked: {
+                    temporaryCanvas.convertAndSave()
+                    rectangle.y = Math.min(rectangle.y + Math.floor(canvasSubArea.height / 2 / zoomCanvas.scale), zoomCanvas.backgroundImage.implicitHeight - Math.floor(canvasSubArea.height / zoomCanvas.scale)-1);
+                    console.log("down");
+                    zoomCanvas.initCanvas();
+                }
+                onLeftBorderClicked: {
+                    temporaryCanvas.convertAndSave();
+                    rectangle.x = Math.max(rectangle.x - Math.floor(canvasSubArea.width / 2 / zoomCanvas.scale), 0);
+                    console.log("left");
+                    zoomCanvas.initCanvas();
+                }
+                onRightBorderClicked: {
+                    temporaryCanvas.convertAndSave();
+                    rectangle.x = Math.min(rectangle.x + Math.floor(canvasSubArea.width / 2 / zoomCanvas.scale), zoomCanvas.backgroundImage.implicitWidth - Math.floor(canvasSubArea.width / zoomCanvas.scale)-1);
+                    console.log("right");
+                    zoomCanvas.initCanvas();
+                }
             }
         }
     }
@@ -574,6 +679,18 @@ Rectangle {
                 }
             }
         }
+        Rectangle {
+            width: parent.width
+            height: units.fingerUnit * 1.5
+            color: '#FFFFFF'
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    zoomCanvas.strokeColor = parent.color;
+                    colourSelectorDialog.close();
+                }
+            }
+        }
     }
 
     Common.SuperposedMenu {
@@ -641,38 +758,35 @@ Rectangle {
 
         // Object required to get the zoomCanvas contents, put them on the original image and then save the result into a file.
 
-        property bool saveRequested: false
-
         visible: false
+        property bool converting: false
 
-        function startConversion() {
-            canvasSize.width = basicImage.implicitWidth;
-            canvasSize.height = basicImage.implicitHeight;
+        function convertAndSave() {
+            // Prepare canvas to incorporate background image
+
+            converting = true;
+
+            canvasSize.width = zoomCanvas.backgroundImage.implicitWidth;
+            canvasSize.height = zoomCanvas.backgroundImage.implicitHeight;
             width = canvasSize.width;
             height = canvasSize.height;
-            console.log('request paint');
-            requestPaint();
-        }
 
-        onPaint: {
-            console.log('painting...');
+            // Paint the image
             var ctx = getContext("2d");
-            ctx.drawImage(basicImage, 0, 0);
+            ctx.drawImage(zoomCanvas.backgroundImage, 0, 0);
             var imageOnTop = zoomCanvas.lastSubImage;
             ctx.drawImage(imageOnTop, rectangle.x, rectangle.y);
+
+            //zoomCanvas.lastSubImage = ctx.getImageData(rectangle.x, rectangle.y, zoomCanvas.width, zoomCanvas.height);
+
+            var data = temporaryCanvas.toDataURL();
+            imageFile.writePngImage(data);
+
+            savedImage(imageFile.source);
+
+            converting = false;
         }
 
-        onPainted: {
-            if (!saveRequested) {
-                saveRequested = true;
-                var data = temporaryCanvas.toDataURL();
-                imageFile.writePngImage(data);
-                console.log('saved...');
-                savedImageDialog.open();
-                savedImage();
-                saveRequested = false;
-            }
-        }
     }
 
     MessageDialog {
@@ -686,7 +800,8 @@ Rectangle {
 
         onAccepted: {
             if (selectedFile !== '') {
-                temporaryCanvas.startConversion();
+                temporaryCanvas.convertAndSave();
+                zoomCanvas.initCanvas();
             }
         }
     }

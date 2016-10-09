@@ -8,6 +8,8 @@ Item {
 
     property string selectedFile: ''
 
+    signal publishMessage(string message)
+
     Image {
         id: fileImage
 
@@ -98,7 +100,9 @@ Item {
             onSavedImage: {
                 fileImage.source = '';
                 fileImage.source = Qt.binding(function() { return imageBoardItem.selectedFile; } );
+                imageBoardItem.publishMessage(qsTr("S'ha desat la imatge en el fitxer «") + file + "».");
             }
+
         }
     }
 }

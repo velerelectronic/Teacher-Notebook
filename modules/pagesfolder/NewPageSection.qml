@@ -156,5 +156,7 @@ Rectangle {
         pagesModel.append({page: 'calendar/YearView', title: qsTr('Calendari anual'), parameters: JSON.stringify(['fullyear'])});
         pagesModel.append({page: 'files/Gallery', title: qsTr("Galeria d'imatges"), parameters: JSON.stringify(['folder', 'numberOfColumns'])});
         pagesModel.append({page: 'whiteboard/WhiteBoard', title: qsTr('Pissarra'), parameters: JSON.stringify(['baseDirectory'])});
+        pagesModel.append({page: 'documents/DocumentsMosaic', title: qsTr('Mosaic de documents'), parameters: JSON.stringify(['columnsNumber','rowsNumber','documentsList'])});
+        pagesModel.append({page: 'documents/DocumentsList', title: qsTr('Llista de documents'), parameters: JSON.stringify([])});
     }
 }
