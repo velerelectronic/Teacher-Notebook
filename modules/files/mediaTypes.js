@@ -11,7 +11,7 @@ function imageForMediaType(source, mediaType) {
     case 'jpeg':
     case 'png':
     case 'svg':
-        return source;
+        return '';
     case 'csv':
     case 'doc':
     case 'ods':
@@ -25,5 +25,4 @@ function imageForMediaType(source, mediaType) {
         return 'qrc:///icons/question-mark-40876.svg';
     }
 }
-
 

@@ -9,21 +9,16 @@ Rectangle {
     property string fileURL
 
     signal closed()
-    signal gotoPrevious()
-    signal gotoNext()
     signal editorRequested(string file)
+    signal toggleFullScreen()
+
+    property bool visibleImageInfo: false
+    property int requiredHeight: bigImageView.implicitHeight * (width / bigImageView.implicitWidth)
+    property int extraBottomMargin: 0
+    property int extraTopMargin: 0
 
     Common.UseUnits {
         id: units
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        enabled: false
-
-        onClicked: {
-            buttonsBar.visible = !buttonsBar.visible;
-        }
     }
 
     Flickable {
@@ -37,6 +32,9 @@ Rectangle {
         contentWidth: bigImageView.width
         contentHeight: bigImageView.height
 
+        topMargin: extraTopMargin
+        bottomMargin: extraBottomMargin
+
         Image {
             id: bigImageView
             width: Math.min(flickableItem.width, implicitWidth)
@@ -47,37 +45,69 @@ Rectangle {
             cache: false
             asynchronous: true
 
-            PinchArea {
-                id: imagePinch
+        }
+    }
+    Common.ImageButton {
+        anchors {
+            top: flickableItem.top
+            left: flickableItem.left
+            margins: units.nailUnit
+        }
+        size: units.fingerUnit
+        image: 'cog-147414'
 
-                property int originalWidth
-                property int originalHeight
+        onClicked: visibleImageInfo = !visibleImageInfo;
+    }
 
-                anchors.fill: parent
-                onPinchStarted: {
-                    pinch.accpted = true;
-                    originalWidth = bigImageView.width;
-                    originalHeight = bigImageView.height;
-                }
-                onPinchUpdated: {
-                    bigImageView.width = Math.max(flickableItem.width, Math.min(originalWidth * pinch.scale, bigImageView.implicitWidth));
-                    bigImageView.height = Math.max(flickableItem.height, Math.min(originalHeight * pinch.scale, bigImageView.implicitHeight));
-                }
-                onPinchFinished: {
-                    flickableItem.returnToBounds();
-                }
-            }
+    PinchArea {
+        id: imagePinch
+
+        property int originalWidth
+        property int originalHeight
+
+        anchors.fill: flickableItem
+        onPinchStarted: {
+            pinch.accpted = true;
+            originalWidth = bigImageView.width;
+            originalHeight = bigImageView.height;
+        }
+        onPinchUpdated: {
+            var newWidth = Math.min(originalWidth * pinch.scale, bigImageView.implicitWidth);
+            var newHeight = Math.min(originalHeight * pinch.scale, bigImageView.implicitHeight);
+            bigImageView.width = (newWidth <= flickableItem.width)?Qt.binding(function() { return flickableItem.width; }):newWidth;
+            bigImageView.height = (newHeight <= flickableItem.height)?Qt.binding(function() { return flickableItem.height; }):newHeight;
+        }
+        onPinchFinished: {
+            flickableItem.returnToBounds();
         }
     }
 
+    Rectangle {
+        id: shadowRect
+
+        anchors {
+            bottom: flickableItem.bottom
+            left: flickableItem.left
+            right: flickableItem.right
+        }
+        height: fileTitleText.contentHeight + 2 * units.nailUnit
+
+        visible: visibleImageInfo
+        color: 'white'
+        opacity: 0.8
+    }
 
     Text {
-        anchors.fill: parent
+        id: fileTitleText
+        anchors.fill: shadowRect
+        anchors.margins: units.nailUnit
+
+        visible: visibleImageInfo
         font.pixelSize: units.readUnit
         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
-        text: (bigImageView.status == Image.Error)?(qsTr('No reconegut') + "\n" + fileURL):''
+        text: (bigImageView.status == Image.Error)?(qsTr('No reconegut') + "\n" + fileURL):fileURL
     }
 
     Item {
@@ -91,33 +121,22 @@ Rectangle {
         }
         height: units.fingerUnit
 
+        visible: visibleImageInfo
         RowLayout {
             anchors.fill: parent
             anchors.leftMargin: buttonsBar.height + spacing
             spacing: units.fingerUnit
 
-            Text {
+            Item {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-
-                font.pixelSize: units.readUnit
-                verticalAlignment: Text.AlignVCenter
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                text: fileURL
             }
 
             Common.ImageButton {
                 Layout.fillHeight: true
                 Layout.preferredWidth: height
-                image: 'arrow-145769'
-                onClicked: gotoPrevious()
-            }
-
-            Common.ImageButton {
-                Layout.fillHeight: true
-                Layout.preferredWidth: height
-                image: 'arrow-145766'
-                onClicked: gotoNext()
+                image: 'arrows-145992'
+                onClicked: toggleFullScreen()
             }
 
             Common.ImageButton {

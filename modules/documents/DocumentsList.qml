@@ -209,32 +209,16 @@ Item {
                     anchors.fill: parent
                     anchors.margins: units.nailUnit
                     spacing: units.nailUnit
-                    Item {
+                    Image {
                         id: thumbnailItem
                         Layout.fillHeight: true
                         Layout.preferredWidth: height
 
-                        Component {
-                            id: thumbnailComponent
+                        asynchronous: true
+                        fillMode: Image.PreserveAspectFit
 
-                            Image {
-                                anchors.fill: thumbnailItem
-                                fillMode: Image.PreserveAspectFit
-                            }
-                        }
-
-                        Component.onCompleted: {
-                            var incubator = thumbnailComponent.incubateObject(thumbnailItem, {source: MediaTypes.imageForMediaType(model.source, model.type)});
-                            if (incubator.status != Component.Ready) {
-                                incubator.onStatusChanged = function(status) {
-                                    if (status == Component.Ready) {
-                                        console.log('Incubator after');
-                                    }
-                                }
-                            } else {
-                                console.log('Incubator now');
-                            }
-                        }
+                        property string mediaType: MediaTypes.imageForMediaType(model.source, model.type)
+                        source: (mediaType == '')?model.source:mediaType
                     }
 
                     Text {

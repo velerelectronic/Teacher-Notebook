@@ -54,17 +54,11 @@ Item {
                     fileURL: model.source
                     clip: true
 
-                    MouseArea {
-                        anchors.fill: parent
-                        enabled: false
-                        propagateComposedEvents: true
-
-                        onDoubleClicked: {
-                            if (singleFileViewer.parent == documentsMosaicItem) {
-                                singleFileViewer.parent = singleLayoutRectangle;
-                            } else {
-                                singleFileViewer.parent = documentsMosaicItem;
-                            }
+                    onToggleFullScreen: {
+                        if (singleFileViewer.parent == documentsMosaicItem) {
+                            singleFileViewer.parent = singleLayoutRectangle;
+                        } else {
+                            singleFileViewer.parent = documentsMosaicItem;
                         }
                     }
 

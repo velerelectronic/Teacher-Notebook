@@ -7,6 +7,7 @@ import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///editors' as Editors
 import 'qrc:///modules/annotations2' as Annotations
+import 'qrc:///modules/files' as Files
 import "qrc:///modules/files/mediaTypes.js" as MediaTypes
 
 Item {
@@ -75,27 +76,17 @@ Item {
                     padding: units.fingerUnit
                     caption: qsTr('Document')
 
-                    Image {
-                        id: imageRepresentation
+                    Files.FileViewer {
+                        id: fileViewer
 
-                        property var modes: [Image.PreserveAspectFit,Image.PreserveAspectCrop]
-                        fillMode: Image.PreserveAspectFit
                         width: parent.width
-                        height: Math.max(parent.width * 0.75, sourceSize.height * width / sourceSize.width)
-                        horizontalAlignment: Image.AlignHCenter
-                        verticalAlignment: Image.AlignVCenter
-                        source: MediaTypes.imageForMediaType(showDocumentItem.source, showDocumentItem.mediaType)
+                        height: (mediaType == '')?Math.min(width, requiredHeight):units.fingerUnit * 2
+                        clip: true
 
-                        function rotateFillMode() {
-                            console.log('rotating', imageRepresentation.fillMode);
-                            console.log(imageRepresentation.modes[(imageRepresentation.modes.indexOf(imageRepresentation.fillMode)+1) % imageRepresentation.modes.length]);
-                            imageRepresentation.fillMode = imageRepresentation.modes[(imageRepresentation.modes.indexOf(imageRepresentation.fillMode)+1) % imageRepresentation.modes.length];
-                        }
+                        property string mediaType: MediaTypes.imageForMediaType(showDocumentItem.source, showDocumentItem.mediaType)
+                        fileURL: (mediaType !== '')?mediaType:showDocumentItem.source
 
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: imageRepresentation.rotateFillMode()
-                        }
+                        extraBottomMargin: background.height
 
                         Rectangle {
                             id: background
@@ -108,6 +99,7 @@ Item {
                             height: Math.max(imageSubText.height, units.fingerUnit * 2) + 2 * units.nailUnit
                             opacity: 0.5
                         }
+
                         RowLayout {
                             anchors.fill: background
                             anchors.margins: units.nailUnit
@@ -140,6 +132,33 @@ Item {
                             }
                         }
                     }
+
+/*
+                    Image {
+                        id: imageRepresentation
+                        visible: false
+
+                        property var modes: [Image.PreserveAspectFit,Image.PreserveAspectCrop]
+                        fillMode: Image.PreserveAspectFit
+                        width: parent.width
+                        height: Math.max(parent.width * 0.75, sourceSize.height * width / sourceSize.width)
+                        horizontalAlignment: Image.AlignHCenter
+                        verticalAlignment: Image.AlignVCenter
+                        source: MediaTypes.imageForMediaType(showDocumentItem.source, showDocumentItem.mediaType)
+
+                        function rotateFillMode() {
+                            console.log('rotating', imageRepresentation.fillMode);
+                            console.log(imageRepresentation.modes[(imageRepresentation.modes.indexOf(imageRepresentation.fillMode)+1) % imageRepresentation.modes.length]);
+                            imageRepresentation.fillMode = imageRepresentation.modes[(imageRepresentation.modes.indexOf(imageRepresentation.fillMode)+1) % imageRepresentation.modes.length];
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: imageRepresentation.rotateFillMode()
+                        }
+
+                    }
+*/
                 }
 
                 Common.BasicSection {
