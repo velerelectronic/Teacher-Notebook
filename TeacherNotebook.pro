@@ -58,13 +58,11 @@ DISTFILES += \
     TeacherNotebook.config \
     TeacherNotebook.files \
     TeacherNotebook.includes \
-    MainForm.ui.qml \
     TeacherNotebook.creator.user \
     TeacherNotebook.pro.user \
     TeacherNotebook.pro.user.2.7pre1 \
     TeacherNotebook.creator \
-    README.md \
-    main.qml
+    README.md
 
 HEADERS += \
     databasebackup.h \
