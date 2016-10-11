@@ -4,5 +4,6 @@
         <file>modules/files/mediaTypes.js</file>
         <file>modules/files/Gallery.qml</file>
         <file>modules/files/FileViewer.qml</file>
+        <file>modules/files/DocumentsImporter.qml</file>
     </qresource>
 </RCC>

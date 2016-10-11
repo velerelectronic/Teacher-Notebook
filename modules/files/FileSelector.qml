@@ -6,10 +6,10 @@
   */
 
 
-import QtQuick 2.3
+import QtQuick 2.7
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.1
-import QtQuick.Dialogs 1.1
+import QtQuick.Dialogs 1.2
 import Qt.labs.folderlistmodel 2.1
 import QtQml.Models 2.2
 import FileIO 1.0
@@ -84,6 +84,11 @@ Item {
                     Layout.fillHeight: true
                     text: qsTr('Selecciona')
                     onClicked: folderSelected(folderList.folder)
+                }
+
+                Button {
+                    text: qsTr('File dialog')
+                    onClicked: fileDialog.open();
                 }
 
                 Buttons.ButtonsList {
@@ -242,6 +247,10 @@ Item {
                 onClicked: createItem()
             }
         }
+    }
+
+    FileDialog {
+        id: fileDialog
     }
 
     StandardPaths {

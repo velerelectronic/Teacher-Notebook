@@ -17,6 +17,8 @@ Item {
     property int selectedSection: sectionsList.currentIndex
     property int sectionId
 
+    property bool pageMenuVisible: false
+
     onSelectedContextChanged: {
         sectionsModel.reselect();
         sectionsList.chooseSection(0);
@@ -62,6 +64,7 @@ Item {
         Common.SuperposedButton {
             size: units.fingerUnit * 1.5
             imageSource: 'plus-24844'
+
             onClicked: {
                 contextSelectorDialog.close();
                 newContextDialog.open();
@@ -326,10 +329,8 @@ Item {
                 anchors.fill: parent
                 onClicked: {
                     sectionsList.chooseSection(model.index);
+                    pageMenuVisible = (sectionId == model.id);
                     sectionId = model.id;
-                }
-                onPressAndHold: {
-                    sectionOptionsDialog.openSectionOptions(model.id, model.title);
                 }
             }
         }
@@ -341,9 +342,13 @@ Item {
             height: sectionsList.height
             width: addSectionButton.height
             margins: units.nailUnit
-            imageSource: 'plus-24844'
+            backgroundColor: 'white'
+            imageSource: 'comment-27179'
             onClicked: {
-                newSectionDialog.openNewSection()
+                if (sectionsModel.count > 0)
+                    pageMenuVisible = true;
+                else
+                    newSectionDialog.openNewSection();
             }
         }
 
@@ -369,108 +374,183 @@ Item {
         Repeater {
             model: sectionsModel
 
-            Loader {
-                id: pageLoader
+            Item {
+                id: pageItem
 
                 anchors.fill: sectionPages
-
-                property string page: model.page
-                property string parameters: model.parameters
                 visible: model.index == selectedSection
-                clip: true
 
-                function loadContents() {
-                    var paramArray = {};
-                    if (pageLoader.parameters != '') {
-                        paramArray = JSON.parse(pageLoader.parameters);
-                    }
-                    pageLoader.setSource('qrc:///modules/' + pageLoader.page + '.qml', paramArray);
-                }
-
-                function reloadContents() {
-                    pageLoader.sourceComponent = undefined;
-                    loadContents();
-                }
-
-                Connections {
-                    target: pagesFolderItem
-
-                    onReloadPage: pageLoader.trytoLoadContents()
-                }
-
-                Connections {
-                    target: pageLoader.item
-                    ignoreUnknownSignals: true
-
-                    onPublishMessage: informationMessage.publishMessage(message)
-                }
-
-                PageConnections {
-                    id: pageConnections
-
-                    target: pageLoader.item
-                    destination: subPageFolder
-                    primarySource: pagesFolderItem
-                }
-
-                SubPageFolder {
-                    id: subPageFolder
-                    z: 4
-
-                    clip: true
+                ColumnLayout {
                     anchors.fill: parent
-                    primarySource: pageLoader.item
+                    spacing: 0
 
-                    onCloseRequested: {
-                        console.log('closing')
-                        subPageFolder.state = 'hidden';
+                    Rectangle {
+                        Layout.preferredHeight: (pageMenuVisible)?units.fingerUnit + 2 * units.nailUnit:0
+                        Layout.fillWidth: true
+
+                        clip: true
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: units.nailUnit
+                            spacing: units.fingerUnit
+
+                            Item {
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+                            }
+
+                            Common.ImageButton {
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: height
+
+                                size: height
+
+                                image: 'plus-24844'
+
+                                onClicked: {
+                                    newSectionDialog.openNewSection();
+                                }
+                            }
+
+                            Common.ImageButton {
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: height
+
+                                size: height
+
+                                image: 'cog-147414'
+
+                                onClicked: sectionOptionsDialog.openSectionOptions(model.id, model.title)
+                            }
+
+                            Common.ImageButton {
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: height
+
+                                size: height
+
+                                image: 'road-sign-147409'
+
+                                onClicked: pageMenuVisible = false
+                            }
+                        }
                     }
 
-                    onPublishMessage: informationMessage.publishMessage(message)
-                }
+                    Loader {
+                        id: pageLoader
 
-                onVisibleChanged: {
-                    if (visible) {
-                        loadContents();
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        property string page: model.page
+                        property string parameters: model.parameters
+                        clip: true
+
+                        function loadContents() {
+                            var paramArray = {};
+                            if (pageLoader.parameters != '') {
+                                paramArray = JSON.parse(pageLoader.parameters);
+                            }
+                            pageLoader.setSource('qrc:///modules/' + pageLoader.page + '.qml', paramArray);
+                        }
+
+                        function reloadContents() {
+                            pageLoader.sourceComponent = undefined;
+                            loadContents();
+                        }
+
+                        Connections {
+                            target: pagesFolderItem
+
+                            onReloadPage: pageLoader.trytoLoadContents()
+                        }
+
+                        Connections {
+                            target: pageLoader.item
+                            ignoreUnknownSignals: true
+
+                            onPublishMessage: informationMessage.publishMessage(message)
+                        }
+
+                        PageConnections {
+                            id: pageConnections
+
+                            target: pageLoader.item
+                            destination: subPageFolder
+                            primarySource: pagesFolderItem
+                        }
+
+                        SubPageFolder {
+                            id: subPageFolder
+                            z: 4
+
+                            clip: true
+                            anchors.fill: parent
+                            primarySource: pageLoader.item
+
+                            onCloseRequested: {
+                                console.log('closing')
+                                subPageFolder.state = 'hidden';
+                            }
+
+                            onPublishMessage: informationMessage.publishMessage(message)
+                        }
+
+                        onVisibleChanged: {
+                            if (visible) {
+                                loadContents();
+                            }
+                        }
+
+                        onLoaded: {
+        //                    pageConnections.primarySource = pageLoader.item;
+                        }
+
+                        Common.ImageButton {
+                            id: subPagePositionImage
+
+                            z: 5
+                            anchors {
+                                top: pageLoader.top
+                                left: pageLoader.left
+                            }
+                            size: units.fingerUnit * 2
+                            image: 'outline-27146'
+                            visible: subPageFolder.state == 'maximized'
+                            onClicked: {
+                                subPageFolder.state = (subPageFolder.state == 'minimized')?'maximized':'minimized';
+                            }
+                        }
+
+                        MessageDialog {
+                            id: confirmDiscardChangesDialog
+
+                            title: qsTr('Canviar de pàgina')
+                            text: qsTr("Si canvies de pàgina, es perdran els canvis. Estàs segur de voler continuar?")
+
+                            standardButtons: StandardButton.Yes | StandardButton.No
+
+                            onYes: {
+                                pageLoader.reloadContents();
+                            }
+
+                            onNo: confirmCloseDialog.close()
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+
+                            z: 200
+
+                            onPressed: {
+                                console.log('hola');
+                                mouse.accepted = false;
+                                pageMenuVisible = false;
+                            }
+                        }
                     }
-                }
-
-                onLoaded: {
-//                    pageConnections.primarySource = pageLoader.item;
-                }
-
-                Common.ImageButton {
-                    id: subPagePositionImage
-
-                    z: 5
-                    anchors {
-                        top: pageLoader.top
-                        left: pageLoader.left
-                    }
-                    size: units.fingerUnit * 2
-                    image: 'outline-27146'
-                    visible: subPageFolder.state == 'maximized'
-                    onClicked: {
-                        subPageFolder.state = (subPageFolder.state == 'minimized')?'maximized':'minimized';
-                    }
-                }
-
-                MessageDialog {
-                    id: confirmDiscardChangesDialog
-
-                    title: qsTr('Canviar de pàgina')
-                    text: qsTr("Si canvies de pàgina, es perdran els canvis. Estàs segur de voler continuar?")
-
-                    standardButtons: StandardButton.Yes | StandardButton.No
-
-                    onYes: {
-                        pageLoader.reloadContents();
-                    }
-
-                    onNo: confirmCloseDialog.close()
                 }
             }
-
 
         }
     }

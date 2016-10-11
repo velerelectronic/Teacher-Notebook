@@ -10,11 +10,14 @@ Item {
     property int margins: size / 4
     signal clicked
     signal pressAndHold
+    property alias backgroundColor: rect.color
 
     width: size + 2 * margins
     height: width
 
     Rectangle {
+        id: rect
+
         anchors.fill: parent
         anchors.margins: margins
 

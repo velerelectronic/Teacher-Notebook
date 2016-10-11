@@ -12,7 +12,7 @@ Rectangle {
     signal editorRequested(string file)
     signal toggleFullScreen()
 
-    property bool visibleImageInfo: false
+    property bool visibleImageInfo: true
     property int requiredHeight: bigImageView.implicitHeight * (width / bigImageView.implicitWidth)
     property int extraBottomMargin: 0
     property int extraTopMargin: 0
@@ -35,28 +35,23 @@ Rectangle {
         topMargin: extraTopMargin
         bottomMargin: extraBottomMargin
 
+        interactive: false
+
         Image {
             id: bigImageView
             width: Math.min(flickableItem.width, implicitWidth)
             height: Math.min(flickableItem.height, implicitHeight)
 
             fillMode: Image.PreserveAspectFit
-            source: fileURL
+            source: (fileURL !== '')?fileURL:undefined
             cache: false
             asynchronous: true
-
         }
     }
-    Common.ImageButton {
-        anchors {
-            top: flickableItem.top
-            left: flickableItem.left
-            margins: units.nailUnit
-        }
-        size: units.fingerUnit
-        image: 'cog-147414'
 
-        onClicked: visibleImageInfo = !visibleImageInfo;
+    MouseArea {
+        anchors.fill: flickableItem
+        onDoubleClicked: toggleFullScreen()
     }
 
     PinchArea {
@@ -64,18 +59,32 @@ Rectangle {
 
         property int originalWidth
         property int originalHeight
+        property int originalContentX;
+        property int originalContentY;
 
         anchors.fill: flickableItem
         onPinchStarted: {
             pinch.accpted = true;
             originalWidth = bigImageView.width;
             originalHeight = bigImageView.height;
+            originalContentX = flickableItem.contentX;
+            originalContentY = flickableItem.contentY;
         }
         onPinchUpdated: {
-            var newWidth = Math.min(originalWidth * pinch.scale, bigImageView.implicitWidth);
-            var newHeight = Math.min(originalHeight * pinch.scale, bigImageView.implicitHeight);
+            var point1 = pinch.startCenter;
+            var point2 = pinch.center;
+
+            // Scale image
+            var newWidth = Math.min(originalWidth * pinch.scale, bigImageView.implicitWidth * 3);
+            var newHeight = Math.min(originalHeight * pinch.scale, bigImageView.implicitHeight * 3);
+
+            var finalScale = Math.min(bigImageView.width / originalWidth, bigImageView.height / originalHeight);
             bigImageView.width = (newWidth <= flickableItem.width)?Qt.binding(function() { return flickableItem.width; }):newWidth;
             bigImageView.height = (newHeight <= flickableItem.height)?Qt.binding(function() { return flickableItem.height; }):newHeight;
+
+            // Translate image
+            flickableItem.contentX = Math.floor(originalContentX + (point1.x - point2.x / finalScale));
+            flickableItem.contentY = Math.floor(originalContentY + (point1.y - point2.y / finalScale));
         }
         onPinchFinished: {
             flickableItem.returnToBounds();
@@ -93,7 +102,7 @@ Rectangle {
         height: fileTitleText.contentHeight + 2 * units.nailUnit
 
         visible: visibleImageInfo
-        color: 'white'
+        color: 'gray'
         opacity: 0.8
     }
 
@@ -107,6 +116,7 @@ Rectangle {
         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
+        color: 'white'
         text: (bigImageView.status == Image.Error)?(qsTr('No reconegut') + "\n" + fileURL):fileURL
     }
 

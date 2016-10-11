@@ -10,10 +10,13 @@ Item {
 
     property int columnsNumber: 3
     property int rowsNumber: 3
+    property int documentsNumber
     property int spacing: units.fingerUnit
     property string documentsList: ''
 
     signal editorRequested(string file)
+
+    property bool visibleInfo: false
 
     Common.UseUnits {
         id: units
@@ -27,54 +30,166 @@ Item {
         id: documentsModel
     }
 
-    GridLayout {
-        id: mainGrid
 
+    ColumnLayout {
         anchors.fill: parent
+        spacing: units.nailUnit
 
-        rows: rowsNumber
-        columns: columnsNumber
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit + 2 * units.nailUnit
 
-        Repeater {
-            model: documentsListModel
+            RowLayout {
+                id: buttonsLayout
 
-            Rectangle {
-                id: singleLayoutRectangle
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+                spacing: units.fingerUnit
 
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                border.color: 'black'
-                color: 'white'
-
-                Files.FileViewer {
-                    id: singleFileViewer
-
-                    anchors.fill: parent
-                    fileURL: model.source
-                    clip: true
-
-                    onToggleFullScreen: {
-                        if (singleFileViewer.parent == documentsMosaicItem) {
-                            singleFileViewer.parent = singleLayoutRectangle;
-                        } else {
-                            singleFileViewer.parent = documentsMosaicItem;
-                        }
+                function changeFactor(offset) {
+                    // If offset is -1, factor is decreased
+                    // If offset is +1, factor is increased
+                    var total = columnsNumber * rowsNumber;
+                    var factor1 = Math.min(Math.max(columnsNumber + offset,1), total);
+                    var factor2 = Math.floor(total / factor1);
+                    var found = false;
+                    while (factor1 * factor2 !== total) {
+                        factor1 = factor1 + offset;
+                        factor2 = Math.floor(total / factor1);
                     }
+                    columnsNumber = factor1;
+                    rowsNumber = factor2;
+                    console.log(columnsNumber, rowsNumber);
+                }
 
-                    onEditorRequested: documentsMosaicItem.editorRequested(file)
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
+                    size: units.fingerUnit
+                    image: 'row-27461'
+
+                    onClicked: buttonsLayout.changeFactor(-1)
+                }
+
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
+                    size: units.fingerUnit
+                    image: 'column-27460'
+
+                    onClicked: buttonsLayout.changeFactor(+1)
+                }
+
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
+                    size: units.fingerUnit
+                    image: 'plus-24844'
+
+                    onClicked: newDocumentDialog.addDocumentFromList()
+                }
+
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
+                    size: units.fingerUnit
+                    image: 'cog-147414'
+
+                    onClicked: visibleInfo = !visibleInfo
+                }
+
+                Item {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                }
+            }
+
+
+        }
+
+        GridLayout {
+            id: mainGrid
+
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            rows: rowsNumber
+            columns: columnsNumber
+
+            Repeater {
+                model: documentsListModel
+
+                Rectangle {
+                    id: singleLayoutRectangle
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    border.color: 'black'
+                    color: 'white'
+
+                    Files.FileViewer {
+                        id: singleFileViewer
+
+                        anchors.fill: parent
+                        fileURL: model.source
+                        clip: true
+
+                        visibleImageInfo: visibleInfo
+
+                        onToggleFullScreen: {
+                            if (singleFileViewer.parent == documentsMosaicItem) {
+                                visibleInfo = false;
+                                singleFileViewer.parent = singleLayoutRectangle;
+                            } else {
+                                visibleInfo = true;
+                                singleFileViewer.parent = documentsMosaicItem;
+                            }
+                        }
+
+                        onEditorRequested: documentsMosaicItem.editorRequested(file)
+                    }
                 }
             }
         }
     }
 
+    Common.SuperposedWidget {
+        id: newDocumentDialog
+
+        function addDocumentFromList() {
+            load(qsTr('Afegeix document'), 'documents/DocumentsList', {});
+        }
+
+        Connections {
+            target: newDocumentDialog.mainItem
+
+            onDocumentSelected: {
+                newDocumentDialog.close();
+
+                documentsList = documentsList + "\n" + document;
+                if (documentsNumber >= columnsNumber * rowsNumber) {
+                    rowsNumber++;
+                }
+
+                assignDocuments();
+            }
+        }
+    }
 
     function assignDocuments() {
         var linesArray = documentsList.match(/[^\r\n]+/g);
-        var max = Math.min(linesArray.length, columnsNumber * rowsNumber);
+        var max = columnsNumber * rowsNumber;
+        documentsNumber = 0;
+        documentsListModel.clear();
         for (var i=0; i<max; i++) {
-            var object = documentsModel.getObject(linesArray[i]);
-            documentsListModel.append({document: linesArray[i], source: object['source']});
+            if (i<linesArray.length) {
+                var object = documentsModel.getObject(linesArray[i]);
+                documentsListModel.append({document: linesArray[i], source: object['source']});
+                documentsNumber++;
+            } else {
+                documentsListModel.append({document: '', source: ''});
+            }
         }
     }
 

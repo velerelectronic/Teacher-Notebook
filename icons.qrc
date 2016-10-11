@@ -65,5 +65,8 @@
         <file>icons/washing-36666.svg</file>
         <file>icons/arrows-145992.svg</file>
         <file>icons/zoom-27958.svg</file>
+        <file>icons/column-27460.svg</file>
+        <file>icons/row-27461.svg</file>
+        <file>icons/comment-27179.svg</file>
     </qresource>
 </RCC>

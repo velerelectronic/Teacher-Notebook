@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+<path d="m19.34062,15.46567h25.95715" fill="none" stroke="#333" stroke-width="5"/>
+<path d="m21.66046,25.9778-9.29719-10.50505 9.37403-10.01023-.07684,20.51529z" fill="#7f7f7f" fill-rule="evenodd" stroke="#333" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.125"/>
+<path d="m14.46875,31.03573c-1.108,0-2,.892-2,2v23.40625h35.875v-23.40625c0-1.108-.892-2-2-2h-31.875z" fill="#b3b3b3" fill-rule="evenodd"/>
+<path d="m12.46961,55.41933v-24.17578h36.39091v24.93922" fill="none" stroke="#4c4c4c" stroke-dasharray="3.1250000,3.1250000" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.125"/>
+<path d="m39.47596,25.9778 9.29719-10.50505-9.37403-10.01023 .07684,20.51529z" fill="#7f7f7f" fill-rule="evenodd" stroke="#333" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.125"/>
+</svg>

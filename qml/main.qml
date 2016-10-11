@@ -65,6 +65,11 @@
   * Dot width: https://pixabay.com/es/lavado-signo-secador-cuadrados-36666/
   * Move tool: https://pixabay.com/es/flechas-direcciones-hasta-abajo-145992/
   * Zoom tool: https://pixabay.com/es/zoom-enfoque-desplazamiento-acci%C3%B3n-27958/
+
+  * Increase number of rows: https://pixabay.com/es/fila-icono-s%C3%ADmbolo-27461/
+  * Increase number of columns: https://pixabay.com/es/columna-icono-s%C3%ADmbolo-gris-equipo-27460/
+
+  * More options: https://pixabay.com/es/comentario-texto-cuadro-gris-negro-27179/
 */
 
 import QtQuick 2.5

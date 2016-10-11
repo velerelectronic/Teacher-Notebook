@@ -1,80 +1,84 @@
 TEMPLATE = app
 
-QT += core \
-    gui \
-    sql \
-    xml xmlpatterns svg \
-    multimedia \
-    qml \
-    quick
+QT += qml quick widgets \
+    xml xmlpatterns \
+    sql
+CONFIG += c++11
 
 SOURCES += main.cpp \
+    databasebackup.cpp \
     fileio.cpp \
     imagedata.cpp \
-    databasebackup.cpp \
     standardpaths.cpp \
-    MarkDownParser/markdownparser.cpp \
-    SqlTableModel2/sqltablemodel.cpp \
     CryptographicHash/cryptographichash.cpp \
-    RubricXml/rubricxml.cpp \
+    MarkDownParser/markdownparser.cpp \
+    RubricXml/rubricassessmentmodel.cpp \
     RubricXml/rubriccriteria.cpp \
     RubricXml/rubricdescriptorsmodel.cpp \
-    RubricXml/rubricassessmentmodel.cpp \
     RubricXml/rubricpopulationmodel.cpp \
+    RubricXml/rubricxml.cpp \
+    SqlTableModel2/sqltablemodel.cpp \
     TeachingPlanning/teachingplanning.cpp \
     TeachingPlanning/xmlmodel.cpp
 
 RESOURCES += qml.qrc \
-    icons.qrc \
+    common.qrc \
+    components.qrc \
     editors.qrc \
+    icons.qrc \
     images.qrc \
     javascript.qrc \
-    common.qrc \
-    showdown.qrc \
     models.qrc \
-    resourcesannotations.qrc \
-    resourcesdocuments.qrc \
-    resourcesfiles.qrc \
-    resourcesrubrics.qrc \
     reseourcesmainbuttons.qrc \
-    resourcesbasic.qrc \
-    resourcesteachingplanning.qrc \
-    resourcesfeeds.qrc \
-    resourcesdatabase.qrc \
+    resourcesannotations.qrc \
     resourcesannotations2.qrc \
-    resourcesrelatedlists.qrc \
-    resourcespagesfolder.qrc \
+    resourcesbasic.qrc \
     resourcescalendar.qrc \
-    resourceswhiteboard.qrc
+    resourcesdatabase.qrc \
+    resourcesdocuments.qrc \
+    resourcesfeeds.qrc \
+    resourcesfiles.qrc \
+    resourcespagesfolder.qrc \
+    resourcesrelatedlists.qrc \
+    resourcesrubrics.qrc \
+    resourcesteachingplanning.qrc \
+    resourceswhiteboard.qrc \
+    showdown.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
 
 # Default rules for deployment.
-include(deployment.pri)
-
-HEADERS += \
-    fileio.h \
-    imagedata.h \
-    databasebackup.h \
-    standardpaths.h \
-    MarkDownParser/markdownparser.h \
-    ClipboardAdapter/qmlclipboardadapter.h \
-    SqlTableModel2/sqltablemodel.h \
-    CryptographicHash/cryptographichash.h \
-    RubricXml/rubricxml.h \
-    RubricXml/rubriccriteria.h \
-    RubricXml/rubricdescriptorsmodel.h \
-    RubricXml/rubricassessmentmodel.h \
-    RubricXml/rubricpopulationmodel.h \
-    TeachingPlanning/teachingplanning.h \
-    TeachingPlanning/xmlmodel.h
-
-ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
-
-OTHER_FILES += \
-    android/AndroidManifest.xml
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
-    Versions/TeacherNotebook 69.apk \
-    Versions/TeacherNotebook 70.apk
+    deployment.pri \
+    TeacherNotebook.config \
+    TeacherNotebook.files \
+    TeacherNotebook.includes \
+    MainForm.ui.qml \
+    TeacherNotebook.creator.user \
+    TeacherNotebook.pro.user \
+    TeacherNotebook.pro.user.2.7pre1 \
+    TeacherNotebook.creator \
+    README.md \
+    main.qml
+
+HEADERS += \
+    databasebackup.h \
+    fileio.h \
+    imagedata.h \
+    standardpaths.h \
+    ClipboardAdapter/qmlclipboardadapter.h \
+    CryptographicHash/cryptographichash.h \
+    MarkDownParser/markdownparser.h \
+    RubricXml/rubricassessmentmodel.h \
+    RubricXml/rubriccriteria.h \
+    RubricXml/rubricdescriptorsmodel.h \
+    RubricXml/rubricpopulationmodel.h \
+    RubricXml/rubricxml.h \
+    SqlTableModel2/sqltablemodel.h \
+    TeachingPlanning/teachingplanning.h \
+    TeachingPlanning/xmlmodel.h
