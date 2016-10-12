@@ -103,60 +103,6 @@ Item {
 
     }
 
-    Common.SuperposedMenu {
-        id: sectionOptionsDialog
-
-        title: qsTr('Opcions de la secció')
-        property int section
-        property string sectionTitle: ''
-
-        function openSectionOptions(section, title) {
-            sectionOptionsDialog.section = section;
-            sectionOptionsDialog.sectionTitle = title;
-            sectionOptionsDialog.open();
-        }
-
-        Common.SuperposedMenuEntry {
-            text: qsTr('Edita el títol')
-            onClicked: {
-                sectionOptionsDialog.close();
-                sectionEditorDialog.openTitleEditor(sectionOptionsDialog.section, sectionOptionsDialog.sectionTitle);
-            }
-        }
-
-        Common.SuperposedMenuEntry {
-            text: qsTr('Edita els paràmetres')
-            onClicked: {
-                sectionOptionsDialog.close();
-                parametersDialog.openParametersEditor();
-            }
-        }
-
-        Common.SuperposedMenuEntry {
-            text: qsTr('Esborra (directament)')
-            onClicked: {
-                sectionsModel.deleteSection(sectionOptionsDialog.section);
-                sectionOptionsDialog.close();
-            }
-        }
-
-        Common.SuperposedMenuEntry {
-            text: qsTr('Reordena les seccions')
-            onClicked: {
-                sectionOptionsDialog.close();
-                sectionsListDialog.openReordering();
-            }
-        }
-
-        Common.SuperposedMenuEntry {
-            text: qsTr('Recarrega')
-            onClicked: {
-                sectionOptionsDialog.close();
-                reloadPage();
-            }
-        }
-    }
-
     Common.SuperposedWidget {
         id: newSectionDialog
 
@@ -243,10 +189,11 @@ Item {
             select();
         }
 
-        function deleteSection(section) {
+        function deleteSection(section, title) {
             sectionsModel.removeObject(section);
             sectionsModel.reselect();
             sectionsList.chooseSection(0);
+            informationMessage.publishMessage("S'ha esborrat la secció «" + title + "».");
         }
     }
 
@@ -384,55 +331,91 @@ Item {
                     anchors.fill: parent
                     spacing: 0
 
-                    Rectangle {
+                    Basic.ButtonsRow {
                         Layout.preferredHeight: (pageMenuVisible)?units.fingerUnit + 2 * units.nailUnit:0
                         Layout.fillWidth: true
 
                         clip: true
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.margins: units.nailUnit
-                            spacing: units.fingerUnit
 
-                            Item {
-                                Layout.fillHeight: true
-                                Layout.fillWidth: true
+                        Common.ImageButton {
+                            width: size
+                            height: size
+                            size: units.fingerUnit
+
+                            image: 'plus-24844'
+
+                            onClicked: {
+                                newSectionDialog.openNewSection();
                             }
+                        }
 
-                            Common.ImageButton {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: height
+                        Common.ImageButton {
+                            width: size
+                            height: size
+                            size: units.fingerUnit
 
-                                size: height
+                            image: 'edit-153612'
 
-                                image: 'plus-24844'
+                            onClicked: sectionEditorDialog.openTitleEditor(model.id, model.title);
+                        }
 
-                                onClicked: {
-                                    newSectionDialog.openNewSection();
+                        Common.ImageButton {
+                            width: size
+                            height: size
+                            size: units.fingerUnit
+
+                            image: 'cog-147414'
+
+                            onClicked: parametersDialog.openParametersEditor()
+                        }
+
+                        Common.TextButton {
+                            height: units.fingerUnit
+                            text: qsTr('Ordena')
+                            onClicked: sectionsListDialog.openReordering();
+                        }
+
+                        Common.TextButton {
+                            height: units.fingerUnit
+                            text: qsTr('Actualitza')
+                            onClicked: {
+                                reloadPage();
+                                pageMenuVisible = false;
+                            }
+                        }
+
+                        Common.ImageButton {
+                            width: size
+                            height: size
+                            size: units.fingerUnit
+
+                            image: 'garbage-1295900'
+
+                            onClicked: confirmSectionDeletion.open()
+
+                            MessageDialog {
+                                id: confirmSectionDeletion
+
+                                title: qsTr("Esborrat de secció")
+
+                                text: qsTr("S'esborrarà la secció «" + model.title + "». Vols continuar?")
+
+                                standardButtons: StandardButton.Ok | StandardButton.Cancel
+
+                                onAccepted: {
+                                    sectionsModel.deleteSection(model.id, model.title);
                                 }
                             }
+                        }
 
-                            Common.ImageButton {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: height
+                        Common.ImageButton {
+                            width: size
+                            height: size
+                            size: units.fingerUnit
 
-                                size: height
+                            image: 'road-sign-147409'
 
-                                image: 'cog-147414'
-
-                                onClicked: sectionOptionsDialog.openSectionOptions(model.id, model.title)
-                            }
-
-                            Common.ImageButton {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: height
-
-                                size: height
-
-                                image: 'road-sign-147409'
-
-                                onClicked: pageMenuVisible = false
-                            }
+                            onClicked: pageMenuVisible = false
                         }
                     }
 

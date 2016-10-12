@@ -62,7 +62,13 @@ DISTFILES += \
     TeacherNotebook.pro.user \
     TeacherNotebook.pro.user.2.7pre1 \
     TeacherNotebook.creator \
-    README.md
+    README.md \
+    android/AndroidManifest.xml \
+    android/build.xml \
+    android/version.xml \
+    android/local.properties \
+    android/proguard-project.txt \
+    android/project.properties
 
 HEADERS += \
     databasebackup.h \

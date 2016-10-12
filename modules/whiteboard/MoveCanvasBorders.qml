@@ -16,6 +16,11 @@ Item {
     signal bottomBorderClicked()
     signal bottomRightBorderClicked()
 
+    property bool leftBorderEnabled: true
+    property bool topBorderEnabled: true
+    property bool rightBorderEnabled: true
+    property bool bottomBorderEnabled: true
+
     GridLayout {
         anchors.fill: parent
         rowSpacing: 0
@@ -29,6 +34,7 @@ Item {
             Layout.preferredHeight: maximumBorder
             Layout.preferredWidth: maximumBorder
 
+            enabled: leftBorderEnabled || topBorderEnabled
             color: moveCanvasBordersItem.color
             onClicked: leftTopBorderClicked()
         }
@@ -38,6 +44,7 @@ Item {
             Layout.preferredHeight: maximumBorder
             Layout.fillWidth: true
 
+            enabled: topBorderEnabled
             color: moveCanvasBordersItem.color
             onClicked: topBorderClicked()
         }
@@ -47,6 +54,7 @@ Item {
             Layout.preferredHeight: maximumBorder
             Layout.preferredWidth: maximumBorder
 
+            enabled: rightBorderEnabled || topBorderEnabled
             color: moveCanvasBordersItem.color
             onClicked: topRightBorderClicked()
         }
@@ -57,6 +65,7 @@ Item {
             Layout.fillHeight: true
             Layout.preferredWidth: maximumBorder
 
+            enabled: leftBorderEnabled
             color: moveCanvasBordersItem.color
             onClicked: leftBorderClicked()
         }
@@ -72,6 +81,7 @@ Item {
             Layout.fillHeight: true
             Layout.preferredWidth: maximumBorder
 
+            enabled: rightBorderEnabled
             color: moveCanvasBordersItem.color
             onClicked: rightBorderClicked()
         }
@@ -82,6 +92,7 @@ Item {
             Layout.preferredHeight: maximumBorder
             Layout.preferredWidth: maximumBorder
 
+            enabled: leftBorderEnabled || bottomBorderEnabled
             color: moveCanvasBordersItem.color
             onClicked: bottomLeftBorderClicked()
         }
@@ -91,6 +102,7 @@ Item {
             Layout.preferredHeight: maximumBorder
             Layout.fillWidth: true
 
+            enabled: bottomBorderEnabled
             color: moveCanvasBordersItem.color
             onClicked: bottomBorderClicked()
         }
@@ -101,6 +113,7 @@ Item {
             Layout.preferredHeight: maximumBorder
             Layout.preferredWidth: maximumBorder
 
+            enabled: rightBorderEnabled || bottomBorderEnabled
             color: moveCanvasBordersItem.color
             onClicked: bottomRightBorderClicked()
         }

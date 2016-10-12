@@ -3,7 +3,7 @@ import QtQuick 2.7
 Rectangle {
     id: moveCanvasArea
 
-    opacity: 0.5
+    opacity: (enabled)?0.5:0
     color: 'gray'
 
     signal clicked()

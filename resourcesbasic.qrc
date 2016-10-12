@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>modules/basic/BasicPage.qml</file>
         <file>modules/basic/InformationMessages.qml</file>
+        <file>modules/basic/ButtonsRow.qml</file>
     </qresource>
 </RCC>

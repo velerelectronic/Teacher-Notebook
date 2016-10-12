@@ -20,7 +20,6 @@ Connections {
 
     onEditorRequested: {
         destination.loadPage('whiteboard/ImageBoard', {selectedFile: file});
-        //destination.loadPage('whiteboard/WhiteboardWithZoom', {selectedFile: file});
     }
     onImageViewerSelected: destination.loadPage('files/FileViewer', {fileURL: file});
 

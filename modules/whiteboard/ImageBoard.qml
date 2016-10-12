@@ -91,11 +91,15 @@ Item {
         id: superposedZoomDialog
 
         function openZoom() {
-            load(qsTr('Edita fragment'), 'whiteboard/WhiteBoard', {rectangle: Qt.rect(selectionRect.x / fileImage.factor, selectionRect.y / fileImage.factor, selectionRect.width / fileImage.factor, selectionRect.height / fileImage.factor), selectedFile: selectedFile});
+            console.log('preparing rect', Qt.rect(selectionRect.x / fileImage.factor, selectionRect.y / fileImage.factor, selectionRect.width / fileImage.factor, selectionRect.height / fileImage.factor));
+            load(qsTr('Edita fragment'), 'whiteboard/CompleteWhiteBoard', {zoomedRectangle: Qt.rect(selectionRect.x / fileImage.factor, selectionRect.y / fileImage.factor, selectionRect.width / fileImage.factor, selectionRect.height / fileImage.factor), selectedFile: selectedFile});
+            //load(qsTr('Edita fragment'), 'whiteboard/WhiteBoard', {rectangle: Qt.rect(selectionRect.x / fileImage.factor, selectionRect.y / fileImage.factor, selectionRect.width / fileImage.factor, selectionRect.height / fileImage.factor), selectedFile: selectedFile});
         }
 
         Connections {
             target: superposedZoomDialog.mainItem
+
+            ignoreUnknownSignals: true
 
             onSavedImage: {
                 fileImage.source = '';

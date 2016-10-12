@@ -3,6 +3,7 @@ import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.1
 import Qt.labs.folderlistmodel 2.1
 import 'qrc:///common' as Common
+import 'qrc:///modules/basic' as Basic
 
 Rectangle {
     id: galleryItem
@@ -62,44 +63,49 @@ Rectangle {
 
         anchors.fill: parent
 
-        Item {
+        Basic.ButtonsRow {
             Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit * 1.5
+            Layout.preferredHeight: units.fingerUnit + units.nailUnit * 2
 
-            RowLayout {
-                anchors.fill: parent
-                spacing: units.nailUnit
-                Button {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: parent.width / 3
-                    text: qsTr('Arrel ') + folder
-                    onClicked: rootChangeDialog.openRootChange()
-                }
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('MÉS GROS')
-                    onClicked: {
-                        numberOfColumns = Math.max(numberOfColumns - 1,1)
-                    }
-                }
-                Common.BoxedText {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: contentWidth
-                    fontSize: units.glanceUnit
-                    margins: units.fingerUnit
-                    horizontalAlignment: Text.AlignHCenter
-                    textColor: 'white'
-                    text: numberOfColumns
-                }
-
-                Button {
-                    Layout.fillHeight: true
-                    text: qsTr('més petit')
-                    onClicked: {
-                        numberOfColumns = numberOfColumns + 1;
-                    }
+            Button {
+                height: units.fingerUnit
+                text: qsTr('més petit')
+                onClicked: {
+                    numberOfColumns = numberOfColumns + 1;
                 }
             }
+
+            Rectangle {
+                border.color: 'black'
+                height: units.fingerUnit
+                width: units.fingerUnit * 2
+
+                Rectangle {
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        bottom: parent.bottom
+                        margins: parent.border.width
+                    }
+                    color: 'green'
+                    width: (parent.width - 2 * parent.border.width) / numberOfColumns
+                }
+            }
+
+            Button {
+                height: units.fingerUnit
+                text: qsTr('MÉS GROS')
+                onClicked: {
+                    numberOfColumns = Math.max(numberOfColumns - 1,1)
+                }
+            }
+
+            Button {
+                height: units.fingerUnit
+                text: qsTr('Arrel ') + folder
+                onClicked: rootChangeDialog.openRootChange()
+            }
+
         }
 
         GridView {

@@ -6,5 +6,6 @@
         <file>modules/whiteboard/ImageBoard.qml</file>
         <file>modules/whiteboard/MoveCanvasArea.qml</file>
         <file>modules/whiteboard/MoveCanvasBorders.qml</file>
+        <file>modules/whiteboard/CompleteWhiteBoard.qml</file>
     </qresource>
 </RCC>
