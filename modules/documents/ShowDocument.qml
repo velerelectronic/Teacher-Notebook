@@ -31,7 +31,7 @@ Item {
     signal documentRemoved()
     signal documentUpdated()
     signal documentSelected(string document)
-    signal documentSourceSelected(string source, string mediaType)
+    signal documentSourceSelected(string source)
 
 
     Models.DocumentsModel {
@@ -128,7 +128,7 @@ Item {
                                 enabled: annotationsList.count == 0
                                 image: 'box-24557'
                                 size: units.fingerUnit * 1.5
-                                onClicked: documentSourceSelected(source, mediaType)
+                                onClicked: documentSourceSelected(source)
                             }
                         }
                     }

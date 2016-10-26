@@ -1,6 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.2
+import QtQuick.Controls 1.4
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
@@ -12,16 +13,19 @@ import 'qrc:///modules/pagesfolder' as PagesFolder
 Item {
     id: pagesFolderItem
 
+    signal publishMessage(string message)
     signal reloadPage()
+
     property string selectedContext: ''
     property int selectedSection: sectionsList.currentIndex
     property int sectionId
+    property int sectionTitleWidth: units.fingerUnit * 5
 
     property bool pageMenuVisible: false
 
     onSelectedContextChanged: {
+        sectionPages.clear();
         sectionsModel.reselect();
-        sectionsList.chooseSection(0);
     }
 
     Common.UseUnits {
@@ -116,7 +120,7 @@ Item {
             ignoreUnknownSignals: true
 
             onSectionSelected: {
-                sectionsModel.insertObject({context: selectedContext, page: page, parameters: parameters, title: title, position: sectionsModel.count+1});
+                sectionsModel.insertObject({context: selectedContext, page: page, title: title, position: sectionsModel.count+1});
                 sectionsModel.reselect();
                 sectionsList.chooseSection(sectionsModel.count-1);
                 newSectionDialog.close();
@@ -136,8 +140,10 @@ Item {
             ignoreUnknownSignals: true
 
             onSectionTitleChanged: {
+                var section = selectedSection;
                 sectionsModel.reselect();
-                sectionsList.chooseSection(selectedSection);
+                console.log('editada seccio', section);
+                sectionsList.chooseSection(section);
                 sectionEditorDialog.close();
             }
         }
@@ -169,6 +175,15 @@ Item {
         function openParametersEditor() {
             parametersDialog.load(qsTr('Edita els paràmetres'), 'pagesfolder/ParametersEditor', {sectionId: sectionId});
         }
+
+        Connections {
+            target: parametersDialog.mainItem
+
+            onParametersSaved: {
+                parametersDialog.close();
+                pagesFolderItem.publishMessage(qsTr("Nous paràmetres desats."));
+            }
+        }
     }
 
     Models.PagesFolderContextsModel {
@@ -187,13 +202,14 @@ Item {
         function reselect() {
             bindValues = [selectedContext];
             select();
+            sectionsList.chooseSection(0);
         }
 
         function deleteSection(section, title) {
             sectionsModel.removeObject(section);
             sectionsModel.reselect();
             sectionsList.chooseSection(0);
-            informationMessage.publishMessage("S'ha esborrat la secció «" + title + "».");
+            pagesFolderItem.publishMessage("S'ha esborrat la secció «" + title + "».");
         }
     }
 
@@ -203,7 +219,6 @@ Item {
         anchors {
             top: parent.top
             left: parent.left
-            leftMargin: units.fingerUnit + units.nailUnit
         }
         width: Math.min(parent.width / 3, invisibleFolderButton.contentWidth + 2 * units.nailUnit)
         height: units.fingerUnit * 1.5
@@ -238,26 +253,30 @@ Item {
         id: sectionsList
 
         anchors {
-            top: parent.top
-            left: contextSelectorItem.right
-            right: parent.right
-            leftMargin: units.nailUnit
+            top: contextSelectorItem.bottom
+            left: parent.left
+            right: sectionButtons.left
+            rightMargin: units.nailUnit
         }
         height: units.fingerUnit * 1.5
 
-        clip: true
-        orientation: ListView.Horizontal
-        spacing: units.nailUnit
+        onWidthChanged: sectionsList.positionViewAtIndex(selectedSection, ListView.Contain)
 
-        boundsBehavior: Flickable.StopAtBounds
+        orientation: ListView.Horizontal
+        clip: true
 
         model: sectionsModel
+        spacing: units.fingerUnit
+
+        onMovementStarted: pageMenuVisible = false
 
         delegate: Item {
             id: sectionItem
 
+            objectName: 'section'
+
             z: 1
-            width: units.fingerUnit * 4
+            width: sectionTitleWidth
             height: sectionsList.height
             Rectangle {
                 anchors.fill: parent
@@ -275,277 +294,267 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    sectionsList.chooseSection(model.index);
-                    pageMenuVisible = (sectionId == model.id);
-                    sectionId = model.id;
+                    if (sectionId == model.id) {
+                        pageMenuVisible = true;
+                    } else {
+                        pageMenuVisible = false;
+                        sectionItem.chooseThisSection();
+                    }
                 }
             }
-        }
-
-        footerPositioning: ListView.OverlayFooter
-        footer: Common.SuperposedButton {
-            id: addSectionButton
-            z: 2
-            height: sectionsList.height
-            width: addSectionButton.height
-            margins: units.nailUnit
-            backgroundColor: 'white'
-            imageSource: 'comment-27179'
-            onClicked: {
-                if (sectionsModel.count > 0)
-                    pageMenuVisible = true;
-                else
-                    newSectionDialog.openNewSection();
+            function chooseThisSection() {
+                sectionId = model.id;
+                sectionsList.currentIndex = model.index;
+                sectionPages.replacePage(model.page, model.parameters);
             }
         }
 
         function chooseSection(newSection) {
-            sectionsList.currentIndex = newSection;
-            sectionPages.currentIndex = newSection;
+            var sectionObjects = sectionsList.currentItem.children;
+            var sectionIdx = 0;
+            for (var i=0; i<sectionObjects.length; i++) {
+                if (sectionObjects.objectName == 'section') {
+                    if (sectionIdx == newSection) {
+                        sectionObjects[sectionIdx].chooseThisSection();
+                        break;
+                    }
+                    sectionIdx++;
+                }
+            }
         }
     }
-    Item {
+
+    Basic.ButtonsRow {
+        id: sectionButtons
+
+        anchors {
+            top: contextSelectorItem.bottom
+            right: parent.right
+        }
+        height: units.fingerUnit * 1.5
+        width: (pageMenuVisible)?parent.width - sectionTitleWidth - sectionsList.anchors.rightMargin:0
+        margins: units.fingerUnit / 4
+        visible: pageMenuVisible
+
+        clip: true
+
+        Common.ImageButton {
+            width: size
+            height: size
+            size: units.fingerUnit
+
+            image: 'plus-24844'
+
+            onClicked: {
+                newSectionDialog.openNewSection();
+            }
+        }
+
+        Common.ImageButton {
+            width: size
+            height: size
+            size: units.fingerUnit
+
+            image: 'edit-153612'
+
+            onClicked: {
+                var object = sectionsModel.getObjectInRow(sectionsList.currentIndex);
+                sectionEditorDialog.openTitleEditor(object.id, object.title);
+            }
+        }
+
+        Common.ImageButton {
+            width: size
+            height: size
+            size: units.fingerUnit
+
+            image: 'cog-147414'
+
+            onClicked: parametersDialog.openParametersEditor()
+        }
+
+        Common.TextButton {
+            height: units.fingerUnit
+            text: qsTr('Ordena')
+            onClicked: sectionsListDialog.openReordering();
+        }
+
+        Common.TextButton {
+            height: units.fingerUnit
+            text: qsTr('Actualitza')
+            onClicked: {
+                reloadPage();
+                pageMenuVisible = false;
+            }
+        }
+
+        Common.ImageButton {
+            width: size
+            height: size
+            size: units.fingerUnit
+
+            image: 'garbage-1295900'
+
+            onClicked: confirmSectionDeletion.openConfirmDeletion();
+
+            MessageDialog {
+                id: confirmSectionDeletion
+
+                property string sectionTitle
+
+                title: qsTr("Esborrat de secció")
+
+                standardButtons: StandardButton.Ok | StandardButton.Cancel
+
+                function openConfirmDeletion() {
+                    sectionTitle = sectionsModel.getObjectInRow(selectedSection)['title'];
+                    text = qsTr("S'esborrarà la secció «" + sectionTitle + "». Vols continuar?");
+                    open();
+                }
+
+                onAccepted: {
+                    sectionsModel.deleteSection(sectionId, sectionTitle);
+                }
+            }
+        }
+
+        Common.ImageButton {
+            width: size
+            height: size
+            size: units.fingerUnit
+
+            image: 'road-sign-147409'
+
+            onClicked: pageMenuVisible = false
+        }
+    }
+
+    Common.SuperposedButton {
+        id: sectionOptionsButton
+
+        z: 2
+        anchors {
+            top: parent.top
+            right: parent.right
+        }
+        size: units.fingerUnit
+
+        margins: units.nailUnit
+        backgroundColor: 'white'
+        imageSource: 'comment-27179'
+        onClicked: {
+            if (sectionsModel.count > 0)
+                pageMenuVisible = true;
+            else
+                newSectionDialog.openNewSection();
+        }
+    }
+
+
+    StackView {
         id: sectionPages
 
         z: 3
 
         anchors {
-            top: contextSelectorItem.bottom
+            top: sectionsList.bottom
             left: parent.left
             right: parent.right
             bottom: parent.bottom
         }
 
-        property int currentIndex: -1
-
-        Repeater {
-            model: sectionsModel
-
-            Item {
-                id: pageItem
-
-                anchors.fill: sectionPages
-                visible: model.index == selectedSection
-
-                ColumnLayout {
-                    anchors.fill: parent
-                    spacing: 0
-
-                    Basic.ButtonsRow {
-                        Layout.preferredHeight: (pageMenuVisible)?units.fingerUnit + 2 * units.nailUnit:0
-                        Layout.fillWidth: true
-
-                        clip: true
-
-                        Common.ImageButton {
-                            width: size
-                            height: size
-                            size: units.fingerUnit
-
-                            image: 'plus-24844'
-
-                            onClicked: {
-                                newSectionDialog.openNewSection();
-                            }
-                        }
-
-                        Common.ImageButton {
-                            width: size
-                            height: size
-                            size: units.fingerUnit
-
-                            image: 'edit-153612'
-
-                            onClicked: sectionEditorDialog.openTitleEditor(model.id, model.title);
-                        }
-
-                        Common.ImageButton {
-                            width: size
-                            height: size
-                            size: units.fingerUnit
-
-                            image: 'cog-147414'
-
-                            onClicked: parametersDialog.openParametersEditor()
-                        }
-
-                        Common.TextButton {
-                            height: units.fingerUnit
-                            text: qsTr('Ordena')
-                            onClicked: sectionsListDialog.openReordering();
-                        }
-
-                        Common.TextButton {
-                            height: units.fingerUnit
-                            text: qsTr('Actualitza')
-                            onClicked: {
-                                reloadPage();
-                                pageMenuVisible = false;
-                            }
-                        }
-
-                        Common.ImageButton {
-                            width: size
-                            height: size
-                            size: units.fingerUnit
-
-                            image: 'garbage-1295900'
-
-                            onClicked: confirmSectionDeletion.open()
-
-                            MessageDialog {
-                                id: confirmSectionDeletion
-
-                                title: qsTr("Esborrat de secció")
-
-                                text: qsTr("S'esborrarà la secció «" + model.title + "». Vols continuar?")
-
-                                standardButtons: StandardButton.Ok | StandardButton.Cancel
-
-                                onAccepted: {
-                                    sectionsModel.deleteSection(model.id, model.title);
-                                }
-                            }
-                        }
-
-                        Common.ImageButton {
-                            width: size
-                            height: size
-                            size: units.fingerUnit
-
-                            image: 'road-sign-147409'
-
-                            onClicked: pageMenuVisible = false
-                        }
-                    }
-
-                    Loader {
-                        id: pageLoader
-
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-
-                        property string page: model.page
-                        property string parameters: model.parameters
-                        clip: true
-
-                        function loadContents() {
-                            var paramArray = {};
-                            if (pageLoader.parameters != '') {
-                                paramArray = JSON.parse(pageLoader.parameters);
-                            }
-                            pageLoader.setSource('qrc:///modules/' + pageLoader.page + '.qml', paramArray);
-                        }
-
-                        function reloadContents() {
-                            pageLoader.sourceComponent = undefined;
-                            loadContents();
-                        }
-
-                        Connections {
-                            target: pagesFolderItem
-
-                            onReloadPage: pageLoader.trytoLoadContents()
-                        }
-
-                        Connections {
-                            target: pageLoader.item
-                            ignoreUnknownSignals: true
-
-                            onPublishMessage: informationMessage.publishMessage(message)
-                        }
-
-                        PageConnections {
-                            id: pageConnections
-
-                            target: pageLoader.item
-                            destination: subPageFolder
-                            primarySource: pagesFolderItem
-                        }
-
-                        SubPageFolder {
-                            id: subPageFolder
-                            z: 4
-
-                            clip: true
-                            anchors.fill: parent
-                            primarySource: pageLoader.item
-
-                            onCloseRequested: {
-                                console.log('closing')
-                                subPageFolder.state = 'hidden';
-                            }
-
-                            onPublishMessage: informationMessage.publishMessage(message)
-                        }
-
-                        onVisibleChanged: {
-                            if (visible) {
-                                loadContents();
-                            }
-                        }
-
-                        onLoaded: {
-        //                    pageConnections.primarySource = pageLoader.item;
-                        }
-
-                        Common.ImageButton {
-                            id: subPagePositionImage
-
-                            z: 5
-                            anchors {
-                                top: pageLoader.top
-                                left: pageLoader.left
-                            }
-                            size: units.fingerUnit * 2
-                            image: 'outline-27146'
-                            visible: subPageFolder.state == 'maximized'
-                            onClicked: {
-                                subPageFolder.state = (subPageFolder.state == 'minimized')?'maximized':'minimized';
-                            }
-                        }
-
-                        MessageDialog {
-                            id: confirmDiscardChangesDialog
-
-                            title: qsTr('Canviar de pàgina')
-                            text: qsTr("Si canvies de pàgina, es perdran els canvis. Estàs segur de voler continuar?")
-
-                            standardButtons: StandardButton.Yes | StandardButton.No
-
-                            onYes: {
-                                pageLoader.reloadContents();
-                            }
-
-                            onNo: confirmCloseDialog.close()
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-
-                            z: 200
-
-                            onPressed: {
-                                console.log('hola');
-                                mouse.accepted = false;
-                                pageMenuVisible = false;
-                            }
-                        }
-                    }
-                }
+        function replacePage(page, parameters) {
+            // Parameters must be a JSON array
+            var parsedParameters = {};
+            try {
+                parsedParameters = JSON.parse(parameters);
+            }catch(e) {
             }
 
+            clear();
+            push({item: 'qrc:///modules/' + page + '.qml', properties: parsedParameters}, replace);
         }
+
+        function addPage(page, parameters) {
+            // Parameters must be an associative array
+            push({item: 'qrc:///modules/' + page + '.qml', properties: parameters});
+        }
+
+        function goBack() {
+            if (depth>1) {
+                pop();
+                console.log('reload', typeof currentItem.reload);
+                if (typeof currentItem.reload == 'function') {
+                    console.log('Reloading...');
+                    currentItem.reload();
+                }
+            }
+        }
+
+        onCurrentItemChanged: {
+            pageConnections.target = sectionPages.currentItem;
+
+            pageConnections.destination = sectionPages;
+            pageConnections.primarySource = sectionPages.get((depth>1)?sectionPages.depth-1:0)
+        }
+
+        Common.ImageButton {
+            id: subPagePositionImage
+
+            z: 5
+            anchors {
+                top: parent.top
+                left: parent.left
+            }
+            size: units.fingerUnit * 1.5
+            image: 'arrow-145769'
+            visible: sectionPages.depth>1
+            onClicked: {
+                sectionPages.goBack();
+            }
+        }
+
+        Connections {
+            target: sectionPages.currentItem
+            ignoreUnknownSignals: true
+
+            onPublishMessage: pagesFolderItem.publishMessage(message)
+        }
+
+        PageConnections {
+            id: pageConnections
+        }
+
+        MouseArea {
+            anchors.fill: parent
+
+            z: 200
+
+            onPressed: {
+                console.log('hola');
+                mouse.accepted = false;
+                pageMenuVisible = false;
+            }
+        }
+
+        MessageDialog {
+            id: confirmDiscardChangesDialog
+
+            title: qsTr('Canviar de pàgina')
+            text: qsTr("Si canvies de pàgina, es perdran els canvis. Estàs segur de voler continuar?")
+
+            standardButtons: StandardButton.Yes | StandardButton.No
+
+            onYes: {
+                pageLoader.reloadContents();
+            }
+
+            onNo: confirmCloseDialog.close()
+        }
+
     }
 
-    Basic.InformationMessages {
-        id: informationMessage
-
-        z: 200
-        anchors {
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
-        }
+    function closeCurrentPage() {
+        sectionPages.goBack();
     }
 }

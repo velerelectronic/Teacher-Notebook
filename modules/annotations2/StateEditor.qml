@@ -9,6 +9,7 @@ Common.AbstractEditor {
 
     property var annotationContent
     property string content
+    property int requiredWidth: stateButtonsList.contentItem.width
 
     signal stateValueChanged(string value)
 

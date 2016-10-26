@@ -2,38 +2,30 @@ import QtQuick 2.0
 import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
 
-Rectangle {
+Item {
     id: assessmentByCategories
-    width: 100
-    height: 62
-    property string pageTitle: qsTr("Avaluació per categories")
+
     property string groupName: ''
     property var variablesModel: []
 
     property int variableInfoWidth: units.fingerUnit * 10
-    color: '#F5F6CE'
 
     signal addValue(string group, string individual, string variable)
 
     Common.UseUnits { id: units }
 
-    SqlTableModel {
+    Models.AssessmentGridModel {
         id: gridModel
-        tableName: 'assessmentGrid'
-        fieldNames: ['id','created','moment','group','individual','variable','value','comment']
-        limit: 200
-        filters: []
     }
 
-    SqlTableModel {
+    Models.AssessmentGridModel {
         id: individualsModel
-        tableName: gridModel.tableName
     }
-    SqlTableModel {
+
+    Models.AssessmentGridModel {
         id: variablesSqlModel
-        fieldNames: gridModel.fieldNames
-        tableName: gridModel.tableName
     }
 
     ListView {
@@ -50,7 +42,7 @@ Rectangle {
         spacing: units.nailUnit
         delegate: Rectangle {
             id: singleIndividual
-            // color: 'yellow'
+
             width: mainAssessmentList.width
             height: Math.max(infoAreaColumn.children[model.index].maxHeight)
 /*
@@ -287,7 +279,9 @@ Rectangle {
                                                 }
                                                 MouseArea {
                                                     anchors.fill: parent
-                                                    onClicked: addValue(groupName,individualInfo.individualName,singleVariable.variable)
+                                                    onClicked: {
+                                                        addValue(groupName,individualInfo.individualName,singleVariable.variable);
+                                                    }
                                                 }
                                             }
 

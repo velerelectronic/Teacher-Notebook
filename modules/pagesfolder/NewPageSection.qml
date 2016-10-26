@@ -9,17 +9,12 @@ import 'qrc:///modules/basic' as Basic
 import 'qrc:///modules/pagesfolder' as PagesFolder
 
 Rectangle {
-    signal sectionSelected(string title, string page, string parameters)
+    signal sectionSelected(string title, string page)
 
     property string selectedPage
     property string selectedTitle
-    property string selectedParameters
 
     color: 'gray'
-
-    ListModel {
-        id: parametersModel
-    }
 
     Common.UseUnits {
         id: units
@@ -50,11 +45,6 @@ Rectangle {
                     onClicked: {
                         selectedPage = model.page;
                         selectedTitle = model.title;
-                        parametersModel.clear();
-                        var parameters = JSON.parse(model.parameters);
-                        for (var i=0; i<parameters.length; i++) {
-                            parametersModel.append({parameter: parameters[i]});
-                        }
                         steppedPage.moveForward();
                     }
                 }
@@ -79,52 +69,6 @@ Rectangle {
                     onContentChanged: selectedTitle = content
                 }
 
-                ListView {
-                    id: parametersList
-
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-
-                    model: parametersModel
-
-                    spacing: units.nailUnit
-                    header: Common.BoxedText {
-                        width: parametersList.width
-                        height: units.fingerUnit
-                        text: qsTr('Paràmetres')
-                    }
-
-                    delegate: Rectangle {
-                        id: singleParamterItem
-
-                        width: parametersList.width
-                        height: units.fingerUnit * 5
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.margins: units.nailUnit
-                            spacing: units.nailUnit
-
-                            Text {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: singleParamterItem.width / 2
-                                font.pixelSize: units.readUnit
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                text: model.parameter
-                            }
-                            Editors.TextAreaEditor3 {
-                                id: parameterValueEditor
-
-                                Layout.fillHeight: true
-                                Layout.fillWidth: true
-
-                                objectName: 'parameterValue_' + model.parameter
-
-                                onContentChanged: parametersModel.setProperty(model.index, 'value', content)
-                            }
-                        }
-                    }
-                }
-
                 Common.TextButton {
                     Layout.fillWidth: true
                     Layout.preferredHeight: units.fingerUnit * 2
@@ -132,14 +76,7 @@ Rectangle {
                     text: qsTr('Crea la nova secció')
 
                     onClicked: {
-                        var parameters = {};
-                        for (var i=0; i<parametersModel.count; i++) {
-                            var paramObj = parametersModel.get(i);
-                            parameters[paramObj['parameter']] = paramObj['value'];
-                        }
-
-                        selectedParameters = JSON.stringify(parameters);
-                        sectionSelected(selectedTitle, selectedPage, selectedParameters);
+                        sectionSelected(selectedTitle, selectedPage);
                     }
                 }
             }
@@ -151,12 +88,17 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        pagesModel.append({page: 'documents/ShowDocument', title: qsTr('Document'), parameters: JSON.stringify(['document'])});
-        pagesModel.append({page: 'annotations2/AnnotationsList', title: qsTr('Anotacions'), parameters: []});
-        pagesModel.append({page: 'calendar/YearView', title: qsTr('Calendari anual'), parameters: JSON.stringify(['fullyear'])});
-        pagesModel.append({page: 'files/Gallery', title: qsTr("Galeria d'imatges"), parameters: JSON.stringify(['folder', 'numberOfColumns'])});
-        pagesModel.append({page: 'whiteboard/WhiteBoard', title: qsTr('Pissarra'), parameters: JSON.stringify(['baseDirectory'])});
-        pagesModel.append({page: 'documents/DocumentsMosaic', title: qsTr('Mosaic de documents'), parameters: JSON.stringify(['columnsNumber','rowsNumber','documentsList'])});
-        pagesModel.append({page: 'documents/DocumentsList', title: qsTr('Llista de documents'), parameters: JSON.stringify([])});
+        pagesModel.append({page: 'documents/ShowDocument', title: qsTr('Document')});
+        pagesModel.append({page: 'annotations2/AnnotationsList', title: qsTr('Anotacions')});
+        pagesModel.append({page: 'calendar/YearView', title: qsTr('Calendari anual')});
+        pagesModel.append({page: 'files/Gallery', title: qsTr("Galeria d'imatges")});
+        pagesModel.append({page: 'whiteboard/WhiteBoard', title: qsTr('Pissarra')});
+        pagesModel.append({page: 'documents/DocumentsMosaic', title: qsTr('Mosaic de documents')});
+        pagesModel.append({page: 'documents/DocumentsList', title: qsTr('Llista de documents')});
+        pagesModel.append({page: 'pagesfolder/SuperposedPapers', title: qsTr('Papers superposats')});
+        pagesModel.append({page: 'calendar/WeeksAnnotationsView', title: qsTr('Anotacions per setmanes')});
+        pagesModel.append({page: 'checklists/AssessmentSystem', title: qsTr('Llistes de comprovació')});
+        pagesModel.append({page: 'plannings/PlanningsList', title: qsTr('Llista de planificacions')});
+        pagesModel.append({page: 'plannings/ShowPlanning', title: qsTr('Planificació')});
     }
 }

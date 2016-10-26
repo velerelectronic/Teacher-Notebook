@@ -1,8 +1,12 @@
 TEMPLATE = app
 
 QT += qml quick widgets \
-    xml xmlpatterns \
-    sql
+    xml xmlpatterns svg \
+    gui \
+    multimedia \
+    sql \
+    core
+
 CONFIG += c++11
 
 SOURCES += main.cpp \
@@ -43,7 +47,9 @@ RESOURCES += qml.qrc \
     resourcesrubrics.qrc \
     resourcesteachingplanning.qrc \
     resourceswhiteboard.qrc \
-    showdown.qrc
+    showdown.qrc \
+    resourceschecklists.qrc \
+    resourcesplannings.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -68,7 +74,10 @@ DISTFILES += \
     android/version.xml \
     android/local.properties \
     android/proguard-project.txt \
-    android/project.properties
+    android/project.properties \
+    android/res/drawable-hdpi/icon.png \
+    android/res/drawable-ldpi/icon.png \
+    android/res/drawable-mdpi/icon.png
 
 HEADERS += \
     databasebackup.h \
@@ -86,3 +95,5 @@ HEADERS += \
     SqlTableModel2/sqltablemodel.h \
     TeachingPlanning/teachingplanning.h \
     TeachingPlanning/xmlmodel.h
+
+

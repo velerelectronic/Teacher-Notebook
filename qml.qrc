@@ -11,16 +11,11 @@
         <file>qml/ImageMapper.qml</file>
         <file>qml/TextViewer.qml</file>
         <file>qml/MultipleGrid.qml</file>
-        <file>qml/AssessmentGrid.qml</file>
-        <file>qml/AssessmentGeneralEditor.qml</file>
-        <file>qml/AssessmentList.qml</file>
         <file>qml/JsonViewer.qml</file>
         <file>qml/MarkDownViewer.qml</file>
         <file>qml/WorkSpace.qml</file>
         <file>qml/Calendar-ant.qml</file>
         <file>qml/GanttDiagram.qml</file>
-        <file>qml/AssessmentByCategories.qml</file>
-        <file>qml/AssessmentSystem.qml</file>
         <file>qml/TasksSystem.qml</file>
         <file>qml/BasicDatabase.qml</file>
         <file>qml/CollectionInspector.qml</file>
@@ -35,7 +30,6 @@
         <file>qml/ModelImporter.qml</file>
         <file>qml/EventCharacteristicsEditor.qml</file>
         <file>qml/EditDeleteItemInspector.qml</file>
-        <file>qml/WorkingSpace.qml</file>
         <file>qml/ShowExtendedAnnotation.qml</file>
         <file>qml/EditDateTimeItemInspector2.qml</file>
         <file>qml/ShowTimeTable.qml</file>

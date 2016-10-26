@@ -14,6 +14,7 @@ Rectangle {
     }
 
     signal showMessage(string message)
+    signal newDrawingAnnotationSelected(string labels)
     signal newTimetableAnnotationSelected(string labels)
     signal close()
     signal discarded()
@@ -131,6 +132,33 @@ Rectangle {
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     verticalAlignment: Text.AlignVCenter
                     text: qsTr("A partir d'horari")
+                }
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit * 2
+
+            border.color: 'black'
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: size
+                    size: units.fingerUnit
+                    image: 'paintbrush-153754'
+                    onClicked: newDrawingAnnotationSelected(labels)
+                }
+                Text {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    font.pixelSize: units.readUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    verticalAlignment: Text.AlignVCenter
+                    text: qsTr("Dibuix a mà alçada")
                 }
             }
         }

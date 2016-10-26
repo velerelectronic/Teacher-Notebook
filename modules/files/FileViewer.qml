@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
+import 'qrc:///modules/basic' as Basic
 
 Rectangle {
     id: fileViewer
@@ -13,7 +14,7 @@ Rectangle {
     signal toggleFullScreen()
 
     property bool visibleImageInfo: true
-    property int requiredHeight: bigImageView.implicitHeight * (width / bigImageView.implicitWidth)
+    property int requiredHeight: bigImageView.implicitImageHeight * (width / bigImageView.implicitImageWidth)
     property int extraBottomMargin: 0
     property int extraTopMargin: 0
 
@@ -36,22 +37,54 @@ Rectangle {
         bottomMargin: extraBottomMargin
 
         interactive: false
+        clip: true
+
+        /*
+        Basic.ReloadableImage {
+            id: bigImageView
+
+            width: Math.min(flickableItem.width, implicitImageWidth)
+            height: Math.min(flickableItem.height, implicitImageHeight)
+
+            fillMode: Image.PreserveAspectFit
+            imageSource: (fileURL !== '')?fileURL:undefined
+        }
+        */
 
         Image {
             id: bigImageView
+
+            property alias implicitImageWidth: bigImageView.implicitWidth
+            property alias implicitImageHeight: bigImageView.implicitHeight
+
             width: Math.min(flickableItem.width, implicitWidth)
             height: Math.min(flickableItem.height, implicitHeight)
 
             fillMode: Image.PreserveAspectFit
             source: (fileURL !== '')?fileURL:undefined
             cache: false
-            asynchronous: true
+            asynchronous: false
+
+            function reloadImage() {
+                source = 'qrc:///icons/hourglass-23654.svg';
+                source = Qt.binding(function() { return (fileURL !== '')?fileURL:undefined; });
+            }
+
+            /*
+            onStatusChanged: {
+                if ((status == Image.Ready) && (source == 'qrc:///icons/hourglass-23654.svg')) {
+                    source = Qt.binding(function() { return (fileURL !== '')?fileURL:undefined; });
+                }
+            }
+            */
         }
     }
 
     MouseArea {
         anchors.fill: flickableItem
+        preventStealing: true
         onDoubleClicked: toggleFullScreen()
+        onPressAndHold: toggleFullScreen()
     }
 
     PinchArea {
@@ -75,8 +108,8 @@ Rectangle {
             var point2 = pinch.center;
 
             // Scale image
-            var newWidth = Math.min(originalWidth * pinch.scale, bigImageView.implicitWidth * 3);
-            var newHeight = Math.min(originalHeight * pinch.scale, bigImageView.implicitHeight * 3);
+            var newWidth = Math.min(originalWidth * pinch.scale, bigImageView.implicitImageWidth * 3);
+            var newHeight = Math.min(originalHeight * pinch.scale, bigImageView.implicitImageHeight * 3);
 
             var finalScale = Math.min(bigImageView.width / originalWidth, bigImageView.height / originalHeight);
             bigImageView.width = (newWidth <= flickableItem.width)?Qt.binding(function() { return flickableItem.width; }):newWidth;
@@ -145,13 +178,6 @@ Rectangle {
             Common.ImageButton {
                 Layout.fillHeight: true
                 Layout.preferredWidth: height
-                image: 'arrows-145992'
-                onClicked: toggleFullScreen()
-            }
-
-            Common.ImageButton {
-                Layout.fillHeight: true
-                Layout.preferredWidth: height
                 image: 'edit-153612'
                 onClicked: editorRequested(fileURL);
             }
@@ -169,8 +195,6 @@ Rectangle {
 
 
     function reload() {
-        var aux = fileURL;
-        fileURL = '';
-        fileURL = aux;
+        bigImageView.reloadImage();
     }
 }

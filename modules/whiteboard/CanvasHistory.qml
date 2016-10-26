@@ -2,7 +2,7 @@ import QtQuick 2.7
 
 Item {
     property var canvasArray: []
-    property int canvasArrayIndex: -1
+    property int canvasArrayIndex: 0
     property int canvasArrayLength: canvasArray.length
 
     property bool canUndo: canvasArrayLength > 1
@@ -13,9 +13,9 @@ Item {
     visible: false
 
     // Conditions
-    // * canvasArray must have one item, always
-    // * canvasArrayLength must be at least 1
-    // * canvasArrayIndex goes from 0 to canvasArrayLength-1
+    // * canvasArrayLength must be at least 1 - the first element is not removable.
+    // * canvasArrayIndex goes from 0 to canvasArrayLength-1.
+    // * canvasArrayIndex with 0 means the first image.
 
     function addCanvas(imageData) {
         while (canvasArrayIndex < canvasArray.length-1) {
@@ -36,13 +36,6 @@ Item {
             var newIndex = canvasArrayIndex - 1;
             canvasArrayIndex = newIndex;
             data = canvasArray[canvasArrayIndex];
-
-            //var ctx = canvas1.getContext("2d");
-            //ctx.clearRect(0,0, data.width, data.height);
-            //ctx.drawImage(data, 0, 0);
-            //canvas1.markDirty(Qt.rect(0,0,data.width,data.height));
-            //canvas2.source = data;
-            console.log('index', canvasArrayIndex, 'length', canvasArrayLength);
         } else {
             data = canvasArray[0];
         }
@@ -51,24 +44,18 @@ Item {
     }
 
     function setNextCanvas() {
-        if (!blocked) {
-            blocked = true;
-            if (canvasArrayIndex < canvasArrayLength-1) {
-                canvasArrayIndex = canvasArrayIndex + 1;
-                var data = canvasArray[canvasArrayIndex];
-                //canvas2.source = data;
-                console.log('index', canvasArrayIndex, 'length', canvasArrayLength);
-            }
-            blocked = false;
+        if (canvasArrayIndex < canvasArrayLength-1) {
+            canvasArrayIndex = canvasArrayIndex + 1;
+            var data = canvasArray[canvasArrayIndex];
             return data;
+        } else {
+            return canvasArray[canvasArrayLength-1];
         }
-
     }
 
 
-    function initHistory() {
+    function initHistory(imageData) {
         canvasArray = [];
-        canvasArrayIndex = -1;
-        canvasArrayLength = 0;
+        addCanvas(imageData);
     }
 }

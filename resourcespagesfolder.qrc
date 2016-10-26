@@ -5,7 +5,7 @@
         <file>modules/pagesfolder/TitleSectionEditor.qml</file>
         <file>modules/pagesfolder/SectionsList.qml</file>
         <file>modules/pagesfolder/PageConnections.qml</file>
-        <file>modules/pagesfolder/SubPageFolder.qml</file>
         <file>modules/pagesfolder/ParametersEditor.qml</file>
+        <file>modules/pagesfolder/SuperposedPapers.qml</file>
     </qresource>
 </RCC>

@@ -7,6 +7,7 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///modules/files' as Files
+import 'qrc:///modules/basic' as Basic
 import 'qrc:///modules/documents' as Documents
 import "qrc:///common/FormatDates.js" as FormatDates
 import "qrc:///modules/files/mediaTypes.js" as MediaTypes
@@ -54,63 +55,62 @@ Rectangle {
             ColumnLayout {
                 anchors.fill: parent
 
-                Item {
+                Basic.ButtonsRow {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: units.fingerUnit * 2
+                    Layout.preferredHeight: units.fingerUnit * 1.5
 
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
-                        spacing: units.fingerUnit
+                    color: 'transparent'
+                    buttonsSpacing: units.fingerUnit
 
-                        Item {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: height
-                        }
+                    Item {
+                        height: parent.height
+                        width: parent.height
+                    }
 
-                        StateEditor {
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
+                    StateEditor {
+                        height: parent.height
+                        width: requiredWidth
 
-                            clip: true
-                            onStateValueChanged: {
-                                stateValue = value;
+                        clip: true
+                        onStateValueChanged: {
+                            stateValue = value;
 
-                                docAnnotationsModel.update();
-                            }
-                        }
-                        Common.SearchBox {
-                            Layout.preferredHeight: units.fingerUnit * 1.5
-                            Layout.preferredWidth: units.fingerUnit * 4
-
-                            onIntroPressed: {
-                                docAnnotationsModel.searchFields = ['title', 'desc', 'document', 'labels'];
-                                docAnnotationsModel.searchString = text;
-                                docAnnotationsModel.update();
-                            }
-                        }
-
-                        Text {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: contentWidth
-                            font.pixelSize: units.readUnit
-                            text: (filterPeriod)?(qsTr('Des de ') + periodStart):''
-                        }
-                        Text {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: contentWidth
-                            font.pixelSize: units.readUnit
-                            text: (filterPeriod)?(qsTr('Fins a ') + periodEnd):''
-                        }
-
-                        Common.ImageButton {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: height
-                            size: height
-                            image: 'cog-147414'
-                            onClicked: annotationsListOptionsDialog.open();
+                            docAnnotationsModel.update();
                         }
                     }
+
+                    Common.SearchBox {
+                        height: parent.height
+                        width: units.fingerUnit * 4
+
+                        onIntroPressed: {
+                            docAnnotationsModel.searchFields = ['title', 'desc', 'document', 'labels'];
+                            docAnnotationsModel.searchString = text;
+                            docAnnotationsModel.update();
+                        }
+                    }
+
+                    Text {
+                        height: parent.height
+                        width: contentWidth
+                        font.pixelSize: units.readUnit
+                        text: (filterPeriod)?(qsTr('Des de ') + periodStart):''
+                    }
+                    Text {
+                        height: parent.height
+                        width: contentWidth
+                        font.pixelSize: units.readUnit
+                        text: (filterPeriod)?(qsTr('Fins a ') + periodEnd):''
+                    }
+
+                    Common.ImageButton {
+                        height: parent.height
+                        width: height
+                        size: height
+                        image: 'cog-147414'
+                        onClicked: annotationsListOptionsDialog.open();
+                    }
+
                 }
 
                 Item {
@@ -361,6 +361,16 @@ Rectangle {
 
         parentWidth: frameItem.width
         parentHeight: frameItem.height
+
+        Connections {
+            target: newAnnotationDialog.mainItem
+
+            onNewDrawingAnnotationSelected: {
+                newAnnotationDialog.close();
+                newAnnotationDialog.load(qsTr('Nou dibuix a mà alçada'), 'whiteboard/CompleteWhiteBoard', {selectedFile: document, zoomedRectangle: Qt.rect(0,0,units.fingerUnit * 10, units.fingerUnit * 6)});
+                console.log('new drawing', document);
+            }
+        }
     }
 
     Common.SuperposedMenu {

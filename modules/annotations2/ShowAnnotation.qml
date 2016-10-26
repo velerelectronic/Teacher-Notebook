@@ -10,6 +10,7 @@ import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///editors' as Editors
 import 'qrc:///modules/documents' as Documents
+import 'qrc:///modules/files' as Files
 
 Item {
     id: showAnnotationItem
@@ -300,6 +301,14 @@ Item {
                                 onClicked: descEditorDialog.open()
                             }
                         }
+                        Files.FileViewer {
+                            id: contentImage
+
+                            Layout.preferredHeight: (fileURL !== '')?contentImage.requiredHeight:0
+                            Layout.fillWidth: true
+
+                            clip: true
+                        }
                     }
                 }
 
@@ -470,7 +479,12 @@ Item {
             periodStart = obj['start'];
             periodEnd = obj['end'];
             descText = obj['desc'];
-            contentText.text = parser.toHtml(obj['desc']);
+            if (descText.indexOf('data:image/png;base64,') == 0) {
+                contentImage.fileURL = descText;
+            } else {
+                contentText.text = parser.toHtml(descText);
+            }
+
             stateValue = obj['state'];
             document = obj['document'];
         }

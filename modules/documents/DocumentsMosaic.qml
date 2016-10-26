@@ -14,6 +14,7 @@ Item {
     property int spacing: units.fingerUnit
     property string documentsList: ''
 
+    signal documentSourceSelected(string source)
     signal editorRequested(string file)
 
     property bool visibleInfo: false
@@ -135,19 +136,25 @@ Item {
                         fileURL: model.source
                         clip: true
 
-                        visibleImageInfo: visibleInfo
+                        visibleImageInfo: false
 
-                        onToggleFullScreen: {
-                            if (singleFileViewer.parent == documentsMosaicItem) {
-                                visibleInfo = false;
-                                singleFileViewer.parent = singleLayoutRectangle;
-                            } else {
-                                visibleInfo = true;
-                                singleFileViewer.parent = documentsMosaicItem;
+                        onEditorRequested: documentsMosaicItem.editorRequested(file)
+
+                        Common.ImageButton {
+                            anchors {
+                                top: parent.top
+                                right: parent.right
+                            }
+
+                            size: units.fingerUnit
+                            image: 'arrows-145992'
+                            visible: visibleInfo
+
+                            onClicked: {
+                                documentSourceSelected(singleFileViewer.fileURL);
                             }
                         }
 
-                        onEditorRequested: documentsMosaicItem.editorRequested(file)
                     }
                 }
             }
@@ -182,13 +189,15 @@ Item {
         var max = columnsNumber * rowsNumber;
         documentsNumber = 0;
         documentsListModel.clear();
-        for (var i=0; i<max; i++) {
-            if (i<linesArray.length) {
-                var object = documentsModel.getObject(linesArray[i]);
-                documentsListModel.append({document: linesArray[i], source: object['source']});
-                documentsNumber++;
-            } else {
-                documentsListModel.append({document: '', source: ''});
+        if (linesArray) {
+            for (var i=0; i<max; i++) {
+                if (i<linesArray.length) {
+                    var object = documentsModel.getObject(linesArray[i]);
+                    documentsListModel.append({document: linesArray[i], source: object['source']});
+                    documentsNumber++;
+                } else {
+                    documentsListModel.append({document: '', source: ''});
+                }
             }
         }
     }

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/plannings/PlanningsList.qml</file>
+        <file>modules/plannings/ShowPlanning.qml</file>
+    </qresource>
+</RCC>

@@ -15,5 +15,7 @@
         <file>models/RelatedListsModel.qml</file>
         <file>models/PagesFolderContextsModel.qml</file>
         <file>models/PagesFolderSectionsModel.qml</file>
+        <file>models/AssessmentGridModel.qml</file>
+        <file>models/PlanningsModel.qml</file>
     </qresource>
 </RCC>

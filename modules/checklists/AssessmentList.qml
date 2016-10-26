@@ -3,10 +3,7 @@ import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 
-Rectangle {
-    width: 100
-//    height: 62
-
+Item {
     property string pageTitle: qsTr("Llista d'avaluació");
     property string groupName: ''
 
@@ -30,24 +27,25 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
+        anchors.margins: units.nailUnit
 
         ListView {
             id: individualsList
             Layout.fillHeight: true
             Layout.fillWidth: true
-            spacing: units.nailUnit
+            spacing: units.fingerUnit
             clip: true
 
             delegate: Rectangle {
-                border.color: 'black'
-                radius: units.fingerUnit / 2
-                height: childrenRect.height + radius * 2
+                height: childrenRect.height + 2 * units.fingerUnit
                 width: individualsList.width
+
                 ColumnLayout {
                     anchors.top: parent.top
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    anchors.margins: parent.radius
+                    anchors.margins: units.fingerUnit
+
                     RowLayout {
                         Layout.fillWidth: true
                         Layout.preferredHeight: units.fingerUnit
@@ -78,8 +76,8 @@ Rectangle {
                             font.pixelSize: units.smallReadUnit
                             color: 'gray'
                             text: {
-                                var thisSection = onlyDate(section);
-                                var prevSection = onlyDate(previousSection);
+                                var thisSection = onlyDate(ListView.section);
+                                var prevSection = onlyDate(ListView.previousSection);
                                 return (thisSection == prevSection)?'':thisSection;
                             }
 

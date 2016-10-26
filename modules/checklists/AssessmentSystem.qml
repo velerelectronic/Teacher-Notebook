@@ -1,49 +1,70 @@
-import QtQuick 2.0
+import QtQuick 2.7
 import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
+import 'qrc:///models' as Models
+import 'qrc:///modules/basic' as Basic
 
-BasicPage {
-    width: 100
-    height: 62
-
-    pageTitle: qsTr("Avaluació");
-    property var buttons: buttonsModel
+Item {
     signal exportedContents()
     signal emitSignal(string name, var param)
 
     property string selectedGroup: ''
 
+    property var groupsArray: []
+
     Common.UseUnits { id: units }
 
-    ListModel {
-        id: buttonsModel
-
-        Component.onCompleted: {
-            append({method: 'newAssessmentEditor', image: 'plus-24844', title: qsTr('Afegeix avaluació')});
-            append({method: 'listAssessment', image: 'list-153185', title: qsTr('Mode llista')});
-            append({method: 'categorizedAssessment', image: 'hierarchy-35795', title: qsTr('Mode categories')});
-            append({method: 'exportList', image: 'box-24557', title: qsTr('Exporta la llista com a HTML')});
-        }
-    }
-
-    SqlTableModel {
+    Models.AssessmentGridModel {
         id: gridModel
-        tableName: 'assessmentGrid'
-        fieldNames: ['id','created','moment','group','individual','variable','value','comment']
-        limit: 200
-        filters: []
     }
 
-    SqlTableModel {
+    Models.AssessmentGridModel {
         id: groupsModel
-        tableName: 'assessmentGrid'
-        fieldNames: gridModel.fieldNames
+
+        function selectGroups() {
+            groupsArray = gridModel.selectDistinct('\"group\"', 'id', '', false);
+        }
+
+        Component.onCompleted: groupsModel.selectGroups()
     }
 
-    mainPage: ColumnLayout {
+    ColumnLayout {
         anchors.fill: parent
+
+        Basic.ButtonsRow {
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit + 2 * units.nailUnit
+
+            Common.ImageButton {
+                image: 'plus-24844'
+                onClicked: newAssessmentEditor()
+            }
+
+            Common.ImageButton {
+                image: 'calendar-23684'
+                onClicked: timeAssessment()
+            }
+
+            Common.ImageButton {
+                image: 'list-153185'
+                onClicked: listAssessment()
+            }
+
+            Common.ImageButton {
+                image: 'hierarchy-35795'
+                onClicked: categorizedAssessment()
+            }
+
+            Common.ImageButton {
+                image: 'box-24557'
+                onClicked: exportList()
+            }
+        }
+
         Item {
+            id: groupSelectorItem
+
             Layout.fillWidth: true
             Layout.preferredHeight: units.fingerUnit
             RowLayout {
@@ -60,6 +81,9 @@ BasicPage {
                     clip: true
 
                     spacing: units.nailUnit
+
+                    model: groupsArray
+
                     delegate: Rectangle {
                         radius: units.fingerUnit / 2
                         height: units.fingerUnit
@@ -76,16 +100,27 @@ BasicPage {
                         }
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: {
-                                groupList.currentIndex = model.index;
-                                selectedGroup = model.modelData;
-                                assessmentLoader.item.groupName = selectedGroup;
-                            }
+                            onClicked: groupSelectorItem.selectGroup(model.index)
                         }
                     }
                     highlight: Rectangle {
                         color: 'green'
                     }
+
+                    onModelChanged: groupSelectorItem.selectFromSelectedGroup()
+                }
+            }
+
+            function selectGroup(index) {
+                groupList.currentIndex = index;
+                selectedGroup = groupList.model[index];
+                assessmentLoader.sendSelectedGroup();
+            }
+
+            function selectFromSelectedGroup() {
+                var idx = groupList.model.indexOf(selectedGroup);
+                if (idx>-1) {
+                    selectGroup(idx);
                 }
             }
         }
@@ -93,22 +128,43 @@ BasicPage {
             id: assessmentLoader
             Layout.fillHeight: true
             Layout.fillWidth: true
-            source: Qt.resolvedUrl('AssessmentByCategories.qml')
 
             Connections {
                 target: assessmentLoader.item
                 ignoreUnknownSignals: true
-                onAddValue: emitSignal('openTabularEditor',{group: group, individual: individual, variable: variable})
+                onAddValue: {
+                    assessmentGeneralEditor.openGeneralEditor(selectedGroup, momentCategory, individual, variable);
+                }
+                onIndividualSelected: {
+                    assessmentGeneralEditor.openIndividualValues(selectedGroup, individual);
+                }
+                onGroupNameChanged: {
+                    selectedGroup = assessmentLoader.item.groupName;
+                }
             }
-        }
-        Component.onCompleted: {
-            var groups = gridModel.selectDistinct('\"group\"', 'id', '', false);
-            groupList.model = groups;
+
+            Component.onCompleted: timeAssessment()
+
+            function sendSelectedGroup() {
+                if (item) {
+                    item.groupName = selectedGroup;
+                }
+            }
+
+            function updateContents() {
+                if (item) {
+                    item.updateContents();
+                }
+            }
         }
     }
 
     function newAssessmentEditor() {
-        emitSignal('openTabularEditor',{group: selectedGroup});
+        assessmentGeneralEditor.openGeneralEditor({group: selectedGroup});
+    }
+
+    function timeAssessment() {
+        assessmentLoader.setSource(Qt.resolvedUrl('AssessmentByMomentCategory.qml'), {groupName: selectedGroup});
     }
 
     function listAssessment() {
@@ -187,5 +243,33 @@ BasicPage {
         fieldNames: gridModel.fieldNames
     }
 
+    Common.SuperposedWidget {
+        id: assessmentGeneralEditor
+
+        title: qsTr("Quadre")
+
+        function openGeneralEditor(group, momentCategory, individual, variable) {
+            load(qsTr("Editor general d'avaluacions"), 'checklists/AssessmentGeneralEditor', {group: group, momentCategory: momentCategory, individual: individual, variable: variable});
+            dialogConnections.target = assessmentGeneralEditor.mainItem;
+        }
+
+        function openIndividualValues(group, individual) {
+            load(qsTr("Informació d'individu"), 'checklists/IndividualValues', {group: group, individual: individual});
+            dialogConnections.target = assessmentGeneralEditor.mainItem;
+        }
+
+        Connections {
+            id: dialogConnections
+            ignoreUnknownSignals: true
+
+            onClose: assessmentGeneralEditor.close()
+            onUpdated: {
+                console.log('updated detected');
+                assessmentLoader.updateContents();
+            }
+        }
+    }
+
+    onSelectedGroupChanged: assessmentLoader.sendSelectedGroup()
 }
 

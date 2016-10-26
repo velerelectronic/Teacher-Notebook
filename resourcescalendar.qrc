@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>modules/calendar/YearView.qml</file>
         <file>modules/calendar/MonthView.qml</file>
+        <file>modules/calendar/WeeksView.qml</file>
+        <file>modules/calendar/WeeksAnnotationsView.qml</file>
     </qresource>
 </RCC>

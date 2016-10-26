@@ -48,9 +48,13 @@ DatabaseBackup {
         dataBck.createTable('pagesFolderSections', 'id INTEGER PRIMARY KEY, title TEXT, context TEXT, position INTEGER, page TEXT, parameters TEXT');
 
         // Assessment
-        // dataBck.dropTable('assessmentGrid');
-        dataBck.createTable('assessmentGrid','id INTEGER PRIMARY KEY, created TEXT, moment TEXT, "group" TEXT, individual TEXT, variable TEXT, value TEXT, comment TEXT');
+        dataBck.createTable('assessmentGrid','id INTEGER PRIMARY KEY, created TEXT, moment TEXT, "group" TEXT, individual TEXT, variable TEXT, value TEXT, comment TEXT, momentCategory TEXT, variableCategory TEXT');
         dataBck.createView('individuals_groups','SELECT "group" FROM individuals_list GROUP BY "group"');
 
+        // Plannings
+        // fields: a comma-separated list of field names
+        // fieldSettings: JSDICT of each field and its settings
+        dataBck.createTable('plannings', 'title TEXT PRIMARY KEY, desc TEXT, fields TEXT, fieldsSettings TEXT');
+        dataBck.createTable('planningsFields', 'id INTEGER PRIMARY KEY, planning TEXT, row INTEGER, field TEXT, contents TEXT, contentType TEXT');
     }
 }

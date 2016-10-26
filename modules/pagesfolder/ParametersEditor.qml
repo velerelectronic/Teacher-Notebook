@@ -8,7 +8,9 @@ ListView {
     id: parametersList
 
     property int sectionId
+
     signal close()
+    signal parametersSaved()
 
     clip: true
 
@@ -75,15 +77,64 @@ ListView {
         }
 
         sectionsModel.updateObject(sectionId, {parameters: JSON.stringify(parametersArray)});
+        parametersSaved();
+    }
 
-        close()
+    function getParametersList(page) {
+        switch(page) {
+        case 'annotations2/AnnotationsList':
+            return [];
+
+        case 'calendar/WeeksAnnotationsView':
+            return ['initialDate'];
+
+        case 'calendar/YearView':
+            return ['fullyear'];
+
+        case 'checklists/AssessmentSystem':
+            return ['selectedGroup'];
+
+        case 'documents/ShowDocument':
+            return ['document'];
+
+        case 'files/Gallery':
+            return ['folder', 'numberOfColumns'];
+
+        case 'whiteboard/WhiteBoard':
+            return ['baseDirectory'];
+
+        case 'documents/DocumentsMosaic':
+            return ['columnsNumber','rowsNumber','documentsList'];
+
+        case 'documents/DocumentsList':
+            return [];
+
+        case 'pagesfolder/SuperposedPapers':
+            return [];
+
+        default:
+            return [];
+        }
     }
 
     Component.onCompleted: {
+        // Get page name and parameters names and values
         var object = sectionsModel.getObject(sectionId);
-        var parameters = JSON.parse(object['parameters']);
-        for (var prop in parameters) {
-            parametersModel.append({parameter: prop, value: parameters[prop]});
+        var page = object['page'];
+
+        // Extract parameters list
+        var parametersList = getParametersList(page);
+
+        // Extract parameters values
+        var parametersValues = {};
+        try {
+            parametersValues = JSON.parse(object['parameters']);
+        }catch(e) {}
+
+        // Build new model with parameters names and values
+        for (var i=0; i<parametersList.length; i++) {
+            var name = parametersList[i]
+            parametersModel.append({parameter: name, value: parametersValues[name]});
         }
     }
 }

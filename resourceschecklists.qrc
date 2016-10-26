@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/checklists/AssessmentSystem.qml</file>
+        <file>modules/checklists/AssessmentByCategories.qml</file>
+        <file>modules/checklists/AssessmentList.qml</file>
+        <file>modules/checklists/AssessmentGrid.qml</file>
+        <file>modules/checklists/AssessmentGeneralEditor.qml</file>
+        <file>modules/checklists/MomentsCategories.qml</file>
+        <file>modules/checklists/IndividualsList.qml</file>
+        <file>modules/checklists/IndividualSelector.qml</file>
+        <file>modules/checklists/ValueSelector.qml</file>
+        <file>modules/checklists/AssessmentByTime.qml</file>
+        <file>modules/checklists/IndividualValues.qml</file>
+        <file>modules/checklists/AssessmentByMomentCategory.qml</file>
+        <file>modules/checklists/MomentCategoriesList.qml</file>
+    </qresource>
+</RCC>
