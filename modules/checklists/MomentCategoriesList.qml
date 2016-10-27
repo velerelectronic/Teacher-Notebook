@@ -12,6 +12,8 @@ ListView {
     property string momentCategory: ''
     property var momentCategoriesArray: []
 
+    property bool autoSelectAfterUpdate: false
+
     signal momentCategorySelected(string momentCategory)
 
     Common.UseUnits {
@@ -128,6 +130,7 @@ ListView {
         if (momentCategoriesArray.length>0) {
             currentIndex = 0;
             momentCategory = momentCategoriesArray[0];
+            momentCategorySelected(momentCategory);
         } else {
             currentIndex = -1;
             momentCategory = '';
@@ -149,6 +152,8 @@ ListView {
 
     function updateCategories() {
         momentCategoriesModel.selectMomentCategories();
+        if (autoSelectAfterUpdate)
+            selectFirst();
     }
 
     onGroupNameChanged: updateCategories()

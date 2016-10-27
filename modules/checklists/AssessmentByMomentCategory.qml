@@ -116,6 +116,7 @@ Item {
             Layout.preferredHeight: units.fingerUnit * 2
 
             groupName: assessmentByCategories.groupName
+            autoSelectAfterUpdate: true
 
             onMomentCategorySelected: updateContents()
         }
@@ -353,8 +354,12 @@ Item {
         lastValueModel.getGroupLastValue();
     }
 
-    onGroupNameChanged: momentsCategoriesList.updateCategories()
+    onGroupNameChanged: {
+        momentsCategoriesList.updateCategories();
+    }
 
-    Component.onCompleted: momentsCategoriesList.updateCategories()
+    Component.onCompleted: {
+        momentsCategoriesList.updateCategories();
+    }
 }
 

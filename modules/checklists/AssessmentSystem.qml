@@ -57,6 +57,11 @@ Item {
             }
 
             Common.ImageButton {
+                image: 'calendar-23684'
+                onClicked: historyAssessment()
+            }
+
+            Common.ImageButton {
                 image: 'box-24557'
                 onClicked: exportList()
             }
@@ -138,6 +143,7 @@ Item {
                 onIndividualSelected: {
                     assessmentGeneralEditor.openIndividualValues(selectedGroup, individual);
                 }
+
                 onGroupNameChanged: {
                     selectedGroup = assessmentLoader.item.groupName;
                 }
@@ -173,6 +179,10 @@ Item {
 
     function categorizedAssessment() {
         assessmentLoader.setSource(Qt.resolvedUrl('AssessmentByCategories.qml'),{groupName: selectedGroup});
+    }
+
+    function historyAssessment() {
+        assessmentLoader.setSource(Qt.resolvedUrl('AssessmentHistory.qml'));
     }
 
     function exportList() {
