@@ -7,5 +7,6 @@
         <file>modules/pagesfolder/PageConnections.qml</file>
         <file>modules/pagesfolder/ParametersEditor.qml</file>
         <file>modules/pagesfolder/SuperposedPapers.qml</file>
+        <file>modules/pagesfolder/PagesFolder2.qml</file>
     </qresource>
 </RCC>

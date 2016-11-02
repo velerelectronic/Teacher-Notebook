@@ -523,6 +523,8 @@ Item {
 
         PageConnections {
             id: pageConnections
+
+            stack: sectionPages
         }
 
         MouseArea {

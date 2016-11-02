@@ -2,5 +2,8 @@
     <qresource prefix="/">
         <file>modules/plannings/PlanningsList.qml</file>
         <file>modules/plannings/ShowPlanning.qml</file>
+        <file>modules/plannings/ShowSession.qml</file>
+        <file>modules/plannings/ActionEditor.qml</file>
+        <file>modules/plannings/ActionStateRectangle.qml</file>
     </qresource>
 </RCC>

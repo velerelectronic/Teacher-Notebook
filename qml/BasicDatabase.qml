@@ -54,7 +54,11 @@ DatabaseBackup {
         // Plannings
         // fields: a comma-separated list of field names
         // fieldSettings: JSDICT of each field and its settings
-        dataBck.createTable('plannings', 'title TEXT PRIMARY KEY, desc TEXT, fields TEXT, fieldsSettings TEXT');
+        dataBck.createTable('plannings', 'title TEXT PRIMARY KEY, desc TEXT, category TEXT, fields TEXT, fieldsSettings TEXT');
+        dataBck.createTable('planningSessions', 'id INTEGER PRIMARY KEY, planning TEXT, number INTEGER, title TEXT, desc TEXT, start TEXT, end TEXT');
+        //dataBck.dropTable('planningActions');
+        dataBck.createTable('planningActions', 'id INTEGER PRIMARY KEY, session INTEGER, number INTEGER, field TEXT, contents TEXT, state TEXT, pending TEXT, newAction INTEGER');
+        dataBck.dropTable('planningFields');
         dataBck.createTable('planningsFields', 'id INTEGER PRIMARY KEY, planning TEXT, row INTEGER, field TEXT, contents TEXT, contentType TEXT');
     }
 }

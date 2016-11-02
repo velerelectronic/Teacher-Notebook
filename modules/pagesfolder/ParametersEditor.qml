@@ -112,6 +112,9 @@ ListView {
         case 'pagesfolder/SuperposedPapers':
             return [];
 
+        case 'plannings/ShowPlanning':
+            return ['planning'];
+
         default:
             return [];
         }

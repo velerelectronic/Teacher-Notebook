@@ -5,6 +5,7 @@ SqlTableModel {
     fieldNames: [
         'title',
         'desc',
+        'category',
         'fields',
         'fieldsSettings'
     ]

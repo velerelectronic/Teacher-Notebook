@@ -1,8 +1,10 @@
 import QtQuick 2.7
+import QtQuick.Controls 1.4
 
 Connections {
     property Item destination
     property Item primarySource
+    property StackView stack
 
     ignoreUnknownSignals: true
 
@@ -25,6 +27,17 @@ Connections {
     onImageViewerSelected: destination.addPage('files/FileViewer', {fileURL: file});
 
     onPlanningSelected: destination.addPage('plannings/ShowPlanning', {planning: title});
+    onSessionSelected: destination.addPage('plannings/ShowSession', {session: session});
+
+    onUpdated: {
+        console.log('object name', primarySource.objectName);
+        if (stack.depth>1) {
+//            console.log('invocating receive updated');
+//            var sourceObj = stack.get(stack.depth-1);
+//            sourceObj.receiveUpdated(object);
+        }
+    }
+
     /*
     onGotoPrevious: {
         //primarySource.gotoPrevious();
