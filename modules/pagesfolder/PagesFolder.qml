@@ -13,23 +13,511 @@ import 'qrc:///modules/pagesfolder' as PagesFolder
 Item {
     id: pagesFolderItem
 
-    signal publishMessage(string message)
-    signal reloadPage()
-
     property string selectedContext: ''
-    property int selectedSection: sectionsList.currentIndex
-    property int sectionId
-    property int sectionTitleWidth: units.fingerUnit * 5
+    //property int selectedSection: sectionsList.currentIndex
+    property string selectedPageTitle: ''
 
-    property bool pageMenuVisible: false
-
-    onSelectedContextChanged: {
-        sectionPages.clear();
-        sectionsModel.reselect();
-    }
+    signal goBack()
+    signal publishMessage(string message)
+    signal minimizePage()
 
     Common.UseUnits {
         id: units
+    }
+
+    Models.PagesFolderContextsModel {
+        id: contextsModel
+
+        Component.onCompleted: select()
+    }
+
+    Models.PagesFolderSectionsModel {
+        id: sectionsModel
+
+        filters: ['context=?']
+
+        sort: 'position ASC'
+
+        function reselect() {
+            bindValues = [selectedContext];
+            select();
+        }
+
+        function deleteSection(section, title) {
+            sectionsModel.removeObject(section);
+            sectionsModel.reselect();
+            pagesFolderItem.publishMessage("S'ha esborrat la secció «" + title + "».");
+        }
+    }
+
+    ListModel {
+        id: openPagesModel
+
+        function addPage(page, parameters, title) {
+            console.log('add page', page, parameters);
+            var found = false;
+            for (var i=0; i<count; i++) {
+                var obj = get(i);
+                if ((obj['page'] == page) && (obj['parameters'] == parameters)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                append({page: page, parameters: parameters, title: title});
+                openPagesGrid.selectPage(count-1);
+            } else {
+                openPagesGrid.selectPage(i);
+            }
+        }
+    }
+
+    ColumnLayout {
+        id: mainSelectorsLayout
+
+        anchors.fill: parent
+
+        Item {
+            id: contextSelectorItem
+
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit * 1.5
+
+            Common.TextButton {
+                id: invisibleFolderButton
+                anchors {
+                    top: parent.top
+                    left: parent.right
+                    margins: folderButton.anchors.margins
+                }
+                visible: false
+
+                text: folderButton.text
+                font.pixelSize: folderButton.fontSize
+                font.bold: folderButton.font.bold
+            }
+            Common.TextButton {
+                id: folderButton
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+                text: qsTr('Carpeta') + ((selectedContext !== '')?(' ' + selectedContext):'')
+                fontSizeMode: Text.Fit
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                fontSize: units.glanceUnit
+                font.bold: true
+                onClicked: contextSelectorDialog.open()
+            }
+        }
+
+        GridView {
+            id: sectionsGrid
+
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            cellWidth: width / 5
+            cellHeight: cellWidth * (pagesFolderItem.height / pagesFolderItem.width)
+
+            clip: true
+            model: sectionsModel
+
+            delegate: Item {
+                id: singlePageItem
+
+                width: openPagesGrid.cellWidth
+                height: openPagesGrid.cellHeight
+
+                states: [
+                    State {
+                        name: 'editable'
+                        PropertyChanges {
+                            target: editLayout
+                            visible: true
+                        }
+                    },
+                    State {
+                        name: 'selectable'
+                        PropertyChanges {
+                            target: editLayout
+                            visible: false
+                        }
+                    }
+                ]
+
+                state: 'selectable'
+
+                property string sectionId: model.id
+                property string sectionTitle: model.title
+
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+
+                    Text {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+                        font.pixelSize: units.readUnit
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
+                        text: model.title
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+
+                    enabled: singlePageItem.state == 'selectable'
+
+                    onClicked: openPagesModel.addPage(model.page, model.parameters, model.title)
+                    onPressAndHold: {
+                        singlePageItem.state = 'editable';
+                    }
+                }
+
+                GridLayout {
+                    id: editLayout
+
+                    anchors.fill: parent
+
+                    rows: 3
+                    columns: 3
+
+                    Common.ImageButton {
+                        Layout.preferredHeight: units.fingerUnit
+                        Layout.preferredWidth: units.fingerUnit
+
+                        image: 'edit-153612'
+
+                        onClicked: sectionEditorDialog.openTitleEditor(singlePageItem.sectionId, singlePageItem.sectionTitle)
+                    }
+
+                    Common.ImageButton {
+                        Layout.preferredHeight: units.fingerUnit
+                        Layout.fillWidth: true
+
+                        image: 'cog-147414'
+
+                        onClicked: parametersDialog.openParametersEditor(singlePageItem.sectionId)
+                    }
+
+                    Common.ImageButton {
+                        Layout.preferredHeight: units.fingerUnit
+                        Layout.preferredWidth: units.fingerUnit
+
+                        image: 'road-sign-147409'
+
+                        onClicked: singlePageItem.state = 'selectable'
+                    }
+
+                    Common.ImageButton {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: units.fingerUnit
+
+                        image: 'arrow-145769'
+                    }
+
+                    Item {
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                    }
+
+                    Common.ImageButton {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: units.fingerUnit
+
+                        image: 'arrow-145766'
+                    }
+
+                    Common.ImageButton {
+                        Layout.preferredHeight: units.fingerUnit
+                        Layout.preferredWidth: units.fingerUnit
+
+                        image: 'garbage-1295900'
+
+                        onClicked: confirmSectionDeletion.openConfirmDeletion();
+
+                        MessageDialog {
+                            id: confirmSectionDeletion
+
+                            title: qsTr("Esborrat de secció")
+
+                            standardButtons: StandardButton.Ok | StandardButton.Cancel
+
+                            function openConfirmDeletion() {
+                                text = qsTr("S'esborrarà la secció «" + singlePageItem.sectionTitle + "». Vols continuar?");
+                                open();
+                            }
+
+                            onAccepted: {
+                                sectionsModel.deleteSection(singlePageItem.sectionId, singlePageItem.sectionTitle);
+                            }
+                        }
+                    }
+                }
+            }
+
+            footer: (selectedContext !== '')?footerComponent:null
+
+            Component {
+                id: footerComponent
+
+                Common.ImageButton {
+                    width: openPagesGrid.cellWidth
+                    height: openPagesGrid.cellHeight
+
+                    padding: units.nailUnit
+                    border.width: units.nailUnit
+                    border.color: 'gray'
+                    color: 'transparent'
+
+                    image: 'plus-24844'
+
+                    onClicked: newSectionDialog.openNewSection()
+                }
+            }
+        }
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: childrenRect.height
+
+            color: 'gray'
+
+            GridView {
+                id: openPagesGrid
+
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                }
+
+                height: contentItem.height
+
+                cellWidth: width / 5
+                cellHeight: cellWidth * (pagesFolderItem.height / pagesFolderItem.width)
+
+                model: openPagesModel
+                interactive: false
+
+                delegate: Item {
+                    id: openPageRect
+
+                    width: openPagesGrid.cellWidth
+                    height: openPagesGrid.cellHeight
+
+                    property string pageTitle: model.title
+
+                    states: [
+                        State {
+                            name: 'minimized'
+
+                            ParentChange {
+                                target: openPageLoader
+                                parent: openPageBackground
+                            }
+                            PropertyChanges {
+                                target: openPageLoader
+                                scale: openPageBackground.width / showPageItem.width
+                            }
+                        },
+                        State {
+                            name: 'maximized'
+
+                            ParentChange {
+                                target: openPageLoader
+                                parent: showPageItem
+                            }
+                            PropertyChanges {
+                                target: mainSelectorsLayout
+                                visible: false
+                            }
+                            PropertyChanges {
+                                target: openPageLoader
+                                scale: 1
+                            }
+                        }
+                    ]
+
+                    state: 'minimized'
+                    /*
+                    transitions: Transition {
+                        ParentAnimation {
+                            NumberAnimation {
+                                duration: 1000
+                                properties: 'x, y'
+                            }
+                            NumberAnimation {
+                                duration: 1000
+                                properties: 'scale'
+                            }
+                            via: pagesFolderItem
+
+                        }
+                    }
+                    */
+
+                    PageConnections {
+                        id: pageConnections
+
+                        destination: openPageLoader
+                        stack: openPageLoader
+                    }
+
+                    Rectangle {
+                        id: openPageBackground
+
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+
+                        StackView {
+                            id: openPageLoader
+
+                            z: 1
+                            anchors {
+                                top: parent.top
+                                left: parent.left
+                            }
+
+                            width: showPageItem.width
+                            height: showPageItem.height
+
+                            transformOrigin: Item.TopLeft
+
+                            function addPage(page, parameters) {
+                                // Parameters must be an associative array
+                                console.log('page--->');
+                                console.log('qrc:///modules/' + page + '.qml', parameters);
+                                openPageLoader.push({item: 'qrc:///modules/' + page + '.qml', properties: parameters});
+                            }
+
+                            function goBack() {
+                                if (depth>1) {
+                                    pop();
+                                }
+                            }
+
+                            onCurrentItemChanged: {
+                                console.log('current item changed');
+                                pageConnections.target = openPageLoader.currentItem;
+
+                                pageConnections.destination = openPageLoader;
+                                pageConnections.primarySource = openPageLoader.get((depth>1)?openPageLoader.depth-1:0)
+                            }
+
+                            Component.onCompleted: {
+                                console.log('opening', model.page, model.parameters);
+                                var parameters = (model.parameters !== '')?JSON.parse(model.parameters):{};
+                                openPageLoader.addPage(model.page, parameters);
+                            }
+
+
+                        }
+                    }
+
+                    MouseArea {
+                        z: 2
+                        anchors.fill: parent
+                        onClicked: {
+                            selectedPageTitle = model.title;
+                            openPageRect.state = 'maximized';
+                        }
+                        onPressAndHold: openPagesModel.remove(model.index)
+                    }
+
+                    Connections {
+                        target: pagesFolderItem
+
+                        onGoBack: openPageLoader.goBack()
+                        onMinimizePage: openPageRect.state = 'minimized'
+                    }
+
+                }
+
+                function selectPreviousPage() {
+                    if (currentIndex>0)
+                        selectPage(currentIndex-1);
+                }
+
+                function selectNextPage() {
+                    if (currentIndex<openPagesGrid.contentItem.children.length-1)
+                        selectPage(currentIndex+1);
+                }
+
+                function selectPage(index) {
+                    if (currentIndex>=0)
+                        openPagesGrid.contentItem.children[openPagesGrid.currentIndex].state = 'minimized';
+                    openPagesGrid.currentIndex = index;
+                    var obj = openPagesGrid.contentItem.children[openPagesGrid.currentIndex];
+                    obj.state = 'maximized';
+
+                    selectedPageTitle = obj.pageTitle;
+                }
+            }
+        }
+
+    }
+
+    ColumnLayout {
+        id: showPageLayout
+
+        anchors.fill: parent
+        visible: !mainSelectorsLayout.visible
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit + units.nailUnit * 2
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+                spacing: units.fingerUnit
+
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: height
+                    image: 'arrow-145769'
+                    onClicked: goBack()
+                }
+
+                Text {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    font.pixelSize: units.glanceUnit
+                    font.bold: true
+                    text: selectedPageTitle
+                }
+
+
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: height
+                    image: 'arrow-145769'
+                    onClicked: openPagesGrid.selectPreviousPage()
+                }
+
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: height
+                    image: 'menu-145772'
+                    onClicked: minimizePage()
+                }
+
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: height
+                    image: 'arrow-145766'
+                    onClicked: openPagesGrid.selectNextPage()
+                }
+            }
+        }
+
+        Item {
+            id: showPageItem
+
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+        }
     }
 
     Common.SuperposedMenu {
@@ -61,6 +549,7 @@ Item {
                     onClicked: {
                         selectedContext = model.id;
                         contextSelectorDialog.close();
+                        sectionsModel.reselect();
                     }
                 }
             }
@@ -122,7 +611,6 @@ Item {
             onSectionSelected: {
                 sectionsModel.insertObject({context: selectedContext, page: page, title: title, position: sectionsModel.count+1});
                 sectionsModel.reselect();
-                sectionsList.chooseSection(sectionsModel.count-1);
                 newSectionDialog.close();
             }
         }
@@ -140,29 +628,9 @@ Item {
             ignoreUnknownSignals: true
 
             onSectionTitleChanged: {
-                var section = selectedSection;
+                pagesFolderItem.publishMessage(qsTr("S'ha canviat el títol a «") + sectionEditorDialog.mainItem.title + "».");
                 sectionsModel.reselect();
-                console.log('editada seccio', section);
-                sectionsList.chooseSection(section);
                 sectionEditorDialog.close();
-            }
-        }
-    }
-
-    Common.SuperposedWidget {
-        id: sectionsListDialog
-
-        function openReordering() {
-            console.log('reopening')
-            load(qsTr('Reordena les seccions'), 'pagesfolder/SectionsList', {sectionsModel: sectionsModel});
-        }
-
-        Connections {
-            target: sectionsListDialog.mainItem
-
-            onSectionsReordered: {
-                sectionsModel.reselect();
-                sectionsList.chooseSection(0);
             }
         }
     }
@@ -172,8 +640,8 @@ Item {
 
         title: qsTr('Edita els paràmetres')
 
-        function openParametersEditor() {
-            parametersDialog.load(qsTr('Edita els paràmetres'), 'pagesfolder/ParametersEditor', {sectionId: sectionId});
+        function openParametersEditor(section) {
+            parametersDialog.load(qsTr('Edita els paràmetres'), 'pagesfolder/ParametersEditor', {sectionId: section});
         }
 
         Connections {
@@ -186,377 +654,4 @@ Item {
         }
     }
 
-    Models.PagesFolderContextsModel {
-        id: contextsModel
-
-        Component.onCompleted: select()
-    }
-
-    Models.PagesFolderSectionsModel {
-        id: sectionsModel
-
-        filters: ['context=?']
-
-        sort: 'position ASC'
-
-        function reselect() {
-            bindValues = [selectedContext];
-            select();
-            sectionsList.chooseSection(0);
-        }
-
-        function deleteSection(section, title) {
-            sectionsModel.removeObject(section);
-            sectionsModel.reselect();
-            sectionsList.chooseSection(0);
-            pagesFolderItem.publishMessage("S'ha esborrat la secció «" + title + "».");
-        }
-    }
-
-    Item {
-        id: contextSelectorItem
-
-        anchors {
-            top: parent.top
-            left: parent.left
-        }
-        width: Math.min(parent.width / 3, invisibleFolderButton.contentWidth + 2 * units.nailUnit)
-        height: units.fingerUnit * 1.5
-
-        Common.TextButton {
-            id: invisibleFolderButton
-            anchors {
-                top: parent.top
-                left: parent.right
-                margins: folderButton.anchors.margins
-            }
-            visible: false
-
-            text: folderButton.text
-            font.pixelSize: folderButton.fontSize
-            font.bold: folderButton.font.bold
-        }
-        Common.TextButton {
-            id: folderButton
-            anchors.fill: parent
-            anchors.margins: units.nailUnit
-            text: qsTr('Carpeta') + ((selectedContext !== '')?(' ' + selectedContext):'')
-            fontSizeMode: Text.Fit
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-            fontSize: units.glanceUnit
-            font.bold: true
-            onClicked: contextSelectorDialog.open()
-        }
-    }
-
-    ListView {
-        id: sectionsList
-
-        anchors {
-            top: contextSelectorItem.bottom
-            left: parent.left
-            right: sectionButtons.left
-            rightMargin: units.nailUnit
-        }
-        height: units.fingerUnit * 1.5
-
-        onWidthChanged: sectionsList.positionViewAtIndex(selectedSection, ListView.Contain)
-
-        orientation: ListView.Horizontal
-        clip: true
-
-        model: sectionsModel
-        spacing: units.fingerUnit
-
-        onMovementStarted: pageMenuVisible = false
-
-        delegate: Item {
-            id: sectionItem
-
-            objectName: 'section'
-
-            z: 1
-            width: sectionTitleWidth
-            height: sectionsList.height
-            Rectangle {
-                anchors.fill: parent
-                color: 'white'
-                opacity: (sectionItem.ListView.isCurrentItem)?1:0.2
-            }
-            Text {
-                anchors.fill: parent
-                anchors.margins: units.nailUnit
-                font.pixelSize: units.readUnit
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                font.bold: sectionItem.ListView.isCurrentItem
-                text: model.title
-            }
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    if (sectionId == model.id) {
-                        pageMenuVisible = true;
-                    } else {
-                        pageMenuVisible = false;
-                        sectionItem.chooseThisSection();
-                    }
-                }
-            }
-            function chooseThisSection() {
-                sectionId = model.id;
-                sectionsList.currentIndex = model.index;
-                sectionPages.replacePage(model.page, model.parameters);
-            }
-        }
-
-        function chooseSection(newSection) {
-            var sectionObjects = sectionsList.currentItem.children;
-            var sectionIdx = 0;
-            for (var i=0; i<sectionObjects.length; i++) {
-                if (sectionObjects.objectName == 'section') {
-                    if (sectionIdx == newSection) {
-                        sectionObjects[sectionIdx].chooseThisSection();
-                        break;
-                    }
-                    sectionIdx++;
-                }
-            }
-        }
-    }
-
-    Basic.ButtonsRow {
-        id: sectionButtons
-
-        anchors {
-            top: contextSelectorItem.bottom
-            right: parent.right
-        }
-        height: units.fingerUnit * 1.5
-        width: (pageMenuVisible)?parent.width - sectionTitleWidth - sectionsList.anchors.rightMargin:0
-        margins: units.fingerUnit / 4
-        visible: pageMenuVisible
-
-        clip: true
-
-        Common.ImageButton {
-            width: size
-            height: size
-            size: units.fingerUnit
-
-            image: 'plus-24844'
-
-            onClicked: {
-                newSectionDialog.openNewSection();
-            }
-        }
-
-        Common.ImageButton {
-            width: size
-            height: size
-            size: units.fingerUnit
-
-            image: 'edit-153612'
-
-            onClicked: {
-                var object = sectionsModel.getObjectInRow(sectionsList.currentIndex);
-                sectionEditorDialog.openTitleEditor(object.id, object.title);
-            }
-        }
-
-        Common.ImageButton {
-            width: size
-            height: size
-            size: units.fingerUnit
-
-            image: 'cog-147414'
-
-            onClicked: parametersDialog.openParametersEditor()
-        }
-
-        Common.TextButton {
-            height: units.fingerUnit
-            text: qsTr('Ordena')
-            onClicked: sectionsListDialog.openReordering();
-        }
-
-        Common.TextButton {
-            height: units.fingerUnit
-            text: qsTr('Actualitza')
-            onClicked: {
-                reloadPage();
-                pageMenuVisible = false;
-            }
-        }
-
-        Common.ImageButton {
-            width: size
-            height: size
-            size: units.fingerUnit
-
-            image: 'garbage-1295900'
-
-            onClicked: confirmSectionDeletion.openConfirmDeletion();
-
-            MessageDialog {
-                id: confirmSectionDeletion
-
-                property string sectionTitle
-
-                title: qsTr("Esborrat de secció")
-
-                standardButtons: StandardButton.Ok | StandardButton.Cancel
-
-                function openConfirmDeletion() {
-                    sectionTitle = sectionsModel.getObjectInRow(selectedSection)['title'];
-                    text = qsTr("S'esborrarà la secció «" + sectionTitle + "». Vols continuar?");
-                    open();
-                }
-
-                onAccepted: {
-                    sectionsModel.deleteSection(sectionId, sectionTitle);
-                }
-            }
-        }
-
-        Common.ImageButton {
-            width: size
-            height: size
-            size: units.fingerUnit
-
-            image: 'road-sign-147409'
-
-            onClicked: pageMenuVisible = false
-        }
-    }
-
-    Common.SuperposedButton {
-        id: sectionOptionsButton
-
-        z: 2
-        anchors {
-            top: parent.top
-            right: parent.right
-        }
-        size: units.fingerUnit
-
-        margins: units.nailUnit
-        backgroundColor: 'white'
-        imageSource: 'comment-27179'
-        onClicked: {
-            if (sectionsModel.count > 0)
-                pageMenuVisible = true;
-            else
-                newSectionDialog.openNewSection();
-        }
-    }
-
-
-    StackView {
-        id: sectionPages
-
-        z: 3
-
-        anchors {
-            top: sectionsList.bottom
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
-        }
-
-        function replacePage(page, parameters) {
-            // Parameters must be a JSON array
-            var parsedParameters = {};
-            try {
-                parsedParameters = JSON.parse(parameters);
-            }catch(e) {
-            }
-
-            clear();
-            push({item: 'qrc:///modules/' + page + '.qml', properties: parsedParameters}, replace);
-        }
-
-        function addPage(page, parameters) {
-            // Parameters must be an associative array
-            push({item: 'qrc:///modules/' + page + '.qml', properties: parameters});
-        }
-
-        function goBack() {
-            if (depth>1) {
-                pop();
-                console.log('reload', typeof currentItem.reload);
-                if (typeof currentItem.reload == 'function') {
-                    console.log('Reloading...');
-                    currentItem.reload();
-                }
-            }
-        }
-
-        onCurrentItemChanged: {
-            pageConnections.target = sectionPages.currentItem;
-
-            pageConnections.destination = sectionPages;
-            pageConnections.primarySource = sectionPages.get((depth>1)?sectionPages.depth-1:0)
-        }
-
-        Common.ImageButton {
-            id: subPagePositionImage
-
-            z: 5
-            anchors {
-                top: parent.top
-                left: parent.left
-            }
-            size: units.fingerUnit * 1.5
-            image: 'arrow-145769'
-            visible: sectionPages.depth>1
-            onClicked: {
-                sectionPages.goBack();
-            }
-        }
-
-        Connections {
-            target: sectionPages.currentItem
-            ignoreUnknownSignals: true
-
-            onPublishMessage: pagesFolderItem.publishMessage(message)
-        }
-
-        PageConnections {
-            id: pageConnections
-
-            stack: sectionPages
-        }
-
-        MouseArea {
-            anchors.fill: parent
-
-            z: 200
-
-            onPressed: {
-                console.log('hola');
-                mouse.accepted = false;
-                pageMenuVisible = false;
-            }
-        }
-
-        MessageDialog {
-            id: confirmDiscardChangesDialog
-
-            title: qsTr('Canviar de pàgina')
-            text: qsTr("Si canvies de pàgina, es perdran els canvis. Estàs segur de voler continuar?")
-
-            standardButtons: StandardButton.Yes | StandardButton.No
-
-            onYes: {
-                pageLoader.reloadContents();
-            }
-
-            onNo: confirmCloseDialog.close()
-        }
-
-    }
-
-    function closeCurrentPage() {
-        sectionPages.goBack();
-    }
 }

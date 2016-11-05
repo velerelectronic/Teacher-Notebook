@@ -1,4 +1,4 @@
-import QtQuick 2.5
+import QtQuick 2.7
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
@@ -20,6 +20,9 @@ Common.AbstractEditor {
     property var endDateObject
     property bool endDateIsDefined: false
     property bool endTimeIsDefined: false
+
+    signal periodEndChanged()
+    signal periodStartChanged()
 
     function acquireDateAndTime(dateTimeString) {
         // It returns:
@@ -53,12 +56,12 @@ Common.AbstractEditor {
     function setContent(startString, endString) {
         console.log('setting', startString, endString);
 
-        var startObj = acquireDateAndTime(startString);
+        var startObj = acquireDateAndTime((startString !== null)?startString:'');
         startDateObject = startObj.object;
         startDateIsDefined = startObj.dateDefined;
         startTimeIsDefined = startObj.timeDefined;
 
-        var endObj = acquireDateAndTime(endString);
+        var endObj = acquireDateAndTime((endString !== null)?endString:'');
         endDateObject = endObj.object;
         endDateIsDefined = endObj.dateDefined;
         endTimeIsDefined = endObj.timeDefined;
@@ -137,22 +140,35 @@ Common.AbstractEditor {
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         }
         Button {
-            Layout.preferredHeight: units.fingerUnit * 4
-            Layout.preferredWidth: parent.height / 3
+            //Layout.preferredHeight: units.fingerUnit * 4
+            //Layout.preferredWidth: parent.height / 3
+            Layout.fillHeight: true
+            Layout.preferredWidth: units.fingerUnit * 4
+
             Layout.rowSpan: 2
 
             text: qsTr('Canvia')
 
-            onClicked: periodChangeDialog.openStartChange()
+            onClicked: {
+                if (startDateIsDefined)
+                    periodChangeDialog.openStartChange();
+                else
+                    dateChangeDialog.openStartDateSelector();
+            }
         }
         Button {
-            Layout.preferredHeight: units.fingerUnit * 4
-            Layout.preferredWidth: parent.height / 3
+            Layout.fillHeight: true
+            Layout.preferredWidth: units.fingerUnit * 4
             Layout.rowSpan: 2
 
             text: qsTr('Canvia')
 
-            onClicked: periodChangeDialog.openEndChange()
+            onClicked: {
+                if (endDateIsDefined)
+                    periodChangeDialog.openEndChange();
+                else
+                    dateChangeDialog.openEndDateSelector();
+            }
         }
     }
 
@@ -181,9 +197,11 @@ Common.AbstractEditor {
                 if (periodChangeDialog.isStart) {
                     startDateObject.setDate(startDateObject.getDate()+1);
                     printDateTime();
+                    periodStartChanged();
                 } else {
                     endDateObject.setDate(endDateObject.getDate()+1);
                     printDateTime();
+                    periodEndChanged();
                 }
                 periodChangeDialog.close();
             }
@@ -194,9 +212,11 @@ Common.AbstractEditor {
                 if (periodChangeDialog.isStart) {
                     startDateObject.setDate(startDateObject.getDate()+7);
                     printDateTime();
+                    periodStartChanged();
                 } else {
                     endDateObject.setDate(endDateObject.getDate()+7);
                     printDateTime();
+                    periodEndChanged();
                 }
                 periodChangeDialog.close();
             }
@@ -207,9 +227,11 @@ Common.AbstractEditor {
                 if (periodChangeDialog.isStart) {
                     startDateObject.setMonth(startDateObject.getMonth()+1);
                     printDateTime();
+                    periodStartChanged();
                 } else {
                     endDateObject.setMonth(endDateObject.getMonth()+1);
                     printDateTime();
+                    periodEndChanged();
                 }
                 periodChangeDialog.close();
             }
@@ -220,9 +242,11 @@ Common.AbstractEditor {
                 if (periodChangeDialog.isStart) {
                     startDateObject.setFullYear(startDateObject.getFullYear()+1);
                     printDateTime();
+                    periodStartChanged();
                 } else {
                     endDateObject.setFullYear(endDateObject.getFullYear()+1);
                     printDateTime();
+                    periodEndChanged();
                 }
                 periodChangeDialog.close();
             }
@@ -256,6 +280,8 @@ Common.AbstractEditor {
                     endTimeIsDefined = false;
                 }
                 printDateTime();
+                periodStartChanged();
+                periodEndChanged();
                 periodChangeDialog.close();
             }
         }
@@ -285,6 +311,8 @@ Common.AbstractEditor {
                     endTimeIsDefined = false;
                 }
                 printDateTime();
+                periodStartChanged();
+                periodEndChanged();
                 periodChangeDialog.close();
             }
         }
@@ -298,31 +326,36 @@ Common.AbstractEditor {
 
         function openStartDateSelector() {
             isStart = true;
+            calendarPicker.selectedDate = (startDateIsDefined)?startDateObject:(new Date());
             open();
         }
 
         function openEndDateSelector() {
             isStart = false;
+            calendarPicker.selectedDate = (endDateIsDefined)?endDateObject:(new Date());
             open();
         }
 
         Calendar {
             id: calendarPicker
 
-            onSelectedDateChanged: {
+            onClicked: {
                 var date = calendarPicker.selectedDate;
                 if (dateChangeDialog.isStart) {
                     startDateObject.setDate(date.getDate());
                     startDateObject.setMonth(date.getMonth());
                     startDateObject.setFullYear(date.getFullYear());
                     startDateIsDefined = true;
+                    printDateTime();
+                    periodStartChanged();
                 } else {
                     endDateObject.setDate(date.getDate());
                     endDateObject.setMonth(date.getMonth());
                     endDateObject.setFullYear(date.getFullYear());
                     endDateIsDefined = true;
+                    printDateTime();
+                    periodEndChanged();
                 }
-                printDateTime();
                 dateChangeDialog.close();
             }
         }
@@ -355,13 +388,16 @@ Common.AbstractEditor {
                 startDateObject.setHours(time.getHours());
                 startDateObject.setMinutes(time.getMinutes());
                 startDateObject.setSeconds(time.getSeconds());
+                printDateTime();
+                periodStartChanged();
             } else {
                 endTimeIsDefined = true;
                 endDateObject.setHours(time.getHours());
                 endDateObject.setMinutes(time.getMinutes());
                 endDateObject.setSeconds(time.getSeconds());
+                printDateTime();
+                periodEndChanged();
             }
-            printDateTime();
         }
     }
 

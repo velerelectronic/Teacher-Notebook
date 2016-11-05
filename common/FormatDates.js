@@ -56,6 +56,7 @@ Date.prototype.fromYYYYMMDDHHMMFormat = function(text) {
     default:
         break;
     }
+    return this;
 }
 
 Date.prototype.hasDate = function() {

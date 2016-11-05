@@ -120,11 +120,10 @@ Window {
         color: '#F2F2F2'
         anchors.fill: parent
 
-        PagesFolder.PagesFolder2 {
+        PagesFolder.PagesFolder {
             id: pagesFolder
 
             anchors.fill: parent
-            anchors.margins: units.nailUnit
 
             onPublishMessage: informationMessage.publishMessage(message)
         }

@@ -3,6 +3,8 @@ import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///modules/basic' as Basic
+import 'qrc:///modules/annotations2' as Annotations
+import "qrc:///common/FormatDates.js" as FormatDates
 
 Item {
     id: showSessionItem
@@ -134,12 +136,27 @@ Item {
                     font.pixelSize: units.readUnit
                     font.bold: true
                     text: qsTr('Període')
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: periodEditorDialog.openPeriodEditor()
+                    }
                 }
                 Text {
                     Layout.fillWidth: true
                     Layout.preferredHeight: contentHeight
                     font.pixelSize: units.readUnit
-                    text: sessionStart + " - " + sessionEnd
+                    text: {
+                        var start = new Date();
+                        var startString = (sessionStart !== '')?start.fromYYYYMMDDHHMMFormat(sessionStart).toLongDate():qsTr('No definit');
+
+                        var end = new Date();
+                        var endString = (sessionEnd !== '')?end.fromYYYYMMDDHHMMFormat(sessionEnd).toLongDate():qsTr('No definit');
+                        return qsTr('Inici: ') + startString + "\n" + qsTr('Final: ') + endString;
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: periodEditorDialog.openPeriodEditor()
+                    }
                 }
             }
         }
@@ -313,6 +330,39 @@ Item {
             onActionSaved: {
                 actionEditorDialog.close();
                 updateChanges();
+            }
+        }
+    }
+
+    Common.SuperposedMenu {
+        id: periodEditorDialog
+
+        title: qsTr('Edita les dates')
+
+        parentWidth: showSessionItem.width
+        parentHeight: showSessionItem.height * 0.5
+
+        function openPeriodEditor() {
+            periodEditorItem.setContent(sessionStart, sessionEnd);
+            open();
+        }
+
+        Annotations.PeriodEditor {
+            id: periodEditorItem
+
+            width: periodEditorDialog.parentWidth * 0.8
+            height: periodEditorDialog.parentHeight * 0.8
+
+            onPeriodStartChanged: {
+                var start = getStartDateString();
+                sessionsModel.updateObject(session, {start: start});
+                sessionsModel.getSessionInfo();
+            }
+
+            onPeriodEndChanged: {
+                var end = getEndDateString();
+                sessionsModel.updateObject(session, {end: end});
+                sessionsModel.getSessionInfo();
             }
         }
     }

@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.7
 
 Rectangle {
     id: imageButton
@@ -6,17 +6,20 @@ Rectangle {
     property string selectedImage: ''
     property int size: units.fingerUnit
     property bool available: true
+    property int padding: 0
     signal clicked
     color: 'transparent'
 
 //    clip: true
 
-    width: (available)?size:0
-    height: (available)?size:0
+    width: (available)?(size + padding * 2):0
+    height: (available)?(size + padding * 2):0
     visible: available
 
     Image {
         anchors.fill: parent
+        anchors.margins: imageButton.padding
+
         fillMode: Image.PreserveAspectFit
         smooth: true
         source: (image)?('qrc:///icons/' + image + '.svg'):''
@@ -25,6 +28,8 @@ Rectangle {
     Image {
         id: superposedImage
         anchors.fill: parent
+        anchors.margins: imageButton.padding
+
         fillMode: Image.PreserveAspectFit
         smooth: true
         visible: false

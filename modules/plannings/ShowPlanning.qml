@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///modules/basic' as Basic
+import "qrc:///common/FormatDates.js" as FormatDates
 
 Rectangle {
     id: showPlanningItem
@@ -41,6 +42,8 @@ Rectangle {
         id: sessionsModel
 
         filters: ['planning=?']
+
+        sort: 'start ASC, end ASC, number ASC'
 
         function refresh() {
             bindValues = [planning];
@@ -108,7 +111,7 @@ Rectangle {
                         left: parent.left
                         margins: units.nailUnit
                     }
-                    width: Math.max(Math.floor(parent.width / Math.max(fieldsArray.length,1)), units.fingerUnit * 4)
+                    width: Math.max(Math.floor(parent.width / (fieldsArray.length+1)), units.fingerUnit * 4)
                     spacing: units.fingerUnit
                     height: childrenRect.height + 2 * units.nailUnit
 
@@ -128,7 +131,6 @@ Rectangle {
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         text: model.title
                     }
-
                     Text {
                         height: contentHeight
                         width: Math.min(contentWidth, parent.width)
@@ -143,7 +145,14 @@ Rectangle {
 
                         font.pixelSize: units.readUnit
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: model.start
+                        text: {
+                            if (model.start !== '') {
+                                var date = new Date();
+                                return qsTr('Comença ') + date.fromYYYYMMDDHHMMFormat(model.start).toShortReadableDate();
+                            } else {
+                                return '';
+                            }
+                        }
                     }
                     Text {
                         height: contentHeight
@@ -151,7 +160,14 @@ Rectangle {
 
                         font.pixelSize: units.readUnit
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: model.end
+                        text: {
+                            if (model.end !== '') {
+                                var date = new Date();
+                                return qsTr('Acaba ') + date.fromYYYYMMDDHHMMFormat(model.end).toShortReadableDate();
+                            } else {
+                                return '';
+                            }
+                        }
                     }
                 }
 
