@@ -382,6 +382,7 @@ Item {
 
                             width: showPageItem.width
                             height: showPageItem.height
+                            clip: true
 
                             transformOrigin: Item.TopLeft
 
@@ -446,13 +447,13 @@ Item {
                 }
 
                 function selectPage(index) {
-                    if (currentIndex>=0)
-                        openPagesGrid.contentItem.children[openPagesGrid.currentIndex].state = 'minimized';
-                    openPagesGrid.currentIndex = index;
-                    var obj = openPagesGrid.contentItem.children[openPagesGrid.currentIndex];
-                    obj.state = 'maximized';
+                    if (openPagesGrid.currentItem !== null)
+                        openPagesGrid.currentItem.state = 'minimized';
 
-                    selectedPageTitle = obj.pageTitle;
+                    openPagesGrid.currentIndex = index;
+                    currentItem.state = 'maximized';
+
+                    selectedPageTitle = currentItem.pageTitle;
                 }
             }
         }
