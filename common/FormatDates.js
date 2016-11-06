@@ -1,8 +1,18 @@
 Date.prototype.differenceInDays = function(date2) {
     var oneDay = 24 * 60 * 60 * 1000;
-    var date1ms = this.getTime();
-    var date2ms = date2.getTime();
-    return Math.floor((date2ms-date1ms)/oneDay);
+
+    // Truncating must be done before, to avoid situations where time is defined with a difference of less than 24 hours
+    // For example 6/11/2016 at 20:00 and 7/11/2016 at 19:00 should not be considered the same date
+    var date1ms = Math.floor(this.getTime() / oneDay);
+    var date2ms = Math.floor(date2.getTime() / oneDay);
+    return date2ms-date1ms;
+}
+
+Date.prototype.differenceInMinutes = function(date2) {
+    var oneMinute = 60 * 1000;
+    var date1ms = Math.floor(this.getTime() / oneMinute);
+    var date2ms = Math.floor(date2.getTime() / oneMinute);
+    return date2ms-date1ms;
 }
 
 Date.prototype.toDateSpecificFormat = function() {

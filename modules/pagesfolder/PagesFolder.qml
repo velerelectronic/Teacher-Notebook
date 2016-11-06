@@ -77,43 +77,49 @@ Item {
 
         anchors.fill: parent
 
-        Item {
-            id: contextSelectorItem
-
+        ListView {
+            id: contextsList
             Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit * 1.5
+            Layout.preferredHeight: units.fingerUnit * 2
 
-            Common.TextButton {
-                id: invisibleFolderButton
-                anchors {
-                    top: parent.top
-                    left: parent.right
-                    margins: folderButton.anchors.margins
+            model: contextsModel
+            spacing: units.fingerUnit
+            orientation: ListView.Horizontal
+
+            delegate: Common.BoxedText {
+                height: contextsList.height
+                width: contextsList.height * 3
+                margins: units.nailUnit
+
+                border.width: 0
+                text: model.id
+
+                color: (ListView.isCurrentItem)?'white':'#999999'
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        contextsList.currentIndex = model.index;
+                        selectedContext = model.id;
+                        sectionsModel.reselect();
+                    }
                 }
-                visible: false
+            }
 
-                text: folderButton.text
-                font.pixelSize: folderButton.fontSize
-                font.bold: folderButton.font.bold
+            footer: Common.SuperposedButton {
+                size: units.fingerUnit * 1.5
+                imageSource: 'plus-24844'
+
+                onClicked: newContextDialog.open();
             }
-            Common.TextButton {
-                id: folderButton
-                anchors.fill: parent
-                anchors.margins: units.nailUnit
-                text: qsTr('Carpeta') + ((selectedContext !== '')?(' ' + selectedContext):'')
-                fontSizeMode: Text.Fit
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                fontSize: units.glanceUnit
-                font.bold: true
-                onClicked: contextSelectorDialog.open()
-            }
+
         }
 
         GridView {
             id: sectionsGrid
 
-            Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.fillWidth: true
 
             cellWidth: width / 5
             cellHeight: cellWidth * (pagesFolderItem.height / pagesFolderItem.width)
@@ -277,7 +283,10 @@ Item {
                     onClicked: newSectionDialog.openNewSection()
                 }
             }
+
+            Component.onCompleted: sectionsModel.reselect()
         }
+
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: childrenRect.height
@@ -437,13 +446,11 @@ Item {
                 }
 
                 function selectPreviousPage() {
-                    if (currentIndex>0)
-                        selectPage(currentIndex-1);
+                    selectPage(openPagesGrid.currentIndex-1);
                 }
 
                 function selectNextPage() {
-                    if (currentIndex<openPagesGrid.contentItem.children.length-1)
-                        selectPage(currentIndex+1);
+                    selectPage(openPagesGrid.currentIndex+1);
                 }
 
                 function selectPage(index) {
@@ -451,9 +458,10 @@ Item {
                         openPagesGrid.currentItem.state = 'minimized';
 
                     openPagesGrid.currentIndex = index;
-                    currentItem.state = 'maximized';
-
-                    selectedPageTitle = currentItem.pageTitle;
+                    if (openPagesGrid.currentItem !== null) {
+                        openPagesGrid.currentItem.state = 'maximized';
+                        selectedPageTitle = openPagesGrid.currentItem.pageTitle;
+                    }
                 }
             }
         }
@@ -518,51 +526,6 @@ Item {
 
             Layout.fillWidth: true
             Layout.fillHeight: true
-        }
-    }
-
-    Common.SuperposedMenu {
-        id: contextSelectorDialog
-
-        title: qsTr('Contexts')
-
-        ListView {
-            id: contextsList
-
-            height: contentItem.height
-            width: contextSelectorDialog.parentWidth * 0.8
-
-            model: contextsModel
-            delegate: Rectangle {
-                width: contextsList.width
-                height: units.fingerUnit * 2
-                color: (ListView.isCurrentItem)?'yellow':'white'
-                Text {
-                    anchors.fill: parent
-                    anchors.margins: units.nailUnit
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    verticalAlignment: Text.AlignVCenter
-                    text: model.id
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        selectedContext = model.id;
-                        contextSelectorDialog.close();
-                        sectionsModel.reselect();
-                    }
-                }
-            }
-        }
-        Common.SuperposedButton {
-            size: units.fingerUnit * 1.5
-            imageSource: 'plus-24844'
-
-            onClicked: {
-                contextSelectorDialog.close();
-                newContextDialog.open();
-            }
         }
     }
 

@@ -94,7 +94,7 @@ Rectangle {
                 id: singleSessionRect
 
                 width: sessionsList.width
-                height: Math.max(sessionBasicInfoLayout.height, actionsRect.height)
+                height: Math.max(sessionNumberText.height, sessionBasicInfoLayout.requiredHeight, actionsRect.requiredHeight)
 
                 property int sessionId: model.id
 
@@ -103,29 +103,40 @@ Rectangle {
                     onClicked: sessionSelected(singleSessionRect.sessionId)
                 }
 
-                Flow {
-                    id: sessionBasicInfoLayout
+                Text {
+                    id: sessionNumberText
 
                     anchors {
                         top: parent.top
                         left: parent.left
                         margins: units.nailUnit
                     }
-                    width: Math.max(Math.floor(parent.width / (fieldsArray.length+1)), units.fingerUnit * 4)
-                    spacing: units.fingerUnit
-                    height: childrenRect.height + 2 * units.nailUnit
 
-                    Text {
-                        height: contentHeight
-                        width: Math.min(contentWidth, parent.width)
+                    height: contentHeight
+                    width: contentWidth
 
-                        font.pixelSize: units.readUnit
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: model.number
+                    verticalAlignment: Text.AlignTop
+                    font.pixelSize: units.readUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    text: model.number
+                }
+
+                Flow {
+                    id: sessionBasicInfoLayout
+
+                    anchors {
+                        top: parent.top
+                        left: sessionNumberText.right
+                        bottom: parent.bottom
+                        margins: units.nailUnit
                     }
+                    width: Math.max(Math.floor(parent.width / (fieldsArray.length+1)), units.fingerUnit * 4)
+                    spacing: units.nailUnit
+                    property int requiredHeight: childrenRect.height + 2 * units.nailUnit
+
                     Text {
                         height: contentHeight
-                        width: Math.min(contentWidth, parent.width)
+                        width: parent.width
 
                         font.pixelSize: units.readUnit
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -133,7 +144,7 @@ Rectangle {
                     }
                     Text {
                         height: contentHeight
-                        width: Math.min(contentWidth, parent.width)
+                        width: parent.width
 
                         font.pixelSize: units.readUnit
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -141,32 +152,65 @@ Rectangle {
                     }
                     Text {
                         height: contentHeight
-                        width: Math.min(contentWidth, parent.width)
+                        width: parent.width
 
                         font.pixelSize: units.readUnit
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
                         text: {
+                            var startStr = '';
+                            var date1 = new Date();
+                            var returnString = '';
                             if (model.start !== '') {
-                                var date = new Date();
-                                return qsTr('Comença ') + date.fromYYYYMMDDHHMMFormat(model.start).toShortReadableDate();
-                            } else {
-                                return '';
+                                var startObj = date1.fromYYYYMMDDHHMMFormat(model.start);
                             }
-                        }
-                    }
-                    Text {
-                        height: contentHeight
-                        width: Math.min(contentWidth, parent.width)
-
-                        font.pixelSize: units.readUnit
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: {
+                            var endStr = '';
+                            var date2 = new Date();
                             if (model.end !== '') {
-                                var date = new Date();
-                                return qsTr('Acaba ') + date.fromYYYYMMDDHHMMFormat(model.end).toShortReadableDate();
-                            } else {
-                                return '';
+                                var endObj = date2.fromYYYYMMDDHHMMFormat(model.end);
                             }
+                            if ((date1.definedDate) && (date2.definedDate)) {
+                                // Start and end have been defined
+                                if ((date1.differenceInDays(date2) == 0)) {
+                                    // Start and end have the same date
+
+                                    returnString = date1.toShortReadableDate();
+
+                                    if ((date1.definedTime) || (date2.definedTime)) {
+                                        // Start time OR end time have not been defined
+
+                                        if ((date1.definedTime) && (date2.definedTime) && (date1.differenceInMinutes(date2) == 0)) {
+                                            // Start time AND end time have been defined
+                                            // Start and end have the same time in hours and minutes
+                                            returnString += "\n" + qsTr("A les ") + date1.toHHMMFormat();
+                                        } else {
+                                            returnString += "\n[ " + (date1.definedTime?date1.toHHMMFormat():'-') + " , ";
+                                            returnString += (date2.definedTime?date2.toHHMMFormat():'-') + ' ]';
+                                        }
+                                    }
+                                } else {
+                                    // Start and end have been defined with different dates
+                                    returnString = qsTr('Comença ') + date1.toShortReadableDate();
+                                    if (date1.definedTime)
+                                        returnString += " " + date1.toHHMMFormat();
+                                    returnString += "\n" + qsTr('Acaba ') + date2.toShortReadableDate();
+                                    if (date2.definedTime)
+                                        returnString += " " + date2.toHHMMFormat();
+                                }
+                            } else {
+                                // Only start date or end date have been specified
+                                if (date1.definedDate) {
+                                    returnString = qsTr('Comença ') + date1.toShortReadableDate();
+                                    if (date1.definedTime)
+                                        returnString += " " + date1.toHHMMFormat();
+                                }
+                                if (date2.definedDate) {
+                                    returnString = qsTr('Acaba ') + date2.toShortReadableDate();
+                                    if (date2.definedTime)
+                                        returnString += " " + date2.toHHMMFormat();
+                                }
+                            }
+                            return returnString;
                         }
                     }
                 }
@@ -178,8 +222,9 @@ Rectangle {
                         top: parent.top
                         left: sessionBasicInfoLayout.right
                         right: parent.right
+                        bottom: parent.bottom
                     }
-                    height: childrenRect.height + units.nailUnit
+                    property int requiredHeight: childrenRect.height + units.nailUnit
                     color: '#E6E6E6'
 
                     RowLayout {

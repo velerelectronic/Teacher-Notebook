@@ -9,6 +9,15 @@ Rectangle {
         id: units
     }
 
+    property alias model: mainList.model
+    property Component expandedPage: expandedPageComponent
+    property int availableHeight: height - (units.fingerUnit * model.count) - (mainList.spacing * (model.count-1))
+    property string captionString: ''
+    property string identifierString: captionString
+
+    signal paperSelected(string title, string identifier)
+    signal setupSelected()
+
     ListView {
         id: mainList
 
@@ -43,42 +52,57 @@ Rectangle {
             sourceComponent: (ListView.isCurrentItem)?expandedPage:simpleHeading
 
             onLoaded: {
-                item.title = model.title;
                 item.index = model.index;
+                item.title = model[captionString];
+                item.identifier = model[identifierString];
             }
         }
+    }
+
+    Common.ImageButton {
+        anchors {
+            top: parent.top
+            right: parent.right
+        }
+        size: units.fingerUnit
+        image: 'cog-147414'
+        onClicked: setupSelected()
     }
 
     Component {
         id: simpleHeading
 
         Rectangle {
+            id: simpleHeadingItem
+
             width: mainList.width
             height: units.fingerUnit
 
             property string title
+            property string identifier
             property int index
 
             Text {
                 anchors.fill: parent
                 anchors.margins: units.nailUnit
-                text: model.title
+                text: simpleHeadingItem.title
             }
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    console.log('asdjfh');
-                    mainList.currentIndex = index;
+                    mainList.currentIndex = simpleHeadingItem.index;
+                    paperSelected(simpleHeadingItem.title, simpleHeadingItem.identifier);
                 }
             }
         }
     }
 
     Component {
-        id: expandedPage
+        id: expandedPageComponent
 
         Rectangle {
-            property string title
+            property string title: ''
+            property string identifier: ''
             property int index
 
             width: mainList.width
