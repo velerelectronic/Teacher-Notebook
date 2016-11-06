@@ -10,6 +10,15 @@ Connections {
 
     onAnnotationsListSelected2: destination.addPage('annotations2/AnnotationsList', {interactive: true})
     onAnnotationSelected: destination.addPage('annotations2/ShowAnnotation', {identifier: annotation});
+
+    onAnnotationsOnDateSelected: {
+        destination.addPage('annotations2/AnnotationsList', {periodStart: start, periodEnd: end, filterPeriod: true});
+    }
+
+    onPlanningsOnDateSelected: {
+        destination.addPage('plannings/SessionsListByDates', {periodStart: start, periodEnd: end});
+    }
+
     onDateSelected: {
         var dateObject = new Date(fullyear, month, date, 0, 0, 0, 0);
         var startDateString = dateObject.toYYYYMMDDFormat();

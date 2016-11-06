@@ -4,5 +4,6 @@
         <file>modules/calendar/MonthView.qml</file>
         <file>modules/calendar/WeeksView.qml</file>
         <file>modules/calendar/WeeksAnnotationsView.qml</file>
+        <file>modules/calendar/PointsDiagram.qml</file>
     </qresource>
 </RCC>

@@ -5,5 +5,6 @@
         <file>modules/plannings/ShowSession.qml</file>
         <file>modules/plannings/ActionEditor.qml</file>
         <file>modules/plannings/ActionStateRectangle.qml</file>
+        <file>modules/plannings/SessionsListByDates.qml</file>
     </qresource>
 </RCC>

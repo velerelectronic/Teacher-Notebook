@@ -56,6 +56,7 @@ Rectangle {
                 anchors.fill: parent
 
                 Basic.ButtonsRow {
+                    id: annotationsListButtons
                     Layout.fillWidth: true
                     Layout.preferredHeight: units.fingerUnit * 1.5
 
@@ -63,12 +64,12 @@ Rectangle {
                     buttonsSpacing: units.fingerUnit
 
                     Item {
-                        height: parent.height
-                        width: parent.height
+                        height: annotationsListButtons.height
+                        width: annotationsListButtons.height
                     }
 
                     StateEditor {
-                        height: parent.height
+                        height: annotationsListButtons.height
                         width: requiredWidth
 
                         clip: true
@@ -80,7 +81,7 @@ Rectangle {
                     }
 
                     Common.SearchBox {
-                        height: parent.height
+                        height: annotationsListButtons.height
                         width: units.fingerUnit * 4
 
                         onIntroPressed: {
@@ -91,20 +92,20 @@ Rectangle {
                     }
 
                     Text {
-                        height: parent.height
+                        height: annotationsListButtons.height
                         width: contentWidth
                         font.pixelSize: units.readUnit
                         text: (filterPeriod)?(qsTr('Des de ') + periodStart):''
                     }
                     Text {
-                        height: parent.height
+                        height: annotationsListButtons.height
                         width: contentWidth
                         font.pixelSize: units.readUnit
                         text: (filterPeriod)?(qsTr('Fins a ') + periodEnd):''
                     }
 
                     Common.ImageButton {
-                        height: parent.height
+                        height: annotationsListButtons.height
                         width: height
                         size: height
                         image: 'cog-147414'
