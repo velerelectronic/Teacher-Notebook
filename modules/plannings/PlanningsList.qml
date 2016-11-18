@@ -9,6 +9,8 @@ Item {
     id: planningsListItem
 
     signal planningSelected(string title)
+    signal planningSelected2(string title)
+    signal planningItemsSelected(string title)
 
     Common.UseUnits {
         id: units
@@ -18,6 +20,8 @@ Item {
         id: planningsModel
 
         sort: 'category ASC, title ASC'
+
+        searchFields: ['title', 'desc', 'category', 'fields']
 
         function update() {
             select();
@@ -51,14 +55,17 @@ Item {
         anchors.fill: parent
 
         Basic.ButtonsRow {
+            id: buttonsRow
+
             Layout.fillWidth: true
             Layout.preferredHeight: units.fingerUnit + 2 * units.nailUnit
 
-            Common.ImageButton {
-                size: units.fingerUnit
-                image: 'plus-24844'
-                onClicked: {
-                    planningsModel.insertObject({title: qsTr('Nou planning ') + (planningsModel.count+1), category: qsTr('Noves planificacions')});
+            Common.SearchBox {
+                width: buttonsRow.width - buttonsRow.margins * 2
+                height: buttonsRow.height - buttonsRow.margins * 2
+
+                onPerformSearch: {
+                    planningsModel.searchString = text;
                     planningsModel.update();
                 }
             }
@@ -73,6 +80,7 @@ Item {
             clip: true
             model: planningsModel
 
+            bottomMargin: units.fingerUnit * 2
             spacing: units.nailUnit
 
             section.property: 'category'
@@ -92,10 +100,14 @@ Item {
             }
 
             delegate: Rectangle {
+                id: singlePlanningRect
+
                 width: planningsList.width
                 height: units.fingerUnit * 2
 
                 clip: true
+
+                property string planning: model.title
 
                 MouseArea {
                     anchors.fill: parent
@@ -115,6 +127,7 @@ Item {
                         text: model.title
                         MouseArea {
                             anchors.fill: parent
+                            onClicked: planningSelected2(model.title)
                             onPressAndHold: titleEditorDialog.openTitleEditor(model.title)
                         }
                     }
@@ -127,13 +140,46 @@ Item {
                     }
                     Text {
                         Layout.fillHeight: true
-                        Layout.preferredWidth: parent.width / 4
+                        Layout.preferredWidth: parent.width / 6
                         font.pixelSize: units.readUnit
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         text: model.category
                         MouseArea {
                             anchors.fill: parent
                             onPressAndHold: categoryEditorDialog.openCategoryEditor(model.title, model.category)
+                        }
+                    }
+
+                    Loader {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: parent.width / 6
+
+                        asynchronous: true
+
+                        sourceComponent: Text {
+                            id: itemsText
+
+                            Models.PlanningItems {
+                                id: itemsModel
+
+                                filters: ['planning=?']
+
+                                function update() {
+                                    bindValues = [singlePlanningRect.planning];
+                                    select();
+                                    if (count>0)
+                                        itemsText.text = count + " " + qsTr("elements");
+                                    else
+                                        itemsText.text = '-';
+                                }
+                            }
+
+                            Component.onCompleted: itemsModel.update();
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: planningItemsSelected(singlePlanningRect.planning)
                         }
                     }
 
@@ -221,7 +267,22 @@ Item {
                 }
             }
 
+            Common.SuperposedButton {
+                anchors {
+                    right: parent.right
+                    bottom: parent.bottom
+                }
+                margins: units.nailUnit
+                imageSource: 'plus-24844'
+                size: units.fingerUnit + margins * 2
+
+                onClicked: {
+                    planningsModel.insertObject({title: qsTr('Nou planning ') + (planningsModel.count+1), category: qsTr('Noves planificacions')});
+                    planningsModel.update();
+                }
+            }
         }
+
     }
 
     Common.SuperposedMenu {

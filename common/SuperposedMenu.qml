@@ -15,8 +15,9 @@ Dialog {
     standardButtons: StandardButton.Close
 
     Rectangle {
+        color: 'pink'
         implicitHeight: Math.min(parentHeight * 0.8, menuList.contentItem.height)
-        implicitWidth: parentWidth * 0.8
+        implicitWidth: superposedMenu.parentWidth
 
         ListView {
             id: menuList

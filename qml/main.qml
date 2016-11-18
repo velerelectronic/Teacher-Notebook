@@ -120,7 +120,7 @@ Window {
         color: '#F2F2F2'
         anchors.fill: parent
 
-        PagesFolder.PagesFolder {
+        PagesFolder.WorkingSpace {
             id: pagesFolder
 
             anchors.fill: parent

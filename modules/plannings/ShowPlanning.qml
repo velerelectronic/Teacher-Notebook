@@ -367,11 +367,14 @@ Rectangle {
             }
 
             Common.ImageButton {
+                id: addSessionButton
+
                 anchors {
                     bottom: parent.bottom
                     right: parent.right
                 }
                 size: units.fingerUnit * 1.5
+                padding: units.fingerUnit
                 image: 'plus-24844'
 
                 onClicked: {
@@ -381,12 +384,69 @@ Rectangle {
                     showPlanningItem.updated({});
                 }
             }
+
+            Common.ImageButton {
+                anchors {
+                    bottom: parent.bottom
+                    right: addSessionButton.left
+                    rightMargin: units.fingerUnit
+                }
+                size: units.fingerUnit * 1.5
+                padding: units.fingerUnit
+                image: 'box-24557'
+
+                onClicked: exportSessions()
+            }
         }
     }
 
     function receiveUpdated(object) {
         sessionsModel.refresh();
         showPlanningItem.updated(object);
+    }
+
+    Models.PlanningItems {
+        id: planningItemsModel
+
+    }
+
+    Models.PlanningActionsModel {
+        id: exportActionsModel
+
+        filters: ['session=?']
+    }
+
+    function exportSessions() {
+        console.log('Exporting sessions...');
+        for (var i=0; i<fieldsArray.length; i++) {
+            var field = fieldsArray[i];
+            console.log('Field', field);
+            sessionsModel.bindValues = [planning];
+            sessionsModel.select();
+
+            for (var j=0; j<sessionsModel.count; j++) {
+                var sessionObj = sessionsModel.getObjectInRow(j);
+                var newPlanningItem = {
+                    planning: planning,
+                    list: field,
+                    title: sessionObj['title'],
+                    desc: sessionObj['desc'],
+                    number: sessionObj['number']
+                };
+
+                var start = sessionObj['start'];
+                var end = sessionObj['end'];
+                var sessionId = sessionObj['id'];
+
+                var itemId = planningItemsModel.insertObject(newPlanningItem);
+
+                exportActionsModel.bindValues = [sessionId];
+                exportActionsModel.select();
+                for (var k=0; k<exportActionsModel.count; k++) {
+
+                }
+            }
+        }
     }
 
     Component.onCompleted: {

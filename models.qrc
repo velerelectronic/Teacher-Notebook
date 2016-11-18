@@ -19,5 +19,7 @@
         <file>models/PlanningsModel.qml</file>
         <file>models/PlanningSessionsModel.qml</file>
         <file>models/PlanningActionsModel.qml</file>
+        <file>models/PlanningItems.qml</file>
+        <file>models/PlanningItemsActionsModel.qml</file>
     </qresource>
 </RCC>

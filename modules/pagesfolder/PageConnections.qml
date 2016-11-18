@@ -15,6 +15,10 @@ Connections {
         destination.addPage('annotations2/AnnotationsList', {periodStart: start, periodEnd: end, filterPeriod: true});
     }
 
+    onPlanningItemsSelected: {
+        destination.addPage('plannings/PlanningItems', {planning: title});
+    }
+
     onPlanningsOnDateSelected: {
         destination.addPage('plannings/SessionsListByDates', {periodStart: start, periodEnd: end});
     }
@@ -36,6 +40,7 @@ Connections {
     onImageViewerSelected: destination.addPage('files/FileViewer', {fileURL: file});
 
     onPlanningSelected: destination.addPage('plannings/ShowPlanning', {planning: title});
+    onPlanningSelected2: destination.addPage('plannings/ShowPlanningAlternative', {planning: title});
     onSessionSelected: destination.addPage('plannings/ShowSession', {session: session});
 
     onUpdated: {
