@@ -5,12 +5,14 @@ import 'qrc:///models' as Models
 import 'qrc:///editors' as Editors
 import 'qrc:///modules/basic' as Basic
 
-Item {
+Rectangle {
     id: planningsListItem
 
     signal planningSelected(string title)
     signal planningSelected2(string title)
     signal planningItemsSelected(string title)
+
+    color: 'gray'
 
     Common.UseUnits {
         id: units
@@ -84,16 +86,17 @@ Item {
             spacing: units.nailUnit
 
             section.property: 'category'
-            section.delegate: Rectangle {
+            section.delegate: Item {
                 width: planningsList.width
-                height: units.fingerUnit
+                height: units.fingerUnit * 2
 
-                color: 'gray'
                 Text {
                     anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    verticalAlignment: Text.AlignBottom
                     font.pixelSize: units.readUnit
                     font.bold: true
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
                     color: 'white'
                     text: section
                 }

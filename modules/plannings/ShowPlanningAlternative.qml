@@ -73,6 +73,10 @@ Rectangle {
                     datesArray.push(newDate);
                 }
                 var newContext = getObjectInRow(j)['context'];
+                if (typeof newContext === 'string')
+                    newContext = newContext.trim();
+                else
+                    newContext = '';
                 if (newContextsArray.indexOf(newContext) < 0) {
                     newContextsArray.push(newContext);
                 }
@@ -242,7 +246,7 @@ Rectangle {
                             Models.PlanningItemsActionsModel {
                                 id: planningItemsActionsForDateAndListModel
 
-                                filters: ['item=?', 'context=?', "(IFNULL(start,'')=? OR IFNULL(end,'')=?)"]
+                                filters: ['item=?', "IFNULL(context, '')=?", "(IFNULL(start,'')=? OR IFNULL(end,'')=?)"]
                             }
 
                             ListModel {
@@ -299,7 +303,7 @@ Rectangle {
                                             height: contentHeight
                                             font.pixelSize: units.readUnit
                                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                            text: model.contents + ((model.result !== '')?(" >> " + model.result):'')
+                                            text: '<p>' + model.itemTitle + '</p><p>' + model.contents + '</p>' + ((model.result !== '')?("<p><font color=\"red\">" + model.result) + "</font></p>":'')
                                         }
                                         MouseArea {
                                             anchors.fill: parent
@@ -345,11 +349,12 @@ Rectangle {
                                     var itemObj = planningItemsForDateAndListModel.getObjectInRow(i);
 
                                     // filter actions on item, context and date (start or end)
-                                    planningItemsActionsForDateAndListModel.bindValues = [itemObj['id'], context, dateRowItem.selectedDate, dateRowItem.selectedDate];
+                                    planningItemsActionsForDateAndListModel.bindValues = [itemObj['id'], showPlanningItem.context, dateRowItem.selectedDate, dateRowItem.selectedDate];
                                     planningItemsActionsForDateAndListModel.select();
 
                                     for (var j=0; j<planningItemsActionsForDateAndListModel.count; j++) {
                                         var actionObj = planningItemsActionsForDateAndListModel.getObjectInRow(j);
+                                        actionObj['itemTitle'] = itemObj['title'];
                                         itemsForDateModel.append(actionObj);
                                     }
                                 }

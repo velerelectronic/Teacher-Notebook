@@ -43,18 +43,19 @@ Rectangle {
             Layout.fillWidth: true
 
             section.property: 'list'
-            section.delegate: Rectangle {
+            section.delegate: Item {
                 width: itemsList.width
-                height: units.fingerUnit
+                height: units.fingerUnit * 2
 
                 z: 1
-                color: 'grey'
 
                 Text {
                     anchors.fill: parent
                     anchors.margins: units.nailUnit
+                    verticalAlignment: Text.AlignBottom
                     color: 'white'
                     font.pixelSize: units.readUnit
+                    font.bold: true
                     elide: Text.ElideRight
                     text: section
                 }
@@ -63,6 +64,7 @@ Rectangle {
             spacing: units.nailUnit
             model: planningItemsModel
             clip: true
+            bottomMargin: addItemButton.size + addItemButton.padding * 2
 
             headerPositioning: ListView.OverlayHeader
             header: Rectangle {
@@ -116,7 +118,7 @@ Rectangle {
                 id: singlePlanningItemRect
 
                 width: itemsList.width
-                height: units.fingerUnit * 2
+                height: units.fingerUnit * 3
 
                 z: 1
                 property int itemId: model.id
@@ -199,6 +201,8 @@ Rectangle {
                 }
             }
             Common.ImageButton {
+                id: addItemButton
+
                 anchors {
                     right: parent.right
                     bottom: parent.bottom

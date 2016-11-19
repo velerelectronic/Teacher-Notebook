@@ -411,16 +411,25 @@ Rectangle {
     }
 
     Models.PlanningActionsModel {
-        id: exportActionsModel
+        id: importActionsModel
 
-        filters: ['session=?']
+        filters: ['session=?', 'field=?']
+        sort: 'number ASC'
+    }
+
+    Models.PlanningItemsActionsModel {
+        id: exportActionsModel
     }
 
     function exportSessions() {
-        console.log('Exporting sessions...');
+        console.log('Exporting data...');
+        console.log('* Each «field» will become a «list»');
+        console.log('* Each «session» will become an «item» en each «list»');
+        console.log('* Each «action» of each «session» will become an «itemAction» of some «item»');
+
         for (var i=0; i<fieldsArray.length; i++) {
             var field = fieldsArray[i];
-            console.log('Field', field);
+            console.log('Field', field, 'will become a list.');
             sessionsModel.bindValues = [planning];
             sessionsModel.select();
 
@@ -430,7 +439,7 @@ Rectangle {
                     planning: planning,
                     list: field,
                     title: sessionObj['title'],
-                    desc: sessionObj['desc'],
+                    desc: sessionObj['desc'] + '\n' + sessionObj['start'] + '\n' + sessionObj['end'],
                     number: sessionObj['number']
                 };
 
@@ -439,14 +448,33 @@ Rectangle {
                 var sessionId = sessionObj['id'];
 
                 var itemId = planningItemsModel.insertObject(newPlanningItem);
+                console.log('Session «', sessionId, '» with title «', sessionObj['title'], '» becomes new list «', field, '» with new item id «', itemId, '» with the same title.');
 
-                exportActionsModel.bindValues = [sessionId];
-                exportActionsModel.select();
-                for (var k=0; k<exportActionsModel.count; k++) {
+                importActionsModel.bindValues = [sessionId, field];
+                importActionsModel.select();
 
+                console.log('Transforming actions of session into itemActions')
+                for (var k=0; k<importActionsModel.count; k++) {
+                    var actionObj = importActionsModel.getObjectInRow(k);
+
+                    console.log('Action', JSON.stringify(actionObj));
+                    var newItemActionObj = {
+                        item: itemId,
+                        context: qsTr('Context únic'),
+                        number: actionObj['number'],
+                        contents: actionObj['contents'],
+                        state: actionObj['state'],
+                        result: actionObj['pending'],
+                        start: start,
+                        end: end
+                    };
+                    console.log('becomes', JSON.stringify(newItemActionObj));
+                    exportActionsModel.insertObject(newItemActionObj);
                 }
             }
         }
+
+        console.log('Export finished!');
     }
 
     Component.onCompleted: {
