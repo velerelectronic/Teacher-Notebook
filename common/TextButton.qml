@@ -6,6 +6,7 @@ Text {
     property int fontSize
 
     signal clicked()
+    signal pressAndHold()
 
     font.pixelSize: fontSize
     verticalAlignment: Text.AlignVCenter
@@ -16,5 +17,6 @@ Text {
     MouseArea {
         anchors.fill: parent
         onClicked: textButton.clicked()
+        onPressAndHold: textButton.pressAndHold()
     }
 }

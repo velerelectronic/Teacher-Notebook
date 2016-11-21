@@ -12,6 +12,7 @@ Rectangle {
     property string start: ''
     property string end: ''
 
+    signal savedContents()
     signal close()
 
     Common.UseUnits {
@@ -114,6 +115,7 @@ Rectangle {
                 }
                 itemsActionsModel.insertObject(newAction);
 
+                savedContents();
                 close();
             }
         }

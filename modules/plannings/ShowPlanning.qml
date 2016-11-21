@@ -9,11 +9,13 @@ Rectangle {
     id: showPlanningItem
 
     property string planning: ''
+    property string context: ''
+    property var listsArray
+    property var itemsArray
+    property var contextsArray
 
-    property var fieldsArray: []
-
-    signal sessionSelected(int session)
-    signal updated(var object)
+    signal planningItemsSelected(string title)
+    signal update()
 
     color: 'gray'
 
@@ -21,465 +23,431 @@ Rectangle {
         id: units
     }
 
-    Models.PlanningsModel {
-        id: planningsModel
-
-        filters: ['title=?']
-
-        function getFieldsArray() {
-            bindValues = [planning];
-            select();
-            if (count>0) {
-                console.log('planning inside');
-                var fieldsString = getObjectInRow(0)['fields'];
-                fieldsArray = fieldsString.split(',');
-                console.log(fieldsArray);
-            }
-        }
-    }
-
-    Models.PlanningSessionsModel {
-        id: sessionsModel
+    Models.PlanningItems {
+        id: planningItemsModel
 
         filters: ['planning=?']
 
-        sort: 'start ASC, end ASC, number ASC'
-
-        function refresh() {
+        function getItems() {
             bindValues = [planning];
             select();
-
-            orphanActionsModel.getOrphanActions();
+            var lists = [];
+            var items = [];
+            for (var i=0; i<count; i++) {
+                var itemObj = getObjectInRow(i);
+                items.push(itemObj['id']);
+                if (lists.indexOf(itemObj['list']) < 0) {
+                    lists.push(itemObj['list']);
+                }
+            }
+            if (lists.length == 0)
+                lists.push('');
+            listsArray = lists;
+            itemsArray = items;
         }
     }
 
-    Models.PlanningActionsModel {
-        id: orphanActionsModel
+    Models.PlanningItemsActionsModel {
+        id: actionDatesModel
 
-        function getOrphanActions() {
-            var newFilters = [];
-            var newBindValues = [];
+        function getDates() {
+            var datesArray = [];
+            var newContextsArray = [];
 
-            for (var i=0; i<fieldsArray.length; i++) {
-                newFilters.push('field != ?');
-                newBindValues.push(fieldsArray[i]);
+            planningItemsModel.getItems();
+            console.log('getting dates --------');
+
+            for (var i=0; i<itemsArray.length; i++) {
+                console.log('item', itemsArray[i]);
             }
 
-            filters = newFilters;
-            bindValues = newBindValues;
-            select();
+            if (itemsArray.length > 0) {
+                var newFilters = [];
+                var newBindValues = [];
+                for (var i=0; i<itemsArray.length; i++) {
+                    var newItem = itemsArray[i];
+                    if (newBindValues.indexOf(newItem) < 0) {
+                        newFilters.push('item=?');
+                        newBindValues.push(newItem);
+                    }
+                }
+                filters = newFilters.join(' OR ');
+                bindValues = newBindValues;
+                select();
+                for (var j=0; j<count; j++) {
+                    var newDate = getObjectInRow(j)['start'];
+                    if (typeof (newDate) === 'string') {
+                        newDate = newDate.trim();
+                    } else {
+                        newDate = '';
+                    }
+                    if (datesArray.indexOf(newDate) < 0) {
+                        datesArray.push(newDate);
+                    }
+                    var newContext = getObjectInRow(j)['context'];
+                    if (typeof newContext === 'string')
+                        newContext = newContext.trim();
+                    else
+                        newContext = '';
+                    if (newContextsArray.indexOf(newContext) < 0) {
+                        newContextsArray.push(newContext);
+                    }
+                }
+            }
+            if (datesArray.indexOf('') < 0)
+                datesArray.push('');
+            if (newContextsArray.length == 0)
+                newContextsArray.push('');
+            contextsArray = newContextsArray;
+            return datesArray;
         }
+    }
+
+    ListModel {
+        id: datesArrayModel
     }
 
     ColumnLayout {
         anchors.fill: parent
-        Text {
-            Layout.fillWidth: true
-            Layout.preferredHeight: contentHeight
 
-            font.pixelSize: units.readUnit
-            text: planning
-        }
         ListView {
-            id: sessionsList
+            id: contextsList
 
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.preferredHeight: units.fingerUnit
 
-            clip: true
-            model: sessionsModel
+            model: contextsArray
             spacing: units.nailUnit
+            orientation: ListView.Horizontal
 
             delegate: Rectangle {
-                id: singleSessionRect
+                id: singleContextRect
 
-                width: sessionsList.width
-                height: Math.max(sessionNumberText.height, sessionBasicInfoLayout.requiredHeight, actionsRect.requiredHeight)
+                width: contextsList.height * 2
+                height: contextsList.height
 
-                property int sessionId: model.id
+                color: (ListView.isCurrentItem)?'yellow':'white'
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: sessionSelected(singleSessionRect.sessionId)
-                }
+                property string context: modelData
 
                 Text {
-                    id: sessionNumberText
-
-                    anchors {
-                        top: parent.top
-                        left: parent.left
-                        margins: units.nailUnit
-                    }
-
-                    height: contentHeight
-                    width: contentWidth
-
-                    verticalAlignment: Text.AlignTop
+                    anchors.fill: parent
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: model.number
+                    text: singleContextRect.context
                 }
-
-                Flow {
-                    id: sessionBasicInfoLayout
-
-                    anchors {
-                        top: parent.top
-                        left: sessionNumberText.right
-                        bottom: parent.bottom
-                        margins: units.nailUnit
-                    }
-                    width: Math.max(Math.floor(parent.width / (fieldsArray.length+1)), units.fingerUnit * 4)
-                    spacing: units.nailUnit
-                    property int requiredHeight: childrenRect.height + 2 * units.nailUnit
-
-                    Text {
-                        height: contentHeight
-                        width: parent.width
-
-                        font.pixelSize: units.readUnit
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: model.title
-                    }
-                    Text {
-                        height: contentHeight
-                        width: parent.width
-
-                        font.pixelSize: units.readUnit
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: model.desc
-                    }
-                    Text {
-                        height: contentHeight
-                        width: parent.width
-
-                        font.pixelSize: units.readUnit
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-
-                        text: {
-                            var startStr = '';
-                            var date1 = new Date();
-                            var returnString = '';
-                            if (model.start !== '') {
-                                var startObj = date1.fromYYYYMMDDHHMMFormat(model.start);
-                            }
-                            var endStr = '';
-                            var date2 = new Date();
-                            if (model.end !== '') {
-                                var endObj = date2.fromYYYYMMDDHHMMFormat(model.end);
-                            }
-                            if ((date1.definedDate) && (date2.definedDate)) {
-                                // Start and end have been defined
-                                if ((date1.differenceInDays(date2) == 0)) {
-                                    // Start and end have the same date
-
-                                    returnString = date1.toShortReadableDate();
-
-                                    if ((date1.definedTime) || (date2.definedTime)) {
-                                        // Start time OR end time have not been defined
-
-                                        if ((date1.definedTime) && (date2.definedTime) && (date1.differenceInMinutes(date2) == 0)) {
-                                            // Start time AND end time have been defined
-                                            // Start and end have the same time in hours and minutes
-                                            returnString += "\n" + qsTr("A les ") + date1.toHHMMFormat();
-                                        } else {
-                                            returnString += "\n[ " + (date1.definedTime?date1.toHHMMFormat():'-') + " , ";
-                                            returnString += (date2.definedTime?date2.toHHMMFormat():'-') + ' ]';
-                                        }
-                                    }
-                                } else {
-                                    // Start and end have been defined with different dates
-                                    returnString = qsTr('Comença ') + date1.toShortReadableDate();
-                                    if (date1.definedTime)
-                                        returnString += " " + date1.toHHMMFormat();
-                                    returnString += "\n" + qsTr('Acaba ') + date2.toShortReadableDate();
-                                    if (date2.definedTime)
-                                        returnString += " " + date2.toHHMMFormat();
-                                }
-                            } else {
-                                // Only start date or end date have been specified
-                                if (date1.definedDate) {
-                                    returnString = qsTr('Comença ') + date1.toShortReadableDate();
-                                    if (date1.definedTime)
-                                        returnString += " " + date1.toHHMMFormat();
-                                }
-                                if (date2.definedDate) {
-                                    returnString = qsTr('Acaba ') + date2.toShortReadableDate();
-                                    if (date2.definedTime)
-                                        returnString += " " + date2.toHHMMFormat();
-                                }
-                            }
-                            return returnString;
-                        }
-                    }
-                }
-
-                Rectangle {
-                    id: actionsRect
-
-                    anchors {
-                        top: parent.top
-                        left: sessionBasicInfoLayout.right
-                        right: parent.right
-                        bottom: parent.bottom
-                    }
-                    property int requiredHeight: childrenRect.height + units.nailUnit
-                    color: '#E6E6E6'
-
-                    RowLayout {
-                        id: actionsLayout
-                        anchors {
-                            top: parent.top
-                            left: parent.left
-                            right: parent.right
-                            margins: units.nailUnit
-                        }
-                        spacing: units.nailUnit
-                        height: childrenRect.height
-
-                        Repeater {
-                            model: fieldsArray
-
-                            Item {
-                                id: singleFieldColumn
-
-                                Layout.preferredWidth: Math.round((actionsLayout.width - (fieldsArray.length-1) * actionsLayout.spacing) / fieldsArray.length)
-                                Layout.preferredHeight: childrenRect.height
-                                Layout.alignment: Qt.AlignTop
-
-                                property string field: modelData
-
-                                Column {
-                                    anchors {
-                                        top: parent.top
-                                        left: parent.left
-                                        right: parent.right
-                                    }
-                                    spacing: units.nailUnit
-                                    height: childrenRect.height
-
-                                    Text {
-                                        width: parent.width
-                                        height: contentHeight
-
-                                        font.pixelSize: units.readUnit
-                                        font.bold: true
-                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-
-                                        text: singleFieldColumn.field
-                                    }
-
-                                    Repeater {
-                                        model: Models.PlanningActionsModel {
-                                            id: actionsModel
-
-                                            filters: ['session=?', 'field=?']
-                                            sort: 'number ASC'
-
-                                            function getActions() {
-                                                bindValues = [singleSessionRect.sessionId, singleFieldColumn.field];
-                                                select();
-                                            }
-
-                                            Component.onCompleted: actionsModel.getActions()
-                                        }
-
-                                        Connections {
-                                            target: showPlanningItem
-
-                                            onUpdated: actionsModel.getActions()
-                                        }
-
-                                        ActionStateRectangle {
-                                            width: parent.width
-                                            height: childrenRect.height + units.nailUnit
-
-                                            stateValue: model.state
-                                            Text {
-                                                anchors {
-                                                    top: parent.top
-                                                    left: parent.left
-                                                    right: parent.right
-                                                    margins: units.nailUnit
-                                                }
-                                                height: contentHeight + units.nailUnit
-
-                                                font.pixelSize: units.readUnit
-                                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-
-                                                textFormat: Text.RichText
-                                                text: model.contents + ((model.pending !== '')?" <font color=\"red\">" + model.pending + "</font>":'')
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        contextsList.currentIndex = model.index;
+                        showPlanningItem.context = singleContextRect.context;
+                        datesList.refreshContents();
                     }
                 }
             }
+        }
 
-            footer: (orphanActionsModel.count>0)?orphanActionsComponent:null
+        ListView {
+            id: datesList
 
-            Component {
-                id: orphanActionsComponent
+            Layout.fillHeight: true
+            Layout.fillWidth: true
 
-                Item {
-                    width: sessionsList.width
-                    height: units.fingerUnit * 3
+            spacing: units.nailUnit
+            clip: true
+            model: datesArrayModel
 
-                    ListView {
-                        id: orphanActionsList
+            property string todayYYYYMMDD: ''
+            signal refreshRequested()
 
-                        anchors.fill: parent
-                        anchors.topMargin: units.fingerUnit
+            headerPositioning: ListView.OverlayHeader
+            header: Rectangle {
+                width: datesList.width
+                height: units.fingerUnit * 2
 
-                        model: orphanActionsModel
-                        orientation: ListView.Horizontal
-                        spacing: units.nailUnit
+                z: 2
 
-                        header: Text {
-                            height: orphanActionsList.height
-                            width: contentWidth
+                color: '#BBFFBB'
+
+                RowLayout {
+                    anchors.fill: parent
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: Math.max(parent.width / 4, units.fingerUnit * 4)
+
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+
+                        text: qsTr('Data')
+                    }
+
+                    Repeater {
+                        model: listsArray
+
+                        Common.TextButton {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
 
                             font.pixelSize: units.readUnit
                             font.bold: true
-                            text: qsTr('Accions orfes')
-                        }
 
-                        delegate: Rectangle {
-                            width: units.fingerUnit * 4
-                            height: orphanActionsList.height
+                            text: qsTr('Afegeix') + "\n" + modelData
 
-                            Text {
-                                anchors.fill: parent
-                                anchors.margins: units.nailUnit
-
-                                font.pixelSize: units.readUnit
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-
-                                text: model.field + " " + model.contents
+                            onClicked: {
+                                newActionDialog.openNewActionDialog(modelData, '');
+                            }
+                            onPressAndHold: {
+                                showPlanningItem.planningItemsSelected(planning);
                             }
                         }
                     }
                 }
             }
 
-            Common.ImageButton {
-                id: addSessionButton
+            delegate: Rectangle {
+                id: dateRowItem
 
-                anchors {
-                    bottom: parent.bottom
-                    right: parent.right
+                width: datesList.width
+
+                z: 1
+                color: '#DDDDDD'
+                border.color: (datesList.todayYYYYMMDD == dateRowItem.selectedDate)?'yellow':'transparent'
+
+                property string selectedDate: modelData
+
+                RowLayout {
+                    id: dateRowLayout
+
+                    anchors.fill: parent
+                    spacing: units.nailUnit
+
+                    function recalculateHeight() {
+                        var max = units.fingerUnit;
+                        for (var i=0; i<children.length; i++) {
+                            var h = children[i].requiredHeight;
+                            if (h>max)
+                                max = h;
+                        }
+                        dateRowItem.height = max;
+                    }
+
+                    Rectangle {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: Math.max(parent.width / 4, units.fingerUnit * 4)
+
+                        Text {
+                            anchors.fill: parent
+                            anchors.margins: units.nailUnit
+
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
+                            text: {
+                                if (dateRowItem.selectedDate !== '') {
+                                    var dateObj = new Date();
+                                    dateObj.fromYYYYMMDDHHMMFormat(dateRowItem.selectedDate);
+                                    return dateObj.toShortReadableDate();
+                                } else {
+                                    return '';
+                                }
+                            }
+                        }
+                    }
+                    Repeater {
+                        model: listsArray
+
+                        Item {
+                            id: listColumnItem
+
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+
+                            property int requiredHeight: childrenRect.height
+                            property bool shouldUpdate: false
+
+                            onRequiredHeightChanged: dateRowLayout.recalculateHeight()
+                            property string selectedList: modelData
+
+                            Models.PlanningItems {
+                                id: planningItemsForDateAndListModel
+
+                                filters: ['planning=?', 'list=?']
+                            }
+
+                            Models.PlanningItemsActionsModel {
+                                id: planningItemsActionsForDateAndListModel
+
+                                filters: ['item=?', "IFNULL(context, '')=?", "(IFNULL(start,'')=? OR IFNULL(end,'')=?)"]
+                            }
+
+                            ListModel {
+                                id: itemsForDateModel
+
+                                dynamicRoles: true
+                            }
+
+                            ColumnLayout {
+                                anchors {
+                                    top: parent.top
+                                    left: parent.left
+                                    right: parent.right
+                                }
+
+                                height: childrenRect.height
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: units.fingerUnit
+
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    font.pixelSize: units.readUnit
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                    font.bold: true
+                                    text: modelData
+                                }
+
+                                ListView {
+                                    id: specificActionsList
+
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: childrenRect.height
+
+                                    model: itemsForDateModel
+                                    spacing: units.nailUnit
+                                    interactive: false
+
+                                    delegate: ActionStateRectangle {
+                                        width: specificActionsList.width
+                                        height: Math.max(actionStateText.height, units.fingerUnit) + units.nailUnit * 2
+
+                                        stateValue: model.state
+
+                                        Text {
+                                            id: actionStateText
+                                            anchors {
+                                                top: parent.top
+                                                left: parent.left
+                                                right: parent.right
+                                                margins: units.nailUnit
+                                            }
+                                            height: contentHeight
+                                            font.pixelSize: units.readUnit
+                                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                            text: '<p>' + model.itemTitle + '</p><p>' + model.contents + '</p>' + ((model.result !== '')?("<p><font color=\"red\">" + model.result) + "</font></p>":'')
+                                        }
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            onClicked: {
+                                                listColumnItem.shouldUpdate = true;
+                                                editActionDialog.openEditActionDialog(model.id);
+                                            }
+                                        }
+                                    }
+                                }
+                                Item {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: units.fingerUnit + units.nailUnit
+                                }
+                            }
+
+                            Common.ImageButton {
+                                anchors {
+                                    bottom: parent.bottom
+                                    horizontalCenter: parent.horizontalCenter
+                                    margins: units.nailUnit
+                                }
+                                size: units.fingerUnit
+                                image: 'plus-24844'
+                                onClicked: {
+                                    listColumnItem.shouldUpdate = true;
+                                    newActionDialog.openNewActionDialog(modelData, dateRowItem.selectedDate);
+                                }
+                            }
+
+                            Connections {
+                                target: showPlanningItem
+                                onContextChanged: {
+                                    listColumnItem.getSelectedItems();
+                                }
+                                onUpdate: {
+                                    if (listColumnItem.shouldUpdate) {
+                                        listColumnItem.shouldUpdate = false;
+                                        listColumnItem.getSelectedItems();
+                                    }
+                                }
+                            }
+
+                            function getSelectedItems() {
+                                itemsForDateModel.clear();
+
+                                planningItemsForDateAndListModel.bindValues = [planning, listColumnItem.selectedList];
+                                planningItemsForDateAndListModel.select();
+
+                                for (var i=0; i<planningItemsForDateAndListModel.count; i++) {
+                                    var itemObj = planningItemsForDateAndListModel.getObjectInRow(i);
+
+                                    // filter actions on item, context and date (start or end)
+                                    planningItemsActionsForDateAndListModel.bindValues = [itemObj['id'], showPlanningItem.context, dateRowItem.selectedDate, dateRowItem.selectedDate];
+                                    planningItemsActionsForDateAndListModel.select();
+
+                                    for (var j=0; j<planningItemsActionsForDateAndListModel.count; j++) {
+                                        var actionObj = planningItemsActionsForDateAndListModel.getObjectInRow(j);
+                                        actionObj['itemTitle'] = itemObj['title'];
+                                        itemsForDateModel.append(actionObj);
+                                    }
+                                }
+                            }
+
+                            Component.onCompleted: {
+                                listColumnItem.getSelectedItems();
+                            }
+                        }
+                    }
                 }
-                size: units.fingerUnit * 1.5
-                padding: units.fingerUnit
-                image: 'plus-24844'
 
-                onClicked: {
-                    var number = sessionsModel.count+1;
-                    sessionsModel.insertObject({planning: planning, number: number, title: qsTr('Sessió ') + number});
-                    sessionsModel.refresh();
-                    showPlanningItem.updated({});
+            }
+
+            function refreshContents() {
+                var today = new Date();
+                datesList.todayYYYYMMDD = today.toYYYYMMDDFormat();
+
+                var datesArray = actionDatesModel.getDates();
+                datesArray.sort();
+
+                datesArrayModel.clear();
+                for (var i=0; i<datesArray.length; i++) {
+                    datesArrayModel.append({date: datesArray[i]});
                 }
             }
 
-            Common.ImageButton {
-                anchors {
-                    bottom: parent.bottom
-                    right: addSessionButton.left
-                    rightMargin: units.fingerUnit
-                }
-                size: units.fingerUnit * 1.5
-                padding: units.fingerUnit
-                image: 'box-24557'
-
-                onClicked: exportSessions()
-            }
+            Component.onCompleted: refreshContents()
         }
     }
 
-    function receiveUpdated(object) {
-        sessionsModel.refresh();
-        showPlanningItem.updated(object);
-    }
+    Common.SuperposedWidget {
+        id: newActionDialog
 
-    Models.PlanningItems {
-        id: planningItemsModel
-
-    }
-
-    Models.PlanningActionsModel {
-        id: importActionsModel
-
-        filters: ['session=?', 'field=?']
-        sort: 'number ASC'
-    }
-
-    Models.PlanningItemsActionsModel {
-        id: exportActionsModel
-    }
-
-    function exportSessions() {
-        console.log('Exporting data...');
-        console.log('* Each «field» will become a «list»');
-        console.log('* Each «session» will become an «item» en each «list»');
-        console.log('* Each «action» of each «session» will become an «itemAction» of some «item»');
-
-        for (var i=0; i<fieldsArray.length; i++) {
-            var field = fieldsArray[i];
-            console.log('Field', field, 'will become a list.');
-            sessionsModel.bindValues = [planning];
-            sessionsModel.select();
-
-            for (var j=0; j<sessionsModel.count; j++) {
-                var sessionObj = sessionsModel.getObjectInRow(j);
-                var newPlanningItem = {
-                    planning: planning,
-                    list: field,
-                    title: sessionObj['title'],
-                    desc: sessionObj['desc'] + '\n' + sessionObj['start'] + '\n' + sessionObj['end'],
-                    number: sessionObj['number']
-                };
-
-                var start = sessionObj['start'];
-                var end = sessionObj['end'];
-                var sessionId = sessionObj['id'];
-
-                var itemId = planningItemsModel.insertObject(newPlanningItem);
-                console.log('Session «', sessionId, '» with title «', sessionObj['title'], '» becomes new list «', field, '» with new item id «', itemId, '» with the same title.');
-
-                importActionsModel.bindValues = [sessionId, field];
-                importActionsModel.select();
-
-                console.log('Transforming actions of session into itemActions')
-                for (var k=0; k<importActionsModel.count; k++) {
-                    var actionObj = importActionsModel.getObjectInRow(k);
-
-                    console.log('Action', JSON.stringify(actionObj));
-                    var newItemActionObj = {
-                        item: itemId,
-                        context: qsTr('Context únic'),
-                        number: actionObj['number'],
-                        contents: actionObj['contents'],
-                        state: actionObj['state'],
-                        result: actionObj['pending'],
-                        start: start,
-                        end: end
-                    };
-                    console.log('becomes', JSON.stringify(newItemActionObj));
-                    exportActionsModel.insertObject(newItemActionObj);
-                }
-            }
+        function openNewActionDialog(list, date) {
+            load(qsTr("Nova acció"), 'plannings/NewItemAction', {planning: showPlanningItem.planning, list: list, context: context, start: date, end: date});
         }
 
-        console.log('Export finished!');
+        Connections {
+            target: newActionDialog.mainItem
+            onSavedContents: showPlanningItem.update();
+        }
     }
 
-    Component.onCompleted: {
-        planningsModel.getFieldsArray();
-        sessionsModel.refresh();
-    }
+    Common.SuperposedWidget {
+        id: editActionDialog
 
+        function openEditActionDialog(action) {
+            load(qsTr("Edita acció"), 'plannings/EditItemAction', {action: action});
+        }
+
+        Connections {
+            target: editActionDialog.mainItem
+            onSavedContents: showPlanningItem.update();
+        }
+    }
 }

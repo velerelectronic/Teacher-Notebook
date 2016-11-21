@@ -7,7 +7,6 @@
         <file>modules/plannings/ActionStateRectangle.qml</file>
         <file>modules/plannings/SessionsListByDates.qml</file>
         <file>modules/plannings/PlanningItems.qml</file>
-        <file>modules/plannings/ShowPlanningAlternative.qml</file>
         <file>modules/plannings/NewItemAction.qml</file>
         <file>modules/plannings/EditItemAction.qml</file>
     </qresource>

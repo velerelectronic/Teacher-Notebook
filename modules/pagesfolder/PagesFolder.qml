@@ -179,6 +179,9 @@ Item {
 
                                 pageConnections.destination = openPageLoader;
                                 pageConnections.primarySource = openPageLoader.get((depth>1)?openPageLoader.depth-1:0)
+
+                                if (typeof currentItem.update == 'function')
+                                    currentItem.update();
                             }
 
                             Component.onCompleted: {

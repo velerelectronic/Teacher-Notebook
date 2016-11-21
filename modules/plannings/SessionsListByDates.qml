@@ -6,9 +6,10 @@ import 'qrc:///modules/basic' as Basic
 import "qrc:///common/FormatDates.js" as FormatDates
 
 Rectangle {
-    id: showPlanningItem
+    id: showPlanningItems
 
-    signal sessionSelected(int session)
+    signal actionSelected(int action)
+    signal planningSelected(string title)
     signal updated(var object)
 
     property string periodStart: ''
@@ -24,8 +25,8 @@ Rectangle {
         id: planningsModel
     }
 
-    Models.PlanningSessionsModel {
-        id: sessionsModel
+    Models.PlanningItemsActionsModel {
+        id: itemsActionsModel
 
         // filters should be fixed
         filters:  ['INSTR(start,?) OR INSTR(end,?)']
@@ -36,7 +37,6 @@ Rectangle {
             // this should be fixed
             bindValues = [periodStart, periodStart];
             select();
-            console.log('counttttt', count);
         }
     }
 
@@ -44,63 +44,108 @@ Rectangle {
         anchors.fill: parent
 
         ListView {
-            id: sessionsList
+            id: actionsList
 
             Layout.fillWidth: true
             Layout.fillHeight: true
 
             clip: true
-            model: sessionsModel
+            model: itemsActionsModel
             spacing: units.nailUnit
 
             delegate: Rectangle {
-                id: singleSessionRect
+                id: singleActionRect
 
-                width: sessionsList.width
+                width: actionsList.width
                 height: units.fingerUnit * 2
 
-                property int sessionId: model.id
+                property int actionId: model.id
+                property string planning: ''
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: sessionSelected(singleSessionRect.sessionId)
+                    onClicked: {
+                        //actionSelected(singleActionRect.actionId);
+                        planningSelected(singleActionRect.planning);
+                    }
                 }
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: units.nailUnit
                     spacing: units.nailUnit
 
                     Text {
-                        id: sessionNumberText
+                        id: actionNumberText
 
                         Layout.fillHeight: true
                         Layout.preferredWidth: units.fingerUnit * 2
-                        verticalAlignment: Text.AlignTop
+
+                        verticalAlignment: Text.AlignVCenter
+                        padding: units.nailUnit
                         font.pixelSize: units.readUnit
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         text: model.number
                     }
+                    Loader {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: parent.width / 4
+
+                        asynchronous: true
+                        sourceComponent: Text {
+                            padding: units.nailUnit
+                            font.pixelSize: units.readUnit
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: model.item
+
+                            Models.PlanningItems {
+                                id: itemsModel
+                            }
+
+                            function getItemInfo() {
+                                var itemObj = itemsModel.getObject(model.item);
+                                text = "<p>" + itemObj['title'] + "</p>" + ((itemObj['desc'] !== '')?'<p>' + itemObj['desc'] + '</p>':'');
+                                singleActionRect.planning = itemObj['planning'];
+                            }
+
+                            Component.onCompleted: getItemInfo()
+                        }
+
+                    }
+
                     Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: units.fingerUnit * 3
+
+                        verticalAlignment: Text.AlignVCenter
+                        padding: units.nailUnit
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        text: model.context
+                    }
+
+                    ActionStateRectangle {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
 
-                        font.pixelSize: units.readUnit
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: model.title
+                        stateValue: model.state
+
+                        Text {
+                            anchors.fill: parent
+                            verticalAlignment: Text.AlignVCenter
+                            padding: units.nailUnit
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: "<p>" + model.contents + "</p>" + ((model.result !== '')?'<p' + model.result + '</p>':'')
+                        }
                     }
+
                     Text {
                         Layout.fillHeight: true
                         Layout.preferredWidth: parent.width / 4
 
-                        font.pixelSize: units.readUnit
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: model.planning
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: parent.width / 4
-
+                        verticalAlignment: Text.AlignVCenter
+                        padding: units.nailUnit
                         font.pixelSize: units.readUnit
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
 
@@ -166,12 +211,12 @@ Rectangle {
     }
 
     function receiveUpdated(object) {
-        sessionsModel.refresh();
-        showPlanningItem.updated(object);
+        itemsActionsModel.refresh();
+        showPlanningItems.updated(object);
     }
 
     Component.onCompleted: {
-        sessionsModel.refresh();
+        itemsActionsModel.refresh();
     }
 
 }

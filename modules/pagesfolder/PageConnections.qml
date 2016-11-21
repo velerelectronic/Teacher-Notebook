@@ -40,7 +40,6 @@ Connections {
     onImageViewerSelected: destination.addPage('files/FileViewer', {fileURL: file});
 
     onPlanningSelected: destination.addPage('plannings/ShowPlanning', {planning: title});
-    onPlanningSelected2: destination.addPage('plannings/ShowPlanningAlternative', {planning: title});
     onSessionSelected: destination.addPage('plannings/ShowSession', {session: session});
 
     onUpdated: {

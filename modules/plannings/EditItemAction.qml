@@ -20,6 +20,7 @@ Rectangle {
     property string itemDesc: ''
     property string stateValue: ''
 
+    signal savedContents()
     signal close()
 
     Common.UseUnits {
@@ -168,7 +169,7 @@ Rectangle {
                         state: stateValue
                     }
                     itemsActionsModel.updateObject(action, updatedAction);
-
+                    savedContents();
                     close();
                 }
             }
@@ -194,6 +195,7 @@ Rectangle {
                     onYes: {
                         itemsActionsModel.removeObject(action);
                         editItemActionRect.close();
+                        savedContents();
                     }
                 }
 
@@ -217,6 +219,7 @@ Rectangle {
                 itemsActionsModel.updateObject(action, {start: start});
                 itemsActionsModel.getItemInfo();
                 periodEditor.close();
+                savedContents();
             }
 
             onPeriodEndChanged: {
@@ -224,6 +227,7 @@ Rectangle {
                 itemsActionsModel.updateObject(action, {end: end});
                 itemsActionsModel.getItemInfo();
                 periodEditor.close();
+                savedContents();
             }
         }
     }

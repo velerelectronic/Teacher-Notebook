@@ -9,7 +9,6 @@ Rectangle {
     id: planningsListItem
 
     signal planningSelected(string title)
-    signal planningSelected2(string title)
     signal planningItemsSelected(string title)
 
     color: 'gray'
@@ -26,29 +25,6 @@ Rectangle {
         searchFields: ['title', 'desc', 'category', 'fields']
 
         function update() {
-            select();
-            orphanSessionsModel.getOrphan();
-        }
-    }
-
-    Models.PlanningSessionsModel {
-        id: orphanSessionsModel
-
-        function getOrphan() {
-            var unequalFilter = [];
-            var unequalBindValues = [];
-            for (var i=0; i<planningsModel.count; i++) {
-                var object = planningsModel.getObjectInRow(i);
-
-                unequalFilter.push('planning <> ?');
-                unequalBindValues.push(object['title']);
-            }
-
-            console.log('filters', unequalFilter, unequalFilter.length);
-            console.log('bindvalues', unequalBindValues, unequalBindValues.length);
-
-            filters = unequalFilter;
-            bindValues = unequalBindValues;
             select();
         }
     }
@@ -130,7 +106,7 @@ Rectangle {
                         text: model.title
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: planningSelected2(model.title)
+                            onClicked: planningSelected(model.title)
                             onPressAndHold: titleEditorDialog.openTitleEditor(model.title)
                         }
                     }
@@ -211,64 +187,6 @@ Rectangle {
                 }
             }
 
-            footer: (orphanSessionsModel.count>0)?footerComponent:null
-
-            Component {
-                id: footerComponent
-
-                Item {
-                    width: planningsList.width
-                    height: units.fingerUnit * 4
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: units.nailUnit
-                        spacing: units.nailUnit
-
-                        Text {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: contentWidth
-
-                            font.pixelSize: units.readUnit
-                            font.bold: true
-                            verticalAlignment: Text.AlignVCenter
-                            text: qsTr('Sessions orfes')
-                        }
-
-                        ListView {
-                            id: orphanSessionsList
-
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-
-                            clip: true
-                            orientation: ListView.Horizontal
-                            spacing: units.nailUnit
-
-                            model: orphanSessionsModel
-
-                            delegate: Rectangle {
-                                width: units.fingerUnit * 4
-                                height: orphanSessionsList.height
-
-                                Text {
-                                    anchors.fill: parent
-                                    anchors.margins: units.nailUnit
-
-                                    font.pixelSize: units.readUnit
-                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-
-                                    text: model.planning + " - " + model.number + " - " + model.title
-                                }
-                                MouseArea {
-                                    anchors.fill: parent
-                                }
-                            }
-                        }
-                    }
-
-                }
-            }
 
             Common.SuperposedButton {
                 anchors {
