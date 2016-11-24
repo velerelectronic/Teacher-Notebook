@@ -59,5 +59,7 @@ DatabaseBackup {
         dataBck.createTable('planningItemsActions', 'id INTEGER PRIMARY KEY, item INTEGER, context STRING, number INTEGER, contents TEXT, state TEXT, result TEXT, start TEXT, end TEXT');
         dataBck.dropTable('planningFields');
         //dataBck.createTable('planningsFields', 'id INTEGER PRIMARY KEY, planning TEXT, row INTEGER, field TEXT, contents TEXT, contentType TEXT');
+
+        dataBck.createTable('recentPages', 'id INTEGER PRIMARY KEY, page TEXT, parameters TEXT, title TEXT, timestamp TEXT, state TEXT');
     }
 }

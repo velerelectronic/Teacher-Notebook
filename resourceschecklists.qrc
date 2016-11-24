@@ -15,5 +15,6 @@
         <file>modules/checklists/MomentCategoriesList.qml</file>
         <file>modules/checklists/AssessmentHistory.qml</file>
         <file>modules/checklists/GridAssessmentListHeader.qml</file>
+        <file>modules/checklists/AssessmentFixedColumns.qml</file>
     </qresource>
 </RCC>

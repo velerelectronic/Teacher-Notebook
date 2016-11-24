@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>modules/pagesfolder/PagesFolder.qml</file>
         <file>modules/pagesfolder/NewPageSection.qml</file>
         <file>modules/pagesfolder/TitleSectionEditor.qml</file>
         <file>modules/pagesfolder/SectionsList.qml</file>

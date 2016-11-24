@@ -43,6 +43,11 @@ Item {
 
             Common.ImageButton {
                 image: 'calendar-23684'
+                onClicked: fixedColumnsAssessment()
+            }
+
+            Common.ImageButton {
+                image: 'calendar-23684'
                 onClicked: timeAssessment()
             }
 
@@ -167,6 +172,10 @@ Item {
 
     function newAssessmentEditor() {
         assessmentGeneralEditor.openGeneralEditor({group: selectedGroup});
+    }
+
+    function fixedColumnsAssessment() {
+        assessmentLoader.setSource(Qt.resolvedUrl('AssessmentFixedColumns.qml'), {groupName: selectedGroup});
     }
 
     function timeAssessment() {

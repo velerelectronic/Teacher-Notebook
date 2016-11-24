@@ -11,6 +11,7 @@ Rectangle {
     property string selectedContext: ''
     property int selectedContextIndex: -1
 
+    signal addPage(string page, string parameters, string title)
     signal contextSelected(string context)
 
     color: '#DDDDDD'
@@ -162,7 +163,7 @@ Rectangle {
                     enabled: singlePageItem.state == 'selectable'
 
                     onClicked: {
-                        openPagesModel.addPage(model.page, model.parameters, model.title)
+                        addPage(model.page, model.parameters, model.title)
                     }
                     onPressAndHold: {
                         singlePageItem.state = 'editable';

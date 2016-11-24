@@ -28,35 +28,52 @@ Rectangle {
         id: units
     }
 
-    ListModel {
-        id: openPagesModel
+    Models.RecentPages {
+        id: recentPagesModel
+
+        sort: 'timestamp ASC'
+
+        function getLastPage() {
+            return getObjectInRow(0);
+        }
 
         function addPage(page, parameters, title) {
-            console.log('add page', page, parameters);
+            console.log('adding', page, parameters);
             var found = false;
-            for (var i=0; i<count; i++) {
-                var obj = get(i);
+            var i;
+            var date = new Date();
+            openPagesGrid.unselectCurrentPage();
+
+            for (i=0; i<count; i++) {
+                var obj = getObjectInRow(i);
                 if ((obj['page'] == page) && (obj['parameters'] == parameters)) {
+                    var objId = obj['id'];
+                    updateObject(objId, {timestamp: date.toISOString(), title: title});
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                append({page: page, parameters: parameters, title: title});
-                openPagesGrid.selectPage(count-1);
-            } else {
-                openPagesGrid.selectPage(i);
+                insertObject({page: page, parameters: parameters, timestamp: date.toISOString(), title: title});
             }
+            select();
+            openPagesGrid.selectPage(count-1);
         }
-    }
 
+        function deletePage(identifier) {
+            removeObject(identifier);
+            select();
+        }
+
+        Component.onCompleted: select()
+    }
 
     Item {
         id: openPagesLayout
 
         anchors.fill: parent
 
-        GridView {
+        ListView {
             id: openPagesGrid
 
             anchors {
@@ -65,24 +82,23 @@ Rectangle {
                 right: parent.right
             }
 
-            height: contentItem.height
+            spacing: units.nailUnit
+            height: parent.height * 2 / 3
 
-            cellWidth: width / 5
-            cellHeight: cellWidth * (pagesFolderItem.height / pagesFolderItem.width)
+            property int cellWidth: width / 5
+            property int cellHeight: cellWidth * (pagesFolderItem.height / pagesFolderItem.width)
 
-            model: openPagesModel
-            interactive: false
+            model: recentPagesModel
 
-            delegate: Rectangle {
+            delegate: Item {
                 id: openPageRect
 
-                width: openPagesGrid.cellWidth
+                width: openPagesGrid.width
                 height: openPagesGrid.cellHeight
 
                 property string pageTitle: model.title
                 property int pageIndex: model.index
 
-                color: (GridView.isCurrentItem)?'yellow':'transparent'
                 states: [
                     State {
                         name: 'initial'
@@ -131,11 +147,7 @@ Rectangle {
                         PropertyChanges {
                             target: mainPageLayout
                             visible: true
-                            anchors.top: pagesFolderItem.top
-                        }
-                        PropertyChanges {
-                            target: openPagesLayout
-                            visible: false
+                            y: 0
                         }
                         PropertyChanges {
                             target: openPageLoader
@@ -148,7 +160,7 @@ Rectangle {
                     }
                 ]
 
-                state: 'initial'
+                state: 'minimized'
 
                 PageConnections {
                     id: pageConnections
@@ -157,84 +169,171 @@ Rectangle {
                     stack: openPageLoader
                 }
 
+                Behavior on x {
+                    PropertyAnimation {
+                        duration: 500
+                    }
+                }
+
                 Rectangle {
-                    id: openPageBackground
+                    id: openPageRect2
 
-                    anchors.fill: parent
-                    anchors.margins: units.nailUnit
+                    x: 0
+                    y: 0
+                    width: parent.width
+                    height: parent.height
+                    opacity: (1 - x/width)
 
-                    StackView {
-                        id: openPageLoader
+                    color: (GridView.isCurrentItem)?'yellow':'transparent'
 
-                        z: 1
-                        anchors {
-                            top: parent.top
-                            left: parent.left
-                        }
+                    RowLayout {
+                        anchors.fill: parent
 
-                        width: showPageItem.width
-                        height: showPageItem.height
-                        clip: true
+                        Rectangle {
+                            id: openPageBackground
 
-                        transformOrigin: Item.TopLeft
+                            Layout.preferredWidth: openPagesGrid.cellWidth
+                            Layout.fillHeight: true
 
-                        function addPage(page, parameters) {
-                            // Parameters must be an associative array
-                            console.log('page--->');
-                            console.log('qrc:///modules/' + page + '.qml', parameters);
-                            openPageLoader.push({item: 'qrc:///modules/' + page + '.qml', properties: parameters});
-                        }
+                            StackView {
+                                id: openPageLoader
 
-                        function goBack() {
-                            if (depth>1) {
-                                pop();
+                                z: 1
+                                anchors {
+                                    top: parent.top
+                                    left: parent.left
+                                }
+
+                                width: showPageItem.width
+                                height: showPageItem.height
+                                clip: true
+
+                                transformOrigin: Item.TopLeft
+
+                                function addPage(page, parameters) {
+                                    // Parameters must be an associative array
+                                    console.log('page--->');
+                                    console.log('qrc:///modules/' + page + '.qml', parameters);
+                                    openPageLoader.push({item: 'qrc:///modules/' + page + '.qml', properties: parameters});
+                                }
+
+                                function goBack() {
+                                    if (depth>1) {
+                                        pop();
+                                    }
+                                }
+
+                                onCurrentItemChanged: {
+                                    console.log('current item changed');
+                                    pageConnections.target = openPageLoader.currentItem;
+
+                                    pageConnections.destination = openPageLoader;
+                                    pageConnections.primarySource = openPageLoader.get((depth>1)?openPageLoader.depth-1:0)
+                                }
+
+                                Component.onCompleted: {
+                                    console.log('opening', model.page, model.parameters);
+                                    var parameters = (model.parameters !== '')?JSON.parse(model.parameters):{};
+                                    openPageLoader.addPage(model.page, parameters);
+                                }
+
+
                             }
                         }
 
-                        onCurrentItemChanged: {
-                            console.log('current item changed');
-                            pageConnections.target = openPageLoader.currentItem;
+                        Text {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
 
-                            pageConnections.destination = openPageLoader;
-                            pageConnections.primarySource = openPageLoader.get((depth>1)?openPageLoader.depth-1:0)
+                            verticalAlignment: Text.AlignVCenter
+
+                            font.bold: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: model.title
                         }
+                        Text {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
 
-                        Component.onCompleted: {
-                            console.log('opening', model.page, model.parameters);
-                            var parameters = (model.parameters !== '')?JSON.parse(model.parameters):{};
-                            openPageLoader.addPage(model.page, parameters);
+                            verticalAlignment: Text.AlignVCenter
+
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: model.parameters
                         }
-
-
                     }
+
+                    Connections {
+                        target: pagesFolderItem
+
+                        onGoBack: openPageLoader.goBack()
+                        onMinimizePage: {
+                            if (openPageRect.state == 'maximized') {
+                                openPageRect.state = 'minimized';
+                            }
+                        }
+                        onMaximizePage: {
+                            openPagesGrid.unselectCurrentPage();
+                            openPagesGrid.selectPage(openPageRect.pageIndex);
+                        }
+                    }
+
                 }
 
                 MouseArea {
-                    z: 2
+                    id: mainArea
                     anchors.fill: parent
-                    onClicked: {
-                        selectedPageTitle = model.title;
-                        openPagesGrid.selectPage(model.index);
-                        //openPageRect.state = 'maximized';
-                    }
-                    onPressAndHold: openPagesModel.remove(model.index)
-                }
+                    property int initialX: 0
 
-                Connections {
-                    target: pagesFolderItem
+                    drag.target: openPageRect2
+                    drag.axis: Drag.XAxis
+                    drag.minimumX: 0
+                    drag.maximumX: width
 
-                    onGoBack: openPageLoader.goBack()
-                    onMinimizePage: {
-                        if (openPageRect.state == 'maximized') {
-                            openPageRect.state = 'minimized';
+                    property bool beingDragged: drag.active
+                    onBeingDraggedChanged: {
+                        if (!drag.active) {
+                            if (openPageRect2.x > parent.width / 2) {
+                                recentPagesModel.deletePage(model.id);
+                            } else {
+                                openPageRect2.x = 0;
+                            }
                         }
                     }
-                    onMaximizePage: {
-                        openPagesGrid.selectPage(openPageRect.pageIndex);
+                    onClicked: {
+                        selectedPageTitle = model.title;
+                        recentPagesModel.addPage(model.page, model.parameters, model.title)
+                        //openPagesGrid.selectPage(model.index);
+                        //openPageRect.state = 'maximized';
                     }
+
+                    /*
+                    onPressed: {
+                        console.log('now')
+                        mainArea.initialX = mouse.x;
+                        mouse.accepted = true;
+                    }
+                    onPositionChanged: {
+                        if (mouse.x - mainArea.initialX < 0)
+                            mouse.accepted = false;
+                        else {
+                            console.log(mouse.x - mainArea.initialX);
+                            openPageRect2.x = mouse.x - mainArea.initialX;
+                        }
+                    }
+                    onReleased: {
+                        if (mouse.x - mainArea.initialX > parent.width / 2) {
+                            recentPagesModel.deletePage(model.id);
+                        } else {
+                            openPageRect2.x = 0;
+                        }
+                    }
+                    */
                 }
 
             }
+
 
             function selectPreviousPage() {
                 selectPage(openPagesGrid.currentIndex-1);
@@ -244,10 +343,12 @@ Rectangle {
                 selectPage(openPagesGrid.currentIndex+1);
             }
 
-            function selectPage(index) {
+            function unselectCurrentPage() {
                 if (openPagesGrid.currentItem !== null)
                     openPagesGrid.currentItem.state = 'minimized';
+            }
 
+            function selectPage(index) {
                 openPagesGrid.currentIndex = index;
                 if (openPagesGrid.currentItem !== null) {
                     openPagesGrid.currentItem.state = 'maximized';
@@ -257,6 +358,7 @@ Rectangle {
         }
 
         NewSectionDialog {
+            id: newSectionDialog
             anchors {
                 top: openPagesGrid.bottom
                 left: parent.left
@@ -266,6 +368,7 @@ Rectangle {
 
             selectedContext: pagesFolderItem.selectedContext
 
+            onAddPage: recentPagesModel.addPage(page, parameters, title)
             onContextSelected: pagesFolderItem.selectedContext = context;
         }
     }
@@ -273,10 +376,19 @@ Rectangle {
     Rectangle {
         id: mainPageLayout
 
-        anchors.fill: parent
+        y: 0
+        x: 0
+        width: parent.width
+        height: parent.height
         visible: false
 
         color: 'white'
+
+        Behavior on y {
+            PropertyAnimation {
+                duration: 250
+            }
+        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -317,6 +429,7 @@ Rectangle {
                         Layout.fillHeight: true
                         Layout.preferredWidth: height
                         image: 'menu-145772'
+
                         onClicked: minimizePage()
                     }
 
@@ -326,6 +439,28 @@ Rectangle {
                         image: 'arrow-145766'
                         onClicked: openPagesGrid.selectNextPage()
                     }
+                }
+                MouseArea {
+                    anchors.fill: parent
+
+                    drag.target: mainPageLayout
+                    drag.axis: Drag.YAxis
+                    drag.minimumY: 0
+                    drag.maximumY: mainPageLayout.height
+
+                    property bool beingDragged: drag.active
+
+                    onBeingDraggedChanged: {
+                        if (!drag.active) {
+                            if (mainPageLayout.y < mainPageLayout.height / 2) {
+                                mainPageLayout.y = 0;
+                            } else {
+                                minimizePage();
+                            }
+                        }
+                    }
+
+                    onClicked: console.log('aa');
                 }
             }
             Item {
