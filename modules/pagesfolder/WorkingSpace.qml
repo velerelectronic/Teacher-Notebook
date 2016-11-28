@@ -83,8 +83,9 @@ Rectangle {
             }
 
             spacing: units.nailUnit
-            height: parent.height * 2 / 3
+            height: units.fingerUnit
 
+            orientation: ListView.Horizontal
             property int cellWidth: width / 5
             property int cellHeight: cellWidth * (pagesFolderItem.height / pagesFolderItem.width)
 
@@ -93,26 +94,13 @@ Rectangle {
             delegate: Item {
                 id: openPageRect
 
-                width: openPagesGrid.width
+                width: openPagesGrid.width / 5
                 height: openPagesGrid.cellHeight
 
                 property string pageTitle: model.title
                 property int pageIndex: model.index
 
                 states: [
-                    State {
-                        name: 'initial'
-
-                        PropertyChanges {
-                            target: mainPageLayout
-                            visible: false
-                        }
-                        PropertyChanges {
-                            target: openPagesLayout
-                            visible: true
-                        }
-                    },
-
                     State {
                         name: 'minimized'
 
@@ -286,10 +274,12 @@ Rectangle {
                     anchors.fill: parent
                     property int initialX: 0
 
+                    /*
                     drag.target: openPageRect2
                     drag.axis: Drag.XAxis
                     drag.minimumX: 0
                     drag.maximumX: width
+                    */
 
                     property bool beingDragged: drag.active
                     onBeingDraggedChanged: {

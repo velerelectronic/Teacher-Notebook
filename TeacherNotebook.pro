@@ -10,20 +10,20 @@ QT += qml quick widgets \
 CONFIG += c++11
 
 SOURCES += main.cpp \
-    databasebackup.cpp \
-    fileio.cpp \
-    imagedata.cpp \
-    standardpaths.cpp \
-    CryptographicHash/cryptographichash.cpp \
-    MarkDownParser/markdownparser.cpp \
     RubricXml/rubricassessmentmodel.cpp \
     RubricXml/rubriccriteria.cpp \
     RubricXml/rubricdescriptorsmodel.cpp \
     RubricXml/rubricpopulationmodel.cpp \
     RubricXml/rubricxml.cpp \
-    SqlTableModel2/sqltablemodel.cpp \
     TeachingPlanning/teachingplanning.cpp \
-    TeachingPlanning/xmlmodel.cpp
+    TeachingPlanning/xmlmodel.cpp \
+    CryptographicHash/cryptographichash.cpp \
+    MarkDownParser/markdownparser.cpp \
+    SqlTableModel2/sqltablemodel.cpp \
+    databasebackup.cpp \
+    standardpaths.cpp \
+    fileio.cpp \
+    imagedata.cpp
 
 RESOURCES += qml.qrc \
     common.qrc \
@@ -38,18 +38,18 @@ RESOURCES += qml.qrc \
     resourcesannotations2.qrc \
     resourcesbasic.qrc \
     resourcescalendar.qrc \
+    resourceschecklists.qrc \
     resourcesdatabase.qrc \
     resourcesdocuments.qrc \
     resourcesfeeds.qrc \
     resourcesfiles.qrc \
     resourcespagesfolder.qrc \
+    resourcesplannings.qrc \
     resourcesrelatedlists.qrc \
     resourcesrubrics.qrc \
     resourcesteachingplanning.qrc \
     resourceswhiteboard.qrc \
-    showdown.qrc \
-    resourceschecklists.qrc \
-    resourcesplannings.qrc
+    showdown.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -59,41 +59,26 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-DISTFILES += \
-    deployment.pri \
-    TeacherNotebook.config \
-    TeacherNotebook.files \
-    TeacherNotebook.includes \
-    TeacherNotebook.creator.user \
-    TeacherNotebook.pro.user \
-    TeacherNotebook.pro.user.2.7pre1 \
-    TeacherNotebook.creator \
-    README.md \
-    android/AndroidManifest.xml \
-    android/build.xml \
-    android/version.xml \
-    android/local.properties \
-    android/proguard-project.txt \
-    android/project.properties \
-    android/res/drawable-hdpi/icon.png \
-    android/res/drawable-ldpi/icon.png \
-    android/res/drawable-mdpi/icon.png
-
 HEADERS += \
-    databasebackup.h \
-    fileio.h \
-    imagedata.h \
-    standardpaths.h \
-    ClipboardAdapter/qmlclipboardadapter.h \
-    CryptographicHash/cryptographichash.h \
-    MarkDownParser/markdownparser.h \
     RubricXml/rubricassessmentmodel.h \
     RubricXml/rubriccriteria.h \
     RubricXml/rubricdescriptorsmodel.h \
     RubricXml/rubricpopulationmodel.h \
     RubricXml/rubricxml.h \
-    SqlTableModel2/sqltablemodel.h \
     TeachingPlanning/teachingplanning.h \
-    TeachingPlanning/xmlmodel.h
+    TeachingPlanning/xmlmodel.h \
+    CryptographicHash/cryptographichash.h \
+    MarkDownParser/markdownparser.h \
+    SqlTableModel2/sqltablemodel.h \
+    ClipboardAdapter/qmlclipboardadapter.h \
+    databasebackup.h \
+    standardpaths.h \
+    fileio.h \
+    imagedata.h
 
-
+DISTFILES += \
+    qml/DetailedScheduleModel.qml \
+    modules/plannings/EditActionItem.qml \
+    images/esquirol high.png \
+    images/esquirol low.png \
+    images/esquirol medium.png
