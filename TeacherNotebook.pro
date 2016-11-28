@@ -27,7 +27,6 @@ SOURCES += main.cpp \
 
 RESOURCES += qml.qrc \
     common.qrc \
-    components.qrc \
     editors.qrc \
     icons.qrc \
     images.qrc \
@@ -77,7 +76,13 @@ DISTFILES += \
     android/project.properties \
     android/res/drawable-hdpi/icon.png \
     android/res/drawable-ldpi/icon.png \
-    android/res/drawable-mdpi/icon.png
+    android/res/drawable-mdpi/icon.png \
+    android/gradle/wrapper/gradle-wrapper.jar \
+    android/gradlew \
+    android/res/values/libs.xml \
+    android/build.gradle \
+    android/gradle/wrapper/gradle-wrapper.properties \
+    android/gradlew.bat
 
 HEADERS += \
     databasebackup.h \
@@ -95,5 +100,7 @@ HEADERS += \
     SqlTableModel2/sqltablemodel.h \
     TeachingPlanning/teachingplanning.h \
     TeachingPlanning/xmlmodel.h
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 

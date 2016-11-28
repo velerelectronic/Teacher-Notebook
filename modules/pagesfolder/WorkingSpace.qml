@@ -101,19 +101,6 @@ Rectangle {
 
                 states: [
                     State {
-                        name: 'initial'
-
-                        PropertyChanges {
-                            target: mainPageLayout
-                            visible: false
-                        }
-                        PropertyChanges {
-                            target: openPagesLayout
-                            visible: true
-                        }
-                    },
-
-                    State {
                         name: 'minimized'
 
                         ParentChange {
