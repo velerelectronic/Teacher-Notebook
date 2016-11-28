@@ -27,7 +27,6 @@ SOURCES += main.cpp \
 
 RESOURCES += qml.qrc \
     common.qrc \
-    components.qrc \
     editors.qrc \
     icons.qrc \
     images.qrc \
@@ -59,6 +58,35 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
+<<<<<<< HEAD
+=======
+DISTFILES += \
+    deployment.pri \
+    TeacherNotebook.config \
+    TeacherNotebook.files \
+    TeacherNotebook.includes \
+    TeacherNotebook.creator.user \
+    TeacherNotebook.pro.user \
+    TeacherNotebook.pro.user.2.7pre1 \
+    TeacherNotebook.creator \
+    README.md \
+    android/AndroidManifest.xml \
+    android/build.xml \
+    android/version.xml \
+    android/local.properties \
+    android/proguard-project.txt \
+    android/project.properties \
+    android/res/drawable-hdpi/icon.png \
+    android/res/drawable-ldpi/icon.png \
+    android/res/drawable-mdpi/icon.png \
+    android/gradle/wrapper/gradle-wrapper.jar \
+    android/gradlew \
+    android/res/values/libs.xml \
+    android/build.gradle \
+    android/gradle/wrapper/gradle-wrapper.properties \
+    android/gradlew.bat
+
+>>>>>>> origin/master
 HEADERS += \
     RubricXml/rubricassessmentmodel.h \
     RubricXml/rubriccriteria.h \
@@ -66,6 +94,7 @@ HEADERS += \
     RubricXml/rubricpopulationmodel.h \
     RubricXml/rubricxml.h \
     TeachingPlanning/teachingplanning.h \
+<<<<<<< HEAD
     TeachingPlanning/xmlmodel.h \
     CryptographicHash/cryptographichash.h \
     MarkDownParser/markdownparser.h \
@@ -75,6 +104,12 @@ HEADERS += \
     standardpaths.h \
     fileio.h \
     imagedata.h
+=======
+    TeachingPlanning/xmlmodel.h
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+>>>>>>> origin/master
 
 DISTFILES += \
     qml/DetailedScheduleModel.qml \
