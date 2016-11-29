@@ -58,6 +58,8 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
+<<<<<<< HEAD
+=======
 DISTFILES += \
     deployment.pri \
     TeacherNotebook.config \
@@ -84,6 +86,7 @@ DISTFILES += \
     android/gradle/wrapper/gradle-wrapper.properties \
     android/gradlew.bat
 
+>>>>>>> origin/master
 HEADERS += \
     RubricXml/rubricassessmentmodel.h \
     RubricXml/rubriccriteria.h \
@@ -91,6 +94,7 @@ HEADERS += \
     RubricXml/rubricpopulationmodel.h \
     RubricXml/rubricxml.h \
     TeachingPlanning/teachingplanning.h \
+<<<<<<< HEAD
     TeachingPlanning/xmlmodel.h \
     CryptographicHash/cryptographichash.h \
     MarkDownParser/markdownparser.h \
@@ -99,10 +103,13 @@ HEADERS += \
     databasebackup.h \
     standardpaths.h \
     fileio.h \
-    imagedata.h \
+    imagedata.h
+=======
     TeachingPlanning/xmlmodel.h
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+>>>>>>> origin/master
 
 DISTFILES += \
     qml/DetailedScheduleModel.qml \

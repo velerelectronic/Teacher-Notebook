@@ -82,7 +82,6 @@ import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///modules/pagesfolder' as PagesFolder
 import 'qrc:///modules/basic' as Basic
-import 'qrc:///modules/calendar' as Calendar
 import "qrc:///common/FormatDates.js" as FormatDates
 
 // Three types of navigation between pages
