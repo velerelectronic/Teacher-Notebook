@@ -16,7 +16,11 @@ Connections {
     }
 
     onPlanningItemsSelected: {
-        destination.addPage('plannings/PlanningItems', {planning: title});
+        if (typeof list !== 'undefined') {
+            destination.addPage('plannings/PlanningItems', {planning: title, list: list});
+        } else {
+            destination.addPage('plannings/PlanningItems', {planning: title});
+        }
     }
 
     onPlanningsOnDateSelected: {
@@ -39,7 +43,10 @@ Connections {
     }
     onImageViewerSelected: destination.addPage('files/FileViewer', {fileURL: file});
 
-    onPlanningSelected: destination.addPage('plannings/ShowPlanning', {planning: title});
+    onPlanningSelected: {
+        destination.addPage('plannings/ActionsByDateAndContext', {planning: title});
+        //destination.addPage('plannings/ShowPlanning', {planning: title});
+    }
     onSessionSelected: destination.addPage('plannings/ShowSession', {session: session});
 
     onUpdated: {

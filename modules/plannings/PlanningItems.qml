@@ -7,6 +7,7 @@ import 'qrc:///editors' as Editors
 
 Rectangle {
     property string planning: ''
+    property string list: ''
 
     color: 'gray'
 
@@ -18,11 +19,16 @@ Rectangle {
     Models.PlanningItems {
         id: planningItemsModel
 
-        filters: ['planning=?']
         sort: 'list ASC, number ASC, title ASC'
 
         function refresh() {
-            bindValues = [planning];
+            if (list !== '') {
+                filters = ['planning=?', 'list=?'];
+                bindValues = [planning, list];
+            } else {
+                filters = ['planning=?'];
+                bindValues = [planning];
+            }
             select();
         }
 
@@ -212,7 +218,7 @@ Rectangle {
 
                 onClicked: {
                     var nextNumber = planningItemsModel.count + 1;
-                    planningItemsModel.insertObject({planning: planning, title: qsTr('Element ') + nextNumber, number: nextNumber, list: qsTr('# Nova llista')});
+                    planningItemsModel.insertObject({planning: planning, title: qsTr('Element ') + nextNumber, number: nextNumber, list: (list !== '')?list:qsTr('# Nova llista')});
                     planningItemsModel.refresh();
                 }
             }

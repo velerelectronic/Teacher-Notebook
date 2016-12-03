@@ -189,11 +189,26 @@ Rectangle {
                 anchors.margins: units.nailUnit
                 spacing: units.fingerUnit
 
-                Common.ImageButton {
+                ListView {
+                    id: backButtonView
+
                     Layout.fillHeight: true
-                    Layout.preferredWidth: height
-                    image: 'arrow-145769'
-                    onClicked: goBack()
+                    Layout.preferredWidth: contentItem.width
+
+                    property int previousWidgetsCount
+
+                    model: previousWidgetsCount
+                    spacing: units.nailUnit
+                    orientation: ListView.Horizontal
+
+                    delegate: Common.ImageButton {
+                        width: backButtonView.height
+                        height: backButtonView.height
+
+                        image: 'arrow-145769'
+
+                        onClicked: goBack()
+                    }
                 }
 
                 Text {
@@ -302,6 +317,8 @@ Rectangle {
 
                         pageConnections.destination = openPageLoader;
                         pageConnections.primarySource = openPageLoader.get((depth>1)?openPageLoader.depth-1:0)
+
+                        backButtonView.previousWidgetsCount = Math.max(openPageLoader.depth-1,0);
                     }
 
                     Component.onCompleted: {

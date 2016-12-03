@@ -1,3 +1,8 @@
+Date.prototype.addDays = function(days) {
+    this.setDate(this.getDate()+days);
+    return this;
+}
+
 Date.prototype.differenceInDays = function(date2) {
     var oneDay = 24 * 60 * 60 * 1000;
 

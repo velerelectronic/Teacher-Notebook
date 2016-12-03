@@ -9,5 +9,6 @@
         <file>modules/plannings/PlanningItems.qml</file>
         <file>modules/plannings/NewItemAction.qml</file>
         <file>modules/plannings/EditItemAction.qml</file>
+        <file>modules/plannings/ActionsByDateAndContext.qml</file>
     </qresource>
 </RCC>

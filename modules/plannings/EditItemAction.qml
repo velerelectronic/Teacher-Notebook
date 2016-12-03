@@ -15,6 +15,7 @@ Rectangle {
     property alias result: resultEditor.content
     property string start: ''
     property string end: ''
+    property string context: ''
     property string itemList: ''
     property string itemTitle: ''
     property string itemDesc: ''
@@ -43,6 +44,7 @@ Rectangle {
             stateValue = obj['state'];
             start = obj['start'];
             end = obj['end'];
+            context = obj['context'];
 
             var itemObj = itemsModel.getObject(obj['item']);
             itemList = itemObj['list'];
@@ -69,14 +71,22 @@ Rectangle {
 
                 fontSize: units.readUnit
                 boldFont: true
-                text: itemList
+                text: qsTr('Llista: ') + itemList
             }
             Common.BoxedText {
                 width: editorsList.width
                 height: units.fingerUnit * 2
 
                 fontSize: units.readUnit
-                text: "<p><b>" + itemTitle + "</b></p><p>" + itemDesc + "</p>"
+                text: "<p><b>" + qsTr("Element: ") + itemTitle + "</b></p><p>" + itemDesc + "</p>"
+            }
+
+            Common.BoxedText {
+                width: editorsList.width
+                height: units.fingerUnit * 2
+
+                fontSize: units.readUnit
+                text: qsTr('Context: ') + context
             }
 
             Editors.TextAreaEditor3 {
