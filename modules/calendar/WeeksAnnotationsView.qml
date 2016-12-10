@@ -17,12 +17,8 @@ WeeksView {
         id: actionColors
     }
 
-    subWidget: Item {
+    subWidget: DayBase {
         id: subWidgetItem
-
-        property int day
-        property int month
-        property int year
 
         property int dotsSize: height / 6
         clip: true
@@ -151,7 +147,7 @@ WeeksView {
             filters: ['INSTR(start,?) OR INSTR(end,?)', "state = ?"]
         }
 
-        function init() {
+        function dateUpdated() {
             // Init annotations
             annotationsModel.filters = ['INSTR(start,?) OR INSTR(end,?)'];
             var date = new Date();

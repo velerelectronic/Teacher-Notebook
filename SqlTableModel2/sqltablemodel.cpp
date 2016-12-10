@@ -208,6 +208,15 @@ QString SqlTableModel2::reference() {
     return innerReference;
 }
 
+int SqlTableModel2::removeAllObjects() {
+    QSqlQuery query;
+    query.prepare("DELETE FROM " + innerTableName);
+    setQuery(query);
+    query.exec();
+    updated();
+    return query.numRowsAffected();
+}
+
 int SqlTableModel2::removeObject(const QVariant &identifier) {
     QSqlQuery query;
     if (innerPrimaryKey != "") {

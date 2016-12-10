@@ -81,6 +81,7 @@ import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///modules/pagesfolder' as PagesFolder
+import 'qrc:///modules/cards' as Cards
 import 'qrc:///modules/basic' as Basic
 import "qrc:///common/FormatDates.js" as FormatDates
 
@@ -101,7 +102,7 @@ Window {
 
     onClosing: {
         close.accepted = false;
-        pagesFolder.closeCurrentPage()
+        pagesStackView.goBack();
     }
 
     Common.UseUnits { id: units }
@@ -123,8 +124,73 @@ Window {
             id: pagesFolder
 
             anchors.fill: parent
+            visible: false
 
             onPublishMessage: informationMessage.publishMessage(message)
+        }
+
+        StackView {
+            id: pagesStackView
+
+            anchors.fill: parent
+            anchors.margins: units.nailUnit
+
+            initialItem: Cards.CardsList {
+                slotsObject: pagesStackView
+                onSelectedPage: pagesStackView.addPage(page, parameters, title)
+            }
+
+            PagesFolder.PageConnections {
+                target: pagesStackView.currentItem
+                destination: pagesStackView
+            }
+
+            function addPage(page, parameters, title) {
+                // Parameters must be an associative array
+
+                recentPagesModel.addPage(page, parameters, title);
+
+                var newComp = Qt.createComponent('qrc:///modules/' + page + '.qml');
+                pagesStackView.push({item: 'qrc:///modules/' + page + '.qml', properties: parameters});
+            }
+
+            function goBack() {
+                if (depth>1) {
+                    pop();
+                }
+            }
+
+            //////////
+        }
+
+        Models.RecentPages {
+            id: recentPagesModel
+
+            sort: 'timestamp DESC'
+
+            function addPage(page, parameters, title) {
+                var parametersStr = JSON.stringify(parameters);
+                console.log('adding', page, parametersStr);
+                var found = false;
+                var i;
+                var date = new Date();
+
+                select();
+                for (i=0; i<count; i++) {
+                    var obj = getObjectInRow(i);
+                    if ((obj['page'] == page) && (obj['parameters'] == parametersStr)) {
+                        var objId = obj['id'];
+                        updateObject(objId, {timestamp: date.toISOString(), title: title});
+                        found = true;
+                        console.log('TROBAT')
+                        break;
+                    }
+                }
+                if (!found) {
+                    insertObject({page: page, parameters: parametersStr, timestamp: date.toISOString(), title: title});
+                }
+            }
+
         }
 
         Basic.InformationMessages {
@@ -152,7 +218,6 @@ Window {
             fontSize: units.readUnit
             interval: 2000
         }
-
     }
 }
 

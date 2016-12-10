@@ -108,7 +108,7 @@ Rectangle {
             Layout.fillWidth: true
 
             cellWidth: width / 5
-            cellHeight: cellWidth * (pagesFolderItem.height / pagesFolderItem.width)
+            cellHeight: cellWidth * (sectionsGrid.height / sectionsGrid.width)
 
             clip: true
             model: sectionsModel

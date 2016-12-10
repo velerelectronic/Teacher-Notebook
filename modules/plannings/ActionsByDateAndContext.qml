@@ -17,6 +17,7 @@ Item {
     property var itemListsList
 
     signal planningItemsSelected(string title, string list)
+    signal planningAllSessionsSelected(string title)
     signal updateAll()
 
     Common.UseUnits {
@@ -79,13 +80,29 @@ Item {
         anchors.fill: parent
         spacing: units.nailUnit
 
-        Common.BoxedText {
+        Item {
             Layout.fillWidth: true
             Layout.preferredHeight: units.fingerUnit
 
-            margins: units.nailUnit
-            text: planning
+            RowLayout {
+                anchors.fill: parent
+
+                Common.BoxedText {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    margins: units.nailUnit
+                    text: planning
+                }
+
+                Common.TextButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: contentWidth
+                    text: qsTr('Totes les sessions')
+                    onClicked: planningAllSessionsSelected(planning)
+                }
+            }
         }
+
 
         ListView {
             id: contextsView

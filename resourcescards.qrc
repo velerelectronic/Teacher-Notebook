@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/cards/CardsList.qml</file>
+        <file>modules/cards/SingleCard.qml</file>
+        <file>modules/cards/RecentPagesCard.qml</file>
+        <file>modules/cards/BaseCard.qml</file>
+        <file>modules/cards/TodayEventsCard.qml</file>
+        <file>modules/cards/WeeksCard.qml</file>
+        <file>modules/cards/PlanningsCard.qml</file>
+        <file>modules/cards/LastCheckListsCard.qml</file>
+        <file>modules/cards/OtherPagesCard.qml</file>
+        <file>modules/cards/PendingAnnotationsCard.qml</file>
+        <file>modules/cards/TrashCard.qml</file>
+        <file>modules/cards/InboxAnnotationsCard.qml</file>
+        <file>modules/cards/PinnedAnnotationsCard.qml</file>
+    </qresource>
+</RCC>

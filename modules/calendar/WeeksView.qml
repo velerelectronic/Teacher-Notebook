@@ -9,10 +9,13 @@ Rectangle {
     clip: true
 
     property var initialDate: new Date()
+    property bool interactive: true
     property int weeksNumber: 20
+    property bool daysOverWidget: false
 
     property Component subWidget
 
+    property int requiredHeight: weeksHeader.height + weeksList.contentItem.height
     signal selectedDate(int day, int month, int year)
 
     Common.UseUnits {
@@ -21,8 +24,10 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
+        spacing: 0
 
         Rectangle {
+            id: weeksHeader
             Layout.fillWidth: true
             Layout.preferredHeight: units.fingerUnit * 2
 
@@ -59,6 +64,8 @@ Rectangle {
             z: 1
             property int daySize: Math.floor(width / 7)
 
+            interactive: weeksViewItem.interactive
+
             cellWidth: daySize
             cellHeight: daySize
 
@@ -71,6 +78,7 @@ Rectangle {
                 console.log('today', date);
 
                 var months = [qsTr('GEN'), qsTr('FEB'), qsTr('MAR'), qsTr('ABR'), qsTr('MAI'), qsTr('JUN'), qsTr('JUL'), qsTr('AGO'), qsTr('SET'), qsTr('OCT'), qsTr('NOV'), qsTr('DES')];
+                daysModel.clear();
                 for (var i=0; i<weeksNumber; i++) {
                     for (var j=0; j<7; j++) {
                         var monthName = months[date.getMonth()];
@@ -108,6 +116,7 @@ Rectangle {
                         anchors.fill: parent
                         anchors.margins: units.nailUnit
 
+                        z: (daysOverWidget)?2:1
                         verticalAlignment: Text.AlignTop
                         horizontalAlignment: Text.AlignLeft
 
@@ -130,6 +139,7 @@ Rectangle {
 
                         anchors.fill: parent
                         anchors.margins: units.nailUnit
+                        z: (daysOverWidget)?2:1
 
                         verticalAlignment: Text.AlignTop
                         horizontalAlignment: Text.AlignRight
@@ -143,6 +153,7 @@ Rectangle {
                         id: subWidgetLoader
 
                         anchors.fill: parent
+                        z: (daysOverWidget)?1:2
 
                         sourceComponent: subWidget
 
@@ -150,7 +161,7 @@ Rectangle {
                             item.day = model.day;
                             item.month = model.month;
                             item.year = model.year;
-                            item.init();
+                            item.dateUpdated();
                         }
                     }
                 }
@@ -159,6 +170,19 @@ Rectangle {
 
     }
 
+    function advanceWeek() {
+        initialDate.setDate(initialDate.getDate() + 7);
+        weeksList.setDates();
+    }
 
-    Component.onCompleted: weeksList.setDates()
+    function decreaseWeek() {
+        initialDate.setDate(initialDate.getDate() - 7);
+        weeksList.setDates();
+    }
+
+    function updateContents() {
+        weeksList.setDates();
+    }
+
+    Component.onCompleted: updateContents()
 }
