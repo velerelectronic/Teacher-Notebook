@@ -34,6 +34,7 @@ DatabaseBackup {
         dataBck.createTable('concurrentDocuments', 'document TEXT PRIMARY KEY, lastAccessTime TEXT, parameters TEXT');
         dataBck.createTable('documentAnnotations', 'id INTEGER PRIMARY KEY, document TEXT, title TEXT, desc TEXT, created TEXT, labels TEXT, start TEXT, end TEXT, state INTEGER');
 
+        dataBck.createTable('annotationsConnections', 'id INTEGER PRIMARY KEY, annotationFrom INTEGER, annotationTo INTEGER, connectionType TEXT, created TEXT');
         //dataBck.createTable('resources','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, type TEXT, source TEXT, contents BLOB, hash TEXT, annotation TEXT');
 
         dataBck.createTable('timetables', 'id INTEGER PRIMARY KEY, annotation TEXT, periodTime INTEGER NOT NULL, periodDay INTEGER NOT NULL, title TEXT NOT NULL, startTime TEXT, endTime TEXT');

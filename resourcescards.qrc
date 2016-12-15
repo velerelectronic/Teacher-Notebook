@@ -13,5 +13,7 @@
         <file>modules/cards/TrashCard.qml</file>
         <file>modules/cards/InboxAnnotationsCard.qml</file>
         <file>modules/cards/PinnedAnnotationsCard.qml</file>
+        <file>modules/cards/LastPictureCard.qml</file>
+        <file>modules/cards/DownloadsCard.qml</file>
     </qresource>
 </RCC>

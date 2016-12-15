@@ -9,6 +9,7 @@ Rectangle {
     clip: true
 
     property var initialDate: new Date()
+    property var firstMonthDate: new Date()
     property bool interactive: true
     property int weeksNumber: 20
     property bool daysOverWidget: false
@@ -70,12 +71,12 @@ Rectangle {
             cellHeight: daySize
 
             function setDates() {
-                var date = new Date();
-                date.setFullYear(initialDate.getFullYear());
-                date.setMonth(initialDate.getMonth());
-                date.setDate(initialDate.getDate()-initialDate.getDay()+1);
+                firstMonthDate = new Date();
+                firstMonthDate.setFullYear(initialDate.getFullYear());
+                firstMonthDate.setMonth(initialDate.getMonth());
+                firstMonthDate.setDate(initialDate.getDate()-initialDate.getDay()+1);
 
-                console.log('today', date);
+                var date = new Date(firstMonthDate.getFullYear(), firstMonthDate.getMonth(), firstMonthDate.getDate());
 
                 var months = [qsTr('GEN'), qsTr('FEB'), qsTr('MAR'), qsTr('ABR'), qsTr('MAI'), qsTr('JUN'), qsTr('JUL'), qsTr('AGO'), qsTr('SET'), qsTr('OCT'), qsTr('NOV'), qsTr('DES')];
                 daysModel.clear();
@@ -182,6 +183,11 @@ Rectangle {
 
     function updateContents() {
         weeksList.setDates();
+    }
+
+    function setTodayDate() {
+        initialDate = new Date();
+        updateContents();
     }
 
     Component.onCompleted: updateContents()

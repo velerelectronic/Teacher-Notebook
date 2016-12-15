@@ -49,7 +49,8 @@ RESOURCES += qml.qrc \
     resourcesteachingplanning.qrc \
     resourceswhiteboard.qrc \
     showdown.qrc \
-    resourcescards.qrc
+    resourcescards.qrc \
+    resourcesconnections.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =

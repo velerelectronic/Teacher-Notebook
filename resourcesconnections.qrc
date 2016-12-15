@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/connections/AnnotationConnections.qml</file>
+    </qresource>
+</RCC>

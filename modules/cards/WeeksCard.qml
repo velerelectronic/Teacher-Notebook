@@ -35,7 +35,7 @@ BaseCard {
 
                     onClicked: {
                         weeksCalendarView.decreaseWeek();
-                        referenceDate.text = weeksCalendarView.initialDate.toShortReadableDate();
+                        referenceDate.text = weeksCalendarView.firstMonthDate.toShortReadableDate();
                     }
                 }
                 Text {
@@ -53,6 +53,11 @@ BaseCard {
 
                     text: {
                         return weeksCalendarView.initialDate.toShortReadableDate();
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: weeksCalendarView.setTodayDate()
                     }
                 }
                 Common.ImageButton {
@@ -88,23 +93,39 @@ BaseCard {
             }
 
             subWidget: Calendar.DayBase {
+                id: calendarDayBase
+
                 property int day
                 property int month
                 property int year
 
-                color: (annotationsModel.count>0)?'red':'transparent'
-
                 Models.DocumentAnnotations {
                     id: annotationsModel
-
-                    filters: ['INSTR(start,?) OR INSTR(end,?)']
                 }
 
                 function dateUpdated() {
                     var date = new Date(year, month, day);
                     var dateStr = date.toYYYYMMDDFormat();
+                    annotationsModel.filters = ['INSTR(start,?) OR INSTR(end,?)', "IFNULL(state,0) != 3"];
                     annotationsModel.bindValues = [dateStr, dateStr];
                     annotationsModel.select();
+
+                    if (annotationsModel.count > 0)
+                        calendarDayBase.color = 'red';
+                    else {
+                        annotationsModel.filters = ['INSTR(start,?) OR INSTR(end,?)', "state = 3"];
+                        annotationsModel.bindValues = [dateStr, dateStr];
+                        annotationsModel.select();
+                        if (annotationsModel.count > 0) {
+                            calendarDayBase.color = 'green';
+                        } else {
+                            calendarDayBase.color = 'white';
+                        }
+                    }
+                    for (var i=0; i<annotationsModel.count; i++) {
+                        var obj = pendingAnnotationsModel.getObjectInRow(i);
+                        console.log('date updated', i, obj['state'], obj['title']);
+                    }
                 }
             }
         }

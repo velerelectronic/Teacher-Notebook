@@ -20,5 +20,6 @@
         <file>models/PlanningItems.qml</file>
         <file>models/PlanningItemsActionsModel.qml</file>
         <file>models/RecentPages.qml</file>
+        <file>models/AnnotationsConnections.qml</file>
     </qresource>
 </RCC>

@@ -11,6 +11,7 @@ import 'qrc:///models' as Models
 import 'qrc:///editors' as Editors
 import 'qrc:///modules/documents' as Documents
 import 'qrc:///modules/files' as Files
+import 'qrc:///modules/connections' as AnnotationsConnections
 
 Item {
     id: showAnnotationItem
@@ -378,6 +379,22 @@ Item {
                         }
                     }
 
+                }
+
+                Common.BasicSection {
+                    width: partsList.width
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+                    caption: qsTr('Connexions')
+
+                    AnnotationsConnections.AnnotationConnections {
+                        annotationId: showAnnotationItem.identifier
+
+                        width: parent.width
+                        height: requiredHeight
+
+                        onAnnotationSelected: showAnnotationItem.annotationSelected(annotation)
+                    }
                 }
             }
         }

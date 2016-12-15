@@ -206,6 +206,8 @@ Item {
         cardsModel.appendR({title: qsTr('Setmanes'), cardName: 'Weeks'});
         cardsModel.appendR({title: qsTr('Valoracions'), cardName: 'LastCheckLists'});
         cardsModel.appendR({title: qsTr('Destacades'), cardName: 'PinnedAnnotations'});
+        cardsModel.appendR({title: qsTr('Fotografies'), cardName: 'LastPicture'});
+        cardsModel.appendR({title: qsTr('Descàrregues'), cardName: 'Downloads'});
         cardsModel.appendR({title: qsTr('Altres pàgines'), cardName: 'OtherPages'});
         cardsModel.appendR({title: qsTr('Paperera'), cardName: 'Trash'});
     }
