@@ -67,6 +67,10 @@ Connections {
         }
     }
 
+    onGallerySelected: {
+        console.log('sourceRoot', sourceRoot);
+        destination.addPage('files/Gallery', {folder: sourceRoot});
+    }
     /*
     onGotoPrevious: {
         //primarySource.gotoPrevious();

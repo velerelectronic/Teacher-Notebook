@@ -23,7 +23,8 @@ SOURCES += main.cpp \
     databasebackup.cpp \
     standardpaths.cpp \
     fileio.cpp \
-    imagedata.cpp
+    imagedata.cpp \
+    imagefromblob.cpp
 
 RESOURCES += qml.qrc \
     common.qrc \
@@ -102,7 +103,8 @@ HEADERS += \
     standardpaths.h \
     fileio.h \
     imagedata.h \
-    TeachingPlanning/xmlmodel.h
+    TeachingPlanning/xmlmodel.h \
+    imagefromblob.h
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 

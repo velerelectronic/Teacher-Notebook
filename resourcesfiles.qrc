@@ -5,5 +5,6 @@
         <file>modules/files/Gallery.qml</file>
         <file>modules/files/FileViewer.qml</file>
         <file>modules/files/DocumentsImporter.qml</file>
+        <file>modules/files/ImportImageIntoAnnotation.qml</file>
     </qresource>
 </RCC>

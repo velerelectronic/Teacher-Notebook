@@ -5,6 +5,9 @@
 #include <QDebug>
 #include <QString>
 #include <QPixmap>
+#include <QImage>
+#include <QBuffer>
+#include <QDebug>
 
 FileIO::FileIO(QObject *parent) :
     QObject(parent)
@@ -18,6 +21,26 @@ bool FileIO::addExtension(const QString &extension) {
         mSource = mSource + newExtension;
         sourceChanged();
     }
+}
+
+bool FileIO::append(const QString &data) {
+    if (mSource.isEmpty()) {
+        qDebug() << "Empty";
+        return false;
+    }
+
+    QFile file(mSource);
+    if (!file.open(QFile::WriteOnly | QFile::Append)) {
+        qDebug() << "No file";
+        return false;
+    }
+
+    QTextStream out(&file);
+    out << data;
+
+    file.close();
+
+    return true;
 }
 
 bool FileIO::create() {
@@ -35,16 +58,8 @@ bool FileIO::create() {
     return true;
 }
 
-QString FileIO::source() {
-    return mSource;
-}
-
-void FileIO::setSource(const QString& source) {
-    mSource = source;
-    if (mSource.startsWith("file://")) {
-        mSource.remove(0,6);
-    }
-    sourceChanged();
+QString FileIO::filePath() {
+    // Change this
 }
 
 QString FileIO::read()
@@ -72,24 +87,57 @@ QString FileIO::read()
     return fileContent;
 }
 
-bool FileIO::append(const QString &data) {
-    if (mSource.isEmpty()) {
-        qDebug() << "Empty";
-        return false;
+QString FileIO::readBinary() {
+    if (mSource.isEmpty()){
+        emit error("Source is empty");
+        return QString();
     }
 
     QFile file(mSource);
-    if (!file.open(QFile::WriteOnly | QFile::Append)) {
-        qDebug() << "No file";
-        return false;
+    if ( file.open(QIODevice::ReadOnly) ) {
+        QByteArray binaryData = file.readAll();
+        file.close();
+        return QString(binaryData.toBase64());
+    } else {
+        emit error("Unable to open the file");
+        return QString();
+    }
+}
+
+QString FileIO::readBase64Image() {
+    if (mSource.isEmpty()){
+        emit error("Source is empty");
+        return QString();
     }
 
-    QTextStream out(&file);
-    out << data;
+    QByteArray imageContents;
+    QFile file(mSource);
+    if (file.open(QIODevice::ReadOnly)) {
+        QImage image;
+        if (image.load(&file,0)) {
+            QBuffer buffer(&imageContents);
+            buffer.open(QIODevice::WriteOnly);
+            image.save(&buffer, "PNG");
+        }
+    }
+    return QString("data:image/png;base64,") + QString(imageContents.toBase64());
+}
 
-    file.close();
+bool FileIO::removeSource() {
+    QFile file(mSource);
+    return file.remove();
+}
 
-    return true;
+void FileIO::setSource(const QString& source) {
+    mSource = source;
+    if (mSource.startsWith("file://")) {
+        mSource.remove(0,6);
+    }
+    sourceChanged();
+}
+
+QString FileIO::source() {
+    return mSource;
 }
 
 bool FileIO::write(const QString& data)
@@ -137,6 +185,3 @@ bool FileIO::writePngImage(const QString &data) {
     return true;
 }
 
-QString FileIO::filePath() {
-    // Change this
-}

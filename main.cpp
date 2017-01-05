@@ -27,6 +27,8 @@
 #include "RubricXml/rubricdescriptorsmodel.h"
 #include "RubricXml/rubricpopulationmodel.h"
 
+#include "imagefromblob.h"
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
@@ -43,6 +45,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<RubricCriteria>("RubricXml", 1, 0, "RubricCriteriaModel");
     qmlRegisterType<RubricDescriptorsModel>("RubricXml", 1, 0, "RubricDescriptorsModel");
     qmlRegisterType<RubricPopulationModel>("RubricXml", 1, 0, "RubricPopulationModel");
+    qmlRegisterType<QImageItem>("ImageItem", 1, 0, "ImageFromBlob");
 
     qmlRegisterType<FileIO, 1>("FileIO", 1, 0, "FileIO");
     qmlRegisterType<QmlClipboardAdapter, 1>("ClipboardAdapter", 1, 0, "QClipboard");

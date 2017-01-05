@@ -120,6 +120,72 @@ Window {
         color: '#F2F2F2'
         anchors.fill: parent
 
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: units.nailUnit
+            spacing: units.fingerUnit
+
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: units.fingerUnit * 1.5
+
+                z: 2
+
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: units.fingerUnit
+
+                    Common.ImageButton {
+                        Layout.preferredWidth: height
+                        Layout.fillHeight: true
+                        size: height
+                        image: (pagesStackView.depth>1)?'arrow-145769':'small-41255'
+                        onClicked: pagesStackView.goBack()
+                    }
+                    Common.SearchBox {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                    }
+                }
+            }
+
+            StackView {
+                id: pagesStackView
+
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+
+                z: 1
+
+                initialItem: Cards.CardsList {
+                    slotsObject: pagesStackView
+                    onSelectedPage: pagesStackView.addPage(page, parameters, title)
+                }
+
+                PagesFolder.PageConnections {
+                    target: pagesStackView.currentItem
+                    destination: pagesStackView
+                }
+
+                function addPage(page, parameters, title) {
+                    // Parameters must be an associative array
+
+                    recentPagesModel.addPage(page, parameters, title);
+
+                    var newComp = Qt.createComponent('qrc:///modules/' + page + '.qml');
+                    pagesStackView.push({item: 'qrc:///modules/' + page + '.qml', properties: parameters});
+                }
+
+                function goBack() {
+                    if (depth>1) {
+                        pop();
+                    }
+                }
+
+                //////////
+            }
+        }
+
         PagesFolder.WorkingSpace {
             id: pagesFolder
 
@@ -127,40 +193,6 @@ Window {
             visible: false
 
             onPublishMessage: informationMessage.publishMessage(message)
-        }
-
-        StackView {
-            id: pagesStackView
-
-            anchors.fill: parent
-            anchors.margins: units.nailUnit
-
-            initialItem: Cards.CardsList {
-                slotsObject: pagesStackView
-                onSelectedPage: pagesStackView.addPage(page, parameters, title)
-            }
-
-            PagesFolder.PageConnections {
-                target: pagesStackView.currentItem
-                destination: pagesStackView
-            }
-
-            function addPage(page, parameters, title) {
-                // Parameters must be an associative array
-
-                recentPagesModel.addPage(page, parameters, title);
-
-                var newComp = Qt.createComponent('qrc:///modules/' + page + '.qml');
-                pagesStackView.push({item: 'qrc:///modules/' + page + '.qml', properties: parameters});
-            }
-
-            function goBack() {
-                if (depth>1) {
-                    pop();
-                }
-            }
-
-            //////////
         }
 
         Models.RecentPages {

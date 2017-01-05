@@ -62,5 +62,9 @@ DatabaseBackup {
         //dataBck.createTable('planningsFields', 'id INTEGER PRIMARY KEY, planning TEXT, row INTEGER, field TEXT, contents TEXT, contentType TEXT');
 
         dataBck.createTable('recentPages', 'id INTEGER PRIMARY KEY, page TEXT, parameters TEXT, title TEXT, timestamp TEXT, state TEXT');
+
+        dataBck.alterTable('documentAnnotations', 'source','TEXT');
+        dataBck.alterTable('documentAnnotations', 'hash', 'TEXT');
+        dataBck.alterTable('documentAnnotations', 'contents', 'BLOB');
     }
 }

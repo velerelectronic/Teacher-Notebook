@@ -21,10 +21,13 @@ public:
 
     Q_INVOKABLE bool create();
     Q_INVOKABLE QString read();
+    Q_INVOKABLE QString readBinary();
+    Q_INVOKABLE QString readBase64Image();
     Q_INVOKABLE bool write(const QString& data);
     Q_INVOKABLE bool writePngImage(const QString &data);
     Q_INVOKABLE bool append(const QString& data);
     Q_INVOKABLE bool addExtension(const QString& extension);
+    Q_INVOKABLE bool removeSource();
 
     QString source();
     QString filePath();

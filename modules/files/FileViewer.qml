@@ -13,10 +13,15 @@ Rectangle {
     signal editorRequested(string file)
     signal toggleFullScreen()
 
+    property bool reloadEnabled: true
+    property bool showImageEnabled: true
+
     property bool visibleImageInfo: true
     property int requiredHeight: bigImageView.implicitImageHeight * (width / bigImageView.implicitImageWidth)
     property int extraBottomMargin: 0
     property int extraTopMargin: 0
+
+    property alias directFileURL: bigImageView.source
 
     Common.UseUnits {
         id: units
@@ -61,13 +66,15 @@ Rectangle {
             height: Math.min(flickableItem.height, implicitHeight)
 
             fillMode: Image.PreserveAspectFit
-            source: (fileURL !== '')?fileURL:undefined
-            cache: false
+            source: (showImageEnabled)?fileURL:undefined
+            cache: true
             asynchronous: false
 
             function reloadImage() {
-                source = 'qrc:///icons/hourglass-23654.svg';
-                source = Qt.binding(function() { return (fileURL !== '')?fileURL:undefined; });
+                if (reloadEnabled) {
+                    source = 'qrc:///icons/hourglass-23654.svg';
+                    source = Qt.binding(function() { return (showImageEnabled)?fileURL:undefined; });
+                }
             }
 
             /*

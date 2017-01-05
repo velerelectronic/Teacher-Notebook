@@ -11,7 +11,10 @@ SqlTableModel {
         'labels',
         'start',
         'end',
-        'state'
+        'state',
+        'source',
+        'contents',
+        'hash'
     ]
     searchFields: []
     primaryKey: 'id'

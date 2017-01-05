@@ -11,6 +11,7 @@ BaseCard {
     requiredHeight: imageData.width
 
     signal imageViewerSelected(string file)
+    signal gallerySelected(string sourceRoot)
 
     Image {
         id: imageData
@@ -34,7 +35,11 @@ BaseCard {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: imageViewerSelected(imageData.source)
+        onClicked: {
+            gallerySelected(picturesModel.folder);
+
+            //imageViewerSelected(imageData.source)
+        }
     }
 
     FolderListModel {

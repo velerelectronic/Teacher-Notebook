@@ -6,6 +6,8 @@ import QtQuick.Dialogs 1.2
 import ClipboardAdapter 1.0
 import PersonalTypes 1.0
 
+import ImageItem 1.0
+
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///editors' as Editors
@@ -305,11 +307,29 @@ Item {
                         Files.FileViewer {
                             id: contentImage
 
-                            Layout.preferredHeight: (fileURL !== '')?contentImage.requiredHeight:0
+                            Layout.preferredHeight: (contentImage.fileURL !== '')?contentImage.width:0
+                            //Layout.preferredHeight: (fileURL !== '')?contentImage.requiredHeight:0
                             Layout.fillWidth: true
 
                             clip: true
+
+                            reloadEnabled: false
                         }
+                    }
+                }
+
+                Common.BasicSection {
+                    width: partsList.width
+                    height: width
+
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+                    caption: qsTr('Continguts')
+
+                    ImageFromBlob {
+                        id: imagePreviewer
+                        width: parent.width
+                        height: parent.width - units.fingerUnit * 2
                     }
                 }
 
@@ -465,6 +485,7 @@ Item {
 
 
     function getText() {
+        console.log('identifier is ', showAnnotationItem.identifier);
         if (showAnnotationItem.identifier > -1) {
             annotationsModel.filters = ["id = ?"];
             annotationsModel.bindValues = [showAnnotationItem.identifier];
@@ -484,6 +505,8 @@ Item {
         }
 
         annotationsModel.select();
+        console.log('annotations with id', showAnnotationItem.identifier, 'count', annotationsModel.count);
+
         if (annotationsModel.count>0) {
             var obj;
             obj = annotationsModel.getObjectInRow(0);
@@ -496,11 +519,8 @@ Item {
             periodStart = obj['start'];
             periodEnd = obj['end'];
             descText = obj['desc'];
-            if (descText.indexOf('data:image/png;base64,') == 0) {
-                contentImage.fileURL = descText;
-            } else {
-                contentText.text = parser.toHtml(descText);
-            }
+            imagePreviewer.data = obj['contents'];
+            contentText.text = parser.toHtml(descText);
 
             stateValue = obj['state'];
             document = obj['document'];

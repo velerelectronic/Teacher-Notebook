@@ -16,6 +16,7 @@ Rectangle {
     property int numberOfColumns: 3
 
     signal imageViewerSelected(string file)
+    signal annotationSelected(int annotation)
 
     color: 'gray'
 
@@ -170,6 +171,9 @@ Rectangle {
                         selectedFile = model.fileURL;
                         imageViewerSelected(selectedFile);
                     }
+                    onPressAndHold: {
+                        importIntoAnnotationDialog.importImage(model.fileURL);
+                    }
                 }
 
                 Image {
@@ -241,4 +245,24 @@ Rectangle {
             return match[1];
         }
     }
+
+    Common.SuperposedWidget {
+        id: importIntoAnnotationDialog
+
+        function importImage(fileURL) {
+            load(qsTr('Importa imatge'), 'files/ImportImageIntoAnnotation', {fileURL: fileURL});
+            open();
+        }
+
+        Connections {
+            target: importIntoAnnotationDialog.mainItem
+
+            onImportedFileIntoAnnotation: {
+                var newAnnotation = annotation;
+                importIntoAnnotationDialog.close();
+                annotationSelected(newAnnotation);
+            }
+        }
+    }
+
 }
