@@ -26,7 +26,6 @@ Item {
     signal newRubricAssessment(string annotation)
     signal resourceSelected(int resource)
     signal rubricAssessmentSelected(int assessment)
-    signal showRelatedAnnotations()
     signal showRelatedAnnotationsByLabels()
     signal showRelatedAnnotationsByPeriod()
 
@@ -284,7 +283,7 @@ Item {
                         }
                         Text {
                             id: contentText
-                            property int requiredHeight: Math.max(contentHeight, units.fingerUnit)
+                            property int requiredHeight: Math.max(contentHeight, units.fingerUnit) + addDescriptionButton.size + units.fingerUnit
 
                             Layout.preferredHeight: contentText.requiredHeight
                             Layout.fillWidth: true
@@ -303,6 +302,17 @@ Item {
                                 image: 'edit-153612'
                                 onClicked: descEditorDialog.open()
                             }
+                            Common.ImageButton {
+                                id: addDescriptionButton
+                                anchors {
+                                    bottom: parent.bottom
+                                    right: parent.right
+                                }
+
+                                size: units.fingerUnit
+                                image: 'plus-24844'
+                                onClicked: descAppenderDialog.openAppender()
+                            }
                         }
                         Files.FileViewer {
                             id: contentImage
@@ -320,7 +330,7 @@ Item {
 
                 Common.BasicSection {
                     width: partsList.width
-                    height: width
+                    height: requiredHeight
 
                     padding: units.fingerUnit
                     captionSize: units.readUnit
@@ -329,76 +339,8 @@ Item {
                     ImageFromBlob {
                         id: imagePreviewer
                         width: parent.width
-                        height: parent.width - units.fingerUnit * 2
+                        height: width * implicitHeight / implicitWidth
                     }
-                }
-
-                Common.BasicSection {
-                    width: partsList.width
-                    padding: units.fingerUnit
-                    captionSize: units.readUnit
-                    caption: qsTr('Anotacions relacionades')
-
-                    Item {
-                        id: relatedAnnotationsArea
-                        width: parent.width
-                        height: units.fingerUnit * 2
-                        RowLayout {
-                            anchors.fill: parent
-                            spacing: units.nailUnit
-                            Text {
-                                Layout.preferredWidth: units.fingerUnit * 4
-                                Layout.fillHeight: true
-                                font.pixelSize: units.readUnit
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                verticalAlignment: Text.AlignVCenter
-                                horizontalAlignment: Text.AlignHCenter
-                                text: qsTr('Anotacions relacionades')
-                            }
-
-                            ListView {
-                                id: relatedAnnotationsList
-                                Layout.fillHeight: true
-                                Layout.fillWidth: true
-                                orientation: ListView.Horizontal
-                                clip: true
-
-                                rightMargin: units.fingerUnit * 3
-                                model: annotationsModel
-
-                                spacing: units.nailUnit
-
-                                delegate: Rectangle {
-                                    z: 1
-                                    width: units.fingerUnit * 6
-                                    height: relatedAnnotationsList.height
-                                    border.color: 'black'
-                                    Text {
-                                        anchors.fill: parent
-                                        anchors.margins: units.nailUnit
-                                        font.pixelSize: units.readUnit
-                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                        elide: Text.ElideRight
-                                        text: model.title
-                                    }
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: annotationSelected(model.id)
-                                    }
-                                }
-                                footer: Common.ImageButton {
-                                    id: relatedAnnotationsButton
-                                    height: relatedAnnotationsList.height
-                                    width: relatedAnnotationsButton.height
-                                    image: 'arrow-145766'
-                                    size: units.fingerUnit * 2
-                                    onClicked: showRelatedAnnotations()
-                                }
-
-                            }
-                        }
-                    }
-
                 }
 
                 Common.BasicSection {
@@ -525,27 +467,6 @@ Item {
             stateValue = obj['state'];
             document = obj['document'];
         }
-
-        // Look for related annotations in labels and period
-        annotationsModel.sort = 'start ASC, end ASC, title ASC';
-        var labelsArray = showAnnotationItem.labels.trim().split(' ');
-        var labelFilter = [];
-        for (var i=0; i<labelsArray.length; i++) {
-            labelFilter.push("(INSTR(' '||lower(labels)||' ', ?))");
-        }
-        var labelFilterString = labelFilter.join(" OR ");
-
-        var periodFilter = "((start <=?) AND (end >= ?))";
-        var notitleFilter = "(title != '')"
-        var differentTitle = "(title != ?)"
-
-        annotationsModel.filters = [notitleFilter,differentTitle,periodFilter + ((labelFilterString != "")?" OR (" + labelFilterString + ")":'')];
-        labelsArray.unshift(showAnnotationItem.periodStart);
-        labelsArray.unshift(showAnnotationItem.periodStart);
-        labelsArray.unshift(identifier);
-        annotationsModel.bindValues = labelsArray;
-        console.log("LABELS array",labelsArray);
-        annotationsModel.select();
     }
 
     function copyAnnotationDescription() {
@@ -598,6 +519,32 @@ Item {
         onAccepted: {
             annotationsModel.updateObject(identifier, {desc: descEditor.content});
             getText();
+        }
+    }
+
+    Common.SuperposedMenu {
+        id: descAppenderDialog
+
+        parentWidth: parent.width
+
+        title: qsTr('Afegeix text a la descripció')
+
+        standardButtons: StandardButton.Save | StandardButton.Cancel
+
+        Editors.TextAreaEditor3 {
+            id: extraDescEditor
+            width: parent.width
+        }
+
+        onAccepted: {
+            var date = new Date();
+            annotationsModel.updateObject(identifier, {desc: showAnnotationItem.descText + '\n\n**' + date.toLocaleString() + '** ' + extraDescEditor.content.trim()});
+            getText();
+        }
+
+        function openAppender() {
+            extraDescEditor.content = '';
+            open();
         }
     }
 

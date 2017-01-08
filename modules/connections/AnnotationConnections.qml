@@ -1,6 +1,7 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.1
 import PersonalTypes 1.0
+import QtQuick.Dialogs 1.2
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///editors' as Editors
@@ -42,13 +43,13 @@ ListView {
     section.delegate: Rectangle {
         color: 'gray'
         width: annotationConnectionsItem.width
-        height: units.fingerUnit
+        height: units.fingerUnit * 1.5
 
         Text {
             anchors.fill: parent
 
-            verticalAlignment: Text.AlignVCenter
             padding: units.nailUnit
+            verticalAlignment: Text.AlignVCenter
             font.pixelSize: units.readUnit
             font.bold: true
             color: 'white'
@@ -61,7 +62,7 @@ ListView {
         id: annotationLoader
 
         width: annotationConnectionsItem.width
-        height: units.fingerUnit * 1.5
+        height: units.fingerUnit * 3
 
         asynchronous: true
 
@@ -171,6 +172,8 @@ ListView {
 
         property int connectionId
 
+        standardButtons: StandardButton.Save | StandardButton.Cancel
+
         Editors.TextAreaEditor3 {
             id: connectionTypeEditor
 
@@ -178,23 +181,16 @@ ListView {
             height: units.fingerUnit * 10
         }
 
-        Common.TextButton {
-            width: changeConnectionTypeDialog.parentWidth
-            height: units.fingerUnit
-
-            text: qsTr('Desa')
-
-            onClicked: {
-                connectionsModel.updateObject(changeConnectionTypeDialog.connectionId, {connectionType: connectionTypeEditor.content.trim()});
-                connectionsModel.selectFrom();
-                changeConnectionTypeDialog.close();
-            }
-        }
-
         function openConnectionEditor(connectionId, connectionType) {
             changeConnectionTypeDialog.connectionId = connectionId;
             connectionTypeEditor.content = connectionType;
             open();
+        }
+
+        onAccepted: {
+            connectionsModel.updateObject(changeConnectionTypeDialog.connectionId, {connectionType: connectionTypeEditor.content.trim()});
+            connectionsModel.selectFrom();
+            changeConnectionTypeDialog.close();
         }
     }
 

@@ -20,7 +20,7 @@ Rectangle {
     }
 
     property string document: ''
-    property string stateValue: ''
+    property string stateValue: '0'
 
     property string periodFilter: ''
     property string periodFilterString: '(start>=? AND end<?) OR (start<? AND end>=?) OR (start>=? AND start<?) OR (end>=? AND end<?)'
