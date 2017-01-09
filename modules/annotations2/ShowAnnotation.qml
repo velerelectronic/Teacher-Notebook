@@ -336,10 +336,97 @@ Item {
                     captionSize: units.readUnit
                     caption: qsTr('Continguts')
 
-                    ImageFromBlob {
-                        id: imagePreviewer
+                    Item {
                         width: parent.width
-                        height: width * implicitHeight / implicitWidth
+                        height: imagePreviewer.height + annotationSelectorItem.height
+
+                        ImageFromBlob {
+                            id: imagePreviewer
+
+                            anchors {
+                                top: parent.top
+                                left: parent.left
+                                right: parent.right
+                            }
+
+                            height: width * implicitHeight / implicitWidth
+                        }
+
+                        Text {
+                            id: annotationSelectorItem
+
+                            property int selectedAnnotation: -1
+
+                            anchors {
+                                top: imagePreviewer.bottom
+                                left: parent.left
+                                right: parent.right
+                            }
+                            height: units.fingerUnit * 2
+
+                            verticalAlignment: Text.AlignVCenter
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            elide: Text.ElideRight
+
+                            function select(annotation) {
+                                var obj = annotationsModel.getObject(annotation);
+                                if (obj) {
+                                    selectedAnnotation = annotation;
+                                    annotationSelectorItem.text = '<b>' + obj['title'] + '</b>&nbsp;' + obj['desc'];
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    if (annotationSelectorItem.selectedAnnotation > -1) {
+                                        annotationSelected(annotationSelectorItem.selectedAnnotation);
+                                    }
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: imagePreviewer
+                            onClicked: {
+                                var relX = mouse.x / width;
+                                var relY = mouse.y / height;
+
+                                var minimumSqDistance;
+                                var minimumConnection;
+                                var minimumAnnotation;
+                                var minimumDefined = false;
+
+                                // Look for the location closer to (relX,relY)
+                                for (var i=0; i<annotationsConnectionsItem.connectionsModelRef.count; i++) {
+                                    var connectionObj = annotationsConnectionsItem.connectionsModelRef.getObjectInRow(i);
+                                    var parts = connectionObj['location'].split(' ');
+                                    if (parts[0] == 'rel') {
+                                        var posX = parseFloat(parts[1]);
+                                        var posY = parseFloat(parts[2]);
+
+                                        var newDistance = Math.pow((relX - posX), 2) + Math.pow((relY - posY), 2);
+                                        if (minimumDefined) {
+                                            if (newDistance < minimumSqDistance) {
+                                                minimumSqDistance = newDistance;
+                                                minimumConnection = connectionObj['id'];
+                                                minimumAnnotation = connectionObj['annotationTo'];
+                                            }
+                                        } else {
+                                            minimumSqDistance = newDistance;
+                                            minimumConnection = connectionObj['id'];
+                                            minimumAnnotation = connectionObj['annotationTo'];
+                                            minimumDefined = true;
+                                        }
+                                    }
+                                }
+
+                                if (minimumDefined) {
+                                    annotationSelectorItem.select(minimumAnnotation);
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -350,6 +437,8 @@ Item {
                     caption: qsTr('Connexions')
 
                     AnnotationsConnections.AnnotationConnections {
+                        id: annotationsConnectionsItem
+
                         annotationId: showAnnotationItem.identifier
 
                         width: parent.width

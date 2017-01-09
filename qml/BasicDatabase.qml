@@ -66,5 +66,6 @@ DatabaseBackup {
         dataBck.alterTable('documentAnnotations', 'source','TEXT');
         dataBck.alterTable('documentAnnotations', 'hash', 'TEXT');
         dataBck.alterTable('documentAnnotations', 'contents', 'BLOB');
+        dataBck.alterTable('annotationsConnections', 'location', 'TEXT');
     }
 }

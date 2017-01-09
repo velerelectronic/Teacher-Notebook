@@ -12,6 +12,7 @@ ListView {
 
     property int annotationId
     property int requiredHeight: contentItem.height
+    property alias connectionsModelRef: connectionsModel
 
     signal annotationSelected(int annotation)
 
@@ -68,6 +69,7 @@ ListView {
 
         property int connectionId: model.id
         property string connectionType: model.connectionType
+        property string connectionLocation: model.location
 
         sourceComponent: Rectangle {
             RowLayout {
@@ -109,6 +111,25 @@ ListView {
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     elide: Text.ElideRight
+                }
+                Text {
+                    id: annotationLocation
+
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: parent.width / 3
+
+                    verticalAlignment: Text.AlignVCenter
+
+                    font.pixelSize: units.readUnit * 0.6
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
+
+                    text: annotationLoader.connectionLocation
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: editLocationDialog.openLocationEditor(annotationLoader.connectionId)
+                    }
                 }
             }
 
@@ -191,6 +212,29 @@ ListView {
             connectionsModel.updateObject(changeConnectionTypeDialog.connectionId, {connectionType: connectionTypeEditor.content.trim()});
             connectionsModel.selectFrom();
             changeConnectionTypeDialog.close();
+        }
+    }
+
+    Common.SuperposedWidget {
+        id: editLocationDialog
+
+        title: qsTr('Canvia la localització')
+
+        property int connectionId
+
+        function openLocationEditor(connection) {
+            editLocationDialog.connectionId = connection;
+            load(qsTr('Canvia la localització'), 'connections/EditConnectionLocation', {annotation: annotationId});
+        }
+
+        Connections {
+            target: editLocationDialog.mainItem
+
+            onLocationChanged: {
+                connectionsModel.updateObject(editLocationDialog.connectionId, {location: location});
+                editLocationDialog.close();
+                connectionsModel.selectFrom();
+            }
         }
     }
 

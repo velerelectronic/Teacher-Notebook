@@ -2,6 +2,6 @@ import PersonalTypes 1.0
 
 SqlTableModel {
     tableName: 'annotationsConnections'
-    fieldNames: ['id','annotationFrom','annotationTo','connectionType','created']
+    fieldNames: ['id','annotationFrom','annotationTo','connectionType','created','location']
     primaryKey: 'id'
 }
