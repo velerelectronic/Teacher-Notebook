@@ -15,5 +15,6 @@
         <file>modules/cards/PinnedAnnotationsCard.qml</file>
         <file>modules/cards/LastPictureCard.qml</file>
         <file>modules/cards/DownloadsCard.qml</file>
+        <file>modules/cards/OtherDirections.qml</file>
     </qresource>
 </RCC>

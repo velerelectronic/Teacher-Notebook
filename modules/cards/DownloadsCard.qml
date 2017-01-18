@@ -32,6 +32,7 @@ BaseCard {
                 font.pixelSize: units.readUnit
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
                 text: fileName
             }
             MouseArea {

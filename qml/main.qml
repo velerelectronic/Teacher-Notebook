@@ -102,7 +102,7 @@ Window {
 
     onClosing: {
         close.accepted = false;
-        pagesStackView.goBack();
+        pagesLoaderView.goBack();
     }
 
     Common.UseUnits { id: units }
@@ -139,8 +139,8 @@ Window {
                         Layout.preferredWidth: height
                         Layout.fillHeight: true
                         size: height
-                        image: (pagesStackView.depth>1)?'arrow-145769':'small-41255'
-                        onClicked: pagesStackView.goBack()
+                        image: 'small-41255' // 'arrow-145769'
+                        onClicked: otherDirectionsDialog.openOtherDirections()
                     }
                     Common.SearchBox {
                         Layout.fillWidth: true
@@ -149,22 +149,26 @@ Window {
                 }
             }
 
-            StackView {
-                id: pagesStackView
+            Loader {
+                id: pagesLoaderView
 
                 Layout.fillHeight: true
                 Layout.fillWidth: true
 
                 z: 1
 
-                initialItem: Cards.CardsList {
-                    slotsObject: pagesStackView
-                    onSelectedPage: pagesStackView.addPage(page, parameters, title)
+                Component {
+                    id: mainPageComponent
+
+                    Cards.CardsList {
+                        slotsObject: pagesLoaderView
+                        onSelectedPage: pagesLoaderView.addPage(page, parameters, title)
+                    }
                 }
 
                 PagesFolder.PageConnections {
-                    target: pagesStackView.currentItem
-                    destination: pagesStackView
+                    target: pagesLoaderView.item
+                    destination: pagesLoaderView
                 }
 
                 function addPage(page, parameters, title) {
@@ -172,17 +176,18 @@ Window {
 
                     recentPagesModel.addPage(page, parameters, title);
 
-                    var newComp = Qt.createComponent('qrc:///modules/' + page + '.qml');
-                    pagesStackView.push({item: 'qrc:///modules/' + page + '.qml', properties: parameters});
+                    pagesLoaderView.setSource('qrc:///modules/' + page + '.qml', parameters);
+                }
+
+                function openMainPage() {
+                    sourceComponent = mainPageComponent;
                 }
 
                 function goBack() {
-                    if (depth>1) {
-                        pop();
-                    }
+                    otherDirectionsDialog.openOtherDirections();
                 }
 
-                //////////
+                Component.onCompleted: openMainPage()
             }
         }
 
@@ -193,6 +198,28 @@ Window {
             visible: false
 
             onPublishMessage: informationMessage.publishMessage(message)
+        }
+
+        Common.SuperposedWidget {
+            id: otherDirectionsDialog
+
+            function openOtherDirections() {
+                load(qsTr('Canvia a...'), 'cards/OtherDirections', {});
+            }
+
+            Connections {
+                target: otherDirectionsDialog.mainItem
+
+                onMainPageSelected: {
+                    otherDirectionsDialog.close();
+                    pagesLoaderView.openMainPage();
+                }
+
+                onSelectedPage: {
+                    otherDirectionsDialog.close();
+                    pagesLoaderView.addPage(page, parameters, title);
+                }
+            }
         }
 
         Models.RecentPages {
