@@ -18,6 +18,8 @@ BaseCard {
 
         sort: 'timestamp DESC'
 
+        limit: 10
+
         function deletePage(identifier) {
             removeObject(identifier);
             select();

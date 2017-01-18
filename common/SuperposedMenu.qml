@@ -1,4 +1,5 @@
 import QtQuick 2.5
+import QtQuick.Window 2.0
 import QtQml.Models 2.2
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.2
@@ -9,8 +10,8 @@ Dialog {
 
     default property alias entries: menuEntriesModel.children
 
-    property int parentWidth: parent.width
-    property int parentHeight: parent.height
+    property int parentWidth: Screen.width * 0.8
+    property int parentHeight: Screen.height * 0.8
 
     standardButtons: StandardButton.Close
 

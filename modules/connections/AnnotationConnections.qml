@@ -14,6 +14,8 @@ ListView {
     property int requiredHeight: contentItem.height
     property alias connectionsModelRef: connectionsModel
 
+    property bool reversedConnections: false
+
     signal annotationSelected(int annotation)
 
     interactive: false
@@ -25,13 +27,26 @@ ListView {
     Models.AnnotationsConnections {
         id: connectionsModel
 
-        filters: ['annotationFrom=?']
-
         sort: 'connectionType ASC'
 
         function selectFrom() {
+            filters = ['annotationFrom=?'];
             bindValues = [annotationId];
             select();
+        }
+
+        function selectTo() {
+            filters = ['annotationTo=?'];
+            bindValues = [annotationId];
+            select();
+        }
+
+        function update() {
+            if (reversedConnections) {
+                selectTo();
+            } else {
+                selectFrom();
+            }
         }
     }
 
@@ -70,6 +85,7 @@ ListView {
         property int connectionId: model.id
         property string connectionType: model.connectionType
         property string connectionLocation: model.location
+        property string annotationTitle: ''
 
         sourceComponent: Rectangle {
             RowLayout {
@@ -128,6 +144,7 @@ ListView {
 
                     MouseArea {
                         anchors.fill: parent
+                        enabled: !reversedConnections
                         onClicked: editLocationDialog.openLocationEditor(annotationLoader.connectionId)
                     }
                 }
@@ -141,16 +158,31 @@ ListView {
                 var annotationToObject = annotationsModel.getObject(identifier);
 
                 annotationTitle.text = annotationToObject['title'];
+                annotationLoader.annotationTitle = annotationTitle.text;
                 annotationDesc.text = annotationToObject['desc'];
             }
         }
 
         MouseArea {
             anchors.fill: parent
-            onClicked: annotationConnectionsItem.annotationSelected(model.annotationTo)
+            onClicked: {
+                if (reversedConnections)
+                    annotationConnectionsItem.annotationSelected(model.annotationFrom);
+                else
+                    annotationConnectionsItem.annotationSelected(model.annotationTo);
+            }
+            onPressAndHold:  {
+                removeConnectionDialog.openConfirmDeletion(annotationLoader.connectionId, annotationLoader.connectionType, annotationLoader.annotationTitle);
+            }
         }
 
-        onLoaded: item.getAnnotationDetails(model.annotationTo)
+        onLoaded: {
+            if (reversedConnections) {
+                item.getAnnotationDetails(model.annotationFrom);
+            } else {
+                item.getAnnotationDetails(model.annotationTo);
+            }
+        }
     }
 
     Common.ImageButton {
@@ -169,7 +201,7 @@ ListView {
         id: newAnnotationConnection
 
         function openNewConnection() {
-            load(qsTr('Nova connexió'), 'annotations2/AnnotationsList', {interactive: true});
+            load(qsTr('Nova connexió cap enrere'), 'annotations2/AnnotationsList', {interactive: true});
         }
 
         Connections {
@@ -177,8 +209,13 @@ ListView {
 
             onAnnotationSelected: {
                 newAnnotationConnection.close();
-                connectionsModel.insertObject({annotationFrom: annotationId, annotationTo: annotation, connectionType: '', created: (new Date()).toISOString()});
-                connectionsModel.selectFrom();
+                if (reversedConnections) {
+                    connectionsModel.insertObject({annotationFrom: annotation, annotationTo: annotationId, connectionType: '', created: (new Date()).toISOString()});
+                    connectionsModel.selectTo();
+                } else {
+                    connectionsModel.insertObject({annotationFrom: annotationId, annotationTo: annotation, connectionType: '', created: (new Date()).toISOString()});
+                    connectionsModel.selectFrom();
+                }
             }
         }
     }
@@ -210,7 +247,7 @@ ListView {
 
         onAccepted: {
             connectionsModel.updateObject(changeConnectionTypeDialog.connectionId, {connectionType: connectionTypeEditor.content.trim()});
-            connectionsModel.selectFrom();
+            connectionsModel.update();
             changeConnectionTypeDialog.close();
         }
     }
@@ -238,5 +275,31 @@ ListView {
         }
     }
 
-    Component.onCompleted: connectionsModel.selectFrom()
+    MessageDialog {
+        id: removeConnectionDialog
+
+        title: qsTr("Eliminació de connexió")
+
+        property int connectionId
+        property string connectionType
+        property string connectionAnnotation
+
+        text: qsTr("S'eliminarà la connexió de tipus «" + connectionType + "» amb l'anotació «" + connectionAnnotation + "». Vols continuar?")
+
+        standardButtons: StandardButton.Ok | StandardButton.Cancel
+
+        function openConfirmDeletion(connectionId, connectionType, connectionAnnotation) {
+            removeConnectionDialog.connectionId = connectionId;
+            removeConnectionDialog.connectionType = connectionType;
+            removeConnectionDialog.connectionAnnotation = connectionAnnotation;
+            open();
+        }
+
+        onAccepted: {
+            connectionsModel.removeObject(connectionId);
+            connectionsModel.update();
+        }
+    }
+
+    Component.onCompleted: connectionsModel.update()
 }

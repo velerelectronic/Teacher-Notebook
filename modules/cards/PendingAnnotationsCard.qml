@@ -115,6 +115,7 @@ BaseCard {
 
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
                     text: eventsList.remainingCount + qsTr(" anotacions més.")
                 }
             }

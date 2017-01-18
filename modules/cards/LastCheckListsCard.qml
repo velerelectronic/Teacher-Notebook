@@ -26,6 +26,7 @@ BaseCard {
         anchors.fill: parent
 
         model: assessmentModel
+        interactive: false
 
         delegate: Item {
             width: gridList.width
@@ -44,7 +45,6 @@ BaseCard {
                     elide: Text.ElideRight
                     text: model.group
                 }
-
 
                 Text {
                     Layout.fillHeight: true

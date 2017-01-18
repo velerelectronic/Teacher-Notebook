@@ -337,8 +337,12 @@ Item {
                     caption: qsTr('Continguts')
 
                     Item {
+                        id: wholeContentsArea
+
                         width: parent.width
-                        height: imagePreviewer.height + annotationSelectorItem.height
+                        height: imagePreviewer.height + contentsOptionsRow.height
+
+                        property bool showHotSpots: false
 
                         ImageFromBlob {
                             id: imagePreviewer
@@ -352,37 +356,28 @@ Item {
                             height: width * implicitHeight / implicitWidth
                         }
 
-                        Text {
-                            id: annotationSelectorItem
-
-                            property int selectedAnnotation: -1
+                        Item {
+                            id: contentsOptionsRow
 
                             anchors {
                                 top: imagePreviewer.bottom
                                 left: parent.left
                                 right: parent.right
                             }
-                            height: units.fingerUnit * 2
 
-                            verticalAlignment: Text.AlignVCenter
-                            font.pixelSize: units.readUnit
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            elide: Text.ElideRight
+                            height: units.fingerUnit
 
-                            function select(annotation) {
-                                var obj = annotationsModel.getObject(annotation);
-                                if (obj) {
-                                    selectedAnnotation = annotation;
-                                    annotationSelectorItem.text = '<b>' + obj['title'] + '</b>&nbsp;' + obj['desc'];
-                                }
-                            }
-
-                            MouseArea {
+                            RowLayout {
                                 anchors.fill: parent
-                                onClicked: {
-                                    if (annotationSelectorItem.selectedAnnotation > -1) {
-                                        annotationSelected(annotationSelectorItem.selectedAnnotation);
-                                    }
+
+                                Common.ImageButton {
+                                    Layout.fillHeight: true
+                                    Layout.preferredWidth: height
+                                    size: units.fingerUnit
+
+                                    image: 'hierarchy-35795'
+
+                                    onClicked: hotSpotsArea.visible = !hotSpotsArea.visible
                                 }
                             }
                         }
@@ -423,7 +418,120 @@ Item {
                                 }
 
                                 if (minimumDefined) {
+                                    annotationSelectorItem.reposition(relX, relY);
                                     annotationSelectorItem.select(minimumAnnotation);
+                                }
+                            }
+                        }
+
+                        Item {
+                            id: hotSpotsArea
+                            anchors.fill: imagePreviewer
+                            visible: false
+
+                            Repeater {
+                                model: annotationsConnectionsItem.connectionsModelRef
+
+                                Rectangle {
+                                    id: hotSpotItem
+
+                                    anchors {
+                                        top: parent.top
+                                        left: parent.left
+                                        leftMargin: hotSpotItem.relativeX * hotSpotsArea.width - hotSpotItem.width / 2;
+                                        topMargin: hotSpotItem.relativeY * hotSpotsArea.height - hotSpotItem.height / 2;
+                                    }
+
+                                    width: units.fingerUnit
+                                    height: units.fingerUnit
+                                    radius: units.fingerUnit / 2
+                                    border.width: units.nailUnit
+                                    border.color: 'black'
+                                    color: 'yellow'
+
+                                    property string relativeLocation: model.location
+                                    property real relativeX: 0
+                                    property real relativeY: 0
+
+                                    function calculateLocation() {
+                                        console.log('REL loc', relativeLocation);
+                                        var parts = relativeLocation.split(' ');
+                                        if ((parts[0] == 'rel') && (parts.length == 3)) {
+                                            console.log('computing');
+                                            relativeX = parseFloat(parts[1]);
+                                            relativeY = parseFloat(parts[2]);
+                                            console.log(parts[1], parts[2]);
+                                            hotSpotItem.visible = true;
+                                        } else {
+                                            hotsPotItem.visible = false;
+                                        }
+                                    }
+
+                                    onRelativeLocationChanged: calculateLocation()
+                                }
+                            }
+                        }
+
+
+                        Common.BoxedText {
+                            id: annotationSelectorItem
+
+                            property int selectedAnnotation: -1
+
+                            anchors {
+                                top: imagePreviewer.top
+                                horizontalCenter: imagePreviewer.horizontalCenter
+                            }
+
+                            width: imagePreviewer.width * 0.8
+                            height: units.fingerUnit * 2
+
+                            visible: false
+
+                            margins: units.nailUnit
+                            verticalAlignment: Text.AlignVCenter
+                            fontSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            elide: Text.ElideRight
+
+                            function reposition(posX, posY) {
+                                //anchors.leftMargin = posX * imagePreviewer.width;
+                                anchors.topMargin = posY * imagePreviewer.height;
+                            }
+
+                            function select(annotation) {
+                                var obj = annotationsModel.getObject(annotation);
+                                if (obj) {
+                                    selectedAnnotation = annotation;
+                                    annotationSelectorItem.text = '<b>' + obj['title'] + '</b>&nbsp;' + obj['desc'];
+                                    visible = true;
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+
+                                onClicked: {
+                                    if (annotationSelectorItem.selectedAnnotation > -1) {
+                                        annotationSelectorItem.visible = false;
+                                        annotationSelected(annotationSelectorItem.selectedAnnotation);
+                                    }
+                                }
+                            }
+
+                            Common.ImageButton {
+                                anchors {
+                                    top: parent.top
+                                    right: parent.right
+                                    bottom: parent.bottom
+                                    margins: units.nailUnit
+                                }
+                                size: units.fingerUnit
+
+                                image: 'road-sign-147409'
+
+                                onClicked: {
+                                    annotationSelectorItem.visible = false;
                                 }
                             }
                         }
@@ -439,6 +547,25 @@ Item {
                     AnnotationsConnections.AnnotationConnections {
                         id: annotationsConnectionsItem
 
+                        annotationId: showAnnotationItem.identifier
+
+                        width: parent.width
+                        height: requiredHeight
+
+                        onAnnotationSelected: showAnnotationItem.annotationSelected(annotation)
+                    }
+                }
+
+                Common.BasicSection {
+                    width: partsList.width
+                    padding: units.fingerUnit
+                    captionSize: units.readUnit
+                    caption: qsTr('Hi referencien')
+
+                    AnnotationsConnections.AnnotationConnections {
+                        id: annotationsReversedConnectionsItem
+
+                        reversedConnections: true
                         annotationId: showAnnotationItem.identifier
 
                         width: parent.width

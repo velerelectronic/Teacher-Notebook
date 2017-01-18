@@ -14,6 +14,8 @@ BaseCard {
         id: annotationsModel
 
         filters: ["(state = 0 OR state = '' OR state IS NULL) AND IFNULL(start,'')='' AND IFNULL(end,'')=''"];
+
+        limit: 10
     }
 
     signal annotationSelected(int annotation)
@@ -38,7 +40,7 @@ BaseCard {
             id: singleEventRect
 
             width: eventsList.width
-            height: units.fingerUnit * 1.5
+            height: units.fingerUnit * 2
 
             property int identifier: model.id
 
@@ -54,6 +56,7 @@ BaseCard {
                     verticalAlignment: Text.AlignVCenter
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
                     text: model.title
                 }
             }
