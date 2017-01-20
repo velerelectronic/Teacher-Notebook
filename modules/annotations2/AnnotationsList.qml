@@ -22,12 +22,10 @@ Rectangle {
     property string document: ''
     property string stateValue: '0'
 
-    property string periodFilter: ''
-    property string periodFilterString: '(start>=? AND end<?) OR (start<? AND end>=?) OR (start>=? AND start<?) OR (end>=? AND end<?)'
-    property string periodStart: ''
-    property string periodEnd: ''
+    property string dateFilterString: "(IFNULL(start, '') != '' OR IFNULL(end, '') != '') AND (IFNULL(start, '') = '' OR INSTR(start, ?) OR start <= ?) AND (IFNULL(end,'') = '' OR INSTR(end, ?) OR end >= ?)"
+    property bool   filterPeriod: false
+    property string selectedDate: ''
 
-    property bool filterPeriod: false
 
     property alias count: docAnnotationsModel.count
     signal annotationSelected(int annotation)
@@ -91,17 +89,38 @@ Rectangle {
                         }
                     }
 
-                    Text {
+                    Common.ImageButton {
                         height: annotationsListButtons.height
-                        width: contentWidth
-                        font.pixelSize: units.readUnit
-                        text: (filterPeriod)?(qsTr('Des de ') + periodStart):''
+                        width: height
+                        image: 'arrow-145769'
+                        onClicked: {
+                            var date = new Date();
+                            date.fromYYYYMMDDFormat(selectedDate);
+                            date.setDate(date.getDate()-1);
+                            selectedDate = date.toYYYYMMDDFormat();
+                            docAnnotationsModel.update();
+                        }
                     }
+
                     Text {
                         height: annotationsListButtons.height
                         width: contentWidth
+                        verticalAlignment: Text.AlignVCenter
                         font.pixelSize: units.readUnit
-                        text: (filterPeriod)?(qsTr('Fins a ') + periodEnd):''
+                        text: (filterPeriod)?(qsTr('Data ') + selectedDate):''
+                    }
+
+                    Common.ImageButton {
+                        height: annotationsListButtons.height
+                        width: height
+                        image: 'arrow-145766'
+                        onClicked: {
+                            var date = new Date();
+                            date.fromYYYYMMDDFormat(selectedDate);
+                            date.setDate(date.getDate()+1);
+                            selectedDate = date.toYYYYMMDDFormat();
+                            docAnnotationsModel.update();
+                        }
                     }
 
                     Common.ImageButton {
@@ -217,15 +236,13 @@ Rectangle {
                         newBindValues.push(document);
                     }
                     if (filterPeriod) {
-                        if ((periodStart == '') && (periodEnd == '')) {
+                        if (selectedDate == '') {
                             var today = new Date();
-                            periodStart = today.toYYYYMMDDFormat();
-                            today.setDate(today.getDate()+1);
-                            periodEnd = today.toYYYYMMDDFormat();
+                            selectedDate = today.toYYYYMMDDFormat();
                         }
-                        newFilter.push(periodFilterString);
+                        newFilter.push(dateFilterString);
                         for (var repeat=1; repeat<=4; repeat++) {
-                            newBindValues.push(periodStart, periodEnd);
+                            newBindValues.push(selectedDate);
                         }
                     }
 
@@ -329,7 +346,7 @@ Rectangle {
                 size: units.fingerUnit * 2
                 imageSource: 'plus-24844'
                 onClicked: {
-                    newAnnotationDialog.load(qsTr('Nova anotació'), 'annotations2/NewAnnotation', {document: document, annotationsModel: docAnnotationsModel, periodStart: periodStart, periodEnd: periodEnd});
+                    newAnnotationDialog.load(qsTr('Nova anotació'), 'annotations2/NewAnnotation', {document: document, annotationsModel: docAnnotationsModel, periodStart: selectedDate, periodEnd: selectedDate});
                 }
             }
 

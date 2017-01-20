@@ -86,10 +86,8 @@ BaseCard {
 
             onSelectedDate: {
                 var date = new Date(year, month, day);
-                var startDateStr = date.toYYYYMMDDFormat();
-                date.setDate(day+1);
-                var endDateStr = date.toYYYYMMDDFormat();
-                selectedPage('annotations2/AnnotationsList', {periodStart: startDateStr, periodEnd: endDateStr, filterPeriod: true, interactive: true}, qsTr('Anotacions dins rang de dates'));
+                var dateStr = date.toYYYYMMDDFormat();
+                selectedPage('annotations2/AnnotationsList', {selectedDate: dateStr, filterPeriod: true, interactive: true}, qsTr('Anotacions dins rang de dates'));
             }
 
             subWidget: Calendar.DayBase {

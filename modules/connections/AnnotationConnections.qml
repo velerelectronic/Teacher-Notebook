@@ -61,17 +61,33 @@ ListView {
         width: annotationConnectionsItem.width
         height: units.fingerUnit * 1.5
 
-        Text {
+        RowLayout {
             anchors.fill: parent
 
-            padding: units.nailUnit
-            verticalAlignment: Text.AlignVCenter
-            font.pixelSize: units.readUnit
-            font.bold: true
-            color: 'white'
-            elide: Text.ElideRight
-            text: section
+            Text {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+
+                padding: units.nailUnit
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: units.readUnit
+                font.bold: true
+                color: 'white'
+                elide: Text.ElideRight
+                text: section
+            }
+
+            Common.ImageButton {
+                Layout.fillHeight: true
+                Layout.preferredWidth: height
+                size: units.fingerUnit
+
+                image: 'plus-24844'
+
+                onClicked: newAnnotationConnection.openNewConnection(section)
+            }
         }
+
     }
 
     delegate: Loader {
@@ -105,34 +121,47 @@ ListView {
                 }
 
                 Text {
-                    id: annotationTitle
+                    id: annotationTitleAndDesc
 
-                    Layout.preferredWidth: parent.width / 3
                     Layout.fillHeight: true
+                    Layout.fillWidth: true
 
                     verticalAlignment: Text.AlignVCenter
                     font.pixelSize: units.readUnit
-                    font.bold: true
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     elide: Text.ElideRight
                 }
                 Text {
-                    id: annotationDesc
+                    id: annotationStartDate
 
-                    Layout.fillWidth: true
                     Layout.fillHeight: true
+                    Layout.preferredWidth: parent.width / 5
 
                     verticalAlignment: Text.AlignVCenter
 
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    color: 'green'
+                    elide: Text.ElideRight
+                }
+                Text {
+                    id: annotationEndDate
+
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: parent.width / 5
+
+                    verticalAlignment: Text.AlignVCenter
+
+                    font.pixelSize: units.readUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    color: 'red'
                     elide: Text.ElideRight
                 }
                 Text {
                     id: annotationLocation
 
                     Layout.fillHeight: true
-                    Layout.preferredWidth: parent.width / 3
+                    Layout.preferredWidth: parent.width / 5
 
                     verticalAlignment: Text.AlignVCenter
 
@@ -148,6 +177,12 @@ ListView {
                         onClicked: editLocationDialog.openLocationEditor(annotationLoader.connectionId)
                     }
                 }
+                Annotations.StateDisplay {
+                    id: annotationState
+
+                    Layout.preferredHeight: requiredHeight
+                    Layout.preferredWidth: requiredHeight
+                }
             }
 
             Models.DocumentAnnotations {
@@ -157,9 +192,11 @@ ListView {
             function getAnnotationDetails(identifier) {
                 var annotationToObject = annotationsModel.getObject(identifier);
 
-                annotationTitle.text = annotationToObject['title'];
-                annotationLoader.annotationTitle = annotationTitle.text;
-                annotationDesc.text = annotationToObject['desc'];
+                annotationTitleAndDesc.text = '<b>' + annotationToObject['title'] + '</b> &nbsp;'+ annotationToObject['desc'];
+                annotationLoader.annotationTitle = annotationToObject['title'];
+                annotationStartDate.text = annotationToObject['start'];
+                annotationEndDate.text = annotationToObject['end'];
+                annotationState.stateValue = annotationToObject['state'];
             }
         }
 
@@ -194,14 +231,18 @@ ListView {
 
         image: 'plus-24844'
 
-        onClicked: newAnnotationConnection.openNewConnection()
+        onClicked: newAnnotationConnection.openNewConnection('')
     }
 
     Common.SuperposedWidget {
         id: newAnnotationConnection
 
-        function openNewConnection() {
-            load(qsTr('Nova connexió cap enrere'), 'annotations2/AnnotationsList', {interactive: true});
+        property string connectionType: ''
+
+        function openNewConnection(newConnectionType) {
+            var date = new Date();
+            newAnnotationConnection.connectionType = newConnectionType;
+            load(qsTr('Nova connexió cap enrere'), 'annotations2/AnnotationsList', {interactive: true, selectedDate: date.toYYYYMMDDFormat(), filterPeriod: true});
         }
 
         Connections {
@@ -210,10 +251,10 @@ ListView {
             onAnnotationSelected: {
                 newAnnotationConnection.close();
                 if (reversedConnections) {
-                    connectionsModel.insertObject({annotationFrom: annotation, annotationTo: annotationId, connectionType: '', created: (new Date()).toISOString()});
+                    connectionsModel.insertObject({annotationFrom: annotation, annotationTo: annotationId, connectionType: newAnnotationConnection.connectionType, created: (new Date()).toISOString()});
                     connectionsModel.selectTo();
                 } else {
-                    connectionsModel.insertObject({annotationFrom: annotationId, annotationTo: annotation, connectionType: '', created: (new Date()).toISOString()});
+                    connectionsModel.insertObject({annotationFrom: annotationId, annotationTo: annotation, connectionType: newAnnotationConnection.connectionType, created: (new Date()).toISOString()});
                     connectionsModel.selectFrom();
                 }
             }

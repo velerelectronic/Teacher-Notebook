@@ -139,8 +139,22 @@ Window {
                         Layout.preferredWidth: height
                         Layout.fillHeight: true
                         size: height
-                        image: 'small-41255' // 'arrow-145769'
+                        image: 'small-41255'
                         onClicked: otherDirectionsDialog.openOtherDirections()
+                    }
+                    Common.ImageButton {
+                        Layout.preferredWidth: height
+                        Layout.fillHeight: true
+                        size: height
+                        image: 'arrow-145769'
+                        onClicked: {
+                            recentPagesModel.select();
+                            if (recentPagesModel.count > 1) {
+                                var lastPage = recentPagesModel.getObjectInRow(1);
+                                console.log('reopening', lastPage['page'], lastPage['parameters'], lastPage['title']);
+                                pagesLoaderView.addPage(lastPage['page'], JSON.parse(lastPage['parameters']), lastPage['title']);
+                            }
+                        }
                     }
                     Common.SearchBox {
                         Layout.fillWidth: true
