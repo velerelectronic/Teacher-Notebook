@@ -14,6 +14,7 @@ BaseCard {
         id: annotationsModel
 
         filters: ["(state = 0 OR state = '' OR state IS NULL) AND IFNULL(start,'')='' AND IFNULL(end,'')=''"];
+        sort: 'id DESC'
 
         limit: 10
     }

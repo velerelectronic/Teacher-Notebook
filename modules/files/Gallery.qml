@@ -17,6 +17,7 @@ Rectangle {
 
     signal imageViewerSelected(string file)
     signal annotationSelected(int annotation)
+    signal fileSelected(string file)
 
     color: 'gray'
 
@@ -170,6 +171,7 @@ Rectangle {
                     onClicked: {
                         selectedFile = model.fileURL;
                         imageViewerSelected(selectedFile);
+                        fileSelected(selectedFile);
                     }
                     onPressAndHold: {
                         importIntoAnnotationDialog.importImage(model.fileURL);

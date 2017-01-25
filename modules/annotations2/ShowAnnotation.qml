@@ -353,7 +353,7 @@ Item {
                                 right: parent.right
                             }
 
-                            height: width * implicitHeight / implicitWidth
+                            height: width * implicitHeight / Math.max(implicitWidth,1)
                         }
 
                         Item {
@@ -378,6 +378,16 @@ Item {
                                     image: 'hierarchy-35795'
 
                                     onClicked: hotSpotsArea.visible = !hotSpotsArea.visible
+                                }
+
+                                Common.ImageButton {
+                                    Layout.fillHeight: true
+                                    Layout.preferredWidth: height
+                                    size: units.fingerUnit
+
+                                    image: 'edit-153612'
+
+                                    onClicked: importImageDialog.openGallery()
                                 }
                             }
                         }
@@ -834,6 +844,36 @@ Item {
         }
     }
 
+    StandardPaths {
+        id: paths
+    }
+
+    Common.SuperposedWidget {
+        id: importImageDialog
+
+        function openGallery() {
+            load(qsTr('Tria imatge'), 'files/Gallery', {folder: "file://" + paths.pictures});
+        }
+
+        function openImportImage(file) {
+            load(qsTr('Importa imatge'), 'files/ImportImageIntoAnnotation', {annotation: showAnnotationItem.identifier, fileURL: file});
+        }
+
+        Connections {
+            target: importImageDialog.mainItem
+
+            ignoreUnknownSignals: true
+
+            onFileSelected: {
+                importImageDialog.openImportImage(file);
+            }
+
+            onImportedFileIntoAnnotation: {
+                importImageDialog.close();
+                getText();
+            }
+        }
+    }
 
     Component.onCompleted: getText()
 }
