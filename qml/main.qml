@@ -159,6 +159,10 @@ Window {
                     Common.SearchBox {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+
+                        onPerformSearch: {
+                            pagesLoaderView.addPage('annotations2/AnnotationsList', {searchString: text, interactive: true}, qsTr('Cerca anotacions'))
+                        }
                     }
                 }
             }

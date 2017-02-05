@@ -27,6 +27,7 @@ Rectangle {
     property string selectedDate: ''
 
 
+    property alias searchString: docAnnotationsModel.searchString
     property alias count: docAnnotationsModel.count
     signal annotationSelected(int annotation)
     signal annotationsListSelected2()
@@ -79,8 +80,12 @@ Rectangle {
                     }
 
                     Common.SearchBox {
+                        id: searchBox
+
                         height: annotationsListButtons.height
                         width: units.fingerUnit * 4
+
+                        text: docAnnotationsRect.searchString
 
                         onIntroPressed: {
                             docAnnotationsModel.searchFields = ['title', 'desc', 'document', 'labels'];
@@ -104,10 +109,18 @@ Rectangle {
 
                     Text {
                         height: annotationsListButtons.height
-                        width: contentWidth
+                        width: Math.max(contentWidth, units.fingerUnit * 2)
                         verticalAlignment: Text.AlignVCenter
                         font.pixelSize: units.readUnit
-                        text: (filterPeriod)?(qsTr('Data ') + selectedDate):''
+                        text: {
+                            var date = new Date();
+                            date.fromYYYYMMDDFormat(selectedDate);
+                            return (filterPeriod)?(date.toLongDate()):'';
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: annotationsListOptionsDialog.open();
+                        }
                     }
 
                     Common.ImageButton {
@@ -121,14 +134,6 @@ Rectangle {
                             selectedDate = date.toYYYYMMDDFormat();
                             docAnnotationsModel.update();
                         }
-                    }
-
-                    Common.ImageButton {
-                        height: annotationsListButtons.height
-                        width: height
-                        size: height
-                        image: 'cog-147414'
-                        onClicked: annotationsListOptionsDialog.open();
                     }
 
                 }
@@ -197,6 +202,8 @@ Rectangle {
                 id: docAnnotationsModel
 
                 sort: 'end ASC, start ASC, id DESC'
+                limit: 10
+                searchFields: ['title', 'desc', 'document', 'labels']
 
                 function update() {
                     var stateFilter = '';
@@ -248,6 +255,8 @@ Rectangle {
 
                     docAnnotationsModel.filters = newFilter;
                     docAnnotationsModel.bindValues = newBindValues;
+
+                    docAnnotationsModel.searchString = searchString;
 
                     docAnnotationsModel.select();
                     console.log('compte', docAnnotationsModel.count);
@@ -318,7 +327,7 @@ Rectangle {
             }
 
             bottomMargin: (inline)?0:(addAnnotationButton.size + addAnnotationButton.margins)
-            footer: (inline)?footerItem:null
+            footer: (inline)?footerItem:moreOptionsComponent
 
             Component {
                 id: footerItem
@@ -335,6 +344,64 @@ Rectangle {
                         }
                     }
                 }
+            }
+
+            Component {
+                id: moreOptionsComponent
+
+                Rectangle {
+                    width: docAnnotationsList.width
+                    height: units.fingerUnit * 2
+                    color: '#AAFFAA'
+
+                    RowLayout {
+                        anchors.fill: parent
+                        spacing: units.fingerUnit
+
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+
+                            font.pixelSize: units.readUnit
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: docAnnotationsModel.count + qsTr(' anotacions')
+                        }
+
+                        Button {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: mustShow
+                            visible: mustShow
+
+                            property bool mustShow: (docAnnotationsModel.limit>0) && (docAnnotationsModel.count == docAnnotationsModel.limit)
+
+                            text: docAnnotationsModel.limit + qsTr(' primers. Més...')
+
+                            onClicked: {
+                                docAnnotationsModel.limit = docAnnotationsModel.limit + 10;
+                                docAnnotationsModel.update();
+                            }
+                        }
+
+                        Button {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: mustShow
+                            visible: mustShow
+
+                            property bool mustShow: stateValue !== ''
+
+                            text: qsTr('Només entrada. Mostra qualsevol tipus')
+
+                            onClicked: {
+                                stateValue = '';
+                                docAnnotationsModel.update();
+                            }
+                        }
+                    }
+                }
+
             }
 
             Common.SuperposedButton {
