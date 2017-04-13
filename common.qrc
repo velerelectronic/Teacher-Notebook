@@ -47,5 +47,6 @@
         <file>common/SteppedSection.qml</file>
         <file>common/SuperposedMenu.qml</file>
         <file>common/SuperposedMenuEntry.qml</file>
+        <file>common/GeneralListView.qml</file>
     </qresource>
 </RCC>

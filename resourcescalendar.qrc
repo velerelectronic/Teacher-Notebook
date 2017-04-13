@@ -6,5 +6,6 @@
         <file>modules/calendar/WeeksAnnotationsView.qml</file>
         <file>modules/calendar/PointsDiagram.qml</file>
         <file>modules/calendar/DayBase.qml</file>
+        <file>modules/calendar/WeekPeriodDisplay.qml</file>
     </qresource>
 </RCC>

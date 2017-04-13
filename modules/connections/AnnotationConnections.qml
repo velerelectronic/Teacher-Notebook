@@ -342,5 +342,7 @@ ListView {
         }
     }
 
+    onAnnotationIdChanged: connectionsModel.update()
+
     Component.onCompleted: connectionsModel.update()
 }

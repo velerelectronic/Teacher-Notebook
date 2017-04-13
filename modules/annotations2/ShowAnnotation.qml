@@ -12,6 +12,7 @@ import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///editors' as Editors
 import 'qrc:///modules/documents' as Documents
+import 'qrc:///modules/calendar' as Calendar
 import 'qrc:///modules/files' as Files
 import 'qrc:///modules/connections' as AnnotationsConnections
 
@@ -132,6 +133,14 @@ Item {
                                 font.pixelSize: units.readUnit
                                 text: qsTr('Període:')
                             }
+
+                            Calendar.WeekPeriodDisplay {
+                                id: weekPeriodDisplayItem
+
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: weekPeriodDisplayItem.requiredHeight
+                            }
+
                             Text {
                                 id: startText
                                 height: contentHeight
@@ -524,7 +533,8 @@ Item {
                                 onClicked: {
                                     if (annotationSelectorItem.selectedAnnotation > -1) {
                                         annotationSelectorItem.visible = false;
-                                        annotationSelected(annotationSelectorItem.selectedAnnotation);
+                                        annotationPreviewDialog.openAnnotationPreview(annotationSelectorItem.selectedAnnotation);
+                                        //annotationSelected(annotationSelectorItem.selectedAnnotation);
                                     }
                                 }
                             }
@@ -562,7 +572,10 @@ Item {
                         width: parent.width
                         height: requiredHeight
 
-                        onAnnotationSelected: showAnnotationItem.annotationSelected(annotation)
+                        onAnnotationSelected: {
+                            annotationPreviewDialog.openAnnotationPreview(annotation);
+                            //showAnnotationItem.annotationSelected(annotation);
+                        }
                     }
                 }
 
@@ -581,7 +594,10 @@ Item {
                         width: parent.width
                         height: requiredHeight
 
-                        onAnnotationSelected: showAnnotationItem.annotationSelected(annotation)
+                        onAnnotationSelected: {
+                            annotationPreviewDialog.openAnnotationPreview(annotation);
+                            //showAnnotationItem.annotationSelected(annotation);
+                        }
                     }
                 }
             }
@@ -686,6 +702,9 @@ Item {
             showAnnotationItem.labels = "" + obj['labels'];
             periodStart = obj['start'];
             periodEnd = obj['end'];
+
+            weekPeriodDisplayItem.setPeriod(periodStart, periodEnd);
+
             descText = obj['desc'];
             imagePreviewer.data = obj['contents'];
             contentText.text = parser.toHtml(descText);
@@ -871,6 +890,24 @@ Item {
             onImportedFileIntoAnnotation: {
                 importImageDialog.close();
                 getText();
+            }
+        }
+    }
+
+    Common.SuperposedWidget {
+        id: annotationPreviewDialog
+
+        function openAnnotationPreview(annotation) {
+            load(qsTr('Previsualitza anotació'), 'annotations2/AnnotationPreview', {identifier: annotation});
+        }
+
+        Connections {
+            target: annotationPreviewDialog.mainItem
+            ignoreUnknownSignals: true
+
+            onAnnotationSelected: {
+                annotationPreviewDialog.close();
+                showAnnotationItem.annotationSelected(annotation);
             }
         }
     }

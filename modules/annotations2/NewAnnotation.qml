@@ -1,6 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.2
+import ClipboardAdapter 1.0
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
@@ -28,144 +29,60 @@ Rectangle {
 
     clip: true
 
-    ColumnLayout {
+    GridView {
+        id: optionsGrid
+
         anchors.fill: parent
-        anchors.margins: units.nailUnit
 
-        Editors.TextAreaEditor3 {
-            id: newAnnotationEditor
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            border.color: 'black'
-        }
-        Item {
-            Layout.fillWidth: true
-            height: childrenRect.height
+        cellWidth: width / 6
+        cellHeight: height / 4
 
-            Flow {
-                id: flow
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                }
-
-                height: flow.childrenRect.height
-                spacing: units.nailUnit
-
-                Text {
-                    text: qsTr('Etiquetes')
-                }
-
-                Repeater {
-                    id: flowRepeater
-
-                    model: newAnnotationItem.labels.split(' ')
-
-                    delegate: Rectangle {
-                        width: childrenRect.width + units.nailUnit
-                        height: units.fingerUnit
-                        color: '#AAFFAA'
-                        Text {
-                            anchors {
-                                top: parent.top
-                                bottom: parent.bottom
-                                left: parent.left
-                                margins: units.nailUnit
-                            }
-                            width: contentWidth
-                            verticalAlignment: Text.AlignVCenter
-
-                            text: modelData
-                        }
-                    }
-                }
-            }
+        model: ListModel {
+            id: optionsModel
         }
 
-        Item {
-            Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit * 2
-
-            RowLayout {
-                id: buttonsLayout
-
-                anchors.fill: parent
-                spacing: units.nailUnit
-                Common.BigButton {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    title: qsTr('Desa')
-                    onClicked: saveNewAnnotation()
-                }
-                Common.BigButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: parent.width / 4
-                    height: units.fingerUnit
-                    title: qsTr('Cancela')
-                    onClicked: discarded()
-                }
-            }
-        }
-
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit * 2
+        delegate: Rectangle {
+            width: optionsGrid.cellWidth
+            height: optionsGrid.cellHeight
 
             border.color: 'black'
-            RowLayout {
+
+            Text {
                 anchors.fill: parent
                 anchors.margins: units.nailUnit
-
-                Common.ImageButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: size
-                    size: units.fingerUnit
-                    image: 'paintbrush-153754'
-                    onClicked: newDrawingAnnotationSelected(labels)
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    verticalAlignment: Text.AlignVCenter
-                    text: qsTr("Dibuix a mà alçada")
-                }
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                font.pixelSize: units.glanceUnit
+                text: model.info
+                visible: (model.buttonType == 'text')
             }
-        }
-
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit * 2
-
-            border.color: 'black'
-            RowLayout {
+            Image {
                 anchors.fill: parent
                 anchors.margins: units.nailUnit
+                source: model.info
+                visible: (model.buttonType == 'image')
 
-                Common.ImageButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: size
-                    size: units.fingerUnit
-                    image: 'upload-25068'
-                    onClicked: {
-                        close();
-                        importDialog.openImportAnnotationsDialog();
-                    }
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    verticalAlignment: Text.AlignVCenter
-                    text: qsTr("Importa...")
+                fillMode: Image.PreserveAspectFit
+            }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    newAnnotationItem[model.action]();
                 }
             }
         }
 
+        function fillOptions() {
+            optionsModel.append({buttonType: 'image', info: 'qrc:///icons/paste-35946.svg', action: 'saveClipboardContents'});
+            optionsModel.append({buttonType: 'text', info: 'Text', action: 'newWrittenAnnotation'});
+            optionsModel.append({buttonType: 'image', info: 'qrc:///icons/palette-23406.svg', action: 'newDrawing'});
+            optionsModel.append({buttonType: 'image', info: '///Downloads/', action: ''});
+            optionsModel.append({buttonType: 'text', info: 'Importa...', action: 'importAnnotations'});
+        }
     }
+
+    Component.onCompleted: optionsGrid.fillOptions()
 
     function saveNewAnnotation() {
         console.log('save new annotation');
@@ -212,5 +129,47 @@ Rectangle {
                 annotationsModel.select();
             }
         }
+    }
+
+    function newWrittenAnnotation() {
+        var now = new Date();
+        var nowString = now.toYYYYMMDDFormat();
+        var newObj = {
+            title: qsTr('Nova anotació'),
+            start: nowString,
+            end: nowString
+        };
+
+        if (annotationsModel.insertObject(newObj)) {
+            annotationsModel.select();
+            close();
+        }
+    }
+
+    function saveClipboardContents() {
+        // We should analyze the mimetype of the clipboard contents to decide how to save them into a new annotation
+
+        var clipcontents = clipboard.text();
+        var newObj = {
+            title: qsTr('Portapapers') + ' ' + clipcontents.trim(),
+            desc: clipcontents
+        }
+
+        if (annotationsModel.insertObject(newObj)) {
+            annotationsModel.select();
+            close();
+        }
+    }
+
+    function newDrawing() {
+
+    }
+
+    function importAnnotations() {
+        importDialog.openImportAnnotationsDialog();
+    }
+
+    QClipboard {
+        id: clipboard
     }
 }

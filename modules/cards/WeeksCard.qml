@@ -104,20 +104,29 @@ BaseCard {
                 function dateUpdated() {
                     var date = new Date(year, month, day);
                     var dateStr = date.toYYYYMMDDFormat();
-                    annotationsModel.filters = ['INSTR(start,?) OR INSTR(end,?)', "IFNULL(state,0) != 3"];
                     annotationsModel.bindValues = [dateStr, dateStr];
+
+                    // Look for annotations marked as neither DONE nor SCHEDULED
+                    annotationsModel.filters = ['INSTR(start,?) OR INSTR(end,?)', "IFNULL(state,0) != 3", "IFNULL(state,0) != 2"];
                     annotationsModel.select();
 
                     if (annotationsModel.count > 0)
                         calendarDayBase.color = 'red';
                     else {
-                        annotationsModel.filters = ['INSTR(start,?) OR INSTR(end,?)', "state = 3"];
-                        annotationsModel.bindValues = [dateStr, dateStr];
+                        // Look for annotations marked as SCHEDULED
+                        annotationsModel.filters = ['INSTR(start,?) OR INSTR(end,?)', "state = 2"];
                         annotationsModel.select();
                         if (annotationsModel.count > 0) {
-                            calendarDayBase.color = 'green';
+                            calendarDayBase.color = 'yellow';
                         } else {
-                            calendarDayBase.color = 'white';
+                            annotationsModel.filters = ['INSTR(start,?) OR INSTR(end,?)', "state = 3"];
+                            annotationsModel.select();
+
+                            if (annotationsModel.count > 0) {
+                                calendarDayBase.color = 'green';
+                            } else {
+                                calendarDayBase.color = 'white';
+                            }
                         }
                     }
                     for (var i=0; i<annotationsModel.count; i++) {

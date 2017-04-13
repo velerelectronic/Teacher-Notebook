@@ -22,6 +22,10 @@ public:
         clipboard->setText(text, QClipboard::Selection);
     }
 
+    Q_INVOKABLE QString text() {
+        return clipboard->text();
+    }
+
 private:
     QClipboard *clipboard;
 };

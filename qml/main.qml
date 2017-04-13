@@ -70,6 +70,8 @@
   * Increase number of columns: https://pixabay.com/es/columna-icono-s%C3%ADmbolo-gris-equipo-27460/
 
   * More options: https://pixabay.com/es/comentario-texto-cuadro-gris-negro-27179/
+
+  * Select: https://pixabay.com/es/marca-de-verificaci%C3%B3n-303498/
 */
 
 import QtQuick 2.5
@@ -160,7 +162,7 @@ Window {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
 
-                        onPerformSearch: {
+                        onIntroPressed: {
                             pagesLoaderView.addPage('annotations2/AnnotationsList', {searchString: text, interactive: true}, qsTr('Cerca anotacions'))
                         }
                     }
