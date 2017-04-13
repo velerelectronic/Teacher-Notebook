@@ -360,6 +360,9 @@ Rectangle {
             width: docAnnotationsList.width
             height: units.fingerUnit * 2
 
+            // Annotation selected: gray
+            color: (annotationsView2.selectedAnnotation == model.id)?'#AAAAAA':'white'
+
             RowLayout {
                 id: singleAnnotationLayout
                 anchors.fill: parent
@@ -545,6 +548,11 @@ Rectangle {
                 newAnnotationDialog.close();
                 newAnnotationDialog.load(qsTr('Nou dibuix a mà alçada'), 'whiteboard/CompleteWhiteBoard', {selectedFile: document, zoomedRectangle: Qt.rect(0,0,units.fingerUnit * 10, units.fingerUnit * 6)});
                 console.log('new drawing', document);
+            }
+
+            onAnnotationCreated: {
+                newAnnotationDialog.close();
+                docAnnotationsRect.annotationSelected(annotation);
             }
         }
     }

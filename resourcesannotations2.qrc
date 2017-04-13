@@ -7,5 +7,6 @@
         <file>modules/annotations2/StateEditor.qml</file>
         <file>modules/annotations2/PeriodEditor.qml</file>
         <file>modules/annotations2/AnnotationPreview.qml</file>
+        <file>modules/annotations2/NewAnnotationHelper.qml</file>
     </qresource>
 </RCC>

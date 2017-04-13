@@ -166,6 +166,14 @@ Window {
                             pagesLoaderView.addPage('annotations2/AnnotationsList', {searchString: text, interactive: true}, qsTr('Cerca anotacions'))
                         }
                     }
+                    Common.ImageButton {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: height
+
+                        image: 'plus-24844'
+
+                        onClicked: otherDirectionsDialog.createAnnotation()
+                    }
                 }
             }
 
@@ -227,6 +235,10 @@ Window {
                 load(qsTr('Canvia a...'), 'cards/OtherDirections', {});
             }
 
+            function createAnnotation() {
+                load(qsTr('Crea nova anotació'), 'annotations2/NewAnnotationHelper', {});
+            }
+
             Connections {
                 target: otherDirectionsDialog.mainItem
 
@@ -238,6 +250,10 @@ Window {
                 onSelectedPage: {
                     otherDirectionsDialog.close();
                     pagesLoaderView.addPage(page, parameters, title);
+                }
+
+                onAnnotationSelected: {
+                    pagesLoaderView.addPage('annotations2/ShowAnnotation', {identifier: annotation}, qsTr('Nova anotació'));
                 }
             }
         }

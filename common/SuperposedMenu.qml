@@ -15,50 +15,80 @@ Dialog {
 
     standardButtons: StandardButton.Close
 
-    Rectangle {
+    contentItem: Rectangle {
         color: 'pink'
-        implicitHeight: Math.min(parentHeight * 0.8, menuList.contentItem.height)
+        implicitHeight: Math.min(parentHeight * 0.8, menuList.contentItem.height + units.fingerUnit * 2)
         implicitWidth: superposedMenu.parentWidth
 
-        ListView {
-            id: menuList
+        ColumnLayout {
             anchors.fill: parent
 
-            headerPositioning: ListView.OverlayHeader
+            ListView {
+                id: menuList
+                Layout.fillHeight: true
+                Layout.fillWidth: true
 
-            interactive: true
-            clip: true
+                headerPositioning: ListView.OverlayHeader
 
-            boundsBehavior: ListView.StopAtBounds
+                interactive: true
+                clip: true
 
-            header: Rectangle {
-                width: menuList.width
-                height: units.fingerUnit * 2
-                z: 2
+                boundsBehavior: ListView.StopAtBounds
 
+                header: Rectangle {
+                    width: menuList.width
+                    height: units.fingerUnit * 2
+                    z: 2
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+                        spacing: units.nailUnit
+
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            font.bold: true
+                            font.pixelSize: units.readUnit
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: superposedMenu.title
+                        }
+                    }
+                }
+
+                model: ObjectModel {
+                    id: menuEntriesModel
+                }
+
+                spacing: units.nailUnit
+            }
+
+            Item {
+                Layout.preferredHeight: units.fingerUnit * 2
+                Layout.fillWidth: true
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: units.nailUnit
-                    spacing: units.nailUnit
+                    spacing: units.fingerUnit
 
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        font.bold: true
-                        font.pixelSize: units.readUnit
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: superposedMenu.title
+                    Button {
+                        text: qsTr('Accepta')
+                        onClicked: {
+                            superposedMenu.close();
+                            superposedMenu.accepted();
+                        }
+                    }
+
+                    Button {
+                        text: qsTr('Tanca')
+                        onClicked: {
+                            superposedMenu.close();
+                            superposedMenu.rejected();
+                        }
                     }
                 }
             }
-
-            model: ObjectModel {
-                id: menuEntriesModel
-            }
-
-            spacing: units.nailUnit
         }
     }
 }

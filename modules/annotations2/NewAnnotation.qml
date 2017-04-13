@@ -1,6 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.2
+import Qt.labs.folderlistmodel 2.1
 import ClipboardAdapter 1.0
 import PersonalTypes 1.0
 import 'qrc:///common' as Common
@@ -18,7 +19,8 @@ Rectangle {
     signal newDrawingAnnotationSelected(string labels)
     signal close()
     signal discarded()
-    signal openAnnotation(string title)
+    signal annotationSelected(int annotation)
+    signal annotationCreated(int annotation)
 
     property string labels: ''
     property string document: ''
@@ -54,13 +56,13 @@ Rectangle {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 font.pixelSize: units.glanceUnit
-                text: model.info
+                text: (model.buttonType == 'text')?model.info:''
                 visible: (model.buttonType == 'text')
             }
             Image {
                 anchors.fill: parent
                 anchors.margins: units.nailUnit
-                source: model.info
+                source: (model.buttonType == 'image')?model.info:''
                 visible: (model.buttonType == 'image')
 
                 fillMode: Image.PreserveAspectFit
@@ -68,7 +70,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    newAnnotationItem[model.action]();
+                    newAnnotationItem[model.action](model.info);
                 }
             }
         }
@@ -79,6 +81,7 @@ Rectangle {
             optionsModel.append({buttonType: 'image', info: 'qrc:///icons/palette-23406.svg', action: 'newDrawing'});
             optionsModel.append({buttonType: 'image', info: '///Downloads/', action: ''});
             optionsModel.append({buttonType: 'text', info: 'Importa...', action: 'importAnnotations'});
+            updateRecentPictures();
         }
     }
 
@@ -131,6 +134,58 @@ Rectangle {
         }
     }
 
+    Common.SuperposedWidget {
+        id: imageImporterDialog
+
+        Connections {
+            target: imageImporterDialog.mainItem
+
+            onImportedFileIntoAnnotation: {
+                annotationsModel.select();
+                imageImporterDialog.close();
+                annotationCreated(annotation);
+            }
+        }
+
+        function openImageImporter(imageUrl) {
+            load(qsTr('Importa imatge'), 'files/ImportImageIntoAnnotation', {fileURL: imageUrl});
+        }
+    }
+
+    FolderListModel {
+        id: picturesModel
+
+        property bool hasBeenSetup: false
+
+        showDirs: false
+        sortField: FolderListModel.Time
+        sortReversed: false
+
+        property int selectedIndex: -1
+
+        folder: "file://" + paths.pictures
+        onCountChanged: getPictures()
+    }
+
+    function updateRecentPictures() {
+        //picturesModel.folder = "file://" + paths.pictures;
+        picturesModel.hasBeenSetup = true;
+        getPictures();
+    }
+
+    function getPictures() {
+        for (var i=0; i<picturesModel.count; i++) {
+            var url = picturesModel.get(i, 'fileURL');
+            optionsModel.append({buttonType: 'image', info: url.toString(), action: 'newImageAnnotation'});
+            console.log('new url', url);
+            console.log(paths.pictures, picturesModel.folder, url);
+        }
+    }
+
+    StandardPaths {
+        id: paths
+    }
+
     function newWrittenAnnotation() {
         var now = new Date();
         var nowString = now.toYYYYMMDDFormat();
@@ -140,10 +195,7 @@ Rectangle {
             end: nowString
         };
 
-        if (annotationsModel.insertObject(newObj)) {
-            annotationsModel.select();
-            close();
-        }
+        insertNewAnnotation(newObj);
     }
 
     function saveClipboardContents() {
@@ -155,10 +207,22 @@ Rectangle {
             desc: clipcontents
         }
 
-        if (annotationsModel.insertObject(newObj)) {
+        insertNewAnnotation(newObj);
+    }
+
+    function newImageAnnotation(imageUrl) {
+        imageImporterDialog.openImageImporter(imageUrl);
+    }
+
+    function insertNewAnnotation(newObj) {
+        var identifier = annotationsModel.insertObject(newObj);
+        console.log('ident', "___", identifier);
+        if (identifier) {
             annotationsModel.select();
+            annotationCreated(identifier);
             close();
         }
+        return identifier;
     }
 
     function newDrawing() {
