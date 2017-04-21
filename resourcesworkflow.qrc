@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/workflow/WorkFlowsList.qml</file>
+        <file>modules/workflow/NewWorkFlow.qml</file>
+        <file>modules/workflow/ShowWorkFlow.qml</file>
+    </qresource>
+</RCC>

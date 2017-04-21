@@ -9,7 +9,7 @@ Item {
     }
 
     property Component toolBar: Rectangle {
-        color: green
+        color: 'green'
     }
     property Component headingBar: null
     property Component listDelegate: null
@@ -19,6 +19,8 @@ Item {
     property alias model: innerListView.model
 
     property Component footerBar: null
+
+    property int requiredHeight: innerListView.contentItem.height
 
     states: [
         State {
@@ -60,28 +62,49 @@ Item {
 
             headerPositioning: ListView.OverlayHeader
             header: Loader {
+                id: headerLoader
+
                 z: 2
                 width: mainListView.width
                 height: units.fingerUnit * 2
 
                 sourceComponent: headingBar
+
+                onLoaded: {
+                    if (typeof headerLoader.item.requiredHeight !== 'undefined')
+                        headerLoader.height = Qt.binding(function() { return headerLoader.item.requiredHeight; });
+                }
             }
 
             clip: true
 
             delegate: Loader {
+                id: delegateLoader
+
                 z: 1
                 width: mainListView.width
                 height: units.fingerUnit * 2
 
                 sourceComponent: listDelegate
+
+                onLoaded: {
+                    //if (typeof delegateLoader.item.requiredHeight !== 'undefined')
+                    //    delegateLoader.height = 100; // Qt.binding(function() { return delegateLoader.item.requiredHeight; });
+                }
             }
 
             footer: Loader {
+                id: footerLoader
+
                 width: mainListView.width
                 height: units.fingerUnit * 2
 
                 sourceComponent: footerBar
+
+                onLoaded: {
+                    if (typeof footerLoader.item.requiredHeight !== 'undefined')
+                        footerLoader.height = Qt.binding(function() { return footerLoader.item.requiredHeight; });
+                }
             }
 
             Loader {
@@ -96,6 +119,11 @@ Item {
                 height: units.fingerUnit * 2
 
                 sourceComponent: selectionBox
+
+                onLoaded: {
+                    if (typeof selectionBoxLoader.item.requiredHeight !== 'undefined')
+                        selectionBoxLoader.height = Qt.binding(function() { return selectionBoxLoader.item.requiredHeight; });
+                }
             }
 
         }

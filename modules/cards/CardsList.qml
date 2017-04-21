@@ -140,6 +140,7 @@ Item {
         }
     }
 
+    /*
     Flickable {
         id: cardsArea
 
@@ -151,6 +152,7 @@ Item {
 
         Flow {
             id: cardsListView
+            visible: false
             height: cardsListView.childrenRect.height
             width: cardsListItem.width
             flow: Flow.LeftToRight
@@ -195,10 +197,11 @@ Item {
             }
         }
     }
-
+*/
 
     Component.onCompleted: {
         cardsModel.appendR({title: qsTr('Recents'), cardName: 'RecentPages'});
+        cardsModel.appendR({title: qsTr('Diagrames de treball'), cardName: 'WorkFlows'})
         cardsModel.appendR({title: qsTr('Planificacions'), cardName: 'Plannings'});
         cardsModel.appendR({title: qsTr('Esdeveniments'), cardName: 'TodayEvents'});
         cardsModel.appendR({title: qsTr('Pendents'), cardName: 'PendingAnnotations'});

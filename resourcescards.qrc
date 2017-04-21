@@ -16,5 +16,6 @@
         <file>modules/cards/LastPictureCard.qml</file>
         <file>modules/cards/DownloadsCard.qml</file>
         <file>modules/cards/OtherDirections.qml</file>
+        <file>modules/cards/WorkFlowsCard.qml</file>
     </qresource>
 </RCC>

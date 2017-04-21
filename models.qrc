@@ -21,5 +21,13 @@
         <file>models/PlanningItemsActionsModel.qml</file>
         <file>models/RecentPages.qml</file>
         <file>models/AnnotationsConnections.qml</file>
+        <file>models/WorkFlows.qml</file>
+        <file>models/WorkFlowStates.qml</file>
+        <file>models/WorkFlowTransitions.qml</file>
+        <file>models/WorkFlowAnnotations.qml</file>
+        <file>models/WorkFlowAnnotationDocuments.qml</file>
+        <file>models/WorkFlowAnnotationComments.qml</file>
+        <file>models/WorkFlowAnnotationLabels.qml</file>
+        <file>models/WorkFlowGeneralLabels.qml</file>
     </qresource>
 </RCC>

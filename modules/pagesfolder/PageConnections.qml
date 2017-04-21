@@ -71,6 +71,17 @@ Connections {
         console.log('sourceRoot', sourceRoot);
         destination.addPage('files/Gallery', {folder: sourceRoot});
     }
+
+    // Work flows
+
+    onWorkFlowsListSelected: {
+        destination.addPage('workflow/WorkFlowsList', {});
+    }
+
+    onWorkFlowSelected: {
+        destination.addPage('workflow/ShowWorkFlow', {identifier: title});
+    }
+
     /*
     onGotoPrevious: {
         //primarySource.gotoPrevious();
