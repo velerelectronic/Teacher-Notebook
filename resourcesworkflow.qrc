@@ -3,5 +3,6 @@
         <file>modules/workflow/WorkFlowsList.qml</file>
         <file>modules/workflow/NewWorkFlow.qml</file>
         <file>modules/workflow/ShowWorkFlow.qml</file>
+        <file>modules/workflow/ShowAnnotation.qml</file>
     </qresource>
 </RCC>

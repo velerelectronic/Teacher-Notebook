@@ -23,6 +23,8 @@ Item {
     property string title: ''
     property string desc: ''
 
+    signal workFlowAnnotationSelected(int annotation)
+
     Common.UseUnits {
         id: units
     }
@@ -171,7 +173,7 @@ Item {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: partsList.height
 
-                                property int headingsHeight: units.fingerUnit * 1.5
+                                property int headingsHeight: units.fingerUnit * 2
 
                                 clip: true
                                 orientation: ListView.Horizontal
@@ -216,9 +218,17 @@ Item {
                                             Layout.fillWidth: true
                                             margins: units.nailUnit
 
+                                            color: '#AAFFAA'
+
+                                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                             boldFont: true
 
                                             text: model.title
+
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                onClicked: stateTitleEditorDialog.openEditor(singleStateRect.stateId, model.title);
+                                            }
                                         }
 
                                         ListView {
@@ -232,23 +242,38 @@ Item {
 
                                             delegate: Common.BoxedText {
                                                 width: annotationsList.width
-                                                height: contentHeight + 2 * margins
+                                                height: Math.max(units.fingerUnit, contentHeight) + 2 * margins
                                                 margins: units.nailUnit
 
+                                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                                 text: model.title
-                                            }
-
-                                            footer: Common.BoxedText {
-                                                width: annotationsList.width
-                                                height: contentHeight
-
-                                                text: qsTr('Afegeix anotació')
 
                                                 MouseArea {
                                                     anchors.fill: parent
-                                                    onClicked: annotationsModel.addAnnotation()
+                                                    onClicked: workFlowAnnotationSelected(model.id)
                                                 }
                                             }
+
+                                            footer: Item {
+                                                width: annotationsList.width
+                                                height: units.fingerUnit * 2
+
+                                                Common.BoxedText {
+                                                    anchors.fill: parent
+                                                    anchors.topMargin: annotationsList.spacing
+
+                                                    color: '#AAFFAA'
+                                                    margins: units.nailUnit
+
+                                                    text: qsTr('Afegeix anotació...')
+
+                                                    MouseArea {
+                                                        anchors.fill: parent
+                                                        onClicked: annotationsModel.addAnnotation()
+                                                    }
+                                                }
+                                            }
+
                                         }
                                     }
                                 }
@@ -267,6 +292,7 @@ Item {
                                         height: expandedStatesList.headingsHeight
                                         margins: units.nailUnit
 
+                                        color: '#AAFFAA'
                                         text: qsTr('Afegeix estat...')
 
                                         MouseArea {
@@ -423,55 +449,6 @@ Item {
                             onClicked: workFlowStatesModel.addNewState()
                         }
 
-                        Common.SuperposedMenu {
-                            id: stateTitleEditorDialog
-
-                            title: qsTr("Edita el títol")
-                            property int workFlow: -1
-
-                            standardButtons: StandardButton.Save | StandardButton.Cancel
-
-                            Editors.TextAreaEditor3 {
-                                id: stateTitleEditor
-                                width: parent.width
-                            }
-
-                            function openEditor(workFlow, stateTitle) {
-                                stateTitleEditorDialog.workFlow = workFlow;
-                                stateTitleEditor.content = stateTitle;
-                                open();
-                            }
-
-                            onAccepted: {
-                                workFlowStatesModel.updateObject(stateTitleEditorDialog.workFlow, {title: stateTitleEditor.content});
-                                workFlowStatesModel.select();
-                            }
-                        }
-
-                        Common.SuperposedMenu {
-                            id: stateDescEditorDialog
-
-                            title: qsTr("Edita la descripció")
-                            property int workFlow: -1
-
-                            standardButtons: StandardButton.Save | StandardButton.Cancel
-
-                            Editors.TextAreaEditor3 {
-                                id: stateDescEditor
-                                width: parent.width
-                            }
-
-                            function openEditor(workFlow, stateDesc) {
-                                stateDescEditorDialog.workFlow = workFlow;
-                                stateDescEditor.content = stateDesc;
-                                open();
-                            }
-
-                            onAccepted: {
-                                workFlowStatesModel.updateObject(stateDescEditorDialog.workFlow, {desc: stateDescEditor.content});
-                                workFlowStatesModel.select();
-                            }
-                        }
 
                     }
                 }
@@ -552,7 +529,7 @@ Item {
     Common.SuperposedMenu {
         id: descEditorDialog
 
-        parentWidth: parent.width
+        parentWidth: showWorkFlowItem.width
 
         title: qsTr('Edita la descripció')
         standardButtons: StandardButton.Save | StandardButton.Cancel
@@ -574,6 +551,55 @@ Item {
         }
     }
 
+    Common.SuperposedMenu {
+        id: stateTitleEditorDialog
+
+        title: qsTr("Edita el títol")
+        property int stateId: -1
+
+        standardButtons: StandardButton.Save | StandardButton.Cancel
+
+        Editors.TextAreaEditor3 {
+            id: stateTitleEditor
+            width: parent.width
+        }
+
+        function openEditor(stateId, stateTitle) {
+            stateTitleEditorDialog.stateId = stateId;
+            stateTitleEditor.content = stateTitle;
+            open();
+        }
+
+        onAccepted: {
+            workFlowStatesModel.updateObject(stateTitleEditorDialog.stateId, {title: stateTitleEditor.content});
+            workFlowStatesModel.select();
+        }
+    }
+
+    Common.SuperposedMenu {
+        id: stateDescEditorDialog
+
+        title: qsTr("Edita la descripció")
+        property int stateId: -1
+
+        standardButtons: StandardButton.Save | StandardButton.Cancel
+
+        Editors.TextAreaEditor3 {
+            id: stateDescEditor
+            width: parent.width
+        }
+
+        function openEditor(stateId, stateDesc) {
+            stateDescEditorDialog.stateId = stateId;
+            stateDescEditor.content = stateDesc;
+            open();
+        }
+
+        onAccepted: {
+            workFlowStatesModel.updateObject(stateDescEditorDialog.stateId, {desc: stateDescEditor.content});
+            workFlowStatesModel.select();
+        }
+    }
 
     Component.onCompleted: getText()
 }

@@ -82,6 +82,10 @@ Connections {
         destination.addPage('workflow/ShowWorkFlow', {identifier: title});
     }
 
+    onWorkFlowAnnotationSelected: {
+        destination.addPage('workflow/ShowAnnotation', {identifier: annotation});
+    }
+
     /*
     onGotoPrevious: {
         //primarySource.gotoPrevious();
