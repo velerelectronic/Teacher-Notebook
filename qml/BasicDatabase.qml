@@ -16,6 +16,7 @@ DatabaseBackup {
 
     function createTables() {
         dataBck.dropTable('projects');
+        console.log('Deleting flowAnnotations');
 
         dataBck.createTable('extended_annotations','title TEXT PRIMARY KEY, created TEXT, desc TEXT, project TEXT, labels TEXT, start TEXT, end TEXT, state INTEGER');
 
@@ -36,6 +37,7 @@ DatabaseBackup {
 
         // Workflows consist of states and transitions
 
+
         dataBck.createTable('workFlows', 'title TEXT PRIMARY KEY, desc TEXT');
         dataBck.createTable('workFlowStates', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT, workFlow TEXT NOT NULL');
         dataBck.createTable('workFlowTransitions', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT, startState INTEGER, endState INTEGER');
@@ -44,11 +46,11 @@ DatabaseBackup {
         // The new type of annotations are attached to states in workflows.
         // Each annotation has some activities, comments, files and labels
 
-        dataBck.createTable('flowAnnotations', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT, workFlowState TEXT, start TEXT, end TEXT, state INTEGER');
+        dataBck.createTable('flowAnnotations', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT, workFlowState INTEGER, start TEXT, end TEXT, state INTEGER');
         dataBck.createTable('flowAnnotationComments', 'id INTEGER PRIMARY KEY, annotation INTEGER NOT NULL, contents TEXT');
         dataBck.createTable('flowAnnotationLabels', 'id INTEGER PRIMARY KEY, annotation INTEGER NOT NULL, label INTEGER');
         dataBck.createTable('flowAnnotationDocuments', 'id INTEGER PRIMARY KEY, annotation INTEGER NOT NULL, title TEXT, contents BLOB, source TEXT, hash TEXT, docType TEXT');
-        dataBck.createTable('flowAnnotationActivities', '');
+        //dataBck.createTable('flowAnnotationActivities', '');
 
         dataBck.createTable('annotationsConnections', 'id INTEGER PRIMARY KEY, annotationFrom INTEGER, annotationTo INTEGER, connectionType TEXT, created TEXT');
         //dataBck.createTable('resources','id INTEGER PRIMARY KEY, created TEXT, title TEXT, desc TEXT, type TEXT, source TEXT, contents BLOB, hash TEXT, annotation TEXT');

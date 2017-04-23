@@ -7,8 +7,12 @@ Rectangle {
     property alias textColor: mainText.color
     property alias fontSize: mainText.font.pixelSize
     property alias text: mainText.text
-    property int margins: 0
-    property int contentHeight: mainText.contentHeight + 2 * margins
+    property alias margins: boxedText.padding
+    property int padding: 0
+    property int contentHeight: mainText.contentHeight + 2 * padding
+
+    property real requiredHeight: mainText.paintedHeight + 2 * padding
+
     property alias elide: mainText.elide
     property bool boldFont: false
     property alias wrapMode: mainText.wrapMode
@@ -20,7 +24,7 @@ Rectangle {
     Text {
         id: mainText
         anchors.fill: parent
-        anchors.margins: margins
+        anchors.margins: padding
 
         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         verticalAlignment: Text.AlignVCenter

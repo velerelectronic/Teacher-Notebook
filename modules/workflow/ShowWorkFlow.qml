@@ -171,9 +171,10 @@ Item {
                                 id: expandedStatesList
 
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: partsList.height
+                                Layout.preferredHeight: units.fingerUnit * 10
 
                                 property int headingsHeight: units.fingerUnit * 2
+                                property int commonColumnsWidth: units.fingerUnit * 10
 
                                 clip: true
                                 orientation: ListView.Horizontal
@@ -187,33 +188,17 @@ Item {
                                 delegate: Item {
                                     id: singleStateRect
 
-                                    width: units.fingerUnit * 5
+                                    width: expandedStatesList.commonColumnsWidth
                                     height: expandedStatesList.height
 
                                     property int stateId: model.id
 
-                                    Models.WorkFlowAnnotations {
-                                        id: annotationsModel
-
-                                        filters: ['workFlowState=?']
-
-                                        function addAnnotation() {
-                                            insertObject({title: qsTr('Nova anotació'), workFlowState: singleStateRect.stateId});
-                                            update();
-                                        }
-
-                                        function update() {
-                                            bindValues = [singleStateRect.stateId];
-                                            select();
-                                        }
-
-                                        Component.onCompleted: update()
-                                    }
-
                                     ColumnLayout {
                                         anchors.fill: parent
+                                        spacing: 0
 
                                         Common.BoxedText {
+                                            id: stateHeading
                                             Layout.preferredHeight: expandedStatesList.headingsHeight
                                             Layout.fillWidth: true
                                             margins: units.nailUnit
@@ -231,55 +216,27 @@ Item {
                                             }
                                         }
 
-                                        ListView {
+                                        AnnotationsList {
                                             id: annotationsList
 
-                                            Layout.fillHeight: true
+                                            Layout.preferredHeight: Math.min(requiredHeight, parent.height - stateHeading.height)
                                             Layout.fillWidth: true
 
-                                            model: annotationsModel
-                                            spacing: units.nailUnit
+                                            parentWorkFlow: showWorkFlowItem.identifier
+                                            workFlowState: singleStateRect.stateId
 
-                                            delegate: Common.BoxedText {
-                                                width: annotationsList.width
-                                                height: Math.max(units.fingerUnit, contentHeight) + 2 * margins
-                                                margins: units.nailUnit
-
-                                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                                text: model.title
-
-                                                MouseArea {
-                                                    anchors.fill: parent
-                                                    onClicked: workFlowAnnotationSelected(model.id)
-                                                }
-                                            }
-
-                                            footer: Item {
-                                                width: annotationsList.width
-                                                height: units.fingerUnit * 2
-
-                                                Common.BoxedText {
-                                                    anchors.fill: parent
-                                                    anchors.topMargin: annotationsList.spacing
-
-                                                    color: '#AAFFAA'
-                                                    margins: units.nailUnit
-
-                                                    text: qsTr('Afegeix anotació...')
-
-                                                    MouseArea {
-                                                        anchors.fill: parent
-                                                        onClicked: annotationsModel.addAnnotation()
-                                                    }
-                                                }
-                                            }
-
+                                            onWorkFlowAnnotationSelected: showWorkFlowItem.workFlowAnnotationSelected(annotation)
+                                            onWorkFlowUpdateRequested: workFlowStatesModel.update()
+                                        }
+                                        Item {
+                                            Layout.fillHeight: true
+                                            Layout.fillWidth: true
                                         }
                                     }
                                 }
 
                                 footer: Item {
-                                    width: units.fingerUnit * 5 + expandedStatesList.spacing
+                                    width: expandedStatesList.commonColumnsWidth + expandedStatesList.spacing
                                     height: expandedStatesList.height
 
                                     Common.BoxedText {
@@ -504,7 +461,7 @@ Item {
     Common.SuperposedMenu {
         id: workFlowTitleEditorDialog
 
-        parentWidth: parent.width
+        parentWidth: showWorkFlowItem.width
 
         title: qsTr('Edita el títol')
         standardButtons: StandardButton.Save | StandardButton.Cancel

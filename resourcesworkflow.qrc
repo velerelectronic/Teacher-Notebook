@@ -4,5 +4,9 @@
         <file>modules/workflow/NewWorkFlow.qml</file>
         <file>modules/workflow/ShowWorkFlow.qml</file>
         <file>modules/workflow/ShowAnnotation.qml</file>
+        <file>modules/workflow/AnnotationsList.qml</file>
+        <file>modules/workflow/StateDisplay.qml</file>
+        <file>modules/workflow/ChangeAnnotationState.qml</file>
+        <file>modules/workflow/LabelsList.qml</file>
     </qresource>
 </RCC>

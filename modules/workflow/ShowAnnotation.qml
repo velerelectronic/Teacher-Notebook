@@ -183,25 +183,10 @@ Item {
                                 font.pixelSize: units.readUnit
                                 text: qsTr('Etiquetes:')
                             }
-                            Text {
-                                id: labelsText
-                                Layout.preferredHeight: contentHeight
+
+                            LabelsList {
+                                Layout.preferredHeight: units.fingerUnit * 5
                                 Layout.fillWidth: true
-                                color: 'green'
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: showRelatedAnnotationsByLabels()
-                                }
-                            }
-                            Common.ImageButton {
-                                id: changeLabelsButton
-                                image: 'edit-153612'
-                                size: units.fingerUnit
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: size
-                                onClicked: annotationLabelsSelected(showAnnotationItem.labels)
                             }
 
                             Text {
@@ -675,11 +660,9 @@ Item {
             weekPeriodDisplayItem.setPeriod(periodStart, periodEnd);
 
             descText = obj['desc'];
-            imagePreviewer.data = obj['contents'];
             contentText.text = parser.toHtml(descText);
 
             stateValue = obj['state'];
-            document = obj['document'];
         }
     }
 
