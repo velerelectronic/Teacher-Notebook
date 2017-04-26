@@ -1,7 +1,8 @@
-import QtQuick 2.5
+import QtQuick 2.6
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.2
 import QtQuick.Dialogs 1.2
+import QtQuick.Controls 2.0
 
 import ClipboardAdapter 1.0
 import PersonalTypes 1.0
@@ -103,66 +104,80 @@ Item {
                                 right: parent.right
                             }
                             height: childrenRect.height
+                            spacing: 0
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: units.fingerUnit * 4
+                                Layout.preferredHeight: titleText.height + descText.height
 
                                 border.color: 'black'
 
-                                GridLayout {
+                                ColumnLayout {
                                     anchors.fill: parent
-
-                                    columns: 3
-
-                                    columnSpacing: units.nailUnit * 2
-                                    rowSpacing: units.nailUnit * 2
+                                    spacing: 0
 
                                     Text {
-                                        width: headerData.width / 2
-                                        height: units.fingerUnit
-                                        font.pixelSize: units.readUnit
-                                        text: qsTr('Títol:')
-                                    }
+                                        id: titleText
 
-                                    Text {
                                         Layout.fillWidth: true
+                                        Layout.minimumHeight: units.fingerUnit
                                         height: contentHeight
                                         verticalAlignment: Text.AlignVCenter
-                                        font.pixelSize: units.readUnit
+                                        font.pixelSize: units.glanceUnit
+                                        font.bold: true
+                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                        padding: units.nailUnit
                                         elide: Text.ElideRight
                                         text: showWorkFlowItem.title
-                                    }
-
-                                    Common.ImageButton {
-                                        id: changeTitleButton
-                                        Layout.fillHeight: true
-                                        Layout.preferredWidth: size
-                                        size: units.fingerUnit
-                                        image: 'edit-153612'
-                                        onClicked: workFlowTitleEditorDialog.openEditor()
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            onClicked: workFlowTitleEditorDialog.openEditor()
+                                        }
                                     }
 
                                     Text {
-                                        font.pixelSize: units.readUnit
-                                        text: qsTr('Descripció:')
-                                    }
+                                        id: descText
 
-                                    Text {
                                         Layout.fillWidth: true
+                                        Layout.minimumHeight: units.fingerUnit
                                         height: contentHeight
                                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                        padding: units.nailUnit
                                         font.pixelSize: units.readUnit
 
-                                        text: showWorkFlowItem.desc
+                                        color: (showWorkFlowItem.desc !== '')?'black':'gray'
+                                        text: (showWorkFlowItem.desc !== '')?showWorkFlowItem.desc:qsTr('Edita per a una descripció...')
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            onClicked: descEditorDialog.openEditor()
+                                        }
                                     }
-                                    Common.ImageButton {
-                                        id: changePeriodButton
+
+                                }
+                            }
+
+                            Item {
+                                Layout.preferredHeight: units.fingerUnit * 1.5
+                                Layout.fillWidth: true
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: units.nailUnit
+                                    spacing: units.nailUnit
+
+                                    Text {
+                                        Layout.preferredWidth: contentWidth
                                         Layout.fillHeight: true
-                                        Layout.preferredWidth: size
-                                        size: units.fingerUnit
-                                        image: 'edit-153612'
-                                        onClicked: descEditorDialog.openEditor()
+
+                                        font.pixelSize: units.readUnit
+                                        text: qsTr('Filtra')
+                                    }
+                                    Common.SearchBox {
+                                        id: annotationsSearchBox
+
+                                        Layout.fillHeight: true
+                                        Layout.fillWidth: true
                                     }
                                 }
                             }
@@ -171,7 +186,7 @@ Item {
                                 id: expandedStatesList
 
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: units.fingerUnit * 10
+                                Layout.preferredHeight: showWorkFlowItem.height / 2
 
                                 property int headingsHeight: units.fingerUnit * 2
                                 property int commonColumnsWidth: units.fingerUnit * 10
@@ -181,6 +196,16 @@ Item {
 
                                 snapMode: ListView.SnapToItem
                                 boundsBehavior: ListView.StopAtBounds
+
+                                ScrollBar.horizontal: ScrollBar {
+                                    anchors {
+                                        bottom: parent.bottom
+                                        left: parent.left
+                                        right: parent.right
+                                    }
+
+                                    active: true
+                                }
 
                                 spacing: units.fingerUnit
                                 model: workFlowStatesModel
@@ -193,44 +218,29 @@ Item {
 
                                     property int stateId: model.id
 
-                                    ColumnLayout {
-                                        anchors.fill: parent
-                                        spacing: 0
+                                    AnnotationsList {
+                                        id: annotationsList
 
-                                        Common.BoxedText {
-                                            id: stateHeading
-                                            Layout.preferredHeight: expandedStatesList.headingsHeight
-                                            Layout.fillWidth: true
+                                        anchors {
+                                            top: parent.top
+                                            left: parent.left
+                                            right: parent.right
                                             margins: units.nailUnit
-
-                                            color: '#AAFFAA'
-
-                                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                            boldFont: true
-
-                                            text: model.title
-
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                onClicked: stateTitleEditorDialog.openEditor(singleStateRect.stateId, model.title);
-                                            }
                                         }
+                                        maximumHeight: singleStateRect.height - 2 * anchors.margins
 
-                                        AnnotationsList {
-                                            id: annotationsList
+                                        headingsHeight: expandedStatesList.headingsHeight
+                                        parentWorkFlow: showWorkFlowItem.identifier
+                                        workFlowState: singleStateRect.stateId
+                                        searchString: annotationsSearchBox.text
 
-                                            Layout.preferredHeight: Math.min(requiredHeight, parent.height - stateHeading.height)
-                                            Layout.fillWidth: true
+                                        onWorkFlowAnnotationSelected: showWorkFlowItem.workFlowAnnotationSelected(annotation)
+                                        onWorkFlowUpdateRequested: workFlowStatesModel.update()
 
-                                            parentWorkFlow: showWorkFlowItem.identifier
-                                            workFlowState: singleStateRect.stateId
+                                        Connections {
+                                            target: annotationsSearchBox
 
-                                            onWorkFlowAnnotationSelected: showWorkFlowItem.workFlowAnnotationSelected(annotation)
-                                            onWorkFlowUpdateRequested: workFlowStatesModel.update()
-                                        }
-                                        Item {
-                                            Layout.fillHeight: true
-                                            Layout.fillWidth: true
+                                            onPerformSearch: annotationsList.update()
                                         }
                                     }
                                 }
@@ -244,6 +254,7 @@ Item {
                                             top: parent.top
                                             left: parent.left
                                             right: parent.right
+                                            margins: units.nailUnit
                                             leftMargin: expandedStatesList.spacing
                                         }
                                         height: expandedStatesList.headingsHeight
@@ -259,6 +270,13 @@ Item {
                                         }
                                     }
                                 }
+                            }
+
+                            Item {
+                                id: areaForScrollbar
+
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: units.fingerUnit
                             }
                         }
 

@@ -21,87 +21,95 @@ ListView {
         id: units
     }
 
-    Models.WorkFlowGeneralLabels {
-        id: labelsModel
+    property int annotationId
+    property string workFlow: ''
+
+    signal annotationLabelsSelected(int annotation)
+
+    property int requiredWidth: contentItem.width
+
+    property bool simple: false
+
+    orientation: ListView.Horizontal
+
+    Models.WorkFlowAnnotationLabels {
+        id: annotationLabelsModel
+
+        filters: ['annotation=?']
     }
 
+    Models.WorkFlowGeneralLabels {
+        id: generalLabelsModel
+    }
+
+    model: ListModel {
+        id: labelsInfoModel
+    }
+
+    interactive: false
     spacing: units.nailUnit
 
-    model: labelsModel
-
     delegate: Rectangle {
-        width: labelsList.width
-        height: units.fingerUnit * 2
+        width: height * 2
+        height: labelsList.height
+
+        radius: height / 4
 
         color: model.color
+    }
+    footer: ((labelsInfoModel.count>0) || (simple))?null:addLabelComponent
+
+    Component {
+        id: addLabelComponent
 
         Text {
-            anchors.fill: parent
-            padding: units.nailUnit
-            verticalAlignment: Text.AlignVCenter
+            width: contentWidth
+            height: labelsList.height
+
             font.pixelSize: units.readUnit
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-            text: model.text
-        }
-    }
-
-    footer: Common.TextButton {
-        width: labelsList.width
-        height: units.fingerUnit * 2
-
-        text: qsTr('Afegeix etiqueta...')
-
-        onClicked: addLabelDialog.open()
-    }
-
-    Common.SuperposedMenu {
-        id: addLabelDialog
-
-        Rectangle {
-            width: labelsList.width
-            height: labelsList.height / 2
-
-            GridLayout {
+            text: qsTr('Afegeix una etiqueta...')
+            MouseArea {
                 anchors.fill: parent
-
-                columns: 2
-                rows: 3
-
-                Text {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: units.fingerUnit
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    text: qsTr('Text')
-                }
-
-                Editors.TextLineEditor {
-                    Layout.preferredWidth: parent.width * 0.6
-                    Layout.preferredHeight: units.fingerUnit
-                }
-
-                Text {
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    text: qsTr('Color')
-                }
-
-                Editors.TextLineEditor {
-                    Layout.preferredWidth: parent.width * 0.6
-                    Layout.preferredHeight: units.fingerUnit
-                }
-
-                Item {
-
-                }
-
-                Button {
-                    Layout.preferredWidth: parent.width * 0.6
-                    Layout.preferredHeight: units.fingerUnit
-                    text: qsTr('Desa')
-                }
+                onClicked: labelsEditorDialog.openLabelsEditor()
             }
         }
-
     }
+
+    function getLabels() {
+        annotationLabelsModel.bindValues = [annotationId];
+        annotationLabelsModel.select();
+        labelsInfoModel.clear();
+        console.log('annotation id', annotationId);
+        for (var i=0; i<annotationLabelsModel.count; i++) {
+            var label = annotationLabelsModel.getObjectInRow(i)['label'];
+
+            var obj = generalLabelsModel.getObject(label);
+            labelsInfoModel.append({color: obj['color']});
+        }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: labelsEditorDialog.openLabelsEditor()
+    }
+
+    Common.SuperposedWidget {
+        id: labelsEditorDialog
+
+        function openLabelsEditor() {
+            load(qsTr('Edita etiquetes'), 'workflow/LabelsListEditor', {workFlow: labelsList.workFlow, annotationId: labelsList.annotationId});
+        }
+
+        Connections {
+            target: labelsEditorDialog.mainItem
+
+            onLabelsChanged: getLabels()
+        }
+    }
+
+    onAnnotationIdChanged: {
+        console.log('changed id to ', annotationId);
+        getLabels();
+    }
+    Component.onCompleted: getLabels()
 }

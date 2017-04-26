@@ -40,6 +40,9 @@ Item {
     property string periodEnd: ''
     property int stateValue: 0
     property string document: ''
+    property string workFlow: ''
+    property int workFlowState
+    property string workFlowStateTitle: ''
 
     Common.UseUnits {
         id: units
@@ -48,6 +51,10 @@ Item {
     Models.WorkFlowAnnotations {
         id: annotationsModel
         //limit: 6
+    }
+
+    Models.WorkFlowStates {
+        id: statesModel
     }
 
     MarkDownParser {
@@ -98,40 +105,162 @@ Item {
                         height: childrenRect.height
                         border.color: 'black'
 
-                        GridLayout {
+                        ColumnLayout {
                             anchors {
                                 top: parent.top
                                 left: parent.left
                                 right: parent.right
+                                margins: units.nailUnit
                             }
-
-                            columns: 3
-
-                            columnSpacing: units.nailUnit * 2
-                            rowSpacing: units.nailUnit * 2
+                            height: childrenRect.height
+                            spacing: units.fingerUnit
 
                             Text {
-                                width: headerData.width / 2
-                                height: units.fingerUnit
-                                font.pixelSize: units.readUnit
-                                text: qsTr('Anotació:')
+                                id: titleText
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Math.max(contentHeight, units.fingerUnit)
+                                font.pixelSize: units.glanceUnit
+                                verticalAlignment: Text.AlignVCenter
+                                font.bold: true
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                Common.ImageButton {
+                                    id: changeTitleButton
+                                    anchors {
+                                        top: parent.top
+                                        right: parent.right
+                                    }
+                                    size: units.fingerUnit
+                                    image: 'edit-153612'
+                                    onClicked: titleEditorDialog.open()
+                                }
+                                text: showAnnotationItem.title
                             }
                             Text {
                                 Layout.fillWidth: true
-                                height: contentHeight
-                                verticalAlignment: Text.AlignVCenter
+                                Layout.preferredHeight: contentHeight
+
                                 font.pixelSize: units.readUnit
-                                elide: Text.ElideRight
-                                text: showAnnotationItem.title
-                            }
-                            Item {
-                                width: units.fingerUnit * 2
-                                height: units.fingerUnit
+                                text: '<b>' + workFlowStateTitle + '</b>'+ qsTr(' dins ') + '<b>' + workFlow + '</b>'
                             }
 
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: childrenRect.height + detailsFlow.anchors.margins * 2
+
+                                color: '#AAAAAA'
+
+                                Flow {
+                                    id: detailsFlow
+
+                                    anchors {
+                                        top: parent.top
+                                        left: parent.left
+                                        right: parent.right
+                                        margins: units.fingerUnit
+                                    }
+                                    height: childrenRect.height
+                                    spacing: units.fingerUnit
+
+                                    Item {
+                                        height: units.fingerUnit
+                                        width: childrenRect.width
+
+                                        Row {
+                                            anchors {
+                                                top: parent.top
+                                                left: parent.left
+                                                bottom: parent.bottom
+                                            }
+
+                                            Text {
+                                                id: startText
+                                                height: parent.height
+                                                width: contentWidth
+                                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                                font.pixelSize: units.readUnit
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    onClicked: showRelatedAnnotationsByPeriod();
+                                                }
+                                            }
+                                            Text {
+                                                id: endText
+                                                height: parent.height
+                                                width: contentWidth
+                                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                                font.pixelSize: units.readUnit
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    onClicked: showRelatedAnnotationsByPeriod();
+                                                }
+                                            }
+                                            Common.ImageButton {
+                                                id: changePeriodButton
+                                                height: parent.height
+                                                width: units.fingerUnit
+                                                size: units.fingerUnit
+                                                image: 'edit-153612'
+                                                onClicked: periodEditorDialog.openPeriodEditor()
+                                            }
+
+                                        }
+                                    }
+                                    LabelsList {
+                                        height: units.fingerUnit
+                                        width: requiredWidth
+
+                                        annotationId: showAnnotationItem.identifier
+                                        workFlow: showAnnotationItem.workFlow
+
+                                        onAnnotationLabelsSelected: {}
+                                    }
+                                    Annotations.StateDisplay {
+                                        id: stateComponent
+
+                                        width: units.fingerUnit * 2
+                                        height: stateComponent.requiredHeight
+
+                                        stateValue: showAnnotationItem.stateValue
+
+                                        onClicked: stateEditorDialog.open()
+                                    }
+
+                                }
+                            }
+
+
                             Text {
+                                id: contentText
+                                property int requiredHeight: Math.max(contentHeight, units.fingerUnit) + addDescriptionButton.size + units.fingerUnit
+
+                                Layout.preferredHeight: contentText.requiredHeight
+                                Layout.fillWidth: true
+
                                 font.pixelSize: units.readUnit
-                                text: qsTr('Període:')
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                onLinkActivated: openAnnotation(link)
+                                Common.ImageButton {
+                                    id: changeDescriptionButton
+                                    anchors {
+                                        top: parent.top
+                                        right: parent.right
+                                    }
+
+                                    size: units.fingerUnit
+                                    image: 'edit-153612'
+                                    onClicked: descEditorDialog.open()
+                                }
+                                Common.ImageButton {
+                                    id: addDescriptionButton
+                                    anchors {
+                                        bottom: parent.bottom
+                                        right: parent.right
+                                    }
+
+                                    size: units.fingerUnit
+                                    image: 'plus-24844'
+                                    onClicked: descAppenderDialog.openAppender()
+                                }
                             }
 
                             Calendar.WeekPeriodDisplay {
@@ -141,71 +270,18 @@ Item {
                                 Layout.preferredHeight: weekPeriodDisplayItem.requiredHeight
                             }
 
-                            Text {
-                                id: startText
-                                height: contentHeight
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: showRelatedAnnotationsByPeriod();
-                                }
-                            }
-                            Item {
-                                width: units.fingerUnit * 2
-                            }
+                            Files.FileViewer {
+                                id: contentImage
 
-                            Item {
-                                width: units.fingerUnit * 2
-                            }
-
-                            Text {
-                                id: endText
-                                Layout.preferredHeight: contentHeight
-                                Layout.preferredWidth: parent.width / 3
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: showRelatedAnnotationsByPeriod();
-                                }
-                            }
-                            Common.ImageButton {
-                                id: changePeriodButton
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: size
-                                size: units.fingerUnit
-                                image: 'edit-153612'
-                                onClicked: periodEditorDialog.openPeriodEditor()
-                            }
-
-                            Text {
-                                font.pixelSize: units.readUnit
-                                text: qsTr('Etiquetes:')
-                            }
-
-                            LabelsList {
-                                Layout.preferredHeight: units.fingerUnit * 5
+                                Layout.preferredHeight: (contentImage.fileURL !== '')?contentImage.width:0
+                                //Layout.preferredHeight: (fileURL !== '')?contentImage.requiredHeight:0
                                 Layout.fillWidth: true
+
+                                clip: true
+
+                                reloadEnabled: false
                             }
 
-                            Text {
-                                font.pixelSize: units.readUnit
-                                text: qsTr('Estat:')
-                            }
-                            Annotations.StateDisplay {
-                                id: stateComponent
-
-                                Layout.preferredWidth: units.fingerUnit * 2
-                                Layout.preferredHeight: stateComponent.requiredHeight
-
-                                stateValue: showAnnotationItem.stateValue
-
-                                onClicked: stateEditorDialog.open()
-                            }
-                            Item {
-                                width: units.fingerUnit * 2
-                            }
                         }
                     }
                 }
@@ -218,80 +294,6 @@ Item {
                     captionSize: units.readUnit
                     caption: qsTr('Descripció')
 
-                    ColumnLayout {
-                        width: parent.width
-                        height: titleText.height + barTitleSeparator.height + contentText.height
-                        spacing: 0
-                        Text {
-                            id: titleText
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: Math.max(contentHeight, units.fingerUnit)
-                            font.pixelSize: units.glanceUnit
-                            font.bold: true
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            Common.ImageButton {
-                                id: changeTitleButton
-                                anchors {
-                                    top: parent.top
-                                    right: parent.right
-                                }
-                                size: units.fingerUnit
-                                image: 'edit-153612'
-                                onClicked: titleEditorDialog.open()
-                            }
-                            text: showAnnotationItem.title
-                        }
-                        Rectangle {
-                            id: barTitleSeparator
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 2
-                            color: 'black'
-                        }
-                        Text {
-                            id: contentText
-                            property int requiredHeight: Math.max(contentHeight, units.fingerUnit) + addDescriptionButton.size + units.fingerUnit
-
-                            Layout.preferredHeight: contentText.requiredHeight
-                            Layout.fillWidth: true
-
-                            font.pixelSize: units.readUnit
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            onLinkActivated: openAnnotation(link)
-                            Common.ImageButton {
-                                id: changeDescriptionButton
-                                anchors {
-                                    top: parent.top
-                                    right: parent.right
-                                }
-
-                                size: units.fingerUnit
-                                image: 'edit-153612'
-                                onClicked: descEditorDialog.open()
-                            }
-                            Common.ImageButton {
-                                id: addDescriptionButton
-                                anchors {
-                                    bottom: parent.bottom
-                                    right: parent.right
-                                }
-
-                                size: units.fingerUnit
-                                image: 'plus-24844'
-                                onClicked: descAppenderDialog.openAppender()
-                            }
-                        }
-                        Files.FileViewer {
-                            id: contentImage
-
-                            Layout.preferredHeight: (contentImage.fileURL !== '')?contentImage.width:0
-                            //Layout.preferredHeight: (fileURL !== '')?contentImage.requiredHeight:0
-                            Layout.fillWidth: true
-
-                            clip: true
-
-                            reloadEnabled: false
-                        }
-                    }
                 }
 
                 Common.BasicSection {
@@ -663,7 +665,16 @@ Item {
             contentText.text = parser.toHtml(descText);
 
             stateValue = obj['state'];
+
+            workFlowState = parseInt(obj['workFlowState']);
+
+            console.log('Work flow state', workFlowState);
+
+            var stateObj = statesModel.getObject(workFlowState);
+            workFlow = stateObj['workFlow'];
+            workFlowStateTitle = stateObj['title'];
         }
+
     }
 
     function copyAnnotationDescription() {

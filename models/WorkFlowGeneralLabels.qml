@@ -5,7 +5,8 @@ SqlTableModel {
     fieldNames: [
         'id',
         'title',
-        'color'
+        'color',
+        'workFlow'
     ]
     searchFields: []
     primaryKey: 'id'

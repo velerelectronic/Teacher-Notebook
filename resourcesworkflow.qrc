@@ -8,5 +8,6 @@
         <file>modules/workflow/StateDisplay.qml</file>
         <file>modules/workflow/ChangeAnnotationState.qml</file>
         <file>modules/workflow/LabelsList.qml</file>
+        <file>modules/workflow/LabelsListEditor.qml</file>
     </qresource>
 </RCC>

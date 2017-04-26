@@ -2,6 +2,7 @@ import QtQuick 2.6
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.2
 import QtQuick.Dialogs 1.2
+import QtQuick.Controls 2.0
 
 import ClipboardAdapter 1.0
 import PersonalTypes 1.0
@@ -20,9 +21,16 @@ Rectangle {
         id: units
     }
 
+    property int maximumHeight
+
+    height: Math.min(maximumHeight, requiredHeight)
+
     property string parentWorkFlow: ''
     property int workFlowState: -1
+    property int headingsHeight
     property real annotationDetailsHeight: units.fingerUnit / 2
+
+    property string searchString: ''
 
     signal workFlowAnnotationSelected(int annotation)
     signal workFlowUpdateRequested()
@@ -30,117 +38,149 @@ Rectangle {
     border.color: 'black'
     color: '#DDDDDD'
 
-    property int requiredHeight: annotationsList.contentItem.height + annotationsList.topMargin + annotationsList.bottomMargin
+    property int requiredHeight: stateHeading.height + annotationsList.contentItem.height + annotationsList.topMargin + annotationsList.bottomMargin + movingFooter.height
 
-    ListView {
-        id: annotationsList
-
+    ColumnLayout {
+        id: mainLayout
         anchors.fill: parent
+        spacing: 0
 
-        clip: true
-        model: annotationsModel
-        spacing: units.nailUnit
-        topMargin: units.nailUnit
-        bottomMargin: units.fingerUnit * 2 + units.nailUnit
-        leftMargin: units.nailUnit
-        rightMargin: units.nailUnit
+        Common.BoxedText {
+            id: stateHeading
+            Layout.fillWidth: true
+            Layout.preferredHeight: headingsHeight
 
-        boundsBehavior: ListView.StopAtBounds
+            margins: units.nailUnit
 
-        Models.WorkFlowAnnotations {
-            id: annotationsModel
+            color: '#AAFFAA'
 
-            filters: ['workFlowState=?']
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            boldFont: true
 
-            function addAnnotation() {
-                insertObject({title: qsTr('Nova anotació'), workFlowState: annotationsListRect.workFlowState});
-                update();
-            }
-
-            function update() {
-                bindValues = [annotationsListRect.workFlowState];
-                select();
-            }
-
-            Component.onCompleted: update()
-        }
-
-        delegate: Rectangle {
-            id: singleAnnotationItem
-
-            width: annotationsList.width - annotationsList.leftMargin - annotationsList.rightMargin
-            height: annotationColumn.height + units.nailUnit * 2
-
-            clip: true
-
-            property string desc: model.desc
-            property string start: model.start
-            property string end: model.end
-            property int stateValue: model.state
-
-            Column {
-                id: annotationColumn
-
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                    margins: units.nailUnit
-                }
-
-                spacing: units.nailUnit
-                height: annotationText.height + annotationDetails.height + spacing
-
-                Text {
-                    id: annotationText
-
-                    height: Math.max(units.fingerUnit, annotationText.contentHeight)
-                    width: parent.width
-
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    verticalAlignment: Text.AlignVCenter
-
-                    text: model.title
-                }
-
-                Flow {
-                    id: annotationDetails
-
-                    height: Math.max(0,childrenRect.height)
-                    width: parent.width
-
-                    Component.onCompleted: {
-                        if (singleAnnotationItem.desc !== '') {
-                            descIndicatorComponent.createObject(annotationDetails);
-                        }
-                        if ((singleAnnotationItem.start !== '') || (singleAnnotationItem.end !== '')) {
-                            timeIndicatorComponent.createObject(annotationDetails);
-                        }
-                        if ((typeof singleAnnotationItem.stateValue !== null) && (singleAnnotationItem.stateValue !== 0)) {
-                            stateIndicatorComponent.createObject(annotationDetails, {stateValue: singleAnnotationItem.stateValue});
-                        }
-                    }
-                }
-            }
+            text: model.title
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: workFlowAnnotationSelected(model.id)
-                onPressAndHold: changeStateDialog.openChangeState(model.id, model.title, parentWorkFlow, model.workFlowState)
+                onClicked: stateTitleEditorDialog.openEditor(singleStateRect.stateId, model.title);
+            }
+        }
+
+        ListView {
+            id: annotationsList
+
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            clip: true
+            model: annotationsModel
+            spacing: units.nailUnit
+            topMargin: units.nailUnit
+            bottomMargin: units.nailUnit
+            leftMargin: units.nailUnit
+            rightMargin: units.nailUnit
+
+            ScrollBar.vertical: ScrollBar {
+                active: true
+            }
+
+            boundsBehavior: ListView.StopAtBounds
+
+            Models.WorkFlowAnnotations {
+                id: annotationsModel
+
+                filters: ['workFlowState=?']
+
+                searchFields: ['title', 'desc']
+                searchString: annotationsListRect.searchString
+
+                function addAnnotation() {
+                    insertObject({title: qsTr('Nova anotació'), workFlowState: annotationsListRect.workFlowState});
+                    update();
+                }
+
+                function update() {
+                    bindValues = [annotationsListRect.workFlowState];
+                    select();
+                }
+
+                Component.onCompleted: update()
+            }
+
+            delegate: Rectangle {
+                id: singleAnnotationItem
+
+                width: annotationsList.width - annotationsList.leftMargin - annotationsList.rightMargin
+                height: annotationColumn.height + units.nailUnit * 2
+
+                clip: true
+
+                property int annotationId: model.id
+                property string desc: model.desc
+                property string start: model.start
+                property string end: model.end
+                property int stateValue: model.state
+
+                Column {
+                    id: annotationColumn
+
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
+                        margins: units.nailUnit
+                    }
+
+                    spacing: units.nailUnit
+                    height: annotationText.height + annotationDetails.height + spacing
+
+                    Text {
+                        id: annotationText
+
+                        height: Math.max(units.fingerUnit, annotationText.contentHeight)
+                        width: parent.width
+
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        verticalAlignment: Text.AlignVCenter
+
+                        text: model.title
+                    }
+
+                    Flow {
+                        id: annotationDetails
+
+                        height: Math.max(0,childrenRect.height)
+                        width: parent.width
+                        spacing: units.nailUnit
+
+                        Component.onCompleted: {
+                            if (singleAnnotationItem.desc !== '') {
+                                descIndicatorComponent.createObject(annotationDetails);
+                            }
+                            if ((singleAnnotationItem.start !== '') || (singleAnnotationItem.end !== '')) {
+                                timeIndicatorComponent.createObject(annotationDetails, {text: singleAnnotationItem.start + "-" + singleAnnotationItem.end});
+                            }
+                            if ((typeof singleAnnotationItem.stateValue !== null) && (singleAnnotationItem.stateValue !== 0)) {
+                                stateIndicatorComponent.createObject(annotationDetails, {stateValue: singleAnnotationItem.stateValue});
+                            }
+                            labelsComponent.createObject(annotationDetails, {annotationId: singleAnnotationItem.annotationId});
+                        }
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: workFlowAnnotationSelected(model.id)
+                    onPressAndHold: changeStateDialog.openChangeState(model.id, model.title, parentWorkFlow, model.workFlowState)
+                }
             }
         }
 
         Item {
             id: movingFooter
 
-            anchors {
-                left: parent.left
-                right: parent.right
-                bottom: parent.bottom
-            }
-
-            height: units.fingerUnit * 2
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit * 2
 
             Common.BoxedText {
                 anchors.fill: parent
@@ -156,6 +196,7 @@ Rectangle {
                 }
             }
         }
+
     }
 
     Component {
@@ -172,11 +213,10 @@ Rectangle {
     Component {
         id: timeIndicatorComponent
 
-        Common.ImageButton {
-            image: 'hourglass-23654'
-            height: size
-            width: size
-            size: annotationDetailsHeight
+        Text {
+            height: annotationDetailsHeight
+            font.pixelSize: annotationDetailsHeight
+            width: contentWidth
         }
     }
 
@@ -186,6 +226,19 @@ Rectangle {
         StateDisplay {
             width: annotationDetailsHeight
             height: width
+        }
+    }
+
+    Component {
+        id: labelsComponent
+
+        LabelsList {
+            width: requiredWidth
+            height: annotationDetailsHeight
+
+            simple: true
+
+            workFlow: parentWorkFlow
         }
     }
 
@@ -204,6 +257,10 @@ Rectangle {
                 workFlowUpdateRequested();
             }
         }
+    }
+
+    function update() {
+        annotationsModel.update()
     }
 }
 

@@ -117,7 +117,6 @@ Window {
         }
     }
 
-
     Rectangle {
         color: '#F2F2F2'
         anchors.fill: parent

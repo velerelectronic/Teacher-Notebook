@@ -15,8 +15,7 @@ DatabaseBackup {
     }
 
     function createTables() {
-        dataBck.dropTable('projects');
-        console.log('Deleting flowAnnotations');
+        //dataBck.dropTable('workFlowLabels');
 
         dataBck.createTable('extended_annotations','title TEXT PRIMARY KEY, created TEXT, desc TEXT, project TEXT, labels TEXT, start TEXT, end TEXT, state INTEGER');
 
@@ -41,7 +40,7 @@ DatabaseBackup {
         dataBck.createTable('workFlows', 'title TEXT PRIMARY KEY, desc TEXT');
         dataBck.createTable('workFlowStates', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT, workFlow TEXT NOT NULL');
         dataBck.createTable('workFlowTransitions', 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT, startState INTEGER, endState INTEGER');
-        dataBck.createTable('workFlowLabels', 'id INTEGER PRIMARY KEY, title TEXT, color TEXT');
+        dataBck.createTable('workFlowLabels', 'id INTEGER PRIMARY KEY, title TEXT, color TEXT, workFlow TEXT NOT NULL');
 
         // The new type of annotations are attached to states in workflows.
         // Each annotation has some activities, comments, files and labels
