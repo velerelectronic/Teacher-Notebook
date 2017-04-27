@@ -158,7 +158,7 @@ Item {
                             }
 
                             Item {
-                                Layout.preferredHeight: units.fingerUnit * 1.5
+                                Layout.preferredHeight: Math.max(units.fingerUnit * 1.5, labelsFilter.height)
                                 Layout.fillWidth: true
 
                                 RowLayout {
@@ -173,6 +173,17 @@ Item {
                                         font.pixelSize: units.readUnit
                                         text: qsTr('Filtra')
                                     }
+
+                                    LabelsAnnotationsFilter {
+                                        id: labelsFilter
+
+                                        Layout.preferredHeight: requiredHeight
+                                        Layout.fillWidth: true
+
+                                        labelHeight: units.fingerUnit
+                                        workFlow: identifier
+                                    }
+
                                     Common.SearchBox {
                                         id: annotationsSearchBox
 

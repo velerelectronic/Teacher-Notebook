@@ -103,6 +103,7 @@ Rectangle {
                     var obj = workFlowStatesModel.getObjectInRow(i);
                     statesListModel.append({text: "(" + obj['id'] + ")" + obj['title']});
                 }
+                stateSelector.currentIndex = -1;
             }
         }
 
@@ -135,9 +136,11 @@ Rectangle {
             text: qsTr('Canvia')
 
             onClicked: {
-                var newStateId = parseInt(workFlowStatesModel.getObjectInRow(stateSelector.currentIndex)['id']);
-                annotationsModel.updateObject(annotationId, {workFlowState: newStateId});
-                workFlowAnnotationStateChanged(annotationId, newStateId);
+                if (stateSelector.currentIndex > -1) {
+                    var newStateId = parseInt(workFlowStatesModel.getObjectInRow(stateSelector.currentIndex)['id']);
+                    annotationsModel.updateObject(annotationId, {workFlowState: newStateId});
+                    workFlowAnnotationStateChanged(annotationId, newStateId);
+                }
             }
         }
     }

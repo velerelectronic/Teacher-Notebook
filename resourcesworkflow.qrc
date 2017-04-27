@@ -9,5 +9,7 @@
         <file>modules/workflow/ChangeAnnotationState.qml</file>
         <file>modules/workflow/LabelsList.qml</file>
         <file>modules/workflow/LabelsListEditor.qml</file>
+        <file>modules/workflow/DetailedLabelsList.qml</file>
+        <file>modules/workflow/LabelsAnnotationsFilter.qml</file>
     </qresource>
 </RCC>

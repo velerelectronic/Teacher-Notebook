@@ -50,7 +50,7 @@ ListView {
     spacing: units.nailUnit
 
     delegate: Rectangle {
-        width: (simple)?(height * 2):(labelText.contentWidth + 2 * units.nailUnit)
+        width: height * 2
         height: labelsList.height
 
         radius: height / 4
@@ -58,16 +58,10 @@ ListView {
         color: model.color
 
         Text {
-            id: labelText
-
             anchors.fill: parent
-
-            visible: !simple
             padding: units.nailUnit
-            verticalAlignment: Text.AlignVCenter
-            font.pixelSize: units.readUnit
 
-            text: model.title
+            text: model.label
         }
     }
     footer: ((labelsInfoModel.count>0) || (simple))?null:addLabelComponent
@@ -97,7 +91,7 @@ ListView {
             var label = annotationLabelsModel.getObjectInRow(i)['label'];
 
             var obj = generalLabelsModel.getObject(label);
-            labelsInfoModel.append({color: obj['color'], title: obj['title']});
+            labelsInfoModel.append({color: obj['color']});
         }
     }
 

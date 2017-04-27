@@ -141,6 +141,11 @@ Item {
 
                                 font.pixelSize: units.readUnit
                                 text: '<b>' + workFlowStateTitle + '</b>'+ qsTr(' dins ') + '<b>' + workFlow + '</b>'
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: changeStateDialog.openChangeState(showAnnotationItem.identifier, showAnnotationItem.title, showAnnotationItem.workFlow, showAnnotationItem.workFlowState)
+                                }
                             }
 
                             Rectangle {
@@ -238,7 +243,7 @@ Item {
 
                                 font.pixelSize: units.readUnit
                                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                onLinkActivated: openAnnotation(link)
+                                onLinkActivated: Qt.openUrlExternally(link)
                                 Common.ImageButton {
                                     id: changeDescriptionButton
                                     anchors {
@@ -871,6 +876,23 @@ Item {
             onAnnotationSelected: {
                 annotationPreviewDialog.close();
                 showAnnotationItem.annotationSelected(annotation);
+            }
+        }
+    }
+
+    Common.SuperposedWidget {
+        id: changeStateDialog
+
+        function openChangeState(annotationId, annotationTitle, parentWorkFlow, workFlowState) {
+            load(qsTr('Canvia estat'), 'workflow/ChangeAnnotationState', {annotationId: annotationId, annotationTitle: annotationTitle, initialWorkFlow: parentWorkFlow, initialState: workFlowState});
+        }
+
+        Connections {
+            target: changeStateDialog.mainItem
+
+            onWorkFlowAnnotationStateChanged: {
+                changeStateDialog.close();
+                getText();
             }
         }
     }
