@@ -30,6 +30,7 @@ Item {
     signal rubricAssessmentSelected(int assessment)
     signal showRelatedAnnotationsByLabels()
     signal showRelatedAnnotationsByPeriod()
+    signal annotationUpdated()
 
     property var sharedObject: null
 
@@ -218,6 +219,8 @@ Item {
                                         workFlow: showAnnotationItem.workFlow
 
                                         onAnnotationLabelsSelected: {}
+
+                                        onAnnotationLabelsUpdated: annotationUpdated()
                                     }
                                     Annotations.StateDisplay {
                                         id: stateComponent
@@ -712,6 +715,7 @@ Item {
         onAccepted: {
             annotationsModel.updateObject(identifier, {title: titleEditor.content});
             getText();
+            annotationUpdated();
         }
     }
 
@@ -732,6 +736,7 @@ Item {
         onAccepted: {
             annotationsModel.updateObject(identifier, {desc: descEditor.content});
             getText();
+            annotationUpdated();
         }
     }
 
@@ -753,6 +758,7 @@ Item {
             var date = new Date();
             annotationsModel.updateObject(identifier, {desc: showAnnotationItem.descText + '\n\n**' + date.toLocaleString() + '** ' + extraDescEditor.content.trim()});
             getText();
+            annotationUpdated();
         }
 
         function openAppender() {
@@ -780,6 +786,7 @@ Item {
         onAccepted: {
             annotationsModel.updateObject(identifier, {state: stateEditor.content});
             getText();
+            annotationUpdated();
         }
     }
 
@@ -807,6 +814,7 @@ Item {
             var end = periodEditorItem.getEndDateString();
             annotationsModel.updateObject(identifier, {start: start, end: end});
             getText();
+            annotationUpdated();
         }
     }
 
@@ -828,6 +836,7 @@ Item {
         onAccepted: {
             annotationsModel.updateObject(identifier, {document: documentEditorDialog.selectedDocument});
             getText();
+            annotationUpdated();
         }
     }
 
@@ -858,6 +867,7 @@ Item {
             onImportedFileIntoAnnotation: {
                 importImageDialog.close();
                 getText();
+                annotationUpdated();
             }
         }
     }
@@ -893,6 +903,7 @@ Item {
             onWorkFlowAnnotationStateChanged: {
                 changeStateDialog.close();
                 getText();
+                annotationUpdated();
             }
         }
     }

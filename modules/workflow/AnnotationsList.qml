@@ -74,10 +74,10 @@ Rectangle {
             clip: true
             model: annotationsModel
             spacing: units.nailUnit
-            topMargin: units.nailUnit
-            bottomMargin: units.nailUnit
-            leftMargin: units.nailUnit
-            rightMargin: units.nailUnit
+            topMargin: units.nailUnit * 2
+            bottomMargin: units.nailUnit * 2
+            leftMargin: units.nailUnit * 2
+            rightMargin: units.nailUnit * 2
 
             ScrollBar.vertical: ScrollBar {
                 active: true
@@ -112,6 +112,7 @@ Rectangle {
                 width: annotationsList.width - annotationsList.leftMargin - annotationsList.rightMargin
                 height: annotationColumn.height + units.nailUnit * 2
 
+                radius: units.nailUnit
                 clip: true
 
                 property int annotationId: model.id

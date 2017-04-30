@@ -97,6 +97,8 @@ Item {
                         height: childrenRect.height
                         color: 'gray'
 
+                        clip: true
+
                         ColumnLayout {
                             anchors {
                                 top: parent.top
@@ -198,11 +200,15 @@ Item {
 
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: showWorkFlowItem.height / 2
+                                Layout.leftMargin: spacing + units.fingerUnit
+                                Layout.rightMargin: spacing + units.fingerUnit
 
                                 property int headingsHeight: units.fingerUnit * 2
                                 property int commonColumnsWidth: units.fingerUnit * 10
 
-                                clip: true
+                                displayMarginBeginning: spacing + units.fingerUnit
+                                displayMarginEnd: displayMarginBeginning
+
                                 orientation: ListView.Horizontal
 
                                 snapMode: ListView.SnapToItem
@@ -245,13 +251,27 @@ Item {
                                         workFlowState: singleStateRect.stateId
                                         searchString: annotationsSearchBox.text
 
-                                        onWorkFlowAnnotationSelected: showWorkFlowItem.workFlowAnnotationSelected(annotation)
+                                        onWorkFlowAnnotationSelected: annotationViewerDialog.showAnnotation(annotation)
                                         onWorkFlowUpdateRequested: workFlowStatesModel.update()
 
                                         Connections {
                                             target: annotationsSearchBox
 
                                             onPerformSearch: annotationsList.update()
+                                        }
+                                    }
+
+                                    Common.SuperposedWidget {
+                                        id: annotationViewerDialog
+
+                                        function showAnnotation(id) {
+                                            load(qsTr('Anotació'), 'workflow/ShowAnnotation', {identifier: id});
+                                        }
+
+                                        Connections {
+                                            target: annotationViewerDialog.mainItem
+
+                                            onAnnotationUpdated: annotationsList.update()
                                         }
                                     }
                                 }

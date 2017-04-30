@@ -25,6 +25,7 @@ ListView {
     property string workFlow: ''
 
     signal annotationLabelsSelected(int annotation)
+    signal annotationLabelsUpdated()
 
     property int requiredWidth: contentItem.width
 
@@ -116,7 +117,10 @@ ListView {
         Connections {
             target: labelsEditorDialog.mainItem
 
-            onLabelsChanged: getLabels()
+            onLabelsChanged: {
+                getLabels();
+                annotationLabelsUpdated();
+            }
         }
     }
 
