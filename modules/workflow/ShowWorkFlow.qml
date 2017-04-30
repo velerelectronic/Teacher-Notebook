@@ -44,8 +44,8 @@ Item {
             select();
         }
 
-        function addNewState() {
-            insertObject({title: qsTr('Nou estat'), workFlow: showWorkFlowItem.identifier});
+        function addNewState(title, desc) {
+            insertObject({title: title, desc: desc, workFlow: showWorkFlowItem.identifier});
             update();
         }
 
@@ -264,6 +264,9 @@ Item {
                                     Common.SuperposedWidget {
                                         id: annotationViewerDialog
 
+                                        parentWidth: showWorkFlowItem.width - 2 * units.fingerUnit
+                                        parentHeight: showWorkFlowItem.width - 2 * units.fingerUnit
+
                                         function showAnnotation(id) {
                                             load(qsTr('Anotació'), 'workflow/ShowAnnotation', {identifier: id});
                                         }
@@ -297,7 +300,7 @@ Item {
                                         MouseArea {
                                             anchors.fill: parent
 
-                                            onClicked: workFlowStatesModel.addNewState()
+                                            onClicked: newStateDialog.openNewState()
                                         }
                                     }
                                 }
@@ -505,6 +508,27 @@ Item {
 
     QClipboard {
         id: clipboard
+    }
+
+    Common.SuperposedWidget {
+        id: newStateDialog
+
+        function openNewState() {
+            load(qsTr('Nou estat'), 'workflow/GetTitleDialog', {});
+        }
+
+        Connections {
+            target: newStateDialog.mainItem
+
+            onAcceptedTitle: {
+                var newTitle = title;
+                newStateDialog.close();
+                var re = new RegExp("^(.*)(?:\\n*)(.*(?:.|\\n)*)?$", "g");
+                var result = re.exec(newTitle);
+                workFlowStatesModel.addNewState(result[1], result[2]);
+            }
+            onCanceledTitle: newStateDialog.close()
+        }
     }
 
     Common.SuperposedMenu {

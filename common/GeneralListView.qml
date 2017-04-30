@@ -20,7 +20,7 @@ Item {
 
     property Component footerBar: null
 
-    property int requiredHeight: innerListView.contentItem.height
+    property int requiredHeight: toolBarLoader.height + innerListView.contentItem.height
 
     states: [
         State {
@@ -44,8 +44,11 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
+        spacing: 0
 
         Loader {
+            id: toolBarLoader
+
             Layout.preferredHeight: units.fingerUnit * 2
             Layout.fillWidth: true
 

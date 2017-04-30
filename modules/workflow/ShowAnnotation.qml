@@ -300,8 +300,14 @@ Item {
                     width: partsList.width
                     padding: units.fingerUnit
                     captionSize: units.readUnit
-                    caption: qsTr('Descripció')
+                    caption: qsTr('Documents')
 
+                    DocumentsList {
+                        width: parent.width
+                        height: requiredHeight
+
+                        annotationId: identifier
+                    }
                 }
 
                 Common.BasicSection {

@@ -11,5 +11,8 @@
         <file>modules/workflow/LabelsListEditor.qml</file>
         <file>modules/workflow/DetailedLabelsList.qml</file>
         <file>modules/workflow/LabelsAnnotationsFilter.qml</file>
+        <file>modules/workflow/DocumentsList.qml</file>
+        <file>modules/workflow/NewDocument.qml</file>
+        <file>modules/workflow/GetTitleDialog.qml</file>
     </qresource>
 </RCC>

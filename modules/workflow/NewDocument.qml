@@ -20,6 +20,7 @@ Item {
     signal discarded()
 
     property string file: ''
+    property int annotationId
     property string documentName: file
 
     Common.UseUnits {
@@ -50,14 +51,14 @@ Item {
                 extension = extension.toString();
 
             var obj = {
-                created: Storage.currentTime(),
+                annotation: annotationId,
                 title: documentName,
-                desc: qsTr('Edita la descripció...'),
-                source: file,
                 contents: '',
-                type: (file !== '')?extension.toUpperCase():'',
-                hash: (file !== '')?hash.md5(selectedFile.read()):''
+                source: file,
+                hash: (file !== '')?hash.md5(selectedFile.read()):'',
+                docType: (file !== '')?extension.toUpperCase():''
             }
+
             console.log('new doc', JSON.stringify(obj));
             documentsModel.insertObject(obj);
             return true;
@@ -121,7 +122,6 @@ Item {
             selectDirectory: false
 
             onFileSelected: {
-                console.log('hola');
                 addNewDocumentItem.file = file;
                 steppedPage.moveForward();
             }
@@ -169,17 +169,6 @@ Item {
                     }
                 }
 
-                Text {
-                    id: infoText
-
-                    property bool correct: (documentsModel.count == 0) && (documentName !== '')
-                    Layout.preferredHeight: units.fingerUnit
-                    Layout.fillWidth: true
-                    font.pixelSize: units.readUnit
-                    horizontalAlignment: Text.AlignHCenter
-                    color: (correct)?'black':'red'
-                    text: (correct)?qsTr('Aquest nom està disponible'):qsTr('Tria un altre nom')
-                }
                 Common.TextButton {
                     Layout.preferredHeight: units.fingerUnit * 2
                     Layout.fillWidth: true
@@ -201,27 +190,9 @@ Item {
             height: steppedPage.height
             width: steppedPage.width
 
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: units.fingerUnit
-                Common.TextButton {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: units.fingerUnit * 2
-                    text: qsTr('Obre el document creat')
-                    onClicked: documentSelected(documentName)
-                }
-                Common.TextButton {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: units.fingerUnit * 2
-                    text: qsTr('Llista de documents')
-                    onClicked: documentsListSelected()
-                }
-                Common.TextButton {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: units.fingerUnit * 2
-                    text: qsTr('Afegeix un nou document')
-                    onClicked: newDocumentSelected()
-                }
+            Common.Button {
+                text: qsTr('Tanca')
+                onClicked: discarded();
             }
         }
     }

@@ -13,8 +13,8 @@ Dialog {
         id: units
     }
 
-    property int parentWidth: Screen.width * 0.8
-    property int parentHeight: Screen.height * 0.8
+    property int parentWidth: Screen.width
+    property int parentHeight: Screen.height
 
     property bool autoDestroy: true
     property Item mainItem: subPanelLoader.item

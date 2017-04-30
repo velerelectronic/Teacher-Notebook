@@ -93,8 +93,8 @@ Rectangle {
                 searchFields: ['title', 'desc']
                 searchString: annotationsListRect.searchString
 
-                function addAnnotation() {
-                    insertObject({title: qsTr('Nova anotació'), workFlowState: annotationsListRect.workFlowState});
+                function addAnnotation(title, desc) {
+                    insertObject({title: title, desc: desc, workFlowState: annotationsListRect.workFlowState});
                     update();
                 }
 
@@ -175,6 +175,7 @@ Rectangle {
                     onPressAndHold: changeStateDialog.openChangeState(model.id, model.title, parentWorkFlow, model.workFlowState)
                 }
             }
+
         }
 
         Item {
@@ -193,7 +194,7 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: annotationsModel.addAnnotation()
+                    onClicked: newAnnotationDialog.openNewAnnotation()
                 }
             }
         }
@@ -240,6 +241,27 @@ Rectangle {
             simple: true
 
             workFlow: parentWorkFlow
+        }
+    }
+
+    Common.SuperposedWidget {
+        id: newAnnotationDialog
+
+        function openNewAnnotation() {
+            load(qsTr('Nova anotació'), 'workflow/GetTitleDialog', {});
+        }
+
+        Connections {
+            target: newAnnotationDialog.mainItem
+
+            onAcceptedTitle: {
+                var newTitle = title;
+                newAnnotationDialog.close();
+                var re = new RegExp("^(.*)(?:\\n*)(.*(?:.|\\n)*)?$", "g");
+                var result = re.exec(newTitle);
+                annotationsModel.addAnnotation(result[1], result[2]);
+            }
+            onCanceledTitle: newAnnotationDialog.close()
         }
     }
 
