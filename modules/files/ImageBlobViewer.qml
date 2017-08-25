@@ -4,6 +4,8 @@ import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
 import 'qrc:///modules/basic' as Basic
 
+import ImageItem 1.0
+
 Item {
     id: fileViewer
 
@@ -14,15 +16,13 @@ Item {
     signal toggleFullScreen()
     signal closeViewer()
 
-    property bool reloadEnabled: true
+    property var contents
     property bool showImageEnabled: true
 
     property bool visibleImageInfo: true
     property int requiredHeight: bigImageView.implicitImageHeight * (width / bigImageView.implicitImageWidth)
     property int extraBottomMargin: 0
     property int extraTopMargin: 0
-
-    property alias directFileURL: bigImageView.source
 
     Common.UseUnits {
         id: units
@@ -57,7 +57,7 @@ Item {
         }
         */
 
-        Image {
+        ImageFromBlob {
             id: bigImageView
 
             property alias implicitImageWidth: bigImageView.implicitWidth
@@ -66,16 +66,8 @@ Item {
             width: Math.min(flickableItem.width, implicitWidth)
             height: Math.min(flickableItem.height, implicitHeight)
 
-            fillMode: Image.PreserveAspectFit
-            source: (showImageEnabled)?fileURL:undefined
-            cache: true
-            asynchronous: false
-
             function reloadImage() {
-                if (reloadEnabled) {
-                    source = 'qrc:///icons/hourglass-23654.svg';
-                    source = Qt.binding(function() { return (showImageEnabled)?fileURL:undefined; });
-                }
+                data = contents;
             }
 
             /*

@@ -207,6 +207,7 @@ Item {
         cardsModel.appendR({title: qsTr('Pendents'), cardName: 'PendingAnnotations'});
         cardsModel.appendR({title: qsTr('No definides'), cardName: 'InboxAnnotations'});
         cardsModel.appendR({title: qsTr('Setmanes'), cardName: 'Weeks'});
+        cardsModel.appendR({title: qsTr('Setmanes (WF)'), cardName: 'WorkFlowWeeks'});
         cardsModel.appendR({title: qsTr('Valoracions'), cardName: 'LastCheckLists'});
         cardsModel.appendR({title: qsTr('Destacades'), cardName: 'PinnedAnnotations'});
         cardsModel.appendR({title: qsTr('Fotografies'), cardName: 'LastPicture'});

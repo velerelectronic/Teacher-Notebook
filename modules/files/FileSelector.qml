@@ -91,6 +91,11 @@ Item {
                     onClicked: fileDialog.open();
                 }
 
+                Button {
+                    text: qsTr('Fotos')
+                    onClicked: folderList.folder = 'file://' + paths.pictures
+                }
+
                 Buttons.ButtonsList {
                     id: buttonsList
                     Layout.fillHeight: true

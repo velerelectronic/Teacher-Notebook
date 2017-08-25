@@ -15,6 +15,9 @@ Item {
     property Component listDelegate: null
     property Component selectionBox: null
 
+    property Component sectionDelegate: null
+    property string sectionProperty: ''
+    property int sectionCriteria
     property alias delegate: innerListView.delegate
     property alias model: innerListView.model
 
@@ -95,6 +98,10 @@ Item {
                     //    delegateLoader.height = 100; // Qt.binding(function() { return delegateLoader.item.requiredHeight; });
                 }
             }
+
+            section.delegate: sectionDelegate
+            section.property: sectionProperty
+            section.criteria: sectionCriteria
 
             footer: Loader {
                 id: footerLoader

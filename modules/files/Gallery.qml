@@ -5,6 +5,8 @@ import Qt.labs.folderlistmodel 2.1
 import 'qrc:///common' as Common
 import 'qrc:///modules/basic' as Basic
 
+import PersonalTypes 1.0
+
 Rectangle {
     id: galleryItem
 
@@ -267,4 +269,11 @@ Rectangle {
         }
     }
 
+    StandardPaths {
+        id: paths
+    }
+
+    function setPicturesFolder() {
+        folderListModel.folder = 'file://' + paths.pictures
+    }
 }

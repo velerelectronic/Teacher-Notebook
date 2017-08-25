@@ -16,9 +16,11 @@ Item {
 
     Common.UseUnits { id: units }
 
-    signal newDocumentSelected()
+    signal documentAdded()
     signal documentSelected(string document)
     signal documentSourceSelected(string source)
+    signal documentContentsSelected(var contents)
+    signal documentCover(var contents)
 
     property int annotationId
 
@@ -35,6 +37,10 @@ Item {
         function update() {
             bindValues = [annotationId];
             select();
+            if (count>0) {
+                var documentObj = getObjectInRow(0);
+                documentCover(documentObj['contents']);
+            }
         }
 
         Component.onCompleted: update()
@@ -131,8 +137,13 @@ Item {
                     asynchronous: true
                     fillMode: Image.PreserveAspectFit
 
-                    property string mediaType: MediaTypes.imageForMediaType(model.source, model.type)
+                    property string mediaType: MediaTypes.imageForMediaType(model.source, model.docType)
                     source: (mediaType == '')?model.source:mediaType
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: documentContentsSelected(model.contents)
+                    }
                 }
 
                 Text {
@@ -166,7 +177,7 @@ Item {
                     Layout.fillHeight: true
                     Layout.preferredWidth: documentItem.width / 4
                     font.pixelSize: units.readUnit
-                    text: model.type
+                    text: model.docType
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     elide: Text.ElideRight
@@ -193,30 +204,7 @@ Item {
             size: units.fingerUnit * 2
             imageSource: 'plus-24844'
             onClicked: {
-                superposedAddMenu.open();
-            }
-        }
-        Common.SuperposedMenu {
-            id: superposedAddMenu
-
-            title: qsTr('Nou document...')
-
-            Common.SuperposedMenuEntry {
-                height: units.fingerUnit * 1.5
-                text: qsTr('Fitxer')
-                onClicked: {
-                    superposedAddMenu.close();
-                    newDocumentDialog.openNewDocument();
-//                        newDocumentSelected();
-                }
-            }
-
-            Common.SuperposedMenuEntry {
-                height: units.fingerUnit * 1.5
-                text: qsTr('Adreça web')
-                onClicked: {
-                    superposedAddMenu.close();
-                }
+                newDocumentDialog.openNewDocument();
             }
         }
 
@@ -266,7 +254,10 @@ Item {
                 documentSelected(document);
             }
 
-            onNewDocumentSelected: newDocumentDialog.openNewDocument()
+            onDocumentAdded: {
+                documentsModel.update();
+                documentsListItem.documentAdded()
+            }
         }
     }
 

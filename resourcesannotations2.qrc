@@ -8,5 +8,6 @@
         <file>modules/annotations2/PeriodEditor.qml</file>
         <file>modules/annotations2/AnnotationPreview.qml</file>
         <file>modules/annotations2/NewAnnotationHelper.qml</file>
+        <file>modules/annotations2/WorkFlowAnnotationsList.qml</file>
     </qresource>
 </RCC>

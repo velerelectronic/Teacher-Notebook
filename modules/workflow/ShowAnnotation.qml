@@ -31,6 +31,7 @@ Item {
     signal showRelatedAnnotationsByLabels()
     signal showRelatedAnnotationsByPeriod()
     signal annotationUpdated()
+    signal annotationCover(var contents)
 
     property var sharedObject: null
 
@@ -115,6 +116,27 @@ Item {
                             }
                             height: childrenRect.height
                             spacing: units.fingerUnit
+
+                            Item {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: imagePreviewer.height
+
+                                ImageFromBlob {
+                                    id: imagePreviewer
+                                    anchors {
+                                        top: parent.top
+                                        left: parent.left
+                                        right: parent.right
+                                    }
+                                    height: implicitHeight * imagePreviewer.width / Math.max(implicitWidth,1)
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+
+                                    onClicked: {}
+                                }
+                            }
 
                             Text {
                                 id: titleText
@@ -291,6 +313,12 @@ Item {
                             }
 
                         }
+
+                        Connections {
+                            target: showAnnotationItem
+
+                            onAnnotationCover: imagePreviewer.data = contents;
+                        }
                     }
                 }
 
@@ -307,227 +335,14 @@ Item {
                         height: requiredHeight
 
                         annotationId: identifier
-                    }
-                }
 
-                Common.BasicSection {
-                    width: partsList.width
-                    height: requiredHeight
+                        onDocumentSourceSelected: imageViewer.showDocument(source)
 
-                    padding: units.fingerUnit
-                    captionSize: units.readUnit
-                    caption: qsTr('Continguts')
+                        onDocumentContentsSelected: imageViewer.showDocument(contents)
 
-                    Item {
-                        id: wholeContentsArea
+                        onDocumentAdded: annotationUpdated()
 
-                        width: parent.width
-                        height: imagePreviewer.height + contentsOptionsRow.height
-
-                        property bool showHotSpots: false
-
-                        ImageFromBlob {
-                            id: imagePreviewer
-
-                            anchors {
-                                top: parent.top
-                                left: parent.left
-                                right: parent.right
-                            }
-
-                            height: width * implicitHeight / Math.max(implicitWidth,1)
-                        }
-
-                        Item {
-                            id: contentsOptionsRow
-
-                            anchors {
-                                top: imagePreviewer.bottom
-                                left: parent.left
-                                right: parent.right
-                            }
-
-                            height: units.fingerUnit
-
-                            RowLayout {
-                                anchors.fill: parent
-
-                                Common.ImageButton {
-                                    Layout.fillHeight: true
-                                    Layout.preferredWidth: height
-                                    size: units.fingerUnit
-
-                                    image: 'hierarchy-35795'
-
-                                    onClicked: hotSpotsArea.visible = !hotSpotsArea.visible
-                                }
-
-                                Common.ImageButton {
-                                    Layout.fillHeight: true
-                                    Layout.preferredWidth: height
-                                    size: units.fingerUnit
-
-                                    image: 'edit-153612'
-
-                                    onClicked: importImageDialog.openGallery()
-                                }
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: imagePreviewer
-                            onClicked: {
-                                var relX = mouse.x / width;
-                                var relY = mouse.y / height;
-
-                                var minimumSqDistance;
-                                var minimumConnection;
-                                var minimumAnnotation;
-                                var minimumDefined = false;
-
-                                // Look for the location closer to (relX,relY)
-                                for (var i=0; i<annotationsConnectionsItem.connectionsModelRef.count; i++) {
-                                    var connectionObj = annotationsConnectionsItem.connectionsModelRef.getObjectInRow(i);
-                                    var parts = connectionObj['location'].split(' ');
-                                    if (parts[0] == 'rel') {
-                                        var posX = parseFloat(parts[1]);
-                                        var posY = parseFloat(parts[2]);
-
-                                        var newDistance = Math.pow((relX - posX), 2) + Math.pow((relY - posY), 2);
-                                        if (minimumDefined) {
-                                            if (newDistance < minimumSqDistance) {
-                                                minimumSqDistance = newDistance;
-                                                minimumConnection = connectionObj['id'];
-                                                minimumAnnotation = connectionObj['annotationTo'];
-                                            }
-                                        } else {
-                                            minimumSqDistance = newDistance;
-                                            minimumConnection = connectionObj['id'];
-                                            minimumAnnotation = connectionObj['annotationTo'];
-                                            minimumDefined = true;
-                                        }
-                                    }
-                                }
-
-                                if (minimumDefined) {
-                                    annotationSelectorItem.reposition(relX, relY);
-                                    annotationSelectorItem.select(minimumAnnotation);
-                                }
-                            }
-                        }
-
-                        Item {
-                            id: hotSpotsArea
-                            anchors.fill: imagePreviewer
-                            visible: false
-
-                            Repeater {
-                                model: annotationsConnectionsItem.connectionsModelRef
-
-                                Rectangle {
-                                    id: hotSpotItem
-
-                                    anchors {
-                                        top: parent.top
-                                        left: parent.left
-                                        leftMargin: hotSpotItem.relativeX * hotSpotsArea.width - hotSpotItem.width / 2;
-                                        topMargin: hotSpotItem.relativeY * hotSpotsArea.height - hotSpotItem.height / 2;
-                                    }
-
-                                    width: units.fingerUnit
-                                    height: units.fingerUnit
-                                    radius: units.fingerUnit / 2
-                                    border.width: units.nailUnit
-                                    border.color: 'black'
-                                    color: 'yellow'
-
-                                    property string relativeLocation: model.location
-                                    property real relativeX: 0
-                                    property real relativeY: 0
-
-                                    function calculateLocation() {
-                                        console.log('REL loc', relativeLocation);
-                                        var parts = relativeLocation.split(' ');
-                                        if ((parts[0] == 'rel') && (parts.length == 3)) {
-                                            console.log('computing');
-                                            relativeX = parseFloat(parts[1]);
-                                            relativeY = parseFloat(parts[2]);
-                                            console.log(parts[1], parts[2]);
-                                            hotSpotItem.visible = true;
-                                        } else {
-                                            hotsPotItem.visible = false;
-                                        }
-                                    }
-
-                                    onRelativeLocationChanged: calculateLocation()
-                                }
-                            }
-                        }
-
-
-                        Common.BoxedText {
-                            id: annotationSelectorItem
-
-                            property int selectedAnnotation: -1
-
-                            anchors {
-                                top: imagePreviewer.top
-                                horizontalCenter: imagePreviewer.horizontalCenter
-                            }
-
-                            width: imagePreviewer.width * 0.8
-                            height: units.fingerUnit * 2
-
-                            visible: false
-
-                            margins: units.nailUnit
-                            verticalAlignment: Text.AlignVCenter
-                            fontSize: units.readUnit
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            elide: Text.ElideRight
-
-                            function reposition(posX, posY) {
-                                //anchors.leftMargin = posX * imagePreviewer.width;
-                                anchors.topMargin = posY * imagePreviewer.height;
-                            }
-
-                            function select(annotation) {
-                                var obj = annotationsModel.getObject(annotation);
-                                if (obj) {
-                                    selectedAnnotation = annotation;
-                                    annotationSelectorItem.text = '<b>' + obj['title'] + '</b>&nbsp;' + obj['desc'];
-                                    visible = true;
-                                }
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-
-                                onClicked: {
-                                    if (annotationSelectorItem.selectedAnnotation > -1) {
-                                        annotationSelectorItem.visible = false;
-                                        annotationPreviewDialog.openAnnotationPreview(annotationSelectorItem.selectedAnnotation);
-                                        //annotationSelected(annotationSelectorItem.selectedAnnotation);
-                                    }
-                                }
-                            }
-
-                            Common.ImageButton {
-                                anchors {
-                                    top: parent.top
-                                    right: parent.right
-                                    bottom: parent.bottom
-                                    margins: units.nailUnit
-                                }
-                                size: units.fingerUnit
-
-                                image: 'road-sign-147409'
-
-                                onClicked: {
-                                    annotationSelectorItem.visible = false;
-                                }
-                            }
-                        }
+                        onDocumentCover: annotationCover(contents)
                     }
                 }
 
@@ -702,6 +517,43 @@ Item {
 
     QClipboard {
         id: clipboard
+    }
+
+    MouseArea {
+        anchors.fill: parent
+
+        enabled: imageViewer.visible
+
+        onPressed: {
+            mouse.accepted = true;
+        }
+
+        onClicked: imageViewer.visible = false
+
+        Rectangle {
+            anchors.fill: parent
+            color: 'black'
+            opacity: 0.5
+
+            visible: imageViewer.visible
+        }
+
+        Files.ImageBlobViewer {
+            id: imageViewer
+
+            anchors.fill: parent
+            visible: false
+
+            function showDocument(newContents) {
+                contents = newContents;
+                reload();
+                visible = true;
+            }
+
+            onCloseViewer: {
+                visible = false;
+            }
+        }
     }
 
     Common.SuperposedMenu {

@@ -23,8 +23,11 @@ Item {
     property alias identifier: showWorkFlowItem.title
     property string title: ''
     property string desc: ''
+    property int annotation
 
     signal workFlowAnnotationSelected(int annotation)
+    signal workFlowsListSelected()
+    signal annotationUpdated()
 
     Common.UseUnits {
         id: units
@@ -59,6 +62,13 @@ Item {
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: units.nailUnit
+
+        Button {
+            Layout.fillWidth: true
+            Layout.preferredHeight: units.fingerUnit
+            text: qsTr('Tots els diagrames de flux')
+            onClicked: workFlowsListSelected()
+        }
 
         Common.HorizontalStaticMenu {
             id: optionsMenu
@@ -259,24 +269,14 @@ Item {
 
                                             onPerformSearch: annotationsList.update()
                                         }
-                                    }
-
-                                    Common.SuperposedWidget {
-                                        id: annotationViewerDialog
-
-                                        parentWidth: showWorkFlowItem.width - 2 * units.fingerUnit
-                                        parentHeight: showWorkFlowItem.width - 2 * units.fingerUnit
-
-                                        function showAnnotation(id) {
-                                            load(qsTr('Anotació'), 'workflow/ShowAnnotation', {identifier: id});
-                                        }
 
                                         Connections {
-                                            target: annotationViewerDialog.mainItem
+                                            target: showWorkFlowItem
 
                                             onAnnotationUpdated: annotationsList.update()
                                         }
                                     }
+
                                 }
 
                                 footer: Item {
@@ -484,8 +484,40 @@ Item {
         }
     }
 
+    Common.SuperposedWidget {
+        id: annotationViewerDialog
+
+        parentWidth: showWorkFlowItem.width - 2 * units.fingerUnit
+        parentHeight: showWorkFlowItem.width - 2 * units.fingerUnit
+
+        function showAnnotation(id) {
+            load(qsTr('Anotació'), 'workflow/ShowAnnotation', {identifier: id});
+        }
+
+        Connections {
+            target: annotationViewerDialog.mainItem
+
+            onAnnotationUpdated: annotationUpdated()
+        }
+    }
+
+
+    Models.WorkFlowAnnotations {
+        id: annotationsModel
+    }
+
+    Models.WorkFlowStates {
+        id: statesModel
+    }
 
     function getText() {
+        if (showWorkFlowItem.annotation > -1) {
+            var annotationObj = annotationsModel.getObject(showWorkFlowItem.annotation);
+            var stateId = annotationObj['workFlowState'];
+            var stateObj = statesModel.getObject(stateId);
+            identifier = stateObj['workFlow'];
+        }
+
         if (showWorkFlowItem.identifier != "") {
             workFlowsModel.filters = ["title = ?"];
             workFlowsModel.bindValues = [showWorkFlowItem.identifier];
@@ -498,6 +530,10 @@ Item {
             showWorkFlowItem.title = obj['title'];
             showWorkFlowItem.desc = obj['desc'];
             console.log('desccccc', obj['desc']);
+        }
+
+        if (showWorkFlowItem.annotation > -1) {
+            annotationViewerDialog.showAnnotation(showWorkFlowItem.annotation);
         }
     }
 

@@ -83,7 +83,8 @@ Connections {
     }
 
     onWorkFlowAnnotationSelected: {
-        destination.addPage('workflow/ShowAnnotation', {identifier: annotation});
+        console.log('anotcio', annotation);
+        destination.addPage('workflow/ShowWorkFlow', {annotation: annotation}, qsTr('Anotació'));
     }
 
     /*

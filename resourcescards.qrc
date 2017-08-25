@@ -17,5 +17,6 @@
         <file>modules/cards/DownloadsCard.qml</file>
         <file>modules/cards/OtherDirections.qml</file>
         <file>modules/cards/WorkFlowsCard.qml</file>
+        <file>modules/cards/WorkFlowWeeksCard.qml</file>
     </qresource>
 </RCC>

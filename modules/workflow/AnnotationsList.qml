@@ -155,16 +155,31 @@ Rectangle {
                         spacing: units.nailUnit
 
                         Component.onCompleted: {
+                            // Show details
+
+                            // Does the annotation have a description?
                             if (singleAnnotationItem.desc !== '') {
                                 descIndicatorComponent.createObject(annotationDetails);
                             }
+
+                            // Does the annotation have dates defined?
                             if ((singleAnnotationItem.start !== '') || (singleAnnotationItem.end !== '')) {
                                 timeIndicatorComponent.createObject(annotationDetails, {text: singleAnnotationItem.start + "-" + singleAnnotationItem.end});
                             }
+
+                            // Which is the annotation state?
                             if ((typeof singleAnnotationItem.stateValue !== null) && (singleAnnotationItem.stateValue !== 0)) {
                                 stateIndicatorComponent.createObject(annotationDetails, {stateValue: singleAnnotationItem.stateValue});
                             }
+
+                            // Which are the labels?
                             labelsComponent.createObject(annotationDetails, {annotationId: singleAnnotationItem.annotationId});
+
+                            // Does the annotation have documents?
+                            if (documentsModel.getDocumentsCount() > 0) {
+                                documentsComponent.createObject(annotationDetails);
+                            }
+
                         }
                     }
                 }
@@ -173,6 +188,18 @@ Rectangle {
                     anchors.fill: parent
                     onClicked: workFlowAnnotationSelected(model.id)
                     onPressAndHold: changeStateDialog.openChangeState(model.id, model.title, parentWorkFlow, model.workFlowState)
+                }
+
+                Models.WorkFlowAnnotationDocuments {
+                    id: documentsModel
+
+                    filters: ['annotation=?']
+
+                    function getDocumentsCount() {
+                        bindValues = [model.id];
+                        select();
+                        return count;
+                    }
                 }
             }
 
@@ -241,6 +268,17 @@ Rectangle {
             simple: true
 
             workFlow: parentWorkFlow
+        }
+    }
+
+    Component {
+        id: documentsComponent
+
+        Common.ImageButton {
+            image: 'paper-clip-27821'
+            height: size
+            width: size
+            size: annotationDetailsHeight
         }
     }
 

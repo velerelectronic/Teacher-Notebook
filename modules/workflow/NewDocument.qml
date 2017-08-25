@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.1
 
 import FileIO 1.0
+import PersonalTypes 1.0
 import CryptographicHash 1.0
 
 import 'qrc:///common' as Common
@@ -16,7 +17,7 @@ Item {
 
     signal documentSelected(string document)
     signal documentsListSelected()
-    signal newDocumentSelected()
+    signal documentAdded()
     signal discarded()
 
     property string file: ''
@@ -35,6 +36,10 @@ Item {
         id: selectedFile
     }
 
+    StandardPaths {
+        id: paths
+    }
+
     CryptographicHash {
         id: hash
     }
@@ -44,23 +49,25 @@ Item {
             selectedFile.source = file;
 
             console.log('Document source', source);
-            var extension = /[^.]+$/.exec(source);
+            var re = new RegExp("[^\\.]+$", "g");
+            var extension = re.exec(file);
             if (extension == null)
                 extension = "";
             else
                 extension = extension.toString();
+            console.log('extension', extension);
 
             var obj = {
                 annotation: annotationId,
                 title: documentName,
-                contents: '',
+                contents: selectedFile.readBinary(),
                 source: file,
                 hash: (file !== '')?hash.md5(selectedFile.read()):'',
                 docType: (file !== '')?extension.toUpperCase():''
             }
 
-            console.log('new doc', JSON.stringify(obj));
             documentsModel.insertObject(obj);
+            documentAdded();
             return true;
         } else
             return false;
@@ -114,6 +121,21 @@ Item {
             }
         }
 
+        Files.Gallery {
+            id: galleryItem
+
+            height: steppedPage.height
+            width: steppedPage.width
+
+            onFileSelected: {
+                addNewDocumentItem.file = file;
+                steppedPage.moveForward();
+            }
+
+            Component.onCompleted: setPicturesFolder()
+        }
+
+        /*
         Files.FileSelector {
             height: steppedPage.height
             width: steppedPage.width
@@ -126,6 +148,7 @@ Item {
                 steppedPage.moveForward();
             }
         }
+        */
 
         Rectangle {
             id: newDocumentTitleItem
@@ -146,29 +169,6 @@ Item {
                     }
                 }
 
-                ListView {
-                    id: documentsList
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-
-                    model: documentsModel
-
-                    delegate: Rectangle {
-                        width: documentsList.width
-                        height: units.fingerUnit * 2
-
-                        border.color: 'black'
-
-                        Text {
-                            anchors.fill: parent
-                            anchors.margins: units.nailUnit
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            clip: true
-                            text: model.title
-                        }
-                    }
-                }
-
                 Common.TextButton {
                     Layout.preferredHeight: units.fingerUnit * 2
                     Layout.fillWidth: true
@@ -177,22 +177,10 @@ Item {
                         var documentName = searchTitleBox.text;
                         var fileName;
                         if (acquireDocument()) {
-                            steppedPage.moveForward();
+                            discarded();
                         }
                     }
                 }
-            }
-        }
-
-        Item {
-            id: nextOptions
-
-            height: steppedPage.height
-            width: steppedPage.width
-
-            Common.Button {
-                text: qsTr('Tanca')
-                onClicked: discarded();
             }
         }
     }

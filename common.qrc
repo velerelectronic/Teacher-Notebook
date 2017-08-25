@@ -48,5 +48,6 @@
         <file>common/SuperposedMenu.qml</file>
         <file>common/SuperposedMenuEntry.qml</file>
         <file>common/GeneralListView.qml</file>
+        <file>common/ExpandableToolPanel.qml</file>
     </qresource>
 </RCC>
