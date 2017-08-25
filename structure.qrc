@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/structure/MainNavigator.qml</file>
+    </qresource>
+</RCC>

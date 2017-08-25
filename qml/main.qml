@@ -85,6 +85,7 @@ import 'qrc:///models' as Models
 import 'qrc:///modules/pagesfolder' as PagesFolder
 import 'qrc:///modules/cards' as Cards
 import 'qrc:///modules/basic' as Basic
+import 'qrc:///modules/structure' as Structure
 import "qrc:///common/FormatDates.js" as FormatDates
 
 // Three types of navigation between pages
@@ -117,8 +118,21 @@ Window {
         }
     }
 
+
+    Structure.MainNavigator {
+        id: mainNavigator
+
+        anchors.fill: parent
+
+        Component.onCompleted: {
+            mainNavigator.addPage(qsTr('Principal'), 'cards/CardsList');
+            mainNavigator.addPage(qsTr('Anotacions'), 'annotations2/AnnotationsList');
+        }
+    }
+
     Rectangle {
         color: '#F2F2F2'
+        visible: false
         anchors.fill: parent
 
         ColumnLayout {
