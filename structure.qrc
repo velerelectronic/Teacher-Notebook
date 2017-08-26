@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>modules/structure/MainNavigator.qml</file>
+        <file>modules/structure/OpenedPages.qml</file>
     </qresource>
 </RCC>

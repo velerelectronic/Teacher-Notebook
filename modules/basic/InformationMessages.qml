@@ -70,6 +70,25 @@ ListView {
             onTriggered: singleMessage.removeMessage()
         }
 
+        ListView.onRemove: SequentialAnimation {
+            PropertyAction {
+                target: singleMessage
+                property: "ListView.delayRemove"
+                value: true
+            }
+            NumberAnimation {
+                target: singleMessage
+                properties: 'opacity'
+                to: 0
+                duration: 1000
+            }
+            PropertyAction {
+                target: singleMessage
+                property: "ListView.delayRemove"
+                value: false
+            }
+        }
+
         function removeMessage() {
             messagesModel.remove(model.index);
         }

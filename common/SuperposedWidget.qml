@@ -71,6 +71,8 @@ Dialog {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
 
+                clip: true
+
                 Connections {
                     target: subPanelLoader.item
                     ignoreUnknownSignals: true

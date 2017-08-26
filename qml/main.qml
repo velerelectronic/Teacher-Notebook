@@ -105,7 +105,6 @@ Window {
 
     onClosing: {
         close.accepted = false;
-        pagesLoaderView.goBack();
     }
 
     Common.UseUnits { id: units }
@@ -124,181 +123,13 @@ Window {
 
         anchors.fill: parent
 
+        onMainIconSelected: otherDirectionsDialog.openOpenedPages()
+
         Component.onCompleted: {
-            mainNavigator.addPage(qsTr('Principal'), 'cards/CardsList');
-            mainNavigator.addPage(qsTr('Anotacions'), 'annotations2/AnnotationsList');
-        }
-    }
+            mainNavigator.addPage('cards/CardsList', {}, qsTr('Principal'));
+            mainNavigator.addPage('annotations2/AnnotationsList', {}, qsTr('Anotacions'));
 
-    Rectangle {
-        color: '#F2F2F2'
-        visible: false
-        anchors.fill: parent
-
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: units.nailUnit
-            spacing: units.fingerUnit
-
-            Item {
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit * 1.5
-
-                z: 2
-
-                RowLayout {
-                    anchors.fill: parent
-                    spacing: units.fingerUnit
-
-                    Common.ImageButton {
-                        Layout.preferredWidth: height
-                        Layout.fillHeight: true
-                        size: height
-                        image: 'small-41255'
-                        onClicked: otherDirectionsDialog.openOtherDirections()
-                    }
-                    Common.ImageButton {
-                        Layout.preferredWidth: height
-                        Layout.fillHeight: true
-                        size: height
-                        image: 'arrow-145769'
-                        onClicked: {
-                            recentPagesModel.select();
-                            if (recentPagesModel.count > 1) {
-                                var lastPage = recentPagesModel.getObjectInRow(1);
-                                console.log('reopening', lastPage['page'], lastPage['parameters'], lastPage['title']);
-                                pagesLoaderView.addPage(lastPage['page'], JSON.parse(lastPage['parameters']), lastPage['title']);
-                            }
-                        }
-                    }
-                    Common.SearchBox {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-
-                        onIntroPressed: {
-                            pagesLoaderView.addPage('annotations2/AnnotationsList', {searchString: text, interactive: true}, qsTr('Cerca anotacions'))
-                        }
-                    }
-                    Common.ImageButton {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: height
-
-                        image: 'plus-24844'
-
-                        onClicked: otherDirectionsDialog.createAnnotation()
-                    }
-                }
-            }
-
-            Loader {
-                id: pagesLoaderView
-
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-
-                z: 1
-
-                Component {
-                    id: mainPageComponent
-
-                    Cards.CardsList {
-                        slotsObject: pagesLoaderView
-                        onSelectedPage: pagesLoaderView.addPage(page, parameters, title)
-                    }
-                }
-
-                PagesFolder.PageConnections {
-                    target: pagesLoaderView.item
-                    destination: pagesLoaderView
-                }
-
-                function addPage(page, parameters, title) {
-                    // Parameters must be an associative array
-
-                    recentPagesModel.addPage(page, parameters, title);
-
-                    pagesLoaderView.setSource('qrc:///modules/' + page + '.qml', parameters);
-                }
-
-                function openMainPage() {
-                    sourceComponent = mainPageComponent;
-                }
-
-                function goBack() {
-                    otherDirectionsDialog.openOtherDirections();
-                }
-
-                Component.onCompleted: openMainPage()
-            }
-        }
-
-        PagesFolder.WorkingSpace {
-            id: pagesFolder
-
-            anchors.fill: parent
-            visible: false
-
-            onPublishMessage: informationMessage.publishMessage(message)
-        }
-
-        Common.SuperposedWidget {
-            id: otherDirectionsDialog
-
-            function openOtherDirections() {
-                load(qsTr('Canvia a...'), 'cards/OtherDirections', {});
-            }
-
-            function createAnnotation() {
-                load(qsTr('Crea nova anotació'), 'annotations2/NewAnnotationHelper', {});
-            }
-
-            Connections {
-                target: otherDirectionsDialog.mainItem
-
-                onMainPageSelected: {
-                    otherDirectionsDialog.close();
-                    pagesLoaderView.openMainPage();
-                }
-
-                onSelectedPage: {
-                    otherDirectionsDialog.close();
-                    pagesLoaderView.addPage(page, parameters, title);
-                }
-
-                onAnnotationSelected: {
-                    pagesLoaderView.addPage('annotations2/ShowAnnotation', {identifier: annotation}, qsTr('Nova anotació'));
-                }
-            }
-        }
-
-        Models.RecentPages {
-            id: recentPagesModel
-
-            sort: 'timestamp DESC'
-
-            function addPage(page, parameters, title) {
-                var parametersStr = JSON.stringify(parameters);
-                console.log('adding', page, parametersStr);
-                var found = false;
-                var i;
-                var date = new Date();
-
-                select();
-                for (i=0; i<count; i++) {
-                    var obj = getObjectInRow(i);
-                    if ((obj['page'] == page) && (obj['parameters'] == parametersStr)) {
-                        var objId = obj['id'];
-                        updateObject(objId, {timestamp: date.toISOString(), title: title});
-                        found = true;
-                        console.log('TROBAT')
-                        break;
-                    }
-                }
-                if (!found) {
-                    insertObject({page: page, parameters: parametersStr, timestamp: date.toISOString(), title: title});
-                }
-            }
-
+            informationMessage.publishMessage(qsTr('Benvingut!'))
         }
 
         Basic.InformationMessages {
@@ -311,21 +142,75 @@ Window {
                 bottom: parent.bottom
             }
         }
+    }
 
-        Common.MessageBox {
-            id: messageBox
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.margins: units.nailUnit
+    Common.SuperposedWidget {
+        id: otherDirectionsDialog
 
-            color: 'yellow'
-            border.color: 'black'
-            radius: units.nailUnit
-            internalMargins: units.nailUnit
-            fontSize: units.readUnit
-            interval: 2000
+        function openOpenedPages() {
+            load(qsTr('Canvia a...'), 'structure/OpenedPages', {model: mainNavigator.pagesModel});
         }
+
+        function openOtherDirections() {
+            load(qsTr('Canvia a...'), 'cards/OtherDirections', {});
+        }
+
+        function createAnnotation() {
+            load(qsTr('Crea nova anotació'), 'annotations2/NewAnnotationHelper', {});
+        }
+
+        Connections {
+            target: otherDirectionsDialog.mainItem
+
+            onMainPageSelected: {
+                otherDirectionsDialog.close();
+                mainNavigator.addPage('cards/CardsList', {}, qsTr('Principal'), true);
+            }
+
+            onSelectedPage: {
+                otherDirectionsDialog.close();
+                mainNavigator.addPage(page, parameters, title, true);
+            }
+
+            onAnnotationSelected: {
+                pagesLoaderView.addPage('annotations2/ShowAnnotation', {identifier: annotation}, qsTr('Nova anotació'));
+            }
+
+            onPageSelected: {
+                otherDirectionsDialog.close();
+                mainNavigator.changePage(index);
+            }
+        }
+    }
+
+    Models.RecentPages {
+        id: recentPagesModel
+
+        sort: 'timestamp DESC'
+
+        function addPage(page, parameters, title) {
+            var parametersStr = JSON.stringify(parameters);
+            console.log('adding', page, parametersStr);
+            var found = false;
+            var i;
+            var date = new Date();
+
+            select();
+            for (i=0; i<count; i++) {
+                var obj = getObjectInRow(i);
+                if ((obj['page'] == page) && (obj['parameters'] == parametersStr)) {
+                    var objId = obj['id'];
+                    updateObject(objId, {timestamp: date.toISOString(), title: title});
+                    found = true;
+                    console.log('TROBAT')
+                    break;
+                }
+            }
+            if (!found) {
+                insertObject({page: page, parameters: parametersStr, timestamp: date.toISOString(), title: title});
+            }
+        }
+
     }
 }
 
