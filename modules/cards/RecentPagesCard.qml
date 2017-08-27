@@ -42,13 +42,10 @@ BaseCard {
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-            text: qsTr('Carpeta completa')
+            text: qsTr('Carpeta completa (no disponible)')
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: {
-                    selectedPage('pagesfolder/WorkingSpace', '', qsTr("Carpeta de pàgines"));
-                }
             }
         }
 

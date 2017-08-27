@@ -72,6 +72,8 @@
   * More options: https://pixabay.com/es/comentario-texto-cuadro-gris-negro-27179/
 
   * Select: https://pixabay.com/es/marca-de-verificaci%C3%B3n-303498/
+  * SuggestionsOff: https://pixabay.com/en/owl-bird-book-wise-nature-47526/#
+  * SuggestionsOn: https://pixabay.com/en/owl-hoot-head-beak-cartoon-zoo-308773/
 */
 
 import QtQuick 2.5
@@ -86,6 +88,7 @@ import 'qrc:///modules/pagesfolder' as PagesFolder
 import 'qrc:///modules/cards' as Cards
 import 'qrc:///modules/basic' as Basic
 import 'qrc:///modules/structure' as Structure
+import 'qrc:///modules/suggestions' as Suggestions
 import "qrc:///common/FormatDates.js" as FormatDates
 
 // Three types of navigation between pages
@@ -141,6 +144,18 @@ Window {
                 right: parent.right
                 bottom: parent.bottom
             }
+        }
+
+        Suggestions.MainSuggester {
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                bottom: informationMessage.top
+            }
+
+            suggestionsEnabled: mainNavigator.suggestionsEnabled
+            onSelectedPage: mainNavigator.addPage(page, parameters, qsTr('Suggerència'))
         }
     }
 

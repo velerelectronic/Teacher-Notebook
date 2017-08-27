@@ -212,6 +212,11 @@ Rectangle {
                 docAnnotationsModel.select();
                 console.log('compte', docAnnotationsModel.count);
             }
+
+            function updateAnnotation(index, data) {
+                docAnnotationsModel.updateObject(index, data);
+                docAnnotationsModel.update();
+            }
         }
 
         toolBar: Basic.ButtonsRow {
@@ -356,77 +361,164 @@ Rectangle {
             }
         }
 
-        delegate: Rectangle {
+        delegate: Item {
+            id: wholeAnnotationItem
+
             width: docAnnotationsList.width
             height: units.fingerUnit * 2
 
-            // Annotation selected: gray
-            color: (annotationsView2.selectedAnnotation == model.id)?'#AAAAAA':'white'
+            states: [
+                State {
+                    name: 'simple'
+                    PropertyChanges {
+                        target: singleAnnotationRect
+                        x: 0
+                    }
+                },
+                State {
+                    name: 'moving'
+                },
+                State {
+                    name: 'stateControls'
+                    PropertyChanges {
+                        target: singleAnnotationRect
+                        x: -annotationStateEditor.requiredWidth - units.nailUnit
+                    }
+                }
+            ]
+            state: 'simple'
 
-            RowLayout {
-                id: singleAnnotationLayout
-                anchors.fill: parent
-                anchors.margins: units.nailUnit
-                spacing: units.nailUnit
+            transitions: [
+                Transition {
+                    from: 'moving'
 
-                Text {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
-                    verticalAlignment: Text.AlignVCenter
-                    text: '<b>' + model.title + '</b>&nbsp;' + model.desc + ''
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: singleAnnotationLayout.width / 6
-                    font.pixelSize: units.readUnit
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    elide: Text.ElideRight
-                    color: 'green'
-                    text: model.labels
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: singleAnnotationLayout.width / 6
-                    font.pixelSize: units.readUnit
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    color: 'green'
-                    text: (model.start == '')?'---':model.start
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: singleAnnotationLayout.width / 6
-                    font.pixelSize: units.readUnit
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    color: 'red'
-                    text: (model.end == '')?'---':model.end
-                }
-                StateDisplay {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: units.fingerUnit
+                    NumberAnimation {
+                        target: singleAnnotationRect
+                        properties: "x"
+                        duration: 250
+                    }
+                },
+                Transition {
+                    from: 'stateControls'
 
-                    stateValue: model.state
+                    NumberAnimation {
+                        target: singleAnnotationRect
+                        properties: "x"
+                        duration: 250
+                    }
+                }
+            ]
+
+            StateEditor {
+                id: annotationStateEditor
+
+                anchors {
+                    top: parent.top
+                    right: parent.right
+                    bottom: parent.bottom
+                }
+                width: requiredWidth
+
+                onStateValueChanged: {
+                    docAnnotationsModel.updateAnnotation(model.id, {state: value});
                 }
             }
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    annotationPreviewDialog.openAnnotationPreview(model.id);
-                    //annotationSelected(model.id);
+
+            Rectangle {
+                id: singleAnnotationRect
+
+                y: 0
+                width: parent.width
+                height: units.fingerUnit * 2
+
+                // Annotation selected: gray
+                color: (annotationsView2.selectedAnnotation == model.id)?'#AAAAAA':'white'
+
+                RowLayout {
+                    id: singleAnnotationLayout
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    spacing: units.nailUnit
+
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                        text: '<b>' + model.title + '</b>&nbsp;' + model.desc + ''
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: singleAnnotationLayout.width / 6
+                        font.pixelSize: units.readUnit
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
+                        color: 'green'
+                        text: model.labels
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: singleAnnotationLayout.width / 6
+                        font.pixelSize: units.readUnit
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        color: 'green'
+                        text: (model.start == '')?'---':model.start
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: singleAnnotationLayout.width / 6
+                        font.pixelSize: units.readUnit
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        color: 'red'
+                        text: (model.end == '')?'---':model.end
+                    }
+                    StateDisplay {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: units.fingerUnit
+
+                        stateValue: model.state
+                    }
                 }
-                onPressAndHold: {
-                    annotationsView2.selectedAnnotation = model.id;
-                    annotationsView2.selectedText = model.title;
-                    annotationsView2.selectedStateValue = model.state;
-                    annotationsView2.enableSelection();
+                MouseArea {
+                    anchors.fill: parent
+
+                    drag.target: singleAnnotationRect
+                    drag.axis: Drag.XAxis
+                    property bool dragIsActive: drag.active
+
+                    onDragIsActiveChanged: {
+                        if (dragIsActive) {
+                            if (wholeAnnotationItem.state == 'simple')
+                                wholeAnnotationItem.state = 'moving';
+                        } else {
+                            if ((wholeAnnotationItem.state == 'stateControls') || (singleAnnotationRect.x > -units.fingerUnit * 2)) {
+                                wholeAnnotationItem.state = 'simple';
+                            } else {
+                                wholeAnnotationItem.state = 'stateControls';
+                            }
+                        }
+                    }
+
+                    onClicked: {
+                        annotationPreviewDialog.openAnnotationPreview(model.id);
+                        //annotationSelected(model.id);
+                    }
+                    onPressAndHold: {
+                        annotationsView2.selectedAnnotation = model.id;
+                        annotationsView2.selectedText = model.title;
+                        annotationsView2.selectedStateValue = model.state;
+                        annotationsView2.enableSelection();
+                    }
                 }
             }
+
         }
+
 
         selectionBox: Rectangle {
             color: 'yellow'

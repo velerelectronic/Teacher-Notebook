@@ -6,7 +6,6 @@
         <file>modules/pagesfolder/PageConnections.qml</file>
         <file>modules/pagesfolder/ParametersEditor.qml</file>
         <file>modules/pagesfolder/SuperposedPapers.qml</file>
-        <file>modules/pagesfolder/WorkingSpace.qml</file>
         <file>modules/pagesfolder/NewSectionDialog.qml</file>
     </qresource>
 </RCC>

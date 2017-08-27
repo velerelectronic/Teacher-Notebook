@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/suggestions/PendingAnnotationsSuggestions.qml</file>
+        <file>modules/suggestions/MainSuggester.qml</file>
+    </qresource>
+</RCC>

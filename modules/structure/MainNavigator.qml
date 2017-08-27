@@ -10,6 +10,8 @@ Rectangle {
     signal mainIconSelected()
     signal setPage(int taskIndex, string qmlPage)
 
+    property bool suggestionsEnabled: true
+
     property ListModel pagesModel: ListModel {}
 
     Common.UseUnits {
@@ -45,6 +47,15 @@ Rectangle {
                         text = "";
                     }
                 }
+                Common.ImageButton {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: height
+
+                    image: (suggestionsEnabled)?'owl-308773':'owl-47526'
+                    onClicked: {
+                        suggestionsEnabled = !suggestionsEnabled;
+                    }
+                }
             }
 
         }
@@ -58,9 +69,11 @@ Rectangle {
             orientation: ListView.Horizontal
             boundsBehavior: Flickable.StopAtBounds
 
-            snapMode: ListView.SnapToItem
+            snapMode: ListView.SnapOneItem
 
             highlightFollowsCurrentItem: true
+            highlightMoveDuration: 250
+            highlightMoveVelocity: concurrentTasks.width * 4
 
             model: pagesModel
 
@@ -212,7 +225,7 @@ Rectangle {
     function addPage(qmlPage, parameters, caption, move) {
         if (typeof move == 'undefined')
             move = true;
-        console.log('calling', qmlPage);
+        console.log('adding calling', qmlPage, JSON.stringify(parameters));
         pagesModel.append({caption: caption, page: qmlPage, parameters: JSON.stringify(parameters)});
         if (move) {
             concurrentTasks.currentIndex = pagesModel.count-1;

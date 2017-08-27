@@ -54,7 +54,8 @@ RESOURCES += qml.qrc \
     resourcesconnections.qrc \
     resourcesworkflow.qrc \
     structure.qrc \
-    structure.qrc
+    structure.qrc \
+    resourcessuggestions.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -88,7 +89,8 @@ DISTFILES += \
     android/res/values/libs.xml \
     android/build.gradle \
     android/gradle/wrapper/gradle-wrapper.properties \
-    android/gradlew.bat
+    android/gradlew.bat \
+    resourcessuggestions.qml
 
 HEADERS += \
     RubricXml/rubricassessmentmodel.h \
