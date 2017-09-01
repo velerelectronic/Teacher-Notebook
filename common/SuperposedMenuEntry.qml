@@ -8,7 +8,7 @@ Rectangle {
 
     property string text: ''
 
-    width: parent.width
+    //width: parent.width
     height: units.fingerUnit * 1.5
 
     Common.UseUnits {

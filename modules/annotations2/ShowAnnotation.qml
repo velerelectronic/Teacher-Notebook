@@ -176,7 +176,7 @@ Item {
                                 Layout.preferredWidth: size
                                 size: units.fingerUnit
                                 image: 'edit-153612'
-                                onClicked: periodEditorDialog.openPeriodEditor()
+                                onClicked: periodEditor.openPeriodEditor()
                             }
 
                             Text {
@@ -250,6 +250,30 @@ Item {
                                 onClicked: documentEditorDialog.open()
                             }
                         }
+
+                        Common.InsideEditor {
+                            id: periodEditor
+
+                            width: parent.width
+                            height: units.fingerUnit * 20
+
+                            function openPeriodEditor() {
+                                loadComponent("annotations2/PeriodEditor", {});
+                                open();
+                            }
+
+                            onEditorLoaded: item.setContent(showAnnotationItem.periodStart, showAnnotationItem.periodEnd);
+
+                            onAccepted: {
+                                var start = item.getStartDateString();
+                                var end = item.getEndDateString();
+                                annotationsModel.updateObject(identifier, {start: start, end: end});
+                                getText();
+                                close();
+                            }
+
+                            onCancelled: close()
+                        }
                     }
                 }
 
@@ -280,7 +304,7 @@ Item {
                                 }
                                 size: units.fingerUnit
                                 image: 'edit-153612'
-                                onClicked: titleEditorDialog.open()
+                                onClicked: titleDescEditor.openTitleEditor()
                             }
                             text: showAnnotationItem.title
                         }
@@ -309,7 +333,7 @@ Item {
 
                                 size: units.fingerUnit
                                 image: 'edit-153612'
-                                onClicked: descEditorDialog.open()
+                                onClicked: titleDescEditor.openDescEditor()
                             }
                             Common.ImageButton {
                                 id: addDescriptionButton
@@ -320,7 +344,7 @@ Item {
 
                                 size: units.fingerUnit
                                 image: 'plus-24844'
-                                onClicked: descAppenderDialog.openAppender()
+                                onClicked: titleDescEditor.openAppender()
                             }
                         }
                         Files.FileViewer {
@@ -334,6 +358,50 @@ Item {
 
                             reloadEnabled: false
                         }
+                    }
+                    Common.InsideEditor {
+                        id: titleDescEditor
+
+                        width: parent.width
+                        height: units.fingerUnit * 10
+                        property int opc: 0
+
+                        function openTitleEditor() {
+                            opc = 1;
+                            loadComponent('../editors/TextAreaEditor3', {content: showAnnotationItem.title});
+                            open();
+                        }
+
+                        function openDescEditor() {
+                            opc = 2;
+                            loadComponent('../editors/TextAreaEditor3', {content: showAnnotationItem.descText});
+                            open();
+                        }
+
+                        function openAppender() {
+                            opc = 3;
+                            loadComponent('../editors/TextAreaEditor3', {content: ""});
+                            open();
+                        }
+
+                        onAccepted: {
+                            switch(opc) {
+                            case 1:
+                                annotationsModel.updateObject(identifier, {title: getContent()});
+                                break;
+                            case 2:
+                                annotationsModel.updateObject(identifier, {desc: getContent()});
+                                break;
+                            default:
+                                var date = new Date();
+                                annotationsModel.updateObject(identifier, {desc: showAnnotationItem.descText + '\n\n**' + date.toLocaleString() + '** ' + getContent().trim()});
+                            }
+
+                            getText();
+                            close();
+                        }
+
+                        onCancelled: close()
                     }
                 }
 
@@ -728,72 +796,6 @@ Item {
     }
 
     Common.SuperposedMenu {
-        id: titleEditorDialog
-
-        parentWidth: parent.width
-
-        title: qsTr('Edita el títol')
-        standardButtons: StandardButton.Save | StandardButton.Cancel
-
-        Editors.TextAreaEditor3 {
-            id: titleEditor
-            width: parent.width
-            content: showAnnotationItem.title;
-        }
-
-        onAccepted: {
-            annotationsModel.updateObject(identifier, {title: titleEditor.content});
-            getText();
-        }
-    }
-
-    Common.SuperposedMenu {
-        id: descEditorDialog
-
-        parentWidth: parent.width
-
-        title: qsTr('Edita la descripció')
-        standardButtons: StandardButton.Save | StandardButton.Cancel
-
-        Editors.TextAreaEditor3 {
-            id: descEditor
-            width: parent.width
-            content: showAnnotationItem.descText;
-        }
-
-        onAccepted: {
-            annotationsModel.updateObject(identifier, {desc: descEditor.content});
-            getText();
-        }
-    }
-
-    Common.SuperposedMenu {
-        id: descAppenderDialog
-
-        parentWidth: parent.width
-
-        title: qsTr('Afegeix text a la descripció')
-
-        standardButtons: StandardButton.Save | StandardButton.Cancel
-
-        Editors.TextAreaEditor3 {
-            id: extraDescEditor
-            width: parent.width
-        }
-
-        onAccepted: {
-            var date = new Date();
-            annotationsModel.updateObject(identifier, {desc: showAnnotationItem.descText + '\n\n**' + date.toLocaleString() + '** ' + extraDescEditor.content.trim()});
-            getText();
-        }
-
-        function openAppender() {
-            extraDescEditor.content = '';
-            open();
-        }
-    }
-
-    Common.SuperposedMenu {
         id: stateEditorDialog
 
         parentWidth: parent.width
@@ -811,33 +813,6 @@ Item {
 
         onAccepted: {
             annotationsModel.updateObject(identifier, {state: stateEditor.content});
-            getText();
-        }
-    }
-
-    Common.SuperposedMenu {
-        id: periodEditorDialog
-
-        title: qsTr('Editor de període de temps')
-
-        standardButtons: StandardButton.Save | StandardButton.Cancel
-
-        function openPeriodEditor() {
-            periodEditorItem.setContent(periodStart, periodEnd);
-            periodEditorDialog.open();
-        }
-
-        PeriodEditor {
-            id: periodEditorItem
-
-            width: parent.width
-            height: showAnnotationItem.height * 0.8
-        }
-
-        onAccepted: {
-            var start = periodEditorItem.getStartDateString();
-            var end = periodEditorItem.getEndDateString();
-            annotationsModel.updateObject(identifier, {start: start, end: end});
             getText();
         }
     }

@@ -70,10 +70,12 @@ public:
     Q_INVOKABLE QVariantMap getObject(QString key);
     Q_INVOKABLE QVariantMap getObject(QString primaryField, QString key);
     Q_INVOKABLE QVariantMap getObjectInRow(int row) const;
+    Q_INVOKABLE QString     getSearchString();
     Q_INVOKABLE QVariant    insertObject(const QVariantMap &);
     Q_INVOKABLE int         removeAllObjects();
     Q_INVOKABLE int         removeObject(const QVariant &);
     Q_INVOKABLE bool        select();
+    Q_INVOKABLE bool        select(const QString &queryString);
     Q_INVOKABLE QStringList selectDistinct(QString field,QString order,QString filter,bool ascending);
     Q_INVOKABLE bool        selectUnique(QString);
 

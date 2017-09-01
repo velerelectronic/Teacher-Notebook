@@ -49,5 +49,6 @@
         <file>common/SuperposedMenuEntry.qml</file>
         <file>common/GeneralListView.qml</file>
         <file>common/ExpandableToolPanel.qml</file>
+        <file>common/InsideEditor.qml</file>
     </qresource>
 </RCC>

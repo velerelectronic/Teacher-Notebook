@@ -7,6 +7,9 @@ Rectangle {
     property int size: units.fingerUnit
     property bool available: true
     property int padding: 0
+
+    property bool negated: false
+
     signal clicked
     color: 'transparent'
 
@@ -34,6 +37,17 @@ Rectangle {
         smooth: true
         visible: false
         source: (selectedImage !== '')?'qrc:///icons/' + selectedImage + '.svg':''
+    }
+
+    Image {
+        id: negatedImage
+
+        anchors.fill: parent
+        anchors.margins: imageButton.padding
+
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        source: (negated)?('qrc:///icons/red-146613.svg'):''
     }
 
     MouseArea {

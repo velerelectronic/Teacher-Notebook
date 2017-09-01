@@ -51,7 +51,8 @@ Rectangle {
                     Layout.fillHeight: true
                     Layout.preferredWidth: height
 
-                    image: (suggestionsEnabled)?'owl-308773':'owl-47526'
+                    image: 'owl-47526'
+                    negated: !suggestionsEnabled
                     onClicked: {
                         suggestionsEnabled = !suggestionsEnabled;
                     }

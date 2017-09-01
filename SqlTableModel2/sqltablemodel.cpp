@@ -160,6 +160,22 @@ QVariantMap SqlTableModel2::getObjectInRow(int row) const {
     return result;
 }
 
+QString SqlTableModel2::getSearchString() {
+    // Build a string to search text in searchFields
+
+    QString filter;
+    QStringList searchList;
+    if ((innerSearchString != "") && (innerSearchFields.size()>0)) {
+        QStringList::const_iterator i = innerSearchFields.constBegin();
+        while (i != innerSearchFields.constEnd()) {
+            searchList << "INSTR(UPPER(" + *i + "),UPPER(?))";
+            ++i;
+        }
+        filter = "(" + searchList.join(" OR ") + ")";
+    }
+    return filter;
+}
+
 QString &SqlTableModel2::groupBy() {
     return innerGroupBy;
 }
@@ -274,6 +290,23 @@ QString SqlTableModel2::searchString() {
 void SqlTableModel2::setPrimaryKey(const QString &key) {
     innerPrimaryKey = key;
     primaryKeyChanged();
+}
+
+bool SqlTableModel2::select(const QString &queryString) {
+    QSqlQuery query;
+    query.prepare(queryString);
+    QStringList::const_iterator filtersValues = innerBindValues.constBegin();
+    while (filtersValues != innerBindValues.constEnd()) {
+        query.addBindValue(*filtersValues);
+        ++filtersValues;
+    }
+
+    bool result = query.exec();
+    if (result) {
+        setQuery(query);
+        countChanged();
+    }
+    return result;
 }
 
 bool SqlTableModel2::select() {

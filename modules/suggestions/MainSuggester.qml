@@ -2,6 +2,7 @@ import QtQuick 2.6
 import QtQuick.Layouts 1.3
 import 'qrc:///common' as Common
 import 'qrc:///models' as Models
+import "qrc:///common/FormatDates.js" as FormatDates
 
 Item {
     signal selectedPage(string page, var parameters)
@@ -148,7 +149,7 @@ Item {
     }
 
     Timer {
-        interval: 2000
+        interval: 3000
         running: (suggestionsEnabled) && (suggestionsModel.count < 5)
         triggeredOnStart: false
         repeat: true
@@ -157,7 +158,25 @@ Item {
     }
 
     function newSuggestion() {
-        annotationsModel.filters = ['state=? OR state IS NULL']
+        var opc = Math.floor(Math.random() * 3);
+
+        switch(opc) {
+        case 0:
+            newInboxAnnotationSuggestion();
+            break;
+        case 1:
+            newPendingAnnotationSuggestion();
+            break;
+        case 2:
+            newPinnedAnnotationSuggestion();
+            break;
+        default:
+
+        }
+    }
+
+    function newInboxAnnotationSuggestion() {
+        annotationsModel.filters = ['state=? OR state IS NULL', 'start IS NULL', 'end IS NULL']
         annotationsModel.bindValues = ['0']
         annotationsModel.select();
         if (annotationsModel.count > 0) {
@@ -165,6 +184,39 @@ Item {
             var obj = annotationsModel.getObjectInRow(s);
 
             suggestionsModel.append({caption: qsTr("Anotació «") + obj['title'] + "»" + qsTr(" dins Inbox"), action: 'annotations2/ShowAnnotation', parameters: ({identifier: obj['id']}) });
+        }
+    }
+
+    function newPendingAnnotationSuggestion() {
+        var today = new Date();
+        var todayStr = today.toYYYYMMDDFormat();
+
+        annotationsModel.filters = ['state=? OR state IS NULL', "IFNULL(end,'') != ''", 'end < ?'];
+        annotationsModel.bindValues = ['0', todayStr];
+        annotationsModel.select();
+
+        if (annotationsModel.count > 0) {
+            var s = Math.floor(Math.random() * annotationsModel.count)
+            var obj = annotationsModel.getObjectInRow(s);
+
+            var endDate = new Date();
+            endDate.fromYYYYMMDDFormat(obj['end']);
+
+            var days = endDate.differenceInDays(today);
+            suggestionsModel.append({caption: qsTr("Anotació «") + obj['title'] + "»" + qsTr(" pendent des de fa ") + days + qsTr(" dies."), action: 'annotations2/ShowAnnotation', parameters: ({identifier: obj['id']}) });
+        }
+    }
+
+    function newPinnedAnnotationSuggestion() {
+        annotationsModel.filters = ["state=1"];
+        annotationsModel.bindValues = [];
+        annotationsModel.select();
+
+        if (annotationsModel.count > 0) {
+            var s = Math.floor(Math.random() * annotationsModel.count)
+            var obj = annotationsModel.getObjectInRow(s);
+
+            suggestionsModel.append({caption: qsTr("Recorda: «") + obj['title'] + "»", action: 'annotations2/ShowAnnotation', parameters: {identifier: obj['id']}});
         }
     }
 

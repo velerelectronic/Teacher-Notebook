@@ -70,11 +70,63 @@ Common.AbstractEditor {
     }
 
     function printDateTime() {
-        startDateText.text = (startDateIsDefined)?(startDateObject.toLongDate()):qsTr('No definit');
-        startTimeText.text = (startTimeIsDefined)?(startDateObject.toHHMMFormat()):qsTr('No definit');
+        // Print today
+        var today = new Date();
 
-        endDateText.text = (endDateIsDefined)?(endDateObject.toLongDate()):qsTr('No definit');
-        endTimeText.text = (endTimeIsDefined)?(endDateObject.toHHMMFormat()):qsTr('No definit');
+        todayStartDateText.text = today.toShortReadableDate();
+        todayEndDateText.text = today.toShortReadableDate();
+
+        var generalStartDate = new Date();
+        var generalEndDate = new Date();
+
+        // Print actual date, if defined
+        if (startDateIsDefined) {
+            var actualDateTime = startDateObject.toShortReadableDate();
+
+            generalStartDate.setDate(startDateObject.getDate()).setMonth(startDateObject.getMonth()).setFullYear(startDateObject.getFullMonth());
+
+            if (startTimeIsDefined) {
+                actualDateTime = actualDateTime + " " + startDateObject.toHHMMFormat();
+                startDateText.text = actualDateTime;
+            }
+        } else {
+            startDateText.text = qsTr('No definit');
+        }
+
+        if (endDateIsDefined) {
+            var actualDateTime = endDateObject.toShortRedableDate();
+
+            generalEndDate.setDate(endDateObject.getDate()).setMonth(endDateObject.getMonth()).setFullYear(endDateObject.getFullYear());
+
+            if (endTimeIsDefined) {
+                actualDateTime = actualDateTime + " " + endDateObject.toHHMMFormat();
+                endDateText.text = actualDateTime;
+            }
+        } else {
+            endDateText.text = qsTr('No definit');
+        }
+
+        // Print in a week
+        generalStartDate.setDate(generalStartDate.getDate() + 7);
+        weekStartDateText.text = generalStartDate.toShortReadableDate();
+        generalEndDate.setDate(generalEndDate.getDate() + 7);
+        weekEndDateText.text = generalEndDate.toShortReadableDate();
+
+        // Print in a month
+        generalStartDate.setDate(generalStartDate.getDate() - 7);
+        generalStartDate.setMonth(generalStartDate.getMonth() + 1);
+        monthStartDateText.text = generalStartDate.toShortReadableDate();
+        generalEndDate.setDate(generalEndDate.getDate() - 7);
+        generalEndDate.setMonth(generalEndDate.getMonth() + 1);
+        monthEndDateText.text = generalEndDate.toShortReadableDate();
+
+        // Print in a year
+        generalStartDate.setMonth(generalStartDate.getMonth() - 1);
+        generalStartDate.setFullYear(generalStartDate.getFullYear() + 1);
+        yearStartDateText.text = generalStartDate.toShortReadableDate();
+        generalEndDate.setMonth(generalEndDate.getMonth() - 1);
+        generalEndDate.setFullYear(generalEndDate.getFullYear() + 1);
+        yearEndDateText.text = generalEndDate.toShortReadableDate();
     }
 
     GridLayout {
@@ -89,56 +141,165 @@ Common.AbstractEditor {
         columnSpacing: units.fingerUnit
         rowSpacing: units.fingerUnit
         rows: 4
-        flow: GridLayout.TopToBottom
+        flow: GridLayout.LeftToRight
 
         Text {
-            Layout.preferredHeight: units.fingerUnit * 4
+            Layout.preferredHeight: units.fingerUnit * 2
             Layout.preferredWidth: parent.width / 3
-            Layout.rowSpan: 2
 
-            font.pixelSize: units.readUnit
             font.bold: true
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-            text: qsTr('Comença')
+            text: qsTr('Actual:')
         }
-        Text {
-            Layout.preferredHeight: units.fingerUnit * 4
-            Layout.preferredWidth: parent.width / 3
-            Layout.rowSpan: 2
 
-            font.pixelSize: units.readUnit
-            font.bold: true
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-            text: qsTr('Acaba')
-        }
         Text {
             id: startDateText
             Layout.preferredHeight: units.fingerUnit * 2
-            Layout.fillWidth: true
-            font.pixelSize: units.readUnit
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            Layout.preferredWidth: parent.width / 3
+
+            color: 'gray'
+            text: ""
         }
-        Text {
-            id: startTimeText
-            Layout.preferredHeight: units.fingerUnit * 2
-            Layout.fillWidth: true
-            font.pixelSize: units.readUnit
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-        }
+
         Text {
             id: endDateText
             Layout.preferredHeight: units.fingerUnit * 2
-            Layout.fillWidth: true
-            font.pixelSize: units.readUnit
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            Layout.preferredWidth: parent.width / 3
+
+            color: 'gray'
+            text: ""
         }
+
         Text {
-            id: endTimeText
             Layout.preferredHeight: units.fingerUnit * 2
-            Layout.fillWidth: true
-            font.pixelSize: units.readUnit
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            Layout.preferredWidth: parent.width / 3
+
+            font.bold: true
+            text: qsTr('Avui:')
         }
+
+        Text {
+            id: todayStartDateText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            color: 'gray'
+            text: ""
+        }
+
+        Text {
+            id: todayEndDateText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            color: 'gray'
+            text: ""
+        }
+
+        Text {
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            font.bold: true
+            text: qsTr('En un setmana:')
+        }
+
+        Text {
+            id: weekStartDateText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            color: 'gray'
+            text: ""
+        }
+
+        Text {
+            id: weekEndDateText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            color: 'gray'
+            text: ""
+        }
+
+        Text {
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            font.bold: true
+            text: qsTr('En un mes:')
+        }
+
+        Text {
+            id: monthStartDateText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            color: 'gray'
+            text: ""
+        }
+
+        Text {
+            id: monthEndDateText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            color: 'gray'
+            text: ""
+        }
+
+        Text {
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            font.bold: true
+            text: qsTr('En un any:')
+        }
+
+        Text {
+            id: yearStartDateText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            color: 'gray'
+            text: ""
+        }
+
+        Text {
+            id: yearEndDateText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            color: 'gray'
+            text: ""
+        }
+
+        Text {
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            font.bold: true
+            text: qsTr('Una altra data:')
+        }
+
+        Text {
+            id: otherStartDateText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            color: 'gray'
+            text: ""
+        }
+
+        Text {
+            id: otherEndDateText
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredWidth: parent.width / 3
+
+            color: 'gray'
+            text: ""
+        }
+
+
         Button {
             //Layout.preferredHeight: units.fingerUnit * 4
             //Layout.preferredWidth: parent.height / 3
@@ -537,5 +698,9 @@ Common.AbstractEditor {
             }
         }
         return endString;
+    }
+
+    Component.onCompleted: {
+
     }
 }

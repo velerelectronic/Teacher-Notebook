@@ -22,7 +22,6 @@ Rectangle {
     property string document: ''
     property string stateValue: '0'
 
-    property string dateFilterString: "(IFNULL(start, '') != '' OR IFNULL(end, '') != '') AND (IFNULL(start, '') = '' OR INSTR(start, ?) OR start <= ?) AND (IFNULL(end,'') = '' OR INSTR(end, ?) OR end >= ?)"
     property bool   filterPeriod: false
     property string selectedDate: ''
 
@@ -149,14 +148,19 @@ Rectangle {
         property string selectedText: ''
         property int selectedStateValue: 0
 
-        model: Models.DocumentAnnotations {
+        model: SqlTableModel {
             id: docAnnotationsModel
 
-            sort: 'end ASC, start ASC, id DESC'
-            limit: 10
+            primaryKey: 'id'
+            tableName: 'documentAnnotations'
+            fieldNames: ['id', 'document', 'title', 'desc', 'created', 'labels', 'start', 'end', 'state', 'source', 'contents', 'hash']
             searchFields: ['title', 'desc', 'document', 'labels']
 
             function update() {
+                var newBindValues = [];
+
+                // Prepare state filter
+
                 var stateFilter = '';
                 switch(stateValue) {
                 case '':
@@ -182,40 +186,52 @@ Rectangle {
                     stateFilter = "state='0' OR state='1' OR state='' OR state IS NULL";
                     break;
                 }
+                stateFilter = " (" + stateFilter + ")";
 
-                // Update filters and bind values
+                // Prepare date filter
 
-                var newFilter = [];
-                var newBindValues = [];
-                newFilter.push(stateFilter);
-
-                if (document !== '') {
-                    newFilter.push('document=?');
-                    newBindValues.push(document);
-                }
+                var dateFilterString = "";
                 if (filterPeriod) {
                     if (selectedDate == '') {
                         var today = new Date();
                         selectedDate = today.toYYYYMMDDFormat();
                     }
-                    newFilter.push(dateFilterString);
+                    dateFilterString = "(IFNULL(start, '') != '' OR IFNULL(end, '') != '') AND (IFNULL(start, '') = '' OR INSTR(start, ?) OR start <= ?) AND (IFNULL(end,'') = '' OR INSTR(end, ?) OR end >= ?)";
+                    dateFilterString = " AND (" + dateFilterString + ")";
+
                     for (var repeat=1; repeat<=4; repeat++) {
                         newBindValues.push(selectedDate);
                     }
                 }
 
-                docAnnotationsModel.filters = newFilter;
-                docAnnotationsModel.bindValues = newBindValues;
+                // Prepare looking for strings
+                var searchFilter = "";
+                var fieldsCount = searchFields.length;
 
-                docAnnotationsModel.searchString = searchString;
+                if (searchString !== "") {
+                    searchFilter = getSearchString();
+                    for (var i=1; i<=fieldsCount; i++) {
+                        newBindValues.push(searchString);
+                    }
+                    searchFilter = " AND (" + searchFilter + ")";
+                }
 
-                docAnnotationsModel.select();
-                console.log('compte', docAnnotationsModel.count);
+                newBindValues.push(10);
+
+                // Execute query with previous filters
+
+                bindValues = newBindValues;
+                select(
+                            "SELECT " + fieldNames.join(", ") + " FROM documentAnnotations WHERE"
+                            + stateFilter
+                            + dateFilterString
+                            + searchFilter
+                            + " ORDER BY end ASC, start ASC, id DESC LIMIT ?");
             }
 
-            function updateAnnotation(index, data) {
-                docAnnotationsModel.updateObject(index, data);
-                docAnnotationsModel.update();
+            function updateAnnotation(id, data) {
+                updateObject(id, data);
+                update();
             }
         }
 
@@ -365,7 +381,9 @@ Rectangle {
             id: wholeAnnotationItem
 
             width: docAnnotationsList.width
-            height: units.fingerUnit * 2
+            height: units.fingerUnit * 2 + attachmentsSection.height + annotationPreviewRect.height
+
+            property bool hasAttachments: model.image
 
             states: [
                 State {
@@ -373,6 +391,13 @@ Rectangle {
                     PropertyChanges {
                         target: singleAnnotationRect
                         x: 0
+                    }
+                    StateChangeScript {
+                        script: annotationPreviewLoader.closePreviewer()
+                    }
+                    PropertyChanges {
+                        target: annotationPreviewRect
+                        height: 0
                     }
                 },
                 State {
@@ -384,7 +409,23 @@ Rectangle {
                         target: singleAnnotationRect
                         x: -annotationStateEditor.requiredWidth - units.nailUnit
                     }
+                },
+                State {
+                    name: 'preview'
+                    StateChangeScript {
+                        script: annotationPreviewLoader.openPreviewer()
+                    }
+                    PropertyChanges {
+                        target: annotationPreviewRect
+                        height: annotationsView2.height
+                    }
+                    PropertyChanges {
+                        target: singleAnnotationRect
+                        color: '#AAAAAA'
+                        x: 0
+                    }
                 }
+
             ]
             state: 'simple'
 
@@ -418,6 +459,7 @@ Rectangle {
                     bottom: parent.bottom
                 }
                 width: requiredWidth
+                z: 0
 
                 onStateValueChanged: {
                     docAnnotationsModel.updateAnnotation(model.id, {state: value});
@@ -428,11 +470,29 @@ Rectangle {
                 id: singleAnnotationRect
 
                 y: 0
+                z: 1
                 width: parent.width
                 height: units.fingerUnit * 2
 
                 // Annotation selected: gray
                 color: (annotationsView2.selectedAnnotation == model.id)?'#AAAAAA':'white'
+
+                Rectangle {
+                    id: attachmentsSection
+
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
+                    }
+                    height: wholeAnnotationItem.hasAttachments?(units.fingerUnit * 2):0
+
+                    Loader {
+                        id: attachedImageLoader
+
+                        anchors.fill: parent
+                    }
+                }
 
                 RowLayout {
                     id: singleAnnotationLayout
@@ -505,7 +565,11 @@ Rectangle {
                     }
 
                     onClicked: {
-                        annotationPreviewDialog.openAnnotationPreview(model.id);
+                        if (wholeAnnotationItem.state == 'preview')
+                            wholeAnnotationItem.state = 'simple';
+                        else
+                            wholeAnnotationItem.state = 'preview';
+                        //annotationPreviewDialog.openAnnotationPreview(model.id);
                         //annotationSelected(model.id);
                     }
                     onPressAndHold: {
@@ -513,6 +577,45 @@ Rectangle {
                         annotationsView2.selectedText = model.title;
                         annotationsView2.selectedStateValue = model.state;
                         annotationsView2.enableSelection();
+                    }
+                }
+            }
+
+            Rectangle {
+                id: annotationPreviewRect
+
+                z: 2
+                anchors {
+                    top: singleAnnotationRect.bottom
+                    left: parent.left
+                    right: parent.right
+                }
+                height: 0
+                clip: true
+
+                Loader {
+                    id: annotationPreviewLoader
+
+                    anchors.fill: parent
+
+                    property int annotation
+
+                    function openPreviewer() {
+                        annotation = model.id;
+                        setSource('qrc:///modules/annotations2/AnnotationPreview.qml', {identifier: model.id});
+                    }
+
+                    function closePreviewer() {
+                        sourceComponent = undefined;
+                    }
+
+                    Connections {
+                        target: annotationPreviewLoader.item
+
+                        onAnnotationSelected: {
+                            docAnnotationsRect.annotationSelected(annotationPreviewLoader.annotation);
+                        }
+
                     }
                 }
             }
@@ -644,24 +747,6 @@ Rectangle {
 
             onAnnotationCreated: {
                 newAnnotationDialog.close();
-                docAnnotationsRect.annotationSelected(annotation);
-            }
-        }
-    }
-
-    Common.SuperposedWidget {
-        id: annotationPreviewDialog
-
-        function openAnnotationPreview(annotation) {
-            load(qsTr('Previsualitza anotació'), 'annotations2/AnnotationPreview', {identifier: annotation});
-        }
-
-        Connections {
-            target: annotationPreviewDialog.mainItem
-            ignoreUnknownSignals: true
-
-            onAnnotationSelected: {
-                annotationPreviewDialog.close();
                 docAnnotationsRect.annotationSelected(annotation);
             }
         }

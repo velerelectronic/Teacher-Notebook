@@ -74,6 +74,7 @@
   * Select: https://pixabay.com/es/marca-de-verificaci%C3%B3n-303498/
   * SuggestionsOff: https://pixabay.com/en/owl-bird-book-wise-nature-47526/#
   * SuggestionsOn: https://pixabay.com/en/owl-hoot-head-beak-cartoon-zoo-308773/
+  * Negated icon: https://pixabay.com/en/red-cancel-delete-no-forbidden-146613/
 */
 
 import QtQuick 2.5
