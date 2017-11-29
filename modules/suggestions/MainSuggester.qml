@@ -28,7 +28,7 @@ Item {
         bottomMargin: spacing
 
         orientation: ListView.Vertical
-        verticalLayoutDirection: ListView.BottomToTop
+        //verticalLayoutDirection: ListView.BottomToTop
 
         model: ListModel {
             id: suggestionsModel

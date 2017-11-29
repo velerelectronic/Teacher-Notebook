@@ -9,5 +9,8 @@
         <file>modules/annotations2/AnnotationPreview.qml</file>
         <file>modules/annotations2/NewAnnotationHelper.qml</file>
         <file>modules/annotations2/WorkFlowAnnotationsList.qml</file>
+        <file>modules/annotations2/ReperiodDisplay.qml</file>
+        <file>modules/annotations2/AnnotationListAndShow.qml</file>
+        <file>modules/annotations2/Example.qml</file>
     </qresource>
 </RCC>

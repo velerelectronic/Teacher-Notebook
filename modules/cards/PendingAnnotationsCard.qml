@@ -13,7 +13,7 @@ BaseCard {
     Models.DocumentAnnotations {
         id: annotationsModel
 
-        filters: ["start < ? OR end < ? OR (IFNULL(start,'') = '' AND IFNULL(end,'') = '') AND state != 3 AND state != -1"];
+        filters: ["start < ? OR end < ? OR (IFNULL(start,'') = '' AND IFNULL(end,'') = '')", "state != 3", "state != -1"];
         sort: 'end ASC, start ASC'
     }
 

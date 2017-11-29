@@ -10,7 +10,7 @@ Rectangle {
     signal mainIconSelected()
     signal setPage(int taskIndex, string qmlPage)
 
-    property bool suggestionsEnabled: true
+    property bool suggestionsEnabled: false
 
     property ListModel pagesModel: ListModel {}
 
@@ -142,6 +142,8 @@ Rectangle {
 
                         Connections {
                             target: pageLoader.item
+
+                            ignoreUnknownSignals: true
 
                             onSelectedPage: {
                                 addPage(page, parameters, title);

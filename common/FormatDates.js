@@ -3,6 +3,12 @@ Date.prototype.addDays = function(days) {
     return this;
 }
 
+Date.prototype.copyDate = function(otherDate) {
+    this.setDate(otherDate.getDate());
+    this.setMonth(otherDate.getMonth());
+    this.setFullYear(otherDate.getFullYear());
+}
+
 Date.prototype.differenceInDays = function(date2) {
     var oneDay = 24 * 60 * 60 * 1000;
 

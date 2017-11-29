@@ -9,6 +9,8 @@ import 'qrc:///models' as Models
 import 'qrc:///modules/files' as Files
 import 'qrc:///modules/basic' as Basic
 import 'qrc:///modules/documents' as Documents
+import 'qrc:///modules/cards' as Cards
+import 'qrc:///modules/calendar' as Calendar
 import "qrc:///common/FormatDates.js" as FormatDates
 import "qrc:///modules/files/mediaTypes.js" as MediaTypes
 
@@ -26,666 +28,668 @@ Rectangle {
     property string selectedDate: ''
 
 
+    property bool previewEnabled: true
+
     property alias searchString: docAnnotationsModel.searchString
     property alias count: docAnnotationsModel.count
     signal annotationSelected(int annotation)
     signal annotationsListSelected2()
 
-    property alias interactive: docAnnotationsList.interactive
-
     property bool inline: false
 
-    property int requiredHeight: docAnnotationsList.contentItem.height + docAnnotationsList.anchors.margins * 2 + docAnnotationsList.bottomMargin + annotationsView2.headingBar.height
-    color: 'gray'
+    property int requiredHeight: annotationsView2.contentItem.height + annotationsView2.anchors.margins * 2 + annotationsView2.bottomMargin + annotationsView2.headingBar.height
+
+    color: 'transparent'
 
     property Item frameItem: parent
 
-    ColumnLayout {
-        visible: false
-        anchors.fill: parent
+    GridLayout {
+        id: mainLayout
 
-        ListView {
-            id: docAnnotationsList
+        property bool verticalLayout: mainLayout.width < mainLayout.height
+
+        anchors.fill: parent
+        rows: (verticalLayout)?2:1
+        columns: (verticalLayout)?1:2
+
+        Common.GeneralListView {
+            id: annotationsView2
 
             Layout.fillHeight: true
             Layout.fillWidth: true
-    //        anchors.margins: units.nailUnit
+            visible: true
 
-            clip: true
+            property int selectedAnnotation: -1
+            property string selectedText: ''
+            property int selectedStateValue: 0
 
-            interactive: false
-            spacing: units.nailUnit
+            model: SqlTableModel {
+                id: docAnnotationsModel
 
+                primaryKey: 'id'
+                tableName: 'documentAnnotations'
+                fieldNames: ['id', 'document', 'title', 'desc', 'created', 'labels', 'start', 'end', 'state', 'source', 'contents', 'hash']
+                searchFields: ['title', 'desc', 'document', 'labels']
+                limit: 10
 
-            bottomMargin: (inline)?0:(addAnnotationButton.size + addAnnotationButton.margins)
+                function update() {
+                    var newBindValues = [];
 
-            Component {
-                id: footerItem
+                    // Prepare state filter
 
-                Item {
-                    width: docAnnotationsList.width
-                    height: addAnnotationButton.size + addAnnotationButton.margins
-                    Rectangle {
-                        anchors.fill: parent
-                        anchors.topMargin: docAnnotationsList.spacing
-                        Button {
-                            text: qsTr('Obre llista apart')
-                            onClicked: annotationsListSelected2()
+                    var stateFilter = '';
+                    switch(stateValue) {
+                    case '':
+                        stateFilter = '1=1';
+                        break;
+                    case '1':
+                        stateFilter = "state='1'";
+                        break;
+                    case '2':
+                        stateFilter = "state='2'";
+                        break;
+                    case '3':
+                        stateFilter = "state='3'";
+                        break;
+                    case '4':
+                        stateFilter = "state='4'";
+                        break;
+                    case '-1':
+                        stateFilter = "state<'0'";
+                        break;
+                    case '0':
+                    default:
+                        stateFilter = "state='0' OR state='1' OR state='' OR state IS NULL";
+                        break;
+                    }
+                    stateFilter = " (" + stateFilter + ")";
+
+                    // Prepare date filter
+
+                    var dateFilterString = "";
+                    if (filterPeriod) {
+                        if (selectedDate == '') {
+                            var today = new Date();
+                            selectedDate = today.toYYYYMMDDFormat();
+                        }
+                        dateFilterString = "(IFNULL(start, '') != '' OR IFNULL(end, '') != '') AND (IFNULL(start, '') = '' OR INSTR(start, ?) OR start <= ?) AND (IFNULL(end,'') = '' OR INSTR(end, ?) OR end >= ?)";
+                        dateFilterString = " AND (" + dateFilterString + ")";
+
+                        for (var repeat=1; repeat<=4; repeat++) {
+                            newBindValues.push(selectedDate);
                         }
                     }
+
+                    // Prepare looking for strings
+                    var searchFilter = "";
+                    var fieldsCount = searchFields.length;
+
+                    if (searchString !== "") {
+                        searchFilter = getSearchString();
+                        for (var i=1; i<=fieldsCount; i++) {
+                            newBindValues.push(searchString);
+                        }
+                        searchFilter = " AND (" + searchFilter + ")";
+                    }
+
+                    newBindValues.push(docAnnotationsModel.limit);
+
+                    // Execute query with previous filters
+
+                    bindValues = newBindValues;
+                    select(
+                                "SELECT " + fieldNames.join(", ") + " FROM documentAnnotations WHERE"
+                                + stateFilter
+                                + dateFilterString
+                                + searchFilter
+                                + " ORDER BY end ASC, start ASC, id DESC LIMIT ?");
+                }
+
+                function updateAnnotation(id, data) {
+                    updateObject(id, data);
+                    update();
                 }
             }
 
-            Component {
-                id: moreOptionsComponent
+            toolBarHeight: (units.fingerUnit + units.nailUnit) * 4
 
-                Rectangle {
-                    width: docAnnotationsList.width
-                    height: units.fingerUnit * 2
-                    color: '#AAFFAA'
+            toolBar: Item {
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: units.nailUnit
 
-                    RowLayout {
-                        anchors.fill: parent
-                        spacing: units.fingerUnit
+                    Basic.ButtonsRow {
+                        id: annotationsListButtons
+
+                        color: '#AAFFAA'
+                        clip: true
+
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        buttonsSpacing: units.fingerUnit
+
+                        Item {
+                            height: annotationsListButtons.height
+                            width: annotationsListButtons.height
+                        }
+
+                        StateEditor {
+                            height: annotationsListButtons.height
+                            width: requiredWidth
+
+                            clip: true
+                            onStateValueChanged: {
+                                stateValue = value;
+
+                                docAnnotationsModel.update();
+                            }
+                        }
+
+                        Common.SearchBox {
+                            id: searchBox
+
+                            height: annotationsListButtons.height
+                            width: units.fingerUnit * 4
+
+                            text: docAnnotationsRect.searchString
+
+                            onIntroPressed: {
+                                filterPeriod = false;
+                                docAnnotationsModel.searchFields = ['title', 'desc', 'document', 'labels'];
+                                docAnnotationsModel.searchString = text;
+                                docAnnotationsModel.update();
+                            }
+                        }
 
                         Text {
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-
-                            font.pixelSize: units.readUnit
+                            height: annotationsListButtons.height
+                            width: Math.max(contentWidth, units.fingerUnit * 2)
                             verticalAlignment: Text.AlignVCenter
-                            horizontalAlignment: Text.AlignHCenter
-
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            text: docAnnotationsModel.count + qsTr(' anotacions')
-                        }
-
-                        Button {
-                            Layout.fillHeight: true
-                            Layout.fillWidth: mustShow
-                            visible: mustShow
-
-                            property bool mustShow: (docAnnotationsModel.limit>0) && (docAnnotationsModel.count == docAnnotationsModel.limit)
-
-                            text: docAnnotationsModel.limit + qsTr(' primers. Més...')
-
-                            onClicked: {
-                                docAnnotationsModel.limit = docAnnotationsModel.limit + 10;
-                                docAnnotationsModel.update();
+                            font.pixelSize: units.readUnit
+                            text: {
+                                var date = new Date();
+                                date.fromYYYYMMDDFormat(selectedDate);
+                                return (filterPeriod)?(date.toLongDate()):'';
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: annotationsListOptionsDialog.open();
                             }
                         }
 
-                        Button {
-                            Layout.fillHeight: true
-                            Layout.fillWidth: mustShow
-                            visible: mustShow
+                        Common.ImageButton {
+                            height: annotationsListButtons.height
+                            width: height
 
-                            property bool mustShow: stateValue !== ''
-
-                            text: qsTr('Només entrada. Mostra qualsevol tipus')
-
+                            image: 'check-mark-303498'
                             onClicked: {
-                                stateValue = '';
-                                docAnnotationsModel.update();
+                                annotationsView2.toggleSelection()
                             }
+                        }
+                    }
+
+                    Calendar.CalendarStripe {
+                        verticalLayout: false
+
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+
+                        onDateSelected: {
+                            console.log('date type', date, typeof date);
+                            if (date !== '') {
+                                docAnnotationsRect.selectedDate = date;
+                                filterPeriod = true;
+                            } else {
+                                filterPeriod = false;
+                            }
+
+                            docAnnotationsModel.update();
                         }
                     }
                 }
 
             }
 
+            headingBar: Rectangle {
+                id: docAnnotationsHeader
 
-        }
+                color: '#DDFFDD'
 
-    }
-
-    Common.GeneralListView {
-        id: annotationsView2
-
-        anchors.fill: parent
-
-        property int selectedAnnotation: -1
-        property string selectedText: ''
-        property int selectedStateValue: 0
-
-        model: SqlTableModel {
-            id: docAnnotationsModel
-
-            primaryKey: 'id'
-            tableName: 'documentAnnotations'
-            fieldNames: ['id', 'document', 'title', 'desc', 'created', 'labels', 'start', 'end', 'state', 'source', 'contents', 'hash']
-            searchFields: ['title', 'desc', 'document', 'labels']
-
-            function update() {
-                var newBindValues = [];
-
-                // Prepare state filter
-
-                var stateFilter = '';
-                switch(stateValue) {
-                case '':
-                    stateFilter = '1=1';
-                    break;
-                case '1':
-                    stateFilter = "state='1'";
-                    break;
-                case '2':
-                    stateFilter = "state='2'";
-                    break;
-                case '3':
-                    stateFilter = "state='3'";
-                    break;
-                case '4':
-                    stateFilter = "state='4'";
-                    break;
-                case '-1':
-                    stateFilter = "state<'0'";
-                    break;
-                case '0':
-                default:
-                    stateFilter = "state='0' OR state='1' OR state='' OR state IS NULL";
-                    break;
-                }
-                stateFilter = " (" + stateFilter + ")";
-
-                // Prepare date filter
-
-                var dateFilterString = "";
-                if (filterPeriod) {
-                    if (selectedDate == '') {
-                        var today = new Date();
-                        selectedDate = today.toYYYYMMDDFormat();
-                    }
-                    dateFilterString = "(IFNULL(start, '') != '' OR IFNULL(end, '') != '') AND (IFNULL(start, '') = '' OR INSTR(start, ?) OR start <= ?) AND (IFNULL(end,'') = '' OR INSTR(end, ?) OR end >= ?)";
-                    dateFilterString = " AND (" + dateFilterString + ")";
-
-                    for (var repeat=1; repeat<=4; repeat++) {
-                        newBindValues.push(selectedDate);
-                    }
-                }
-
-                // Prepare looking for strings
-                var searchFilter = "";
-                var fieldsCount = searchFields.length;
-
-                if (searchString !== "") {
-                    searchFilter = getSearchString();
-                    for (var i=1; i<=fieldsCount; i++) {
-                        newBindValues.push(searchString);
-                    }
-                    searchFilter = " AND (" + searchFilter + ")";
-                }
-
-                newBindValues.push(10);
-
-                // Execute query with previous filters
-
-                bindValues = newBindValues;
-                select(
-                            "SELECT " + fieldNames.join(", ") + " FROM documentAnnotations WHERE"
-                            + stateFilter
-                            + dateFilterString
-                            + searchFilter
-                            + " ORDER BY end ASC, start ASC, id DESC LIMIT ?");
-            }
-
-            function updateAnnotation(id, data) {
-                updateObject(id, data);
-                update();
-            }
-        }
-
-        toolBar: Basic.ButtonsRow {
-            id: annotationsListButtons
-
-            color: '#AAFFAA'
-
-            buttonsSpacing: units.fingerUnit
-
-            Item {
-                height: annotationsListButtons.height
-                width: annotationsListButtons.height
-            }
-
-            StateEditor {
-                height: annotationsListButtons.height
-                width: requiredWidth
-
-                clip: true
-                onStateValueChanged: {
-                    stateValue = value;
-
-                    docAnnotationsModel.update();
-                }
-            }
-
-            Common.SearchBox {
-                id: searchBox
-
-                height: annotationsListButtons.height
-                width: units.fingerUnit * 4
-
-                text: docAnnotationsRect.searchString
-
-                onIntroPressed: {
-                    filterPeriod = false;
-                    docAnnotationsModel.searchFields = ['title', 'desc', 'document', 'labels'];
-                    docAnnotationsModel.searchString = text;
-                    docAnnotationsModel.update();
-                }
-            }
-
-            Common.ImageButton {
-                height: annotationsListButtons.height
-                width: height
-                image: 'arrow-145769'
-                onClicked: {
-                    var date = new Date();
-                    date.fromYYYYMMDDFormat(selectedDate);
-                    date.setDate(date.getDate()-1);
-                    selectedDate = date.toYYYYMMDDFormat();
-                    docAnnotationsModel.update();
-                }
-            }
-
-            Text {
-                height: annotationsListButtons.height
-                width: Math.max(contentWidth, units.fingerUnit * 2)
-                verticalAlignment: Text.AlignVCenter
-                font.pixelSize: units.readUnit
-                text: {
-                    var date = new Date();
-                    date.fromYYYYMMDDFormat(selectedDate);
-                    return (filterPeriod)?(date.toLongDate()):'';
-                }
-                MouseArea {
+                RowLayout {
                     anchors.fill: parent
-                    onClicked: annotationsListOptionsDialog.open();
+                    anchors.margins: units.nailUnit
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        text: qsTr('Títol i descripció')
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: docAnnotationsHeader.width / 6
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        verticalAlignment: Text.AlignVCenter
+                        text: qsTr('Etiquetes')
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: docAnnotationsHeader.width / 3 - stateHeading.width
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        verticalAlignment: Text.AlignVCenter
+                        text: qsTr('Termini')
+                    }
+                    Text {
+                        id: stateHeading
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: Math.max(units.fingerUnit, stateHeading.contentWidth)
+
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        text: qsTr('Estat')
+                    }
                 }
             }
 
-            Common.ImageButton {
-                height: annotationsListButtons.height
-                width: height
-                image: 'arrow-145766'
-                onClicked: {
-                    var date = new Date();
-                    date.fromYYYYMMDDFormat(selectedDate);
-                    date.setDate(date.getDate()+1);
-                    selectedDate = date.toYYYYMMDDFormat();
-                    docAnnotationsModel.update();
-                }
-            }
+            delegate: Item {
+                id: wholeAnnotationItem
 
-            Common.ImageButton {
-                height: annotationsListButtons.height
-                width: height
+                width: annotationsView2.width
+                height: units.fingerUnit * 2 + attachmentsSection.height + annotationPreviewRect.height
 
-                image: 'check-mark-303498'
-                onClicked: {
-                    annotationsView2.toggleSelection()
-                }
-            }
-        }
+                property bool hasAttachments: false // model.image
 
-        headingBar: Rectangle {
-            id: docAnnotationsHeader
-
-            color: '#DDFFDD'
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: units.nailUnit
-                Text {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: qsTr('Títol i descripció')
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: docAnnotationsHeader.width / 6
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    verticalAlignment: Text.AlignVCenter
-                    text: qsTr('Etiquetes')
-                }
-                Text {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: docAnnotationsHeader.width / 3 - stateHeading.width
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    verticalAlignment: Text.AlignVCenter
-                    text: qsTr('Termini')
-                }
-                Text {
-                    id: stateHeading
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: Math.max(units.fingerUnit, stateHeading.contentWidth)
-
-                    font.pixelSize: units.readUnit
-                    font.bold: true
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: qsTr('Estat')
-                }
-            }
-        }
-
-        delegate: Item {
-            id: wholeAnnotationItem
-
-            width: docAnnotationsList.width
-            height: units.fingerUnit * 2 + attachmentsSection.height + annotationPreviewRect.height
-
-            property bool hasAttachments: model.image
-
-            states: [
-                State {
-                    name: 'simple'
-                    PropertyChanges {
-                        target: singleAnnotationRect
-                        x: 0
+                states: [
+                    State {
+                        name: 'simple'
+                        PropertyChanges {
+                            target: singleAnnotationRect
+                            x: 0
+                        }
+                        StateChangeScript {
+                            script: annotationPreviewLoader.closePreviewer()
+                        }
+                        PropertyChanges {
+                            target: annotationPreviewRect
+                            height: 0
+                        }
+                    },
+                    State {
+                        name: 'moving'
+                    },
+                    State {
+                        name: 'stateControls'
+                        PropertyChanges {
+                            target: singleAnnotationRect
+                            x: -annotationStateEditor.requiredWidth - units.nailUnit
+                        }
+                    },
+                    State {
+                        name: 'preview'
+                        StateChangeScript {
+                            script: annotationPreviewLoader.openPreviewer()
+                        }
+                        PropertyChanges {
+                            target: annotationPreviewRect
+                            height: annotationsView2.height
+                        }
+                        PropertyChanges {
+                            target: singleAnnotationRect
+                            color: '#AAAAAA'
+                            x: 0
+                        }
                     }
-                    StateChangeScript {
-                        script: annotationPreviewLoader.closePreviewer()
+
+                ]
+                state: 'simple'
+
+                transitions: [
+                    Transition {
+                        from: 'moving'
+
+                        NumberAnimation {
+                            target: singleAnnotationRect
+                            properties: "x"
+                            duration: 250
+                        }
+                    },
+                    Transition {
+                        from: 'stateControls'
+
+                        NumberAnimation {
+                            target: singleAnnotationRect
+                            properties: "x"
+                            duration: 250
+                        }
                     }
-                    PropertyChanges {
-                        target: annotationPreviewRect
-                        height: 0
-                    }
-                },
-                State {
-                    name: 'moving'
-                },
-                State {
-                    name: 'stateControls'
-                    PropertyChanges {
-                        target: singleAnnotationRect
-                        x: -annotationStateEditor.requiredWidth - units.nailUnit
-                    }
-                },
-                State {
-                    name: 'preview'
-                    StateChangeScript {
-                        script: annotationPreviewLoader.openPreviewer()
-                    }
-                    PropertyChanges {
-                        target: annotationPreviewRect
-                        height: annotationsView2.height
-                    }
-                    PropertyChanges {
-                        target: singleAnnotationRect
-                        color: '#AAAAAA'
-                        x: 0
-                    }
-                }
+                ]
 
-            ]
-            state: 'simple'
-
-            transitions: [
-                Transition {
-                    from: 'moving'
-
-                    NumberAnimation {
-                        target: singleAnnotationRect
-                        properties: "x"
-                        duration: 250
-                    }
-                },
-                Transition {
-                    from: 'stateControls'
-
-                    NumberAnimation {
-                        target: singleAnnotationRect
-                        properties: "x"
-                        duration: 250
-                    }
-                }
-            ]
-
-            StateEditor {
-                id: annotationStateEditor
-
-                anchors {
-                    top: parent.top
-                    right: parent.right
-                    bottom: parent.bottom
-                }
-                width: requiredWidth
-                z: 0
-
-                onStateValueChanged: {
-                    docAnnotationsModel.updateAnnotation(model.id, {state: value});
-                }
-            }
-
-            Rectangle {
-                id: singleAnnotationRect
-
-                y: 0
-                z: 1
-                width: parent.width
-                height: units.fingerUnit * 2
-
-                // Annotation selected: gray
-                color: (annotationsView2.selectedAnnotation == model.id)?'#AAAAAA':'white'
-
-                Rectangle {
-                    id: attachmentsSection
+                StateEditor {
+                    id: annotationStateEditor
 
                     anchors {
                         top: parent.top
+                        right: parent.right
+                        bottom: parent.bottom
+                    }
+                    width: requiredWidth
+                    z: 0
+
+                    onStateValueChanged: {
+                        docAnnotationsModel.updateAnnotation(model.id, {state: value});
+                    }
+                }
+
+                Rectangle {
+                    id: singleAnnotationRect
+
+                    y: 0
+                    z: 1
+                    width: parent.width
+                    height: units.fingerUnit * 2
+
+                    // Annotation selected: gray
+                    color: (annotationsView2.selectedAnnotation == model.id)?'#AAAAAA':'white'
+
+                    Rectangle {
+                        id: attachmentsSection
+
+                        anchors {
+                            top: parent.top
+                            left: parent.left
+                            right: parent.right
+                        }
+                        height: wholeAnnotationItem.hasAttachments?(units.fingerUnit * 2):0
+
+                        Loader {
+                            id: attachedImageLoader
+
+                            anchors.fill: parent
+                        }
+                    }
+
+                    RowLayout {
+                        id: singleAnnotationLayout
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+                        spacing: units.nailUnit
+
+                        Text {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                            text: '<b>' + model.title + '</b>&nbsp;' + model.desc + ''
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: singleAnnotationLayout.width / 6
+                            font.pixelSize: units.readUnit
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            elide: Text.ElideRight
+                            color: 'green'
+                            text: model.labels
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: singleAnnotationLayout.width / 6
+                            font.pixelSize: units.readUnit
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            color: 'green'
+                            text: (model.start == '')?'---':model.start
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: singleAnnotationLayout.width / 6
+                            font.pixelSize: units.readUnit
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            color: 'red'
+                            text: (model.end == '')?'---':model.end
+                        }
+                        StateDisplay {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: units.fingerUnit
+
+                            stateValue: model.state
+                        }
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+
+                        drag.target: singleAnnotationRect
+                        drag.axis: Drag.XAxis
+                        property bool dragIsActive: drag.active
+
+                        onDragIsActiveChanged: {
+                            if (dragIsActive) {
+                                if (wholeAnnotationItem.state == 'simple')
+                                    wholeAnnotationItem.state = 'moving';
+                            } else {
+                                if ((wholeAnnotationItem.state == 'stateControls') || (singleAnnotationRect.x > -units.fingerUnit * 2)) {
+                                    wholeAnnotationItem.state = 'simple';
+                                } else {
+                                    wholeAnnotationItem.state = 'stateControls';
+                                }
+                            }
+                        }
+
+                        onClicked: {
+                            if (wholeAnnotationItem.state == 'preview')
+                                wholeAnnotationItem.state = 'simple';
+                            else {
+                                if (previewEnabled)
+                                    wholeAnnotationItem.state = 'preview';
+                                else
+                                    annotationSelected(model.id);
+                            }
+                            //annotationPreviewDialog.openAnnotationPreview(model.id);
+                            //annotationSelected(model.id);
+                        }
+                        onPressAndHold: {
+                            annotationsView2.selectedAnnotation = model.id;
+                            annotationsView2.selectedText = model.title;
+                            annotationsView2.selectedStateValue = model.state;
+                            annotationsView2.enableSelection();
+                        }
+                    }
+                }
+
+                Rectangle {
+                    id: annotationPreviewRect
+
+                    z: 2
+                    anchors {
+                        top: singleAnnotationRect.bottom
                         left: parent.left
                         right: parent.right
                     }
-                    height: wholeAnnotationItem.hasAttachments?(units.fingerUnit * 2):0
+                    height: 0
+                    clip: true
 
                     Loader {
-                        id: attachedImageLoader
+                        id: annotationPreviewLoader
 
                         anchors.fill: parent
+
+                        property int annotation
+
+                        function openPreviewer() {
+                            annotation = model.id;
+                            setSource('qrc:///modules/annotations2/AnnotationPreview.qml', {identifier: model.id});
+                        }
+
+                        function closePreviewer() {
+                            sourceComponent = undefined;
+                        }
+
+                        Connections {
+                            target: annotationPreviewLoader.item
+
+                            onAnnotationSelected: {
+                                docAnnotationsRect.annotationSelected(annotationPreviewLoader.annotation);
+                            }
+
+                        }
                     }
                 }
 
+            }
+
+
+            selectionBox: Rectangle {
+                color: 'yellow'
                 RowLayout {
-                    id: singleAnnotationLayout
                     anchors.fill: parent
                     anchors.margins: units.nailUnit
-                    spacing: units.nailUnit
+                    spacing: units.fingerUnit
 
                     Text {
+                        Layout.fillHeight: true
                         Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        font.pixelSize: units.readUnit
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        elide: Text.ElideRight
-                        verticalAlignment: Text.AlignVCenter
-                        text: '<b>' + model.title + '</b>&nbsp;' + model.desc + ''
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: singleAnnotationLayout.width / 6
-                        font.pixelSize: units.readUnit
-                        verticalAlignment: Text.AlignVCenter
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        elide: Text.ElideRight
-                        color: 'green'
-                        text: model.labels
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: singleAnnotationLayout.width / 6
-                        font.pixelSize: units.readUnit
-                        verticalAlignment: Text.AlignVCenter
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        color: 'green'
-                        text: (model.start == '')?'---':model.start
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: singleAnnotationLayout.width / 6
-                        font.pixelSize: units.readUnit
-                        verticalAlignment: Text.AlignVCenter
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        color: 'red'
-                        text: (model.end == '')?'---':model.end
-                    }
-                    StateDisplay {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: units.fingerUnit
 
-                        stateValue: model.state
+                        verticalAlignment: Text.AlignVCenter
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        text: annotationsView2.selectedText
                     }
-                }
-                MouseArea {
-                    anchors.fill: parent
 
-                    drag.target: singleAnnotationRect
-                    drag.axis: Drag.XAxis
-                    property bool dragIsActive: drag.active
+                    Common.TextButton {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: contentWidth
+                        text: qsTr('Estat')
 
-                    onDragIsActiveChanged: {
-                        if (dragIsActive) {
-                            if (wholeAnnotationItem.state == 'simple')
-                                wholeAnnotationItem.state = 'moving';
-                        } else {
-                            if ((wholeAnnotationItem.state == 'stateControls') || (singleAnnotationRect.x > -units.fingerUnit * 2)) {
-                                wholeAnnotationItem.state = 'simple';
-                            } else {
-                                wholeAnnotationItem.state = 'stateControls';
-                            }
+                        onClicked: stateEditorDialog.open()
+                    }
+                    Common.TextButton {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: contentWidth
+                        text: qsTr('Inici')
+                    }
+                    Common.TextButton {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: contentWidth
+                        text: qsTr('Final')
+                    }
+
+                    Common.ImageButton {
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: height
+
+                        image: 'road-sign-147409'
+
+                        onClicked: {
+                            annotationsView2.disableSelection();
                         }
-                    }
-
-                    onClicked: {
-                        if (wholeAnnotationItem.state == 'preview')
-                            wholeAnnotationItem.state = 'simple';
-                        else
-                            wholeAnnotationItem.state = 'preview';
-                        //annotationPreviewDialog.openAnnotationPreview(model.id);
-                        //annotationSelected(model.id);
-                    }
-                    onPressAndHold: {
-                        annotationsView2.selectedAnnotation = model.id;
-                        annotationsView2.selectedText = model.title;
-                        annotationsView2.selectedStateValue = model.state;
-                        annotationsView2.enableSelection();
                     }
                 }
             }
 
-            Rectangle {
-                id: annotationPreviewRect
+            footerBar: (inline)?footerItem:moreOptionsComponent
 
-                z: 2
+            Common.SuperposedButton {
+                id: addAnnotationButton
                 anchors {
-                    top: singleAnnotationRect.bottom
-                    left: parent.left
                     right: parent.right
+                    bottom: parent.bottom
                 }
-                height: 0
-                clip: true
-
-                Loader {
-                    id: annotationPreviewLoader
-
-                    anchors.fill: parent
-
-                    property int annotation
-
-                    function openPreviewer() {
-                        annotation = model.id;
-                        setSource('qrc:///modules/annotations2/AnnotationPreview.qml', {identifier: model.id});
-                    }
-
-                    function closePreviewer() {
-                        sourceComponent = undefined;
-                    }
-
-                    Connections {
-                        target: annotationPreviewLoader.item
-
-                        onAnnotationSelected: {
-                            docAnnotationsRect.annotationSelected(annotationPreviewLoader.annotation);
-                        }
-
-                    }
+                size: units.fingerUnit * 2
+                imageSource: 'plus-24844'
+                onClicked: {
+                    newAnnotationDialog.load(qsTr('Nova anotació'), 'annotations2/NewAnnotation', {document: document, annotationsModel: docAnnotationsModel, periodStart: selectedDate, periodEnd: selectedDate});
                 }
             }
-
         }
+    }
 
 
-        selectionBox: Rectangle {
-            color: 'yellow'
+    Component {
+        id: footerItem
+
+        Item {
+            width: annotationsView2.width
+            height: addAnnotationButton.size + addAnnotationButton.margins
+            Rectangle {
+                anchors.fill: parent
+                anchors.topMargin: annotationsView2.spacing
+                Button {
+                    text: qsTr('Obre llista apart')
+                    onClicked: annotationsListSelected2()
+                }
+            }
+        }
+    }
+
+    Component {
+        id: moreOptionsComponent
+
+        Rectangle {
+            width: annotationsView2.width
+            height: units.fingerUnit * 2
+            color: '#AAFFAA'
+
             RowLayout {
                 anchors.fill: parent
-                anchors.margins: units.nailUnit
                 spacing: units.fingerUnit
 
                 Text {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
 
-                    verticalAlignment: Text.AlignVCenter
                     font.pixelSize: units.readUnit
-                    font.bold: true
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    text: annotationsView2.selectedText
+                    text: docAnnotationsModel.count + qsTr(' anotacions')
                 }
 
-                Common.TextButton {
+                Button {
                     Layout.fillHeight: true
-                    Layout.preferredWidth: contentWidth
-                    text: qsTr('Estat')
+                    Layout.fillWidth: mustShow
+                    visible: mustShow
 
-                    onClicked: stateEditorDialog.open()
-                }
-                Common.TextButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: contentWidth
-                    text: qsTr('Inici')
-                }
-                Common.TextButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: contentWidth
-                    text: qsTr('Final')
-                }
+                    property bool mustShow: (docAnnotationsModel.limit>0) && (docAnnotationsModel.count == docAnnotationsModel.limit)
 
-                Common.ImageButton {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: height
-
-                    image: 'road-sign-147409'
+                    text: docAnnotationsModel.limit + qsTr(' primers. Més...')
 
                     onClicked: {
-                        annotationsView2.disableSelection();
+                        docAnnotationsModel.limit = docAnnotationsModel.limit + 10;
+                        docAnnotationsModel.update();
+                    }
+                }
+
+                Button {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: mustShow
+                    visible: mustShow
+
+                    property bool mustShow: stateValue !== ''
+
+                    text: qsTr('Només entrada. Mostra qualsevol tipus')
+
+                    onClicked: {
+                        stateValue = '';
+                        docAnnotationsModel.update();
                     }
                 }
             }
         }
 
-        footerBar: (inline)?footerItem:moreOptionsComponent
-
-        Common.SuperposedButton {
-            id: addAnnotationButton
-            anchors {
-                right: parent.right
-                bottom: parent.bottom
-            }
-            size: units.fingerUnit * 2
-            imageSource: 'plus-24844'
-            onClicked: {
-                newAnnotationDialog.load(qsTr('Nova anotació'), 'annotations2/NewAnnotation', {document: document, annotationsModel: docAnnotationsModel, periodStart: selectedDate, periodEnd: selectedDate});
-            }
-        }
     }
 
     Common.SuperposedMenu {

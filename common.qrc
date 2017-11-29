@@ -50,5 +50,7 @@
         <file>common/GeneralListView.qml</file>
         <file>common/ExpandableToolPanel.qml</file>
         <file>common/InsideEditor.qml</file>
+        <file>common/ThreePanesNavigator.qml</file>
+        <file>common/NavigationPane.qml</file>
     </qresource>
 </RCC>

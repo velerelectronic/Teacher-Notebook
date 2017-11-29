@@ -7,5 +7,6 @@
         <file>modules/files/DocumentsImporter.qml</file>
         <file>modules/files/ImportImageIntoAnnotation.qml</file>
         <file>modules/files/ImageBlobViewer.qml</file>
+        <file>modules/files/FilesystemBrowser.qml</file>
     </qresource>
 </RCC>

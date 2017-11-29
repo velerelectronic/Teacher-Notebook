@@ -16,7 +16,7 @@ import 'qrc:///modules/calendar' as Calendar
 import 'qrc:///modules/files' as Files
 import 'qrc:///modules/connections' as AnnotationsConnections
 
-Item {
+Rectangle {
     id: showAnnotationItem
 
     signal annotationSelected(int annotation)
@@ -40,6 +40,8 @@ Item {
     property string periodEnd: ''
     property int stateValue: 0
     property string document: ''
+
+    color: 'transparent'
 
     Common.UseUnits {
         id: units
@@ -134,42 +136,62 @@ Item {
                                 text: qsTr('Període:')
                             }
 
-                            Calendar.WeekPeriodDisplay {
-                                id: weekPeriodDisplayItem
+                            Rectangle {
+                                id: periodText
 
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: weekPeriodDisplayItem.requiredHeight
-                            }
+                                Layout.preferredHeight: childrenRect.height
 
-                            Text {
-                                id: startText
-                                height: contentHeight
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: showRelatedAnnotationsByPeriod();
+                                property int durationInDays: 0
+
+                                Flow {
+                                    anchors {
+                                        top: parent.top
+                                        left: parent.left
+                                        right: parent.right
+                                    }
+                                    height: childrenRect.height
+
+                                    spacing: units.nailUnit
+
+                                    Text {
+                                        id: startText
+                                        width: Math.max(contentWidth, units.fingerUnit * 4)
+                                        height: units.fingerUnit
+                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                        font.pixelSize: units.readUnit
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            onClicked: showRelatedAnnotationsByPeriod();
+                                        }
+                                    }
+
+                                    Repeater {
+                                        model: periodText.durationInDays
+
+                                        delegate: Rectangle {
+                                            width: units.fingerUnit
+                                            height: units.fingerUnit
+
+                                            color: 'orange'
+                                        }
+                                    }
+
+                                    Text {
+                                        id: endText
+                                        Layout.fillHeight: true
+                                        Layout.preferredWidth: Math.max(contentWidth, units.fingerUnit * 4)
+                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                        font.pixelSize: units.readUnit
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            onClicked: showRelatedAnnotationsByPeriod();
+                                        }
+                                    }
+
                                 }
                             }
-                            Item {
-                                width: units.fingerUnit * 2
-                            }
 
-                            Item {
-                                width: units.fingerUnit * 2
-                            }
-
-                            Text {
-                                id: endText
-                                Layout.preferredHeight: contentHeight
-                                Layout.preferredWidth: parent.width / 3
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: showRelatedAnnotationsByPeriod();
-                                }
-                            }
                             Common.ImageButton {
                                 id: changePeriodButton
                                 Layout.fillHeight: true
@@ -771,14 +793,25 @@ Item {
             periodStart = obj['start'];
             periodEnd = obj['end'];
 
-            weekPeriodDisplayItem.setPeriod(periodStart, periodEnd);
-
             descText = obj['desc'];
             imagePreviewer.data = obj['contents'];
             contentText.text = parser.toHtml(descText);
 
             stateValue = obj['state'];
             document = obj['document'];
+
+
+            console.log('dura', obj['start'], obj['end']);
+            if ((obj['start'] !== "") && (obj['end'] !== '')) {
+                console.log('calculant durada');
+                var startDate = new Date();
+                var endDate = new Date();
+                startDate.fromYYYYMMDDHHMMFormat(obj['start']);
+                endDate.fromYYYYMMDDHHMMFormat(obj['end']);
+                periodText.durationInDays = startDate.differenceInDays(endDate);
+
+                console.log('durada', periodText.durationInDays)
+            }
         }
     }
 

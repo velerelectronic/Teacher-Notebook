@@ -10,6 +10,8 @@ Rectangle {
     property int margins: units.nailUnit
     property int buttonsSpacing: units.fingerUnit
 
+    height: units.fingerUnit * 2 + margins * 2
+
     Common.UseUnits {
         id: units
     }

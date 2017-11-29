@@ -21,7 +21,7 @@ Rectangle {
     signal annotationSelected(int annotation)
     signal fileSelected(string file)
 
-    color: 'gray'
+    color: 'transparent'
 
     Common.UseUnits {
         id: units

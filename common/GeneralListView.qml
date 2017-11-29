@@ -11,6 +11,9 @@ Item {
     property Component toolBar: Rectangle {
         color: 'green'
     }
+
+    property int toolBarHeight: units.fingerUnit * 4 + units.nailUnit
+
     property Component headingBar: null
     property Component listDelegate: null
     property Component selectionBox: null
@@ -52,7 +55,7 @@ Item {
         Loader {
             id: toolBarLoader
 
-            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredHeight: toolBarHeight
             Layout.fillWidth: true
 
             sourceComponent: toolBar

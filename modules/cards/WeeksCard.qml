@@ -6,12 +6,15 @@ import 'qrc:///modules/calendar' as Calendar
 import "qrc:///common/FormatDates.js" as FormatDates
 
 BaseCard {
+    id: weeksCardBase
+
     Common.UseUnits {
         id: units
     }
 
     requiredHeight: selectorsRow.height + weeksCalendarView.requiredHeight
 
+    signal selectedDate(string date)
     signal showAnnotations()
 
     ColumnLayout {
@@ -87,6 +90,7 @@ BaseCard {
             onSelectedDate: {
                 var date = new Date(year, month, day);
                 var dateStr = date.toYYYYMMDDFormat();
+                weeksCardBase.selectedDate(dateStr);
                 selectedPage('annotations2/AnnotationsList', {selectedDate: dateStr, filterPeriod: true, interactive: true}, qsTr('Anotacions dins rang de dates'));
             }
 

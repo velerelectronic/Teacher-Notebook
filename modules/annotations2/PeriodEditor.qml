@@ -2,6 +2,7 @@ import QtQuick 2.7
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
+import QtQml.Models 2.3
 import 'qrc:///common' as Common
 import 'qrc:///editors' as Editors
 
@@ -21,126 +22,27 @@ Common.AbstractEditor {
     property bool endDateIsDefined: false
     property bool endTimeIsDefined: false
 
+    property string selectedStartDate: ''
+    property string selectedEndDate: ''
+    property string selectedStartTime: ''
+    property string selectedEndTime: ''
+
     signal periodEndChanged()
     signal periodStartChanged()
-
-    function acquireDateAndTime(dateTimeString) {
-        // It returns:
-        // * Object: date Object
-        // * dateDefined: true if object contains a valid date
-        // * timeDefined: true if object contains both valid date and time
-
-        var returnObject = new Date();
-        var returnDateDefined = false;
-        var returnTimeDefined = false;
-
-        var re = /([0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2})|([0-9]{1,2}\:[0-9]{1,2}(?:\:[0-9]{1,2})?)/g;
-
-        var parts = dateTimeString.match(re);
-
-        if ((parts !== null) && (parts.length > 0)) {
-            returnObject.fromYYYYMMDDFormat(parts[0]);
-            returnDateDefined = true;
-            if (parts.length > 1) {
-                returnObject.fromHHMMFormat(parts[1]);
-                returnTimeDefined = true;
-            }
-        }
-        return {
-            object: returnObject,
-            dateDefined: returnDateDefined,
-            timeDefined: returnTimeDefined
-        };
-    }
-
-    function setContent(startString, endString) {
-        console.log('setting', startString, endString);
-
-        var startObj = acquireDateAndTime((startString !== null)?startString:'');
-        startDateObject = startObj.object;
-        startDateIsDefined = startObj.dateDefined;
-        startTimeIsDefined = startObj.timeDefined;
-
-        var endObj = acquireDateAndTime((endString !== null)?endString:'');
-        endDateObject = endObj.object;
-        endDateIsDefined = endObj.dateDefined;
-        endTimeIsDefined = endObj.timeDefined;
-
-        printDateTime();
-    }
-
-    function printDateTime() {
-        // Print today
-        var today = new Date();
-
-        todayStartDateText.text = today.toShortReadableDate();
-        todayEndDateText.text = today.toShortReadableDate();
-
-        var generalStartDate = new Date();
-        var generalEndDate = new Date();
-
-        // Print actual date, if defined
-        if (startDateIsDefined) {
-            var actualDateTime = startDateObject.toShortReadableDate();
-
-            generalStartDate.setDate(startDateObject.getDate()).setMonth(startDateObject.getMonth()).setFullYear(startDateObject.getFullMonth());
-
-            if (startTimeIsDefined) {
-                actualDateTime = actualDateTime + " " + startDateObject.toHHMMFormat();
-                startDateText.text = actualDateTime;
-            }
-        } else {
-            startDateText.text = qsTr('No definit');
-        }
-
-        if (endDateIsDefined) {
-            var actualDateTime = endDateObject.toShortRedableDate();
-
-            generalEndDate.setDate(endDateObject.getDate()).setMonth(endDateObject.getMonth()).setFullYear(endDateObject.getFullYear());
-
-            if (endTimeIsDefined) {
-                actualDateTime = actualDateTime + " " + endDateObject.toHHMMFormat();
-                endDateText.text = actualDateTime;
-            }
-        } else {
-            endDateText.text = qsTr('No definit');
-        }
-
-        // Print in a week
-        generalStartDate.setDate(generalStartDate.getDate() + 7);
-        weekStartDateText.text = generalStartDate.toShortReadableDate();
-        generalEndDate.setDate(generalEndDate.getDate() + 7);
-        weekEndDateText.text = generalEndDate.toShortReadableDate();
-
-        // Print in a month
-        generalStartDate.setDate(generalStartDate.getDate() - 7);
-        generalStartDate.setMonth(generalStartDate.getMonth() + 1);
-        monthStartDateText.text = generalStartDate.toShortReadableDate();
-        generalEndDate.setDate(generalEndDate.getDate() - 7);
-        generalEndDate.setMonth(generalEndDate.getMonth() + 1);
-        monthEndDateText.text = generalEndDate.toShortReadableDate();
-
-        // Print in a year
-        generalStartDate.setMonth(generalStartDate.getMonth() - 1);
-        generalStartDate.setFullYear(generalStartDate.getFullYear() + 1);
-        yearStartDateText.text = generalStartDate.toShortReadableDate();
-        generalEndDate.setMonth(generalEndDate.getMonth() - 1);
-        generalEndDate.setFullYear(generalEndDate.getFullYear() + 1);
-        yearEndDateText.text = generalEndDate.toShortReadableDate();
-    }
 
     GridLayout {
         anchors {
             top: parent.top
             left: parent.left
             right: parent.right
+            margins: units.nailUnit
         }
         height: childrenRect.height
 
-        columns: 3
-        columnSpacing: units.fingerUnit
-        rowSpacing: units.fingerUnit
-        rows: 4
+        columns: 2
+        rows: 7
+        rowSpacing: 0
+        columnSpacing: 0
         flow: GridLayout.LeftToRight
 
         Text {
@@ -151,22 +53,17 @@ Common.AbstractEditor {
             text: qsTr('Actual:')
         }
 
-        Text {
-            id: startDateText
+        ReperiodDisplay {
+            id: actualDateDisplayItem
+
             Layout.preferredHeight: units.fingerUnit * 2
-            Layout.preferredWidth: parent.width / 3
+            Layout.fillWidth: true
 
-            color: 'gray'
-            text: ""
-        }
+            selectedStartDate: periodEditorItem.selectedStartDate
+            selectedEndDate: periodEditorItem.selectedEndDate
 
-        Text {
-            id: endDateText
-            Layout.preferredHeight: units.fingerUnit * 2
-            Layout.preferredWidth: parent.width / 3
-
-            color: 'gray'
-            text: ""
+            onStartDateSelected: periodEditorItem.selectedStartDate = date
+            onEndDateSelected: periodEditorItem.selectedEndDate = date
         }
 
         Text {
@@ -177,22 +74,17 @@ Common.AbstractEditor {
             text: qsTr('Avui:')
         }
 
-        Text {
-            id: todayStartDateText
+        ReperiodDisplay {
+            id: todayDateDisplayItem
+
             Layout.preferredHeight: units.fingerUnit * 2
-            Layout.preferredWidth: parent.width / 3
+            Layout.fillWidth: true
 
-            color: 'gray'
-            text: ""
-        }
+            selectedStartDate: periodEditorItem.selectedStartDate
+            selectedEndDate: periodEditorItem.selectedEndDate
 
-        Text {
-            id: todayEndDateText
-            Layout.preferredHeight: units.fingerUnit * 2
-            Layout.preferredWidth: parent.width / 3
-
-            color: 'gray'
-            text: ""
+            onStartDateSelected: periodEditorItem.selectedStartDate = date
+            onEndDateSelected: periodEditorItem.selectedEndDate = date
         }
 
         Text {
@@ -200,25 +92,20 @@ Common.AbstractEditor {
             Layout.preferredWidth: parent.width / 3
 
             font.bold: true
-            text: qsTr('En un setmana:')
+            text: qsTr('Una setmana després')
         }
 
-        Text {
-            id: weekStartDateText
+        ReperiodDisplay {
+            id: weekDateDisplayItem
+
             Layout.preferredHeight: units.fingerUnit * 2
-            Layout.preferredWidth: parent.width / 3
+            Layout.fillWidth: true
 
-            color: 'gray'
-            text: ""
-        }
+            selectedStartDate: periodEditorItem.selectedStartDate
+            selectedEndDate: periodEditorItem.selectedEndDate
 
-        Text {
-            id: weekEndDateText
-            Layout.preferredHeight: units.fingerUnit * 2
-            Layout.preferredWidth: parent.width / 3
-
-            color: 'gray'
-            text: ""
+            onStartDateSelected: periodEditorItem.selectedStartDate = date
+            onEndDateSelected: periodEditorItem.selectedEndDate = date
         }
 
         Text {
@@ -226,25 +113,20 @@ Common.AbstractEditor {
             Layout.preferredWidth: parent.width / 3
 
             font.bold: true
-            text: qsTr('En un mes:')
+            text: qsTr('Un mes després:')
         }
 
-        Text {
-            id: monthStartDateText
+        ReperiodDisplay {
+            id: monthDateDisplayItem
+
             Layout.preferredHeight: units.fingerUnit * 2
-            Layout.preferredWidth: parent.width / 3
+            Layout.fillWidth: true
 
-            color: 'gray'
-            text: ""
-        }
+            selectedStartDate: periodEditorItem.selectedStartDate
+            selectedEndDate: periodEditorItem.selectedEndDate
 
-        Text {
-            id: monthEndDateText
-            Layout.preferredHeight: units.fingerUnit * 2
-            Layout.preferredWidth: parent.width / 3
-
-            color: 'gray'
-            text: ""
+            onStartDateSelected: periodEditorItem.selectedStartDate = date
+            onEndDateSelected: periodEditorItem.selectedEndDate = date
         }
 
         Text {
@@ -252,25 +134,20 @@ Common.AbstractEditor {
             Layout.preferredWidth: parent.width / 3
 
             font.bold: true
-            text: qsTr('En un any:')
+            text: qsTr('Un any després:')
         }
 
-        Text {
-            id: yearStartDateText
+        ReperiodDisplay {
+            id: yearDateDisplayItem
+
             Layout.preferredHeight: units.fingerUnit * 2
-            Layout.preferredWidth: parent.width / 3
+            Layout.fillWidth: true
 
-            color: 'gray'
-            text: ""
-        }
+            selectedStartDate: periodEditorItem.selectedStartDate
+            selectedEndDate: periodEditorItem.selectedEndDate
 
-        Text {
-            id: yearEndDateText
-            Layout.preferredHeight: units.fingerUnit * 2
-            Layout.preferredWidth: parent.width / 3
-
-            color: 'gray'
-            text: ""
+            onStartDateSelected: periodEditorItem.selectedStartDate = date
+            onEndDateSelected: periodEditorItem.selectedEndDate = date
         }
 
         Text {
@@ -281,202 +158,89 @@ Common.AbstractEditor {
             text: qsTr('Una altra data:')
         }
 
+        ReperiodDisplay {
+            id: otherDateDisplayItem
+
+            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.fillWidth: true
+
+            selectedStartDate: periodEditorItem.selectedStartDate
+            selectedEndDate: periodEditorItem.selectedEndDate
+
+            onStartDateSelected: {
+                dateChangeDialog.openStartDateSelector();
+            }
+
+            onEndDateSelected: {
+                dateChangeDialog.openEndDateSelector();
+            }
+        }
+
         Text {
-            id: otherStartDateText
             Layout.preferredHeight: units.fingerUnit * 2
             Layout.preferredWidth: parent.width / 3
 
-            color: 'gray'
-            text: ""
+            font.bold: true
+            text: qsTr('Esborra:')
         }
 
-        Text {
-            id: otherEndDateText
+        Item {
             Layout.preferredHeight: units.fingerUnit * 2
-            Layout.preferredWidth: parent.width / 3
+            Layout.fillWidth: true
 
-            color: 'gray'
-            text: ""
-        }
+            RowLayout {
+                anchors.fill: parent
+                spacing: 0
 
+                Rectangle {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
 
-        Button {
-            //Layout.preferredHeight: units.fingerUnit * 4
-            //Layout.preferredWidth: parent.height / 3
-            Layout.fillHeight: true
-            Layout.preferredWidth: units.fingerUnit * 4
+                    color: (selectedStartDate == '')?'yellow':'white'
 
-            Layout.rowSpan: 2
+                    Text {
+                        anchors.fill: parent
 
-            text: qsTr('Canvia')
+                        padding: units.nailUnit
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
 
-            onClicked: {
-                if (startDateIsDefined)
-                    periodChangeDialog.openStartChange();
-                else
-                    dateChangeDialog.openStartDateSelector();
-            }
-        }
-        Button {
-            Layout.fillHeight: true
-            Layout.preferredWidth: units.fingerUnit * 4
-            Layout.rowSpan: 2
+                        text: qsTr('Sense inici')
+                    }
 
-            text: qsTr('Canvia')
-
-            onClicked: {
-                if (endDateIsDefined)
-                    periodChangeDialog.openEndChange();
-                else
-                    dateChangeDialog.openEndDateSelector();
-            }
-        }
-    }
-
-    Common.SuperposedMenu {
-        id: periodChangeDialog
-
-        title: qsTr('Canvia')
-
-        property bool isStart
-
-        function openStartChange() {
-            title = qsTr('Canvia inici');
-            isStart = true;
-            open();
-        }
-
-        function openEndChange() {
-            title = qsTr('Canvia final');
-            isStart = false;
-            open();
-        }
-
-        Common.SuperposedMenuEntry {
-            text: qsTr('Ajorna un dia')
-            onClicked: {
-                if (periodChangeDialog.isStart) {
-                    startDateObject.setDate(startDateObject.getDate()+1);
-                    printDateTime();
-                    periodStartChanged();
-                } else {
-                    endDateObject.setDate(endDateObject.getDate()+1);
-                    printDateTime();
-                    periodEndChanged();
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: selectedStartDate = ''
+                    }
                 }
-                periodChangeDialog.close();
-            }
-        }
-        Common.SuperposedMenuEntry {
-            text: qsTr('Ajorna una setmana')
-            onClicked: {
-                if (periodChangeDialog.isStart) {
-                    startDateObject.setDate(startDateObject.getDate()+7);
-                    printDateTime();
-                    periodStartChanged();
-                } else {
-                    endDateObject.setDate(endDateObject.getDate()+7);
-                    printDateTime();
-                    periodEndChanged();
-                }
-                periodChangeDialog.close();
-            }
-        }
-        Common.SuperposedMenuEntry {
-            text: qsTr('Ajorna un mes')
-            onClicked: {
-                if (periodChangeDialog.isStart) {
-                    startDateObject.setMonth(startDateObject.getMonth()+1);
-                    printDateTime();
-                    periodStartChanged();
-                } else {
-                    endDateObject.setMonth(endDateObject.getMonth()+1);
-                    printDateTime();
-                    periodEndChanged();
-                }
-                periodChangeDialog.close();
-            }
-        }
-        Common.SuperposedMenuEntry {
-            text: qsTr('Ajorna un any')
-            onClicked: {
-                if (periodChangeDialog.isStart) {
-                    startDateObject.setFullYear(startDateObject.getFullYear()+1);
-                    printDateTime();
-                    periodStartChanged();
-                } else {
-                    endDateObject.setFullYear(endDateObject.getFullYear()+1);
-                    printDateTime();
-                    periodEndChanged();
-                }
-                periodChangeDialog.close();
-            }
-        }
-        Rectangle {
-            height: units.nailUnit
-            width: parent.width
-            color: 'gray'
-        }
+                Rectangle {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
 
-        Common.SuperposedMenuEntry {
-            text: qsTr('Tria una data')
+                    color: (selectedEndDate == '')?'yellow':'white'
 
-            onClicked: {
-                periodChangeDialog.close();
-                if (periodChangeDialog.isStart) {
-                    dateChangeDialog.openStartDateSelector();
-                } else {
-                    dateChangeDialog.openEndDateSelector();
+                    Text {
+                        anchors.fill: parent
+
+                        padding: units.nailUnit
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
+                        text: qsTr('Sense final')
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: selectedEndDate = ''
+                    }
                 }
             }
         }
-        Common.SuperposedMenuEntry {
-            text: qsTr('Esborra data')
-            onClicked: {
-                if (periodChangeDialog.isStart) {
-                    startDateIsDefined = false;
-                    startTimeIsDefined = false;
-                } else {
-                    endDateIsDefined = false;
-                    endTimeIsDefined = false;
-                }
-                printDateTime();
-                periodStartChanged();
-                periodEndChanged();
-                periodChangeDialog.close();
-            }
-        }
-        Rectangle {
-            height: units.nailUnit
-            width: parent.width
-            color: 'gray'
-        }
-        Common.SuperposedMenuEntry {
-            text: qsTr('Tria una hora')
 
-            onClicked: {
-                periodChangeDialog.close();
-                if (periodChangeDialog.isStart) {
-                    timeChangeDialog.openStartTimeSelector();
-                } else {
-                    timeChangeDialog.openEndTimeSelector();
-                }
-            }
-        }
-        Common.SuperposedMenuEntry {
-            text: qsTr('Esborra hora')
-            onClicked: {
-                if (periodChangeDialog.isStart) {
-                    startTimeIsDefined = false;
-                } else {
-                    endTimeIsDefined = false;
-                }
-                printDateTime();
-                periodStartChanged();
-                periodEndChanged();
-                periodChangeDialog.close();
-            }
-        }
     }
 
     Common.SuperposedMenu {
@@ -503,18 +267,12 @@ Common.AbstractEditor {
             onClicked: {
                 var date = calendarPicker.selectedDate;
                 if (dateChangeDialog.isStart) {
-                    startDateObject.setDate(date.getDate());
-                    startDateObject.setMonth(date.getMonth());
-                    startDateObject.setFullYear(date.getFullYear());
-                    startDateIsDefined = true;
-                    printDateTime();
+                    selectedStartDate = date.toYYYYMMDDFormat();
+                    otherDateDisplayItem.setContent(date, null);
                     periodStartChanged();
                 } else {
-                    endDateObject.setDate(date.getDate());
-                    endDateObject.setMonth(date.getMonth());
-                    endDateObject.setFullYear(date.getFullYear());
-                    endDateIsDefined = true;
-                    printDateTime();
+                    selectedEndDate = date.toYYYYMMDDFormat();
+                    otherDateDisplayItem.setContent(null, date);
                     periodEndChanged();
                 }
                 dateChangeDialog.close();
@@ -678,29 +436,125 @@ Common.AbstractEditor {
 
     }
 
-    function getStartDateString() {
-        var startString = "";
-        if (startDateIsDefined) {
-            startString += startDateObject.toYYYYMMDDFormat();
-            if (startTimeIsDefined) {
-                startString += " " + startDateObject.toHHMMFormat();
+    function acquireDateAndTime(dateTimeString) {
+        // It returns:
+        // * Object: date Object
+        // * dateDefined: true if object contains a valid date
+        // * timeDefined: true if object contains both valid date and time
+
+        var returnObject = new Date();
+        var returnDateDefined = false;
+        var returnTimeDefined = false;
+
+        var re = /([0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2})|([0-9]{1,2}\:[0-9]{1,2}(?:\:[0-9]{1,2})?)/g;
+
+        var parts = dateTimeString.match(re);
+
+        if ((parts !== null) && (parts.length > 0)) {
+            returnObject.fromYYYYMMDDFormat(parts[0]);
+            returnDateDefined = true;
+            if (parts.length > 1) {
+                returnObject.fromHHMMFormat(parts[1]);
+                returnTimeDefined = true;
             }
         }
-        return startString;
+        return {
+            object: returnObject,
+            dateDefined: returnDateDefined,
+            timeDefined: returnTimeDefined
+        };
+    }
+
+    function setContent(startString, endString) {
+        var startObj = acquireDateAndTime((startString !== null)?startString:'');
+        startDateObject = startObj.object;
+        startDateIsDefined = startObj.dateDefined;
+        startTimeIsDefined = startObj.timeDefined;
+
+        var endObj = acquireDateAndTime((endString !== null)?endString:'');
+        endDateObject = endObj.object;
+        endDateIsDefined = endObj.dateDefined;
+        endTimeIsDefined = endObj.timeDefined;
+
+
+        // Select current date
+
+        if (startDateIsDefined) {
+            selectedStartDate = startDateObject.toYYYYMMDDFormat();
+
+            // Keep same defined time for start and end
+
+            if (startTimeIsDefined) {
+                selectedStartTime = startDateObject.toHHMMFormat();
+            }
+        }
+        if (endDateIsDefined) {
+            selectedEndDate = endDateObject.toYYYYMMDDFormat();
+
+            // Keep same defined time for start and end
+
+            if (endTimeIsDefined) {
+                selectedEndTime = endDateObject.toHHMMFormat();
+            }
+        }
+
+        printDateTime();
+    }
+
+
+    function printDateTime() {
+        // Print today
+        var today = new Date();
+        todayDateDisplayItem.setContent(today, today);
+
+        // Set start and end dates that are current dates if defined or today if current dates have not been set yet.
+
+        var generalStartDate = new Date();
+        var generalEndDate = new Date();
+
+        // Print actual date, if defined
+        if (startDateIsDefined) {
+            generalStartDate.copyDate(startDateObject);
+            actualDateDisplayItem.setContent(generalStartDate, null);
+        } else {
+            actualDateDisplayItem.setContent('', null);
+        }
+
+        if (endDateIsDefined) {
+            generalEndDate.copyDate(endDateObject);
+            actualDateDisplayItem.setContent(null, generalEndDate);
+        } else {
+            actualDateDisplayItem.setContent(null, '');
+        }
+
+        // Print a week afterwards
+
+        generalStartDate.setDate(generalStartDate.getDate() + 7);
+        generalEndDate.setDate(generalEndDate.getDate() + 7);
+        weekDateDisplayItem.setContent(generalStartDate, generalEndDate);
+
+        // Print a month afterwards
+
+        generalStartDate.setDate(generalStartDate.getDate() - 7);
+        generalStartDate.setMonth(generalStartDate.getMonth() + 1);
+        generalEndDate.setDate(generalEndDate.getDate() - 7);
+        generalEndDate.setMonth(generalEndDate.getMonth() + 1);
+        monthDateDisplayItem.setContent(generalStartDate, generalEndDate);
+
+        // Print a year afterwards
+
+        generalStartDate.setMonth(generalStartDate.getMonth() - 1);
+        generalStartDate.setFullYear(generalStartDate.getFullYear() + 1);
+        generalEndDate.setMonth(generalEndDate.getMonth() - 1);
+        generalEndDate.setFullYear(generalEndDate.getFullYear() + 1);
+        yearDateDisplayItem.setContent(generalStartDate, generalEndDate);
+    }
+
+    function getStartDateString() {
+        return selectedStartDate + ((selectedStartTime == '')?'':(' ' + startDateObject.toHHMMFormat()));
     }
 
     function getEndDateString() {
-        var endString = "";
-        if (endDateIsDefined) {
-            endString += endDateObject.toYYYYMMDDFormat();
-            if (endTimeIsDefined) {
-                endString += " " + endDateObject.toHHMMFormat();
-            }
-        }
-        return endString;
-    }
-
-    Component.onCompleted: {
-
+        return selectedEndDate + ((selectedEndTime == '')?'':(' ' + endDateObject.toHHMMFormat()));
     }
 }

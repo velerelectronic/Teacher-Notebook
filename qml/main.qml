@@ -89,7 +89,6 @@ import 'qrc:///modules/pagesfolder' as PagesFolder
 import 'qrc:///modules/cards' as Cards
 import 'qrc:///modules/basic' as Basic
 import 'qrc:///modules/structure' as Structure
-import 'qrc:///modules/suggestions' as Suggestions
 import "qrc:///common/FormatDates.js" as FormatDates
 
 // Three types of navigation between pages
@@ -121,6 +120,17 @@ Window {
         }
     }
 
+    // Proposal
+
+    // Main bar with icons for pages/tasks as these:
+    // * Annotations
+    // * Rubrics
+    // * Filesystem
+    // * Tools
+    // * Feeds
+    // * Plannings
+    // * Checklists?
+    // * Workflow?
 
     Structure.MainNavigator {
         id: mainNavigator
@@ -131,7 +141,9 @@ Window {
 
         Component.onCompleted: {
             mainNavigator.addPage('cards/CardsList', {}, qsTr('Principal'));
-            mainNavigator.addPage('annotations2/AnnotationsList', {}, qsTr('Anotacions'));
+            mainNavigator.addPage('annotations2/Example', {}, qsTr('Tres taulers'));
+            mainNavigator.addPage('annotations2/AnnotationListAndShow', {}, qsTr('Tres taulers'));
+            mainNavigator.addPage('files/FilesystemBrowser', {}, qsTr('Sistema de fitxers'));
 
             informationMessage.publishMessage(qsTr('Benvingut!'))
         }
@@ -147,17 +159,6 @@ Window {
             }
         }
 
-        Suggestions.MainSuggester {
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: parent.top
-                bottom: informationMessage.top
-            }
-
-            suggestionsEnabled: mainNavigator.suggestionsEnabled
-            onSelectedPage: mainNavigator.addPage(page, parameters, qsTr('Suggerència'))
-        }
     }
 
     Common.SuperposedWidget {
