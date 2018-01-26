@@ -68,7 +68,7 @@ Common.AbstractEditor {
             height: childrenRect.height
             width: labelsListItem.width
 
-            Models.ExtendedAnnotations {
+            ExtendedAnnotationsModel {
                 id: labelsModel
 
                 // Incorporate this solution: http://stackoverflow.com/questions/24258878/how-to-split-comma-separated-value-in-sqlite

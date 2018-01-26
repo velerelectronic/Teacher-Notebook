@@ -14,7 +14,7 @@ Rectangle {
         id: units
     }
 
-    Models.ExtendedAnnotations {
+    ExtendedAnnotationsModel {
         id: annotationsModel
 
         function newAnnotation(newTitle, start, end, state) {

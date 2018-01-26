@@ -6,9 +6,9 @@ import 'qrc:///common' as Common
 Item {
     id: visibleNavigatorArea
 
-    property Component firstPane
-    property Component secondPane
-    property Component thirdPane
+    property Component firstPane: Rectangle { color: '#FFFFFF' }
+    property Component secondPane: Rectangle { color: '#AAAAAA' }
+    property Component thirdPane: Rectangle { color: '#555555' }
 
     property int minimumFirstPaneHeight: units.fingerUnit * 2
     property int minimumSecondPaneHeight: units.fingerUnit * 4
@@ -22,39 +22,53 @@ Item {
         id: units
     }
 
-    ListView {
-        id: flickArea
+    state: 'first'
 
-        anchors.fill: parent
-
-        snapMode: ListView.SnapOneItem
-        boundsBehavior: ListView.StopAtBounds
-
-        model: ObjectModel {
-            Rectangle {
-                id: firstBlankArea
-
-                width: flickArea.width
-                height: firstPaneLoader.height
-                color: '#FF0000'
+    states: [
+        State {
+            name: 'first'
+            PropertyChanges {
+                target: secondPaneLoader
+                y: visibleNavigatorArea.height - minimumSecondPaneHeight
             }
-            Rectangle {
-                id: secondBlankArea
-
-                width: flickArea.width
-                height: secondPaneLoader.height + minimumFirstPaneHeight
-                color: '#FF5500'
+            PropertyChanges {
+                target: thirdPaneLoader
+                y: secondPaneLoader.y + secondPaneLoader.height
             }
-            Rectangle {
-                id: thirdBlankArea
-
-                width: flickArea.width
-                height: thirdPaneLoader.height + minimumFirstPaneHeight + minimumSecondPaneHeight
-                color: '#FFAA00'
+        },
+        State {
+            name: 'second'
+            PropertyChanges {
+                target: secondPaneLoader
+                y: minimumFirstPaneHeight
+            }
+            PropertyChanges {
+                target: thirdPaneLoader
+                y: visibleNavigatorArea.height - minimumThirdPaneHeight
+            }
+        },
+        State {
+            name: 'third'
+            PropertyChanges {
+                target: secondPaneLoader
+                y: minimumFirstPaneHeight
+            }
+            PropertyChanges {
+                target: thirdPaneLoader
+                y: minimumFirstPaneHeight + minimumSecondPaneHeight
             }
         }
-    }
+    ]
 
+    transitions: [
+        Transition {
+            PropertyAnimation {
+                property: 'y'
+                duration: 100
+            }
+        }
+
+    ]
     Loader {
         id: firstPaneLoader
 
@@ -63,7 +77,7 @@ Item {
             left: parent.left
             right: parent.right
         }
-        height: flickArea.height - minimumSecondPaneHeight
+        height: visibleNavigatorArea.height - minimumSecondPaneHeight
 
         z: 1
 
@@ -77,13 +91,20 @@ Item {
             left: parent.left
             right: parent.right
         }
-        height: flickArea.height - minimumFirstPaneHeight - minimumThirdPaneHeight
-
-        y: Math.max(minimumFirstPaneHeight, firstBlankArea.height - flickArea.contentY)
+        height: visibleNavigatorArea.height - minimumFirstPaneHeight - minimumThirdPaneHeight
 
         z: 2
 
         sourceComponent: secondPane
+
+        MouseArea {
+            anchors.fill: parent
+
+            drag.target: parent
+            drag.axis: Drag.YAxis
+            drag.minimumY: minimumFirstPaneHeight
+            drag.maximumY: visibleNavigatorArea.height - minimumSecondPaneHeight
+        }
     }
 
     Loader {
@@ -93,13 +114,20 @@ Item {
             left: parent.left
             right: parent.right
         }
-        height: flickArea.height - minimumFirstPaneHeight - minimumSecondPaneHeight
-
-        y: Math.max(minimumFirstPaneHeight + minimumSecondPaneHeight, firstBlankArea.height + secondBlankArea.height - flickArea.contentY)
+        height: visibleNavigatorArea.height - minimumFirstPaneHeight - minimumSecondPaneHeight
 
         z: 3
 
         sourceComponent: thirdPane
+
+        MouseArea {
+            anchors.fill: parent
+
+            drag.target: parent
+            drag.axis: Drag.YAxis
+            drag.minimumY: minimumFirstPaneHeight + minimumSecondPaneHeight
+            drag.maximumY: visibleNavigatorArea.height - minimumThirdPaneHeight
+        }
     }
 
     function setFirstPane(component) {
@@ -114,8 +142,8 @@ Item {
         thirdPaneLoader.sourceComponent = component;
     }
 
-    function openPane(number) {
-        flickArea.positionViewAtIndex(number-1, ListView.Beginning);
+    function openPane(newstate) {
+        visibleNavigatorArea.state = newstate;
     }
 
     Component.onCompleted: {

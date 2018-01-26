@@ -1,2 +1,8 @@
-<!DOCTYPE RCC>
-<RCC version="1.0"/>
+<RCC>
+    <qresource prefix="/">
+        <file>modules/simpleannotations/SimpleAnnotationsList.qml</file>
+        <file>modules/simpleannotations/SimpleAnnotationsModel.qml</file>
+        <file>modules/simpleannotations/ExtendedAnnotationsModel.qml</file>
+        <file>modules/simpleannotations/ExtendedAnnotationsImport.qml</file>
+    </qresource>
+</RCC>

@@ -5,7 +5,6 @@
         <file>models/DetailedAnnotationsModel.qml</file>
         <file>models/ResourcesModel.qml</file>
         <file>models/SavedAnnotationsSearchesModel.qml</file>
-        <file>models/ExtendedAnnotations.qml</file>
         <file>models/TimeTablesModel.qml</file>
         <file>models/LabelsSortModel.qml</file>
         <file>models/DocumentsModel.qml</file>

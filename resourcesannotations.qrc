@@ -11,5 +11,6 @@
         <file>modules/annotations/AnnotationAttachedItems.qml</file>
         <file>modules/annotations/AnnotationStateEditorComponent.qml</file>
         <file>modules/annotations/StateComponent.qml</file>
+        <file>modules/annotations/ExtendedAnnotationsModel.qml</file>
     </qresource>
 </RCC>

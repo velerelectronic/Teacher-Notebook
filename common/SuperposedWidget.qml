@@ -30,6 +30,8 @@ Dialog {
     function load(title, page, args) {
         superposedWidget.title = title;
         subPanelLoader.sourceComponent = undefined;
+        console.log('----------')
+        console.log("qrc:///modules/" + page + ".qml", args)
         subPanelLoader.setSource("qrc:///modules/" + page + ".qml", args);
         superposedWidget.open();
     }

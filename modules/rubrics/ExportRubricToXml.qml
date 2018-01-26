@@ -7,6 +7,7 @@ import 'qrc:///common' as Common
 import 'qrc:///models' as Models
 import 'qrc:///modules/files' as Files
 import 'qrc:///editors' as Editors
+import 'qrc:///modules/annotations' as Annotations
 
 import FileIO 1.0
 import RubricXml 1.0
@@ -53,7 +54,7 @@ Common.SteppedPage {
         filters: ['rubric=?']
     }
 
-    Models.ExtendedAnnotations {
+    Annotations.ExtendedAnnotationsModel {
         id: annotationsModel
     }
 

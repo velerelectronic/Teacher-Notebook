@@ -36,7 +36,7 @@ Item {
         id: units
     }
 
-    Models.ExtendedAnnotations {
+    ExtendedAnnotationsModel {
         id: relatedAnnotationsSimpleModel
         //limit: 6
     }

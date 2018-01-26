@@ -182,7 +182,7 @@ Item {
 
                 property int listIndex
 
-                model: Models.ExtendedAnnotations {
+                model: ExtendedAnnotationsModel {
                     id: relatedAnnotationsModel
                 }
 

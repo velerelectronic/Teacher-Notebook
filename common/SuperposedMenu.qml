@@ -58,6 +58,7 @@ Dialog {
                     }
                 }
 
+
                 model: ObjectModel {
                     id: menuEntriesModel
                 }

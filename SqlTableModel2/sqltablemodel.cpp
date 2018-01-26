@@ -25,6 +25,19 @@ SqlTableModel2::SqlTableModel2(QObject *parent, QSqlDatabase db) :
     innerFakeCounter = 0;
 }
 
+bool SqlTableModel2::createTable() {
+    QSqlQueryModel model(this);
+    model.setQuery(QSqlQuery("CREATE TABLE IF NOT EXISTS " + innerTableName + " (" + innerCreationString + ")"));
+    qDebug() << model.lastError();
+    return true;
+}
+
+
+QString SqlTableModel2::creationString() const {
+    return innerCreationString;
+}
+
+
 void SqlTableModel2::debug() {
 //    qDebug() << "HHOOOLA";
 }
@@ -413,6 +426,11 @@ void SqlTableModel2::setCalculatedFieldNames(const QStringList &fields) {
     innerCalculatedFieldNames = fields;
     generateRoleNames();
     calculatedFieldNamesChanged();
+}
+
+void SqlTableModel2::setCreationString(const QString creationStr) {
+    innerCreationString = creationStr;
+    creationStringChanged();
 }
 
 bool SqlTableModel2::setData(const QModelIndex &item, const QVariant &value, int role) {

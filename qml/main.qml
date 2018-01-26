@@ -141,9 +141,10 @@ Window {
 
         Component.onCompleted: {
             mainNavigator.addPage('cards/CardsList', {}, qsTr('Principal'));
-            mainNavigator.addPage('annotations2/Example', {}, qsTr('Tres taulers'));
+            mainNavigator.addPage('simpleannotations/SimpleAnnotationsList', {}, qsTr('Anotacions simples'));
+            //mainNavigator.addPage('annotations2/Example', {}, qsTr('Tres taulers'));
             mainNavigator.addPage('annotations2/AnnotationListAndShow', {}, qsTr('Tres taulers'));
-            mainNavigator.addPage('files/FilesystemBrowser', {}, qsTr('Sistema de fitxers'));
+            //mainNavigator.addPage('files/FilesystemBrowser', {}, qsTr('Sistema de fitxers'));
 
             informationMessage.publishMessage(qsTr('Benvingut!'))
         }

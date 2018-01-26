@@ -18,6 +18,7 @@ class SqlTableModel2 : public QSqlQueryModel
     Q_PROPERTY(QStringList fieldNames READ fieldNames WRITE setFieldNames NOTIFY fieldNamesChanged)
     Q_PROPERTY(QStringList filters READ filters WRITE setFilters NOTIFY filtersChanged)
     Q_PROPERTY(QString groupBy READ groupBy WRITE setGroupBy NOTIFY groupByChanged)
+    Q_PROPERTY(QString creationString READ creationString WRITE setCreationString NOTIFY creationStringChanged)
     Q_PROPERTY(int limit READ limit WRITE setLimit NOTIFY limitChanged)
     Q_PROPERTY(QString primaryKey READ primaryKey WRITE setPrimaryKey NOTIFY primaryKeyChanged)
     Q_PROPERTY(QStringList searchFields READ searchFields WRITE setSearchFields NOTIFY searchFieldsChanged)
@@ -42,6 +43,7 @@ public:
     QStringList         bindValues() const;
     QStringList         calculatedFieldNames() const;
     int                 count();
+    QString             creationString() const;
     const QStringList   &fieldNames();
     QStringList         &filters();
     QString             getFieldNameByIndex(int index);
@@ -53,6 +55,7 @@ public:
     QString             searchString();
     void                setBindValues(const QStringList &bindValues);
     void                setCalculatedFieldNames(const QStringList &fields);
+    void                setCreationString(const QString creationStr);
     void                setFieldNames(const QStringList &fields);
     void                setFilters(const QStringList &);
     void                setGroupBy(const QString &);
@@ -67,6 +70,7 @@ public:
     const QString       &tableName();
 
     Q_INVOKABLE void        clear();
+    Q_INVOKABLE bool        createTable();
     Q_INVOKABLE QVariantMap getObject(QString key);
     Q_INVOKABLE QVariantMap getObject(QString primaryField, QString key);
     Q_INVOKABLE QVariantMap getObjectInRow(int row) const;
@@ -95,6 +99,7 @@ signals:
     void bindValuesChanged();
     void calculatedFieldNamesChanged();
     void countChanged();
+    void creationStringChanged();
     void fieldNamesChanged();
     void filtersChanged();
     void groupByChanged();
@@ -127,6 +132,7 @@ private:
     QString                 innerSort;
     QMap<int,bool>          subselectedRows;
     QString                 innerTableName;
+    QString                 innerCreationString;
 
     QSqlRecord      buildRecord(const QVariantMap &,bool);
     void            generateRoleNames();

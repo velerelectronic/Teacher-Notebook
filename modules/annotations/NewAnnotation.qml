@@ -20,7 +20,7 @@ Rectangle {
     property string labels: ''
     property string document: ''
 
-    Models.ExtendedAnnotations {
+    ExtendedAnnotationsModel {
         id: annotationsModel
     }
 
