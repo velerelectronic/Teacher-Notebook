@@ -1,12 +1,13 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.3
+import QtQuick.Dialogs 1.2
 import ImageItem 1.0
 import 'qrc:///common' as Common
 
 Rectangle {
     id: docAnnotationsImporter
 
-    signal documentAnnotationSelected(string title, string desc)
+    signal annotationCreated(int identifier)
 
     property int selectedAnnotationId: -1
 
@@ -28,6 +29,30 @@ Rectangle {
             onTextChanged: docAnnotationsModel.update()
         }
 
+        SimpleAnnotationsModel {
+            id: simpleAnnotationsModel
+        }
+
+        AnnotationTimeMarksModel {
+            id: marksModel
+        }
+
+        DocumentAnnotationsModel {
+            id: docAnnotationsModel
+
+            function update() {
+                if (searchFilter.text == '') {
+                    searchFields = [];
+                } else {
+                    searchFields = fieldNames;
+                }
+                searchString = searchFilter.text
+                select();
+            }
+
+            Component.onCompleted: update()
+        }
+
         ListView {
             id: annotationsList
 
@@ -37,21 +62,7 @@ Rectangle {
             clip: true
             spacing: units.nailUnit
 
-            model: DocumentAnnotationsModel {
-                id: docAnnotationsModel
-
-                function update() {
-                    if (searchFilter.text == '') {
-                        searchFields = [];
-                    } else {
-                        searchFields = fieldNames;
-                    }
-                    searchString = searchFilter.text
-                    select();
-                }
-
-                Component.onCompleted: update()
-            }
+            model: docAnnotationsModel
 
             headerPositioning: ListView.OverlayHeader
             header: Rectangle {
@@ -276,15 +287,48 @@ Rectangle {
 
             onClicked: {
                 var sItem = annotationsList.currentItem;
-                var project = (sItem.project != '')?("[" + sItem.project + "]"):''
+                var document = (sItem.document != '')?(" [" + sItem.document + "]"):''
                 var labels = (sItem.labels != '')?(qsTr('Etiquetes: ') + sItem.labels + "\n"):''
                 var created = (sItem.created != '')?(qsTr('Creada: ') + sItem.created + "\n"):''
-                var start = (sItem.start != '')?(qsTr('Inici: ') + sItem.start + "\n"):''
-                var end = (sItem.end != '')?(qsTr('Final: ') + sItem.end + "\n"):''
                 var state = qsTr('Estat: ') + sItem.state
-                documentAnnotationSelected(sItem.title + project, created + labels + start + end + state + sItem.desc)
+
+                // Time marks
+                var start = (typeof sItem.start !== 'undefined')?sItem.start:''
+                var end = (typeof sItem.end !== 'undefined')?sItem.end:''
+
+                // Another table
+                var contents = sItem.contents
+                var hash = sItem.hash
+                var source = sItem.source
+
+                var annotId = simpleAnnotationsModel.newAnnotation(sItem.title + document, created + labels + state + sItem.desc, 'ImportManager');
+                if (annotId > -1) {
+                    if (start !== '') {
+                        marksModel.insertObject({annotation: annotId, markType: 'start', label: 'ImportManager', timeMark: start});
+                    }
+                    if (end !== '') {
+                        marksModel.insertObject({annotation: annotId, markType: 'end', label: 'ImportManager', timeMark: end});
+                    }
+
+                    // Add contents to a special table
+                    // *** Still to be built ***
+
+                    annotationCreated(annotId);
+                    deleteAfterImportDialog.open();
+                }
             }
         }
+    }
+
+    MessageDialog {
+        id: deleteAfterImportDialog
+
+        title: qsTr("Eliminar anotació")
+        text: qsTr("S'ha importat l'anotació dins la nova versió de la base de dades. Vols esborrar l'anotació de la versió anterior?")
+
+        standardButtons: StandardButton.Yes | StandardButton.No
+
+        onYes: removeSelectedAnnotation()
     }
 
     function removeSelectedAnnotation() {

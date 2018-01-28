@@ -317,9 +317,9 @@ Common.ThreePanesNavigator {
                 target: secondPaneLoader.item
                 ignoreUnknownSignals: true
 
-                onExtendedAnnotationSelected: {
-                    annotationsModel.newAnnotation(title, desc, 'ImportManager');
-                    secondPaneLoader.item.removeSelectedAnnotation();
+                onAnnotationCreated: {
+                    lastSelectedAnnotation = identifier;
+                    annotationsModel.update();
                 }
             }
 

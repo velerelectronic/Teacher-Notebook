@@ -1,11 +1,12 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.3
+import QtQuick.Dialogs 1.2
 import 'qrc:///common' as Common
 
 Rectangle {
     id: extendedImporter
 
-    signal extendedAnnotationSelected(string title, string desc)
+    signal annotationCreated(int identifier)
 
     property string selectedAnnotationId: ""
 
@@ -13,6 +14,30 @@ Rectangle {
 
     Common.UseUnits {
         id: units
+    }
+
+    SimpleAnnotationsModel {
+        id: simpleAnnotationsModel
+    }
+
+    AnnotationTimeMarksModel {
+        id: marksModel
+    }
+
+    ExtendedAnnotationsModel {
+        id: extendedModel
+
+        function update() {
+            if (searchFilter.text == '') {
+                searchFields = [];
+            } else {
+                searchFields = fieldNames;
+            }
+            searchString = searchFilter.text
+            select();
+        }
+
+        Component.onCompleted: update()
     }
 
     ColumnLayout {
@@ -36,21 +61,7 @@ Rectangle {
             clip: true
             spacing: units.nailUnit
 
-            model: ExtendedAnnotationsModel {
-                id: extendedModel
-
-                function update() {
-                    if (searchFilter.text == '') {
-                        searchFields = [];
-                    } else {
-                        searchFields = fieldNames;
-                    }
-                    searchString = searchFilter.text
-                    select();
-                }
-
-                Component.onCompleted: update()
-            }
+            model: extendedModel
 
             headerPositioning: ListView.OverlayHeader
             header: Rectangle {
@@ -216,15 +227,39 @@ Rectangle {
 
             onClicked: {
                 var sItem = annotationsList.currentItem;
-                var project = (sItem.project != '')?("[" + sItem.project + "]"):''
+                var project = (sItem.project != '')?(" [" + sItem.project + "]"):''
                 var labels = (sItem.labels != '')?(qsTr('Etiquetes: ') + sItem.labels + "\n"):''
                 var created = (sItem.created != '')?(qsTr('Creada: ') + sItem.created + "\n"):''
-                var start = (sItem.start != '')?(qsTr('Inici: ') + sItem.start + "\n"):''
-                var end = (sItem.end != '')?(qsTr('Final: ') + sItem.end + "\n"):''
+                var start = (typeof sItem.start !== 'undefined')?sItem.start:''
+                var end = (typeof sItem.end !== 'undefined')?sItem.end:''
                 var state = qsTr('Estat: ') + sItem.state
-                extendedAnnotationSelected(sItem.title + project, created + labels + start + end + state + sItem.desc)
+
+                var annotId = simpleAnnotationsModel.newAnnotation(sItem.title + project, created + labels + state + sItem.desc, 'ImportManager');
+                if (annotId > -1) {
+                    if (start !== '') {
+                        marksModel.insertObject({annotation: annotId, markType: 'start', label: 'ImportManager', timeMark: start});
+                    }
+                    if (end !== '') {
+                        marksModel.insertObject({annotation: annotId, markType: 'end', label: 'ImportManager', timeMark: end});
+                    }
+
+                    annotationCreated(annotId);
+                    deleteAfterImportDialog.open()
+                }
             }
         }
+    }
+
+
+    MessageDialog {
+        id: deleteAfterImportDialog
+
+        title: qsTr("Eliminar anotació")
+        text: qsTr("S'ha importat l'anotació dins la nova versió de la base de dades. Vols esborrar l'anotació de la versió anterior?")
+
+        standardButtons: StandardButton.Yes | StandardButton.No
+
+        onYes: removeSelectedAnnotation()
     }
 
     function removeSelectedAnnotation() {

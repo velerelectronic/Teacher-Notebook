@@ -69,6 +69,7 @@ Item {
 
             spacing: units.nailUnit
 
+            snapMode: ListView.SnapToItem
             headerPositioning: ListView.OverlayHeader
             header: Loader {
                 id: headerLoader

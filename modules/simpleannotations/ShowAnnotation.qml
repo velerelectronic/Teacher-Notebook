@@ -13,7 +13,6 @@ import 'qrc:///editors' as Editors
 import 'qrc:///modules/documents' as Documents
 import 'qrc:///modules/calendar' as Calendar
 import 'qrc:///modules/files' as Files
-import 'qrc:///modules/connections' as AnnotationsConnections
 
 Rectangle {
     id: showAnnotationItem
@@ -456,28 +455,6 @@ Rectangle {
                                     text: model.markType
                                 }
                             }
-                        }
-                    }
-                }
-
-                Common.BasicSection {
-                    width: partsList.width
-                    padding: units.fingerUnit
-                    captionSize: units.readUnit
-                    caption: qsTr('Hi referencien')
-
-                    AnnotationsConnections.AnnotationConnections {
-                        id: annotationsReversedConnectionsItem
-
-                        reversedConnections: true
-                        annotationId: showAnnotationItem.identifier
-
-                        width: parent.width
-                        height: requiredHeight
-
-                        onAnnotationSelected: {
-                            annotationPreviewDialog.openAnnotationPreview(annotation);
-                            //showAnnotationItem.annotationSelected(annotation);
                         }
                     }
                 }
