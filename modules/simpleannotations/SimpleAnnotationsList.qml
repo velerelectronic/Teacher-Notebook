@@ -238,7 +238,9 @@ Common.ThreePanesNavigator {
                                             time2 = "";
                                         } else {
                                             time0 = qsTr("A les");
-                                            time1 = updated.getHours() + ":" + updated.getMinutes()
+                                            var h = updated.getHours()
+                                            var m = updated.getMinutes()
+                                            time1 = h + ":" + ((m<10)?'0':'') + m
                                             time2 = ""
                                         }
                                     }

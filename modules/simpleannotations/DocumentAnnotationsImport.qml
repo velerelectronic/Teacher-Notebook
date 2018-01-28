@@ -333,7 +333,7 @@ Rectangle {
 
     function removeSelectedAnnotation() {
         if (selectedAnnotationId > -1) {
-//            docAnnotationsModel.removeObject(selectedAnnotationId);
+            docAnnotationsModel.removeObject(selectedAnnotationId);
             docAnnotationsModel.update();
             annotationsList.currentIndex = -1;
             selectedAnnotationId = -1;
