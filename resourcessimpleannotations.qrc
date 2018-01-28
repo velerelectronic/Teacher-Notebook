@@ -4,5 +4,11 @@
         <file>modules/simpleannotations/SimpleAnnotationsModel.qml</file>
         <file>modules/simpleannotations/ExtendedAnnotationsModel.qml</file>
         <file>modules/simpleannotations/ExtendedAnnotationsImport.qml</file>
+        <file>modules/simpleannotations/DocumentAnnotationsImport.qml</file>
+        <file>modules/simpleannotations/DocumentAnnotationsModel.qml</file>
+        <file>modules/simpleannotations/AnnotationTimeMarksModel.qml</file>
+        <file>modules/simpleannotations/ShowAnnotation.qml</file>
+        <file>modules/simpleannotations/StateDisplay.qml</file>
+        <file>modules/simpleannotations/TimeMarkEditor.qml</file>
     </qresource>
 </RCC>

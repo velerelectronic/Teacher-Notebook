@@ -146,6 +146,20 @@ Item {
         visibleNavigatorArea.state = newstate;
     }
 
+    function setFirstPaneSource(url, properties) {
+        return firstPaneLoader.setSource(url, properties);
+    }
+
+    function setSecondPaneSource(url, properties) {
+        return secondPaneLoader.setSource(url, properties);
+    }
+
+    function setThirdPaneSource(url, properties) {
+        return thirdPaneLoader.setSource(url, properties);
+
+    }
+
+
     Component.onCompleted: {
         console.log('Three pane layout');
     }

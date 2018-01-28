@@ -1,6 +1,7 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.3
 import 'qrc:///common' as Common
+import 'qrc:///modules/basic' as Basic
 
 Common.ThreePanesNavigator {
     id: simpleAnnotationsListBaseItem
@@ -8,8 +9,14 @@ Common.ThreePanesNavigator {
     property int lastSelectedAnnotation: -1
     property Component secondComponent
 
+    signal openAnnotation(int identifier)
+
     Common.UseUnits {
         id: units
+    }
+
+    AnnotationTimeMarksModel {
+        id: timeMarksModel
     }
 
     SimpleAnnotationsModel {
@@ -17,7 +24,7 @@ Common.ThreePanesNavigator {
 
         property var today: new Date()
 
-        sort: 'modified DESC'
+        sort: 'updated DESC'
 
         function update() {
             var today = new Date();
@@ -40,6 +47,8 @@ Common.ThreePanesNavigator {
     firstPane: Common.NavigationPane {
         color: Qt.darker('yellow', 1.4)
 
+        onClosePane: openPane('first')
+
         Common.GeneralListView {
             id: annotationsListView
 
@@ -47,8 +56,65 @@ Common.ThreePanesNavigator {
 
             model: annotationsModel
 
-            toolBar: Rectangle {
+            toolBarHeight: (units.fingerUnit + units.nailUnit) * 2
 
+            toolBar: Item {
+                Basic.ButtonsRow {
+                    id: annotationsListButtons
+
+                    color: '#AAFFAA'
+                    clip: true
+
+                    anchors.fill: parent
+
+                    buttonsSpacing: units.fingerUnit
+
+                    Item {
+                        height: annotationsListButtons.height
+                        width: annotationsListButtons.height
+                    }
+
+                    Common.SearchBox {
+                        id: searchBox
+
+                        height: annotationsListButtons.height
+                        width: annotationsListButtons.width / 2
+
+                        text: docAnnotationsRect.searchString
+
+                        onIntroPressed: {
+                            annotationsModel.searchFields = annotationsModel.fieldNames;
+                            annotationsModel.searchString = text;
+                            annotationsModel.update();
+                        }
+                    }
+
+                    Text {
+                        height: annotationsListButtons.height
+                        width: Math.max(contentWidth, units.fingerUnit * 2)
+                        verticalAlignment: Text.AlignVCenter
+                        font.pixelSize: units.readUnit
+                        text: {
+                            var date = new Date();
+                            date.fromYYYYMMDDFormat(selectedDate);
+                            return (filterPeriod)?(date.toLongDate()):'';
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: annotationsListOptionsDialog.open();
+                        }
+                    }
+
+                    Common.ImageButton {
+                        height: annotationsListButtons.height
+                        width: height
+
+                        image: 'check-mark-303498'
+                        onClicked: {
+                            annotationsView2.toggleSelection()
+                        }
+                    }
+                }
             }
 
             headingBar: Rectangle {
@@ -134,19 +200,52 @@ Common.ThreePanesNavigator {
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         font.pixelSize: units.readUnit
                         text: {
-                            var updated = new Date(Date.parse(model.modified));
-                            var diff = updated.getTime() - annotationsModel.today.getTime();
-                            var years = diff / (365 * 24 * 60 * 60 * 1000);
-                            if (years >= 1) {
-                                return qsTr("Fa ") + Math.floor(years) + qsTr(" i ") + Math.floor((years - Math.floor(years)) * 365) + qsTr(" dies");
+                            var updated = new Date(Date.parse(model.updated));
+                            var diff = annotationsModel.today.getTime() - updated.getTime();
+
+                            var years = 0;
+                            var months = 0;
+                            var days = 0;
+                            var hours = 0;
+
+                            hours = Math.floor(diff / (60 * 60 * 1000));
+
+                            days = Math.floor(hours / 24);
+                            hours = hours % 24;
+
+                            months = Math.floor(days / 30);
+                            years = Math.floor(days / 365);
+                            days = days % 30;
+
+                            var time0 = qsTr("Fa");
+                            var time1 = "";
+                            var time2 = "";
+
+                            if (years >=1) {
+                                time1 = years + qsTr(" anys");
+                                time2 = months + qsTr(" mesos");
                             } else {
-                                var days = diff / (24 * 60 * 60 * 1000);
-                                if (days >= 1) {
-                                    return qsTr("Fa ") + Math.floor(days);
+                                if (months >=1) {
+                                    time1 = months + qsTr(" mesos");
+                                    time2 = days + qsTr(" dies");
+                                } else {
+                                    if (days >=1) {
+                                        time1 = days + qsTr(" dies");
+                                        time2 = hours + qsTr(" hores");
+                                    } else {
+                                        if (hours >= 1) {
+                                            time1 = hours + qsTr(" hores");
+                                            time2 = "";
+                                        } else {
+                                            time0 = qsTr("A les");
+                                            time1 = updated.getHours() + ":" + updated.getMinutes()
+                                            time2 = ""
+                                        }
+                                    }
                                 }
                             }
 
-                            return updated.toISOString() + "\n" + model.modified;
+                            return [time0, time1, time2].join(" ");
                         }
                     }
                     Text {
@@ -163,6 +262,7 @@ Common.ThreePanesNavigator {
                     anchors.fill: parent
                     onClicked: {
                         lastSelectedAnnotation = model.id;
+                        openAnnotation(lastSelectedAnnotation);
                     }
                 }
             }
@@ -192,6 +292,7 @@ Common.ThreePanesNavigator {
                 size: units.fingerUnit * 2
                 imageSource: 'box-24557'
                 onClicked: openImporter()
+                onPressAndHold: openImporter2()
             }
         }
     }
@@ -221,6 +322,15 @@ Common.ThreePanesNavigator {
                     secondPaneLoader.item.removeSelectedAnnotation();
                 }
             }
+
+            Connections {
+                target: simpleAnnotationsListBaseItem
+
+                onOpenAnnotation: {
+                    secondPaneLoader.setSource("ShowAnnotation.qml", {identifier: identifier});
+                    openPane("second");
+                }
+            }
         }
     }
 
@@ -234,7 +344,7 @@ Common.ThreePanesNavigator {
     }
 
     function openImporter2() {
-        secondComponent = Qt.createComponent("DocumentAnnotationsImporter.qml");
+        secondComponent = Qt.createComponent("DocumentAnnotationsImport.qml");
         openPane('second');
     }
 }

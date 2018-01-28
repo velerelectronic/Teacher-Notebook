@@ -1,13 +1,14 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.3
+import ImageItem 1.0
 import 'qrc:///common' as Common
 
 Rectangle {
-    id: extendedImporter
+    id: docAnnotationsImporter
 
-    signal extendedAnnotationSelected(string title, string desc)
+    signal documentAnnotationSelected(string title, string desc)
 
-    property string selectedAnnotationId: ""
+    property int selectedAnnotationId: -1
 
     color: 'green'
 
@@ -24,7 +25,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: units.fingerUnit
 
-            onTextChanged: extendedModel.update()
+            onTextChanged: docAnnotationsModel.update()
         }
 
         ListView {
@@ -36,8 +37,8 @@ Rectangle {
             clip: true
             spacing: units.nailUnit
 
-            model: ExtendedAnnotationsModel {
-                id: extendedModel
+            model: DocumentAnnotationsModel {
+                id: docAnnotationsModel
 
                 function update() {
                     if (searchFilter.text == '') {
@@ -66,7 +67,7 @@ Rectangle {
                     spacing: units.nailUnit
 
                     Text {
-                        Layout.preferredWidth: parent.width / 5
+                        Layout.preferredWidth: parent.width / 7
                         Layout.fillHeight: true
 
                         font.pixelSize: units.readUnit
@@ -88,7 +89,7 @@ Rectangle {
                         text: qsTr('Descripció')
                     }
                     Text {
-                        Layout.preferredWidth: parent.width / 5
+                        Layout.preferredWidth: parent.width / 7
                         Layout.fillHeight: true
 
                         font.pixelSize: units.readUnit
@@ -96,10 +97,10 @@ Rectangle {
                         verticalAlignment: Text.AlignVCenter
                         font.bold: true
 
-                        text: qsTr('Projecte i etiquetes')
+                        text: qsTr('Document i etiquetes')
                     }
                     Text {
-                        Layout.preferredWidth: parent.width / 5
+                        Layout.preferredWidth: parent.width / 7
                         Layout.fillHeight: true
 
                         font.pixelSize: units.readUnit
@@ -110,7 +111,30 @@ Rectangle {
                         text: qsTr('Principi i final')
                     }
                     Text {
-                        Layout.preferredWidth: parent.width / 5
+                        Layout.preferredWidth: parent.width / 7
+                        Layout.fillHeight: true
+                        verticalAlignment: Text.AlignVCenter
+                        font.bold: true
+
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
+                        text: qsTr('Font i hash')
+                    }
+                    Text {
+                        Layout.preferredWidth: parent.width / 7
+                        Layout.fillHeight: true
+                        verticalAlignment: Text.AlignVCenter
+                        font.bold: true
+
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
+                        text: qsTr('Continguts')
+                    }
+
+                    Text {
+                        Layout.preferredWidth: parent.width / 7
                         Layout.fillHeight: true
                         verticalAlignment: Text.AlignVCenter
                         font.bold: true
@@ -134,12 +158,15 @@ Rectangle {
                 color: (ListView.isCurrentItem)?'yellow':'white'
                 property string title: model.title
                 property string desc: model.desc
-                property string project: model.project
+                property string document: model.document
                 property string labels: model.labels
                 property string start: model.start
                 property string end: model.end
                 property string state: model.state
                 property string created: model.created
+                property string contents: model.contents
+                property string hash: model.hash
+                property string source: model.source
 
                 RowLayout {
                     anchors.fill: parent
@@ -147,7 +174,7 @@ Rectangle {
                     spacing: units.nailUnit
 
                     Text {
-                        Layout.preferredWidth: parent.width / 5
+                        Layout.preferredWidth: parent.width / 7
                         Layout.fillHeight: true
 
                         font.pixelSize: units.readUnit
@@ -167,17 +194,17 @@ Rectangle {
                         text: model.desc
                     }
                     Text {
-                        Layout.preferredWidth: parent.width / 5
+                        Layout.preferredWidth: parent.width / 7
                         Layout.fillHeight: true
 
                         font.pixelSize: units.readUnit
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         elide: Text.ElideRight
 
-                        text: model.project + "\n" + model.labels
+                        text: model.document + "\n# " + model.labels
                     }
                     Text {
-                        Layout.preferredWidth: parent.width / 5
+                        Layout.preferredWidth: parent.width / 7
                         Layout.fillHeight: true
 
                         font.pixelSize: units.readUnit
@@ -187,7 +214,40 @@ Rectangle {
                         text: model.start + " -> " + model.end
                     }
                     Text {
-                        Layout.preferredWidth: parent.width / 5
+                        Layout.preferredWidth: parent.width / 7
+                        Layout.fillHeight: true
+
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
+
+                        text: model.source + "\n" + model.hash
+                    }
+
+                    ImageFromBlob {
+                        id: imagePreviewer
+
+                        Layout.preferredWidth: parent.width / 7
+                        Layout.fillHeight: true
+
+                        data: model.contents
+                    }
+
+                    /*
+                    Text {
+                        Layout.preferredWidth: parent.width / 7
+                        Layout.fillHeight: true
+
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        elide: Text.ElideRight
+
+                        text: model.contents
+                    }
+                    */
+
+                    Text {
+                        Layout.preferredWidth: parent.width / 7
                         Layout.fillHeight: true
 
                         font.pixelSize: units.readUnit
@@ -201,7 +261,7 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        selectedAnnotationId = model[extendedModel.primaryKey];
+                        selectedAnnotationId = model[docAnnotationsModel.primaryKey];
                         annotationsList.currentIndex = model.index;
                     }
                 }
@@ -222,17 +282,17 @@ Rectangle {
                 var start = (sItem.start != '')?(qsTr('Inici: ') + sItem.start + "\n"):''
                 var end = (sItem.end != '')?(qsTr('Final: ') + sItem.end + "\n"):''
                 var state = qsTr('Estat: ') + sItem.state
-                extendedAnnotationSelected(sItem.title + project, created + labels + start + end + state + sItem.desc)
+                documentAnnotationSelected(sItem.title + project, created + labels + start + end + state + sItem.desc)
             }
         }
     }
 
     function removeSelectedAnnotation() {
-        if (selectedAnnotationId != '') {
-            extendedModel.removeObject(selectedAnnotationId);
-            extendedModel.update();
+        if (selectedAnnotationId > -1) {
+//            docAnnotationsModel.removeObject(selectedAnnotationId);
+            docAnnotationsModel.update();
             annotationsList.currentIndex = -1;
-            selectedAnnotationId = "";
+            selectedAnnotationId = -1;
         }
     }
 }

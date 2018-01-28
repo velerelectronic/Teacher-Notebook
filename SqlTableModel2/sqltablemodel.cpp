@@ -27,8 +27,11 @@ SqlTableModel2::SqlTableModel2(QObject *parent, QSqlDatabase db) :
 
 bool SqlTableModel2::createTable() {
     QSqlQueryModel model(this);
-    model.setQuery(QSqlQuery("CREATE TABLE IF NOT EXISTS " + innerTableName + " (" + innerCreationString + ")"));
-    qDebug() << model.lastError();
+    if (innerCreationString != "") {
+        model.setQuery(QSqlQuery("CREATE TABLE IF NOT EXISTS " + innerTableName + " (" + innerCreationString + ")"));
+        qDebug() << "CREATE TABLE IF NOT EXISTS " + innerTableName + " (" + innerCreationString + ")";
+        qDebug() << "LAST--" << model.lastError();
+    }
     return true;
 }
 
@@ -217,6 +220,7 @@ QVariant SqlTableModel2::insertObject(const QVariantMap &object) {
 
     qDebug() << "INSERT" << query.lastQuery();
     qDebug() << object;
+    qDebug() << query.lastError();
     updated();
     qDebug() << "Last ID " << lastId;
     return lastId;
@@ -507,6 +511,7 @@ void SqlTableModel2::setSort(const QString &sort) {
 
 void SqlTableModel2::setTableName(const QString &tableName) {
     innerTableName = tableName;
+    createTable();
     tableNameChanged();
 
     setSort(0,Qt::DescendingOrder);
