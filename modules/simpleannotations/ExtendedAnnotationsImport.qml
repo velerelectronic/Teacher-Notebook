@@ -215,6 +215,9 @@ Rectangle {
                         selectedAnnotationId = model[extendedModel.primaryKey];
                         annotationsList.currentIndex = model.index;
                     }
+                    onPressAndHold: {
+                        deleteOneAnnotationDialog.openDeleteOneAnnotation(model[extendedModel.primaryKey]);
+                    }
                 }
             }
         }
@@ -262,6 +265,24 @@ Rectangle {
         onYes: removeSelectedAnnotation()
     }
 
+    MessageDialog {
+        id: deleteOneAnnotationDialog
+
+        property string annotId: ""
+
+        title: qsTr("Eliminar anotació")
+        text: qsTr("Vols esborrar l'anotació sense possibilitat d'importar-la?")
+
+        standardButtons: StandardButton.Yes | StandardButton.No
+
+        function openDeleteOneAnnotation(annotId) {
+            deleteOneAnnotationDialog.annotId = annotId;
+            open();
+        }
+
+        onYes: removeOneAnnotation(deleteOneAnnotationDialog.annotId)
+    }
+
     function removeSelectedAnnotation() {
         if (selectedAnnotationId != '') {
             extendedModel.removeObject(selectedAnnotationId);
@@ -270,4 +291,14 @@ Rectangle {
             selectedAnnotationId = "";
         }
     }
+
+    function removeOneAnnotation(annotId) {
+        if (annotId != "") {
+            extendedModel.removeObject(annotId);
+            extendedModel.update();
+            annotationsList.currentIndex = -1;
+            selectedAnnotationId = "";
+        }
+    }
+
 }

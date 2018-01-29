@@ -142,6 +142,7 @@ Window {
         Component.onCompleted: {
             mainNavigator.addPage('cards/CardsList', {}, qsTr('Principal'));
             mainNavigator.addPage('simpleannotations/SimpleAnnotationsList', {}, qsTr('Anotacions simples'));
+            mainNavigator.addPage('simpleannotations/AnnotationsCalendar', {}, qsTr("Calendari d'anotacions"));
             //mainNavigator.addPage('annotations2/Example', {}, qsTr('Tres taulers'));
             mainNavigator.addPage('annotations2/AnnotationListAndShow', {}, qsTr('Tres taulers'));
             //mainNavigator.addPage('files/FilesystemBrowser', {}, qsTr('Sistema de fitxers'));

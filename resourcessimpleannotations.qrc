@@ -10,5 +10,7 @@
         <file>modules/simpleannotations/ShowAnnotation.qml</file>
         <file>modules/simpleannotations/StateDisplay.qml</file>
         <file>modules/simpleannotations/TimeMarkEditor.qml</file>
+        <file>modules/simpleannotations/AnnotationsCalendar.qml</file>
+        <file>modules/simpleannotations/AnnotationsWithTimeMarksModel.qml</file>
     </qresource>
 </RCC>

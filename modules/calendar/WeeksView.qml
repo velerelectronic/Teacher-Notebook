@@ -64,11 +64,12 @@ Rectangle {
 
             z: 1
             property int daySize: Math.floor(width / 7)
+            property int dayHeight: Math.floor(height / weeksNumber)
 
             interactive: weeksViewItem.interactive
 
             cellWidth: daySize
-            cellHeight: daySize
+            cellHeight: dayHeight
 
             function setDates() {
                 firstMonthDate = new Date();

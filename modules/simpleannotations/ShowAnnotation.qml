@@ -1,4 +1,4 @@
-import QtQuick 2.5
+import QtQuick 2.7
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.2
 import QtQuick.Dialogs 1.2
@@ -37,6 +37,8 @@ Rectangle {
 
     color: 'transparent'
 
+    onIdentifierChanged: getText()
+
     Common.UseUnits {
         id: units
     }
@@ -52,7 +54,39 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: units.nailUnit
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: Math.max(titleText.contentHeight, units.fingerUnit * 2) + 2 * units.nailUnit
+
+            color: 'green'
+
+            Text {
+                id: titleText
+
+                anchors.fill: parent
+                padding: units.nailUnit
+
+                color: 'white'
+                font.bold: true
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: units.readUnit
+                elide: Text.ElideRight
+                text: showAnnotationItem.title
+
+                Common.ImageButton {
+                    id: changeTitleButton
+                    anchors {
+                        top: parent.top
+                        right: parent.right
+                    }
+                    size: units.fingerUnit
+                    image: 'edit-153612'
+                    onClicked: titleDescEditor.openTitleEditor()
+                }
+            }
+        }
 
         Common.HorizontalStaticMenu {
             id: optionsMenu
@@ -105,25 +139,6 @@ Rectangle {
 
                             columnSpacing: units.nailUnit * 2
                             rowSpacing: units.nailUnit * 2
-
-                            Text {
-                                width: headerData.width / 2
-                                height: units.fingerUnit
-                                font.pixelSize: units.readUnit
-                                text: qsTr('Anotació:')
-                            }
-                            Text {
-                                Layout.fillWidth: true
-                                height: contentHeight
-                                verticalAlignment: Text.AlignVCenter
-                                font.pixelSize: units.readUnit
-                                elide: Text.ElideRight
-                                text: showAnnotationItem.title
-                            }
-                            Item {
-                                width: units.fingerUnit * 2
-                                height: units.fingerUnit
-                            }
 
                             Text {
                                 font.pixelSize: units.readUnit
@@ -202,33 +217,9 @@ Rectangle {
 
                     ColumnLayout {
                         width: parent.width
-                        height: titleText.height + barTitleSeparator.height + contentText.height
+                        height: contentText.height + contentImage.height
                         spacing: 0
-                        Text {
-                            id: titleText
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: Math.max(contentHeight, units.fingerUnit)
-                            font.pixelSize: units.glanceUnit
-                            font.bold: true
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            Common.ImageButton {
-                                id: changeTitleButton
-                                anchors {
-                                    top: parent.top
-                                    right: parent.right
-                                }
-                                size: units.fingerUnit
-                                image: 'edit-153612'
-                                onClicked: titleDescEditor.openTitleEditor()
-                            }
-                            text: showAnnotationItem.title
-                        }
-                        Rectangle {
-                            id: barTitleSeparator
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 2
-                            color: 'black'
-                        }
+
                         Text {
                             id: contentText
                             property int requiredHeight: Math.max(contentHeight, units.fingerUnit) + addDescriptionButton.size + units.fingerUnit
@@ -344,7 +335,7 @@ Rectangle {
                         id: timeMarksList
 
                         width: parent.width
-                        height: contentItem.height
+                        height: requiredHeight
 
                         model: AnnotationTimeMarksModel {
                             id: marksModel
@@ -679,7 +670,7 @@ Rectangle {
             target: timeEditor.mainItem
 
             onSaveTimeMark: {
-                marksModel.newTimeMark(markType, label, timeMark);
+                marksModel.newTimeMark(timeMark, label, markType);
                 timeEditor.close();
             }
         }
