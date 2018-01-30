@@ -340,6 +340,9 @@ Rectangle {
                         model: AnnotationTimeMarksModel {
                             id: marksModel
 
+                            sort: 'timeMark ASC'
+                            filters: ['annotation=?']
+
                             function newTimeMark(mark, label, type) {
                                 insertObject({annotation: identifier, timeMark: mark, label: label, markType: type});
                                 update();
@@ -347,7 +350,6 @@ Rectangle {
 
                             function update() {
                                 console.log('uppt');
-                                marksModel.filters = ['annotation=?']
                                 marksModel.bindValues = [identifier];
                                 marksModel.select();
                             }
@@ -445,6 +447,34 @@ Rectangle {
 
                                     text: model.markType
                                 }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onPressAndHold: deleteTimeMarkDialog.openDeleteConfirmation(model.id, model.timeMark)
+                            }
+                        }
+
+                        MessageDialog {
+                            id: deleteTimeMarkDialog
+
+                            property int markId
+                            property string timeMark
+
+                            title: qsTr("Esborra marca de temps");
+                            text: qsTr("S'eliminarà la marca de temps «") + timeMark + qsTr("». Vols continuar?")
+
+                            standardButtons: StandardButton.Ok | StandardButton.Cancel
+
+                            function openDeleteConfirmation(markId, timeMark) {
+                                deleteTimeMarkDialog.markId = markId;
+                                deleteTimeMarkDialog.timeMark = timeMark;
+                                open();
+                            }
+
+                            onAccepted: {
+                                marksModel.removeObject(deleteTimeMarkDialog.markId);
+                                marksModel.update();
                             }
                         }
                     }

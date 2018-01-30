@@ -36,13 +36,12 @@ Rectangle {
             RowLayout {
                 anchors.fill: parent
                 anchors.margins: units.nailUnit
-                spacing: units.nailUnit
 
                 Repeater {
                     model: [qsTr('dl'), qsTr('dt'), qsTr('dc'), qsTr('dj'), qsTr('dv'), qsTr('ds'), qsTr('dg')]
 
                     Text {
-                        Layout.fillWidth: true
+                        Layout.preferredWidth: weeksList.daySize
                         Layout.fillHeight: true
 
                         font.pixelSize: units.readUnit

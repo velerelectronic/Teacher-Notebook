@@ -44,61 +44,128 @@ Common.ThreePanesNavigator {
                 columns: (isHorizontal)?2:1
                 rows: (isHorizontal)?1:2
 
-                Calendar.WeeksView {
-                    id: weeksCalendarView
-
+                Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    weeksNumber: 5
-                    interactive: false
-                    daysOverWidget: true
+                    ColumnLayout {
+                        anchors.fill: parent
 
-                    subWidget: Rectangle {
-                        id: dayCell
+                        Item {
+                            id: selectorsRow
 
-                        property int day
-                        property int month
-                        property int year
-                        property string dateStr
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: units.fingerUnit
 
-                        AnnotationsWithTimeMarksModel {
-                            id: marksModel
-                        }
+                            RowLayout {
+                                anchors.fill: parent
+                                spacing: units.nailUnit
 
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                lastSelectedDate = dayCell.dateStr;
+                                Common.ImageButton {
+                                    Layout.preferredWidth: size
+                                    size: units.fingerUnit
+                                    image: 'arrow-145769'
+
+                                    onClicked: {
+                                        weeksCalendarView.decreaseWeek();
+                                        referenceDate.text = weeksCalendarView.firstMonthDate.toShortReadableDate();
+                                    }
+                                }
+                                Text {
+                                    id: referenceDate
+
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+
+                                    font.pixelSize: units.readUnit
+                                    font.bold: true
+
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
+                                    text: {
+                                        return weeksCalendarView.initialDate.toShortReadableDate();
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: weeksCalendarView.setTodayDate()
+                                    }
+                                }
+                                Common.ImageButton {
+                                    Layout.preferredWidth: size
+                                    size: units.fingerUnit
+                                    image: 'arrow-145766'
+
+                                    onClicked: {
+                                        weeksCalendarView.advanceWeek();
+                                        referenceDate.text = weeksCalendarView.initialDate.toShortReadableDate();
+                                    }
+                                }
                             }
+
                         }
 
-                        function dateUpdated() {
-                            var date = new Date(year, month, day, 0, 0, 0, 0);
-                            dayCell.dateStr = date.toYYYYMMDDFormat();
-                            getTimeMarks(dayCell.dateStr);
-                        }
+                        Calendar.WeeksView {
+                            id: weeksCalendarView
 
-                        function getTimeMarks(dateStr) {
-                            marksModel.selectAnnotations(dateStr);
-                            var c = marksModel.count
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
 
-                            if (c == 0) {
-                                dayCell.color = 'white';
-                            } else {
-                                if (c == 1) {
-                                    dayCell.color = 'yellow';
-                                } else {
-                                    if (c>10) {
-                                        dayCell.color = 'red';
+                            weeksNumber: 5
+                            interactive: false
+                            daysOverWidget: true
+
+                            onSelectedDate: {
+                                var date = new Date(year, month, day, 0, 0, 0, 0);
+                                lastSelectedDate = date.toYYYYMMDDFormat();
+                            }
+
+                            subWidget: Rectangle {
+                                id: dayCell
+
+                                property int day
+                                property int month
+                                property int year
+                                property string dateStr
+
+                                border.color: '#D7DF01'
+                                border.width: (dateStr == lastSelectedDate)?units.nailUnit:0
+
+                                AnnotationsWithTimeMarksModel {
+                                    id: marksModel
+                                }
+
+                                function dateUpdated() {
+                                    var date = new Date(year, month, day, 0, 0, 0, 0);
+                                    dayCell.dateStr = date.toYYYYMMDDFormat();
+                                    getTimeMarks(dayCell.dateStr);
+                                }
+
+                                function getTimeMarks(dateStr) {
+                                    marksModel.selectAnnotations(dateStr);
+                                    var c = marksModel.count
+
+                                    if (c == 0) {
+                                        dayCell.color = 'white';
                                     } else {
-                                        dayCell.color = 'orange';
+                                        if (c == 1) {
+                                            dayCell.color = 'yellow';
+                                        } else {
+                                            if (c>10) {
+                                                dayCell.color = 'red';
+                                            } else {
+                                                dayCell.color = 'orange';
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+
 
                 Common.GeneralListView {
                     id: marksListView
