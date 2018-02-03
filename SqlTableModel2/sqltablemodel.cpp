@@ -318,6 +318,7 @@ bool SqlTableModel2::select(const QString &queryString) {
         ++filtersValues;
     }
 
+    qDebug() << query.lastQuery();
     bool result = query.exec();
     if (result) {
         setQuery(query);

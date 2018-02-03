@@ -18,7 +18,7 @@ Item {
     property Component listDelegate: null
     property Component selectionBox: null
 
-    property Component sectionDelegate: null
+    property Component sectionDelegate
     property string sectionProperty: ''
     property int sectionCriteria
     property alias delegate: innerListView.delegate
@@ -104,6 +104,7 @@ Item {
             }
 
             section.delegate: sectionDelegate
+
             section.property: sectionProperty
             section.criteria: sectionCriteria
 

@@ -18,6 +18,7 @@ Rectangle {
 
     property int requiredHeight: weeksHeader.height + weeksList.contentItem.height
     signal selectedDate(int day, int month, int year)
+    signal longSelectedDate(int day, int month, int year)
 
     Common.UseUnits {
         id: units
@@ -109,6 +110,7 @@ Rectangle {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: weeksViewItem.selectedDate(model.day, model.month, model.year)
+                        onPressAndHold: weeksViewItem.longSelectedDate(model.day, model.month, model.year)
                     }
 
                     Text {
@@ -188,6 +190,17 @@ Rectangle {
     function setTodayDate() {
         initialDate = new Date();
         updateContents();
+    }
+
+    function getFirstDate() {
+        var first = new Date(initialDate);
+        return first;
+    }
+
+    function getLastDate() {
+        var last = new Date(initialDate);
+        last.setDate(last.getDate() + weeksNumber * 7 - 1);
+        return last;
     }
 
     Component.onCompleted: updateContents()

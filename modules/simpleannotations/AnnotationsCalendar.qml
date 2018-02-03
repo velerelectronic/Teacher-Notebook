@@ -3,6 +3,8 @@ import QtQuick.Layouts 1.1
 import 'qrc:///common' as Common
 import 'qrc:///modules/calendar' as Calendar
 
+import "qrc:///common/FormatDates.js" as FormatDates
+
 Common.ThreePanesNavigator {
     id: annotationsCalendarBaseItem
 
@@ -14,11 +16,12 @@ Common.ThreePanesNavigator {
     property int lastSelectedMarkId: -1
     property int lastSelectedAnnotation: -1
 
-    onLastSelectedDateChanged: {
-        if (lastSelectedDate != "") {
-            console.log(lastSelectedDate);
-            mainMarksModel.selectAnnotations(lastSelectedDate);
-        }
+    SimpleAnnotationsModel {
+        id: annotationsModel
+    }
+
+    AnnotationTimeMarksModel {
+        id: mainTimeMarksModel
     }
 
     AnnotationsWithTimeMarksModel {
@@ -118,6 +121,28 @@ Common.ThreePanesNavigator {
                             daysOverWidget: true
 
                             onSelectedDate: {
+                                setLastSelectedDate(year, month, day);
+
+                                var start = getFirstDate().toYYYYMMDDFormat();
+                                var end = getLastDate().toYYYYMMDDFormat();
+
+                                mainMarksModel.selectAnnotationsBetweenDates(start, end);
+                            }
+
+                            onLongSelectedDate: {
+                                setLastSelectedDate(year, month, day);
+                                console.log(lastSelectedDate);
+                                var annotId = annotationsModel.newAnnotation(qsTr('Anotació per a ') + lastSelectedDate, '', 'Calendar');
+                                if (annotId > -1) {
+                                    var markId = mainTimeMarksModel.insertObject({annotation: annotId, timeMark: lastSelectedDate, markType: '', label: '' });
+                                    lastSelectedAnnotation = annotId;
+                                    if (markId > -1) {
+                                        lastSelectedMarkId = markId;
+                                    }
+                                }
+                            }
+
+                            function setLastSelectedDate(year, month, day) {
                                 var date = new Date(year, month, day, 0, 0, 0, 0);
                                 lastSelectedDate = date.toYYYYMMDDFormat();
                             }
@@ -224,6 +249,36 @@ Common.ThreePanesNavigator {
                         }
                     }
 
+                    sectionProperty: 'justDate'
+                    sectionCriteria: ViewSection.FullString
+                    sectionDelegate: sectionHeading
+
+                    Component {
+                        id: sectionHeading
+
+                        Rectangle {
+                            width: marksListView.width
+                            height: units.fingerUnit * 2
+
+                            color: 'gray'
+
+                            Text {
+                                anchors.fill: parent
+                                anchors.margins: units.nailUnit
+                                verticalAlignment: Text.AlignVCenter
+
+                                font.pixelSize: units.readUnit
+                                font.bold: true
+                                color: 'white'
+                                text: {
+                                    var date = new Date();
+                                    date.fromYYYYMMDDFormat(section);
+                                    return date.toLongDate();
+                                }
+                            }
+                        }
+                    }
+
                     delegate: Rectangle {
                         width: marksListView.width
                         height: units.fingerUnit * 4
@@ -241,7 +296,7 @@ Common.ThreePanesNavigator {
 
                                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                 font.pixelSize: units.readUnit
-                                text: model.timeMark
+                                text: model.timeMark + "->" + model.justDate
                             }
                             Text {
                                 Layout.fillHeight: true
