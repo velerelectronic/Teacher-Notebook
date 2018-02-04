@@ -106,7 +106,8 @@ Common.ThreePanesNavigator {
 
                                     onClicked: {
                                         weeksCalendarView.advanceWeek();
-                                        referenceDate.text = weeksCalendarView.initialDate.toShortReadableDate();
+                                        //referenceDate.text = weeksCalendarView.initialDate.toShortReadableDate();
+                                        referenceDate.text = weeksCalendarView.firstMonthDate.toShortReadableDate();
                                     }
                                 }
                             }
@@ -118,6 +119,8 @@ Common.ThreePanesNavigator {
 
                             Layout.fillWidth: true
                             Layout.fillHeight: true
+
+                            property string todayDate: { return (new Date()).toYYYYMMDDFormat(); }
 
                             weeksNumber: 5
                             interactive: false
@@ -138,6 +141,10 @@ Common.ThreePanesNavigator {
                                 lastSelectedDate = date.toYYYYMMDDFormat();
                             }
 
+                            onPeriodChanged: {
+                                marksListView.updateTimeMarksList();
+                            }
+
                             subWidget: Rectangle {
                                 id: dayCell
 
@@ -148,6 +155,14 @@ Common.ThreePanesNavigator {
 
                                 border.color: '#D7DF01'
                                 border.width: (dateStr == lastSelectedDate)?units.nailUnit:0
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    anchors.margins: units.nailUnit * 2
+                                    color: 'green'
+
+                                    visible: dateStr == weeksCalendarView.todayDate
+                                }
 
                                 AnnotationsWithTimeMarksModel {
                                     id: marksModel

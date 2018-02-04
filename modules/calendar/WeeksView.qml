@@ -17,6 +17,7 @@ Rectangle {
     property Component subWidget
 
     property int requiredHeight: weeksHeader.height + weeksList.contentItem.height
+    signal periodChanged()
     signal selectedDate(int day, int month, int year)
     signal longSelectedDate(int day, int month, int year)
 
@@ -75,7 +76,7 @@ Rectangle {
                 firstMonthDate = new Date();
                 firstMonthDate.setFullYear(initialDate.getFullYear());
                 firstMonthDate.setMonth(initialDate.getMonth());
-                firstMonthDate.setDate(initialDate.getDate()-initialDate.getDay()+1);
+                firstMonthDate.setDate(initialDate.getDate()-initialDate.getDay()-6);
 
                 var date = new Date(firstMonthDate.getFullYear(), firstMonthDate.getMonth(), firstMonthDate.getDate());
 
@@ -176,11 +177,13 @@ Rectangle {
     function advanceWeek() {
         initialDate.setDate(initialDate.getDate() + 7);
         weeksList.setDates();
+        periodChanged();
     }
 
     function decreaseWeek() {
         initialDate.setDate(initialDate.getDate() - 7);
         weeksList.setDates();
+        periodChanged();
     }
 
     function updateContents() {
@@ -190,6 +193,7 @@ Rectangle {
     function setTodayDate() {
         initialDate = new Date();
         updateContents();
+        periodChanged();
     }
 
     function getFirstDate() {

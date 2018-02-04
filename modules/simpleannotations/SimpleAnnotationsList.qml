@@ -89,29 +89,12 @@ Common.ThreePanesNavigator {
                         }
                     }
 
-                    Text {
-                        height: annotationsListButtons.height
-                        width: Math.max(contentWidth, units.fingerUnit * 2)
-                        verticalAlignment: Text.AlignVCenter
-                        font.pixelSize: units.readUnit
-                        text: {
-                            var date = new Date();
-                            date.fromYYYYMMDDFormat(selectedDate);
-                            return (filterPeriod)?(date.toLongDate()):'';
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: annotationsListOptionsDialog.open();
-                        }
-                    }
-
                     Common.ImageButton {
                         height: annotationsListButtons.height
                         width: height
 
                         image: 'check-mark-303498'
                         onClicked: {
-                            annotationsView2.toggleSelection()
                         }
                     }
                 }
