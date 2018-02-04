@@ -15,10 +15,11 @@ class SqlTableModel2 : public QSqlQueryModel
     Q_PROPERTY(QStringList bindValues READ bindValues WRITE setBindValues NOTIFY bindValuesChanged)
     Q_PROPERTY(QStringList calculatedFieldNames READ calculatedFieldNames WRITE setCalculatedFieldNames NOTIFY calculatedFieldNamesChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(QString creationString READ creationString WRITE setCreationString NOTIFY creationStringChanged)
     Q_PROPERTY(QStringList fieldNames READ fieldNames WRITE setFieldNames NOTIFY fieldNamesChanged)
     Q_PROPERTY(QStringList filters READ filters WRITE setFilters NOTIFY filtersChanged)
     Q_PROPERTY(QString groupBy READ groupBy WRITE setGroupBy NOTIFY groupByChanged)
-    Q_PROPERTY(QString creationString READ creationString WRITE setCreationString NOTIFY creationStringChanged)
+    Q_PROPERTY(QStringList initStatements READ initStatements WRITE setInitStatements NOTIFY initStatementsChanged)
     Q_PROPERTY(int limit READ limit WRITE setLimit NOTIFY limitChanged)
     Q_PROPERTY(QString primaryKey READ primaryKey WRITE setPrimaryKey NOTIFY primaryKeyChanged)
     Q_PROPERTY(QStringList searchFields READ searchFields WRITE setSearchFields NOTIFY searchFieldsChanged)
@@ -48,6 +49,7 @@ public:
     QStringList         &filters();
     QString             getFieldNameByIndex(int index);
     QString             &groupBy();
+    QStringList         initStatements() const;
     int                 limit();
     QString             primaryKey();
     QString             reference();
@@ -59,6 +61,7 @@ public:
     void                setFieldNames(const QStringList &fields);
     void                setFilters(const QStringList &);
     void                setGroupBy(const QString &);
+    void                setInitStatements(const QStringList &);
     void                setLimit(int);
     void                setPrimaryKey(const QString &);
     void                setReference(const QString &);
@@ -71,6 +74,7 @@ public:
 
     Q_INVOKABLE void        clear();
     Q_INVOKABLE bool        createTable();
+    Q_INVOKABLE bool        executeQuery();
     Q_INVOKABLE QVariantMap getObject(QString key);
     Q_INVOKABLE QVariantMap getObject(QString primaryField, QString key);
     Q_INVOKABLE QVariantMap getObjectInRow(int row) const;
@@ -103,6 +107,7 @@ signals:
     void fieldNamesChanged();
     void filtersChanged();
     void groupByChanged();
+    void initStatementsChanged();
     void limitChanged();
     void primaryKeyChanged();
     void referenceChanged();
@@ -123,6 +128,7 @@ private:
     QStringList             innerFieldNames;
     QStringList             innerFilters;
     QString                 innerGroupBy;
+    QStringList             innerInitStatements;
     int                     innerLimit;
     QString                 innerPrimaryKey;
     QString                 innerReference;

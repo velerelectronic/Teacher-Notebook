@@ -104,6 +104,11 @@ void SqlTableModel2::deselectAllObjects() {
     this->dataChanged(indexStart,indexEnd);
 }
 
+bool SqlTableModel2::executeQuery() {
+
+}
+
+
 const QStringList &SqlTableModel2::fieldNames() {
     return innerFieldNames;
 }
@@ -195,6 +200,11 @@ QString SqlTableModel2::getSearchString() {
 QString &SqlTableModel2::groupBy() {
     return innerGroupBy;
 }
+
+QStringList SqlTableModel2::initStatements() const {
+    return QStringList(innerInitStatements);
+}
+
 
 QVariant SqlTableModel2::insertObject(const QVariantMap &object) {
     QStringList keys = object.keys();
@@ -480,6 +490,24 @@ void SqlTableModel2::setGroupBy(const QString &group) {
     innerGroupBy = group;
     groupByChanged();
 }
+
+
+void SqlTableModel2::setInitStatements(const QStringList &statementsList) {
+    innerInitStatements = statementsList;
+
+    QStringList::const_iterator oneStatement;
+    for (oneStatement=innerInitStatements.constBegin(); oneStatement != innerInitStatements.constEnd(); ++oneStatement) {
+        QSqlQuery query;
+        query.prepare(*oneStatement);
+        bool r = query.exec();
+        qDebug() << "result" << r;
+        qDebug() << query.executedQuery();
+        qDebug() << query.lastError();
+    }
+
+    initStatementsChanged();
+}
+
 
 void SqlTableModel2::setLimit(int limit) {
     innerLimit = limit;
