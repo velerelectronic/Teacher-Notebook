@@ -197,12 +197,12 @@ Rectangle {
     }
 
     function getFirstDate() {
-        var first = new Date(initialDate);
+        var first = new Date(firstMonthDate);
         return first;
     }
 
     function getLastDate() {
-        var last = new Date(initialDate);
+        var last = new Date(firstMonthDate);
         last.setDate(last.getDate() + weeksNumber * 7 - 1);
         return last;
     }

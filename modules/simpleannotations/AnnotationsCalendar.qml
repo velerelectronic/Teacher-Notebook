@@ -375,6 +375,7 @@ Common.ThreePanesNavigator {
                         var start = weeksCalendarView.getFirstDate().toYYYYMMDDFormat();
                         var end = weeksCalendarView.getLastDate().toYYYYMMDDFormat();
 
+                        console.log('sten', start, end);
                         mainMarksModel.selectAnnotationsBetweenDates(start, end);
                     }
 
