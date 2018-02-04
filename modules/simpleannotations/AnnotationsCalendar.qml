@@ -1,5 +1,6 @@
 import QtQuick 2.7
 import QtQuick.Layouts 1.1
+import QtQuick.Dialogs 1.2
 import 'qrc:///common' as Common
 import 'qrc:///modules/calendar' as Calendar
 
@@ -11,6 +12,8 @@ Common.ThreePanesNavigator {
     Common.UseUnits {
         id: units
     }
+
+    signal timeMarkCreated(string timeMark)
 
     property string lastSelectedDate: ''
     property int lastSelectedMarkId: -1
@@ -122,24 +125,12 @@ Common.ThreePanesNavigator {
 
                             onSelectedDate: {
                                 setLastSelectedDate(year, month, day);
-
-                                var start = getFirstDate().toYYYYMMDDFormat();
-                                var end = getLastDate().toYYYYMMDDFormat();
-
-                                mainMarksModel.selectAnnotationsBetweenDates(start, end);
                             }
 
                             onLongSelectedDate: {
                                 setLastSelectedDate(year, month, day);
                                 console.log(lastSelectedDate);
-                                var annotId = annotationsModel.newAnnotation(qsTr('Anotació per a ') + lastSelectedDate, '', 'Calendar');
-                                if (annotId > -1) {
-                                    var markId = mainTimeMarksModel.insertObject({annotation: annotId, timeMark: lastSelectedDate, markType: '', label: '' });
-                                    lastSelectedAnnotation = annotId;
-                                    if (markId > -1) {
-                                        lastSelectedMarkId = markId;
-                                    }
-                                }
+                                createTimeMarkDialog.openTimeMarkDialog(lastSelectedDate);
                             }
 
                             function setLastSelectedDate(year, month, day) {
@@ -160,6 +151,16 @@ Common.ThreePanesNavigator {
 
                                 AnnotationsWithTimeMarksModel {
                                     id: marksModel
+                                }
+
+                                Connections {
+                                    target: annotationsCalendarBaseItem
+
+                                    onTimeMarkCreated: {
+                                        if (timeMark == dayCell.dateStr) {
+                                            dayCell.dateUpdated();
+                                        }
+                                    }
                                 }
 
                                 function dateUpdated() {
@@ -203,6 +204,7 @@ Common.ThreePanesNavigator {
                     toolBarHeight: 0
                     headingBar: Rectangle {
                         color: '#DDFFDD'
+                        z: 2
 
                         RowLayout {
                             anchors.fill: parent
@@ -257,25 +259,42 @@ Common.ThreePanesNavigator {
                         id: sectionHeading
 
                         Rectangle {
+                            z: 1
+
                             width: marksListView.width
                             height: units.fingerUnit * 2
 
-                            color: 'gray'
+                            color: (section == lastSelectedDate)?Qt.lighter('gray'):'gray'
 
-                            Text {
+                            RowLayout {
                                 anchors.fill: parent
                                 anchors.margins: units.nailUnit
-                                verticalAlignment: Text.AlignVCenter
 
-                                font.pixelSize: units.readUnit
-                                font.bold: true
-                                color: 'white'
-                                text: {
-                                    var date = new Date();
-                                    date.fromYYYYMMDDFormat(section);
-                                    return date.toLongDate();
+                                Text {
+                                    Layout.fillHeight: true
+                                    Layout.fillWidth: true
+                                    verticalAlignment: Text.AlignVCenter
+
+                                    font.pixelSize: units.readUnit
+                                    font.bold: true
+                                    color: 'white'
+                                    text: {
+                                        var date = new Date();
+                                        date.fromYYYYMMDDFormat(section);
+                                        return date.toLongDate();
+                                    }
+                                }
+
+                                Common.SuperposedButton {
+                                    Layout.fillHeight: true
+                                    size: units.fingerUnit
+                                    imageSource: 'plus-24844'
+
+                                    onClicked: createTimeMarkDialog.openTimeMarkDialog(section)
+
                                 }
                             }
+
                         }
                     }
 
@@ -296,7 +315,7 @@ Common.ThreePanesNavigator {
 
                                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                 font.pixelSize: units.readUnit
-                                text: model.timeMark + "->" + model.justDate
+                                text: model.timeMark
                             }
                             Text {
                                 Layout.fillHeight: true
@@ -337,6 +356,14 @@ Common.ThreePanesNavigator {
                         }
                     }
 
+                    function updateTimeMarksList() {
+                        var start = weeksCalendarView.getFirstDate().toYYYYMMDDFormat();
+                        var end = weeksCalendarView.getLastDate().toYYYYMMDDFormat();
+
+                        mainMarksModel.selectAnnotationsBetweenDates(start, end);
+                    }
+
+                    Component.onCompleted: updateTimeMarksList()
                 }
             }
 
@@ -370,6 +397,38 @@ Common.ThreePanesNavigator {
                         openPane("second");
                     }
                 }
+            }
+        }
+    }
+
+    MessageDialog {
+        id: createTimeMarkDialog
+
+        property string timeMark: ''
+        property string readableTimeMark: ''
+
+        title: qsTr('Crear marca de temps')
+        text: qsTr("Es crearà una marca de temps per al ") + readableTimeMark + qsTr(". Vols continuar?")
+
+        standardButtons: StandardButton.Yes | StandardButton.No
+
+        function openTimeMarkDialog(timeMark) {
+            createTimeMarkDialog.timeMark = timeMark;
+            var date = new Date();
+            date.fromYYYYMMDDFormat(timeMark);
+            readableTimeMark = date.toLongDate();
+            open();
+        }
+
+        onYes: {
+            var annotId = annotationsModel.newAnnotation(qsTr('Anotació per a ') + timeMark, '', 'Calendar');
+            if (annotId > -1) {
+                var markId = mainTimeMarksModel.insertObject({annotation: annotId, timeMark: timeMark, markType: '', label: '' });
+                lastSelectedAnnotation = annotId;
+                if (markId > -1) {
+                    lastSelectedMarkId = markId;
+                }
+                timeMarkCreated(timeMark);
             }
         }
     }

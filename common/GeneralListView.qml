@@ -111,6 +111,7 @@ Item {
             footer: Loader {
                 id: footerLoader
 
+                z: 1
                 width: mainListView.width
                 height: units.fingerUnit * 2
 
