@@ -26,11 +26,6 @@ SqlTableModel {
         "CREATE TRIGGER changeUpdatedField AFTER UPDATE OF id, title, desc, owner, state ON annotations_v3 FOR EACH ROW BEGIN UPDATE annotations_v3 SET updated=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.id; END"
     ]
 
-    function getModTime() {
-        var now = new Date();
-        return now.toISOString();
-    }
-
     function newAnnotation(title, desc, owner) {
         var obj = insertObject({title: title, desc: desc, owner: owner, state: 0});
         update();
