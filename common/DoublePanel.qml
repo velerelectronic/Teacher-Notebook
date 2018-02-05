@@ -19,6 +19,10 @@ Rectangle {
 
     property alias positionSubPanel: subPanel.x
 
+    function setMainSource(source, properties) {
+        mainPanelLoader.setSource(source, properties);
+    }
+
     Core.UseUnits {
         id: units
     }

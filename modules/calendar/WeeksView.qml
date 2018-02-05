@@ -207,5 +207,5 @@ Rectangle {
         return last;
     }
 
-    Component.onCompleted: updateContents()
+    Component.onCompleted: setTodayDate()
 }

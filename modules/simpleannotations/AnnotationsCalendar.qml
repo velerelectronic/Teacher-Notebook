@@ -296,7 +296,7 @@ Common.ThreePanesNavigator {
                                     text: {
                                         var date = new Date();
                                         date.fromYYYYMMDDFormat(section);
-                                        return date.toLongDate();
+                                        return date.toLocaleDateString() +"-" + date.getDate() + "//" + date.getMonth() + "//" + date.getFullYear() + ":" + date.getDay();
                                     }
                                 }
 
@@ -378,8 +378,6 @@ Common.ThreePanesNavigator {
                         console.log('sten', start, end);
                         mainMarksModel.selectAnnotationsBetweenDates(start, end);
                     }
-
-                    Component.onCompleted: updateTimeMarksList()
                 }
             }
 

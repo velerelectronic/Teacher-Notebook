@@ -77,7 +77,7 @@
   * Negated icon: https://pixabay.com/en/red-cancel-delete-no-forbidden-146613/
 */
 
-import QtQuick 2.5
+import QtQuick 2.6
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import QtQuick.Window 2.1
@@ -120,6 +120,68 @@ Window {
         }
     }
 
+    Common.DoublePanel {
+        id: dbPanel
+
+        anchors.fill: parent
+
+        globalMargins: 0
+
+        function openPage(page, properties) {
+            dbPanel.setMainSource('qrc:///modules/' + page + '.qml', properties);
+        }
+
+        itemSubPanel: Rectangle {
+            color: 'green'
+
+            ListView {
+                id: menuList
+                anchors.fill: parent
+
+                model: ListModel {
+                    id: menuModel
+                }
+
+                delegate: Rectangle {
+                    width: menuList.width
+                    height: units.fingerUnit * 2
+
+                    Text {
+                        anchors.fill: parent
+                        padding: units.nailUnit
+                        verticalAlignment: Text.AlignVCenter
+                        font.pixelSize: units.readUnit
+                        text: model.caption
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: dbPanel.openPage(model.page, model.properties);
+                    }
+                }
+            }
+            Component.onCompleted: {
+                menuModel.append({caption: qsTr('Anotacions'), page: 'simpleannotations/SimpleAnnotationsList', properties: {}});
+                menuModel.append({caption: qsTr('Calendari'), page: 'simpleannotations/AnnotationsCalendar', properties: {}});
+                menuModel.append({caption: qsTr('Rúbriques *'), page: '', properties: {}});
+                menuModel.append({caption: qsTr('Fitxers *'), page: '', properties: {}});
+                menuModel.append({caption: qsTr('Eines *'), page: '', properties: {}});
+                menuModel.append({caption: qsTr('Feeds *'), page: '', properties: {}});
+                menuModel.append({caption: qsTr('Planificacions *'), page: '', properties: {}});
+            }
+        }
+
+        itemMainPanel: Rectangle {
+            color: 'yellow'
+            Image {
+                anchors.fill: parent
+                anchors.margins: Math.min(parent.width * 0.1, parent.height * 0.1)
+
+                fillMode: Image.PreserveAspectFit
+                source: 'qrc:///icons/small-41255.svg'
+            }
+        }
+    }
+
     // Proposal
 
     // Main bar with icons for pages/tasks as these:
@@ -136,6 +198,7 @@ Window {
         id: mainNavigator
 
         anchors.fill: parent
+        visible: false
 
         onMainIconSelected: otherDirectionsDialog.openOpenedPages()
 

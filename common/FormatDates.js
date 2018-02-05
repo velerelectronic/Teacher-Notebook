@@ -29,8 +29,8 @@ Date.prototype.differenceInMinutes = function(date2) {
 Date.prototype.fromHHMMFormat = function(text) {
     var param = text.split(':');
     if (param.length == 2) {
-        var hours = param[0];
-        var minutes = param[1];
+        var hours = parseInt(param[0]);
+        var minutes = parseInt(param[1]);
         this.setHours(hours);
         this.setMinutes(minutes);
         this.definedTime = true;
@@ -42,14 +42,16 @@ Date.prototype.fromYYYYMMDDFormat = function(text) {
     var subDate = text.split(' ')[0];
     console.log('variants', text, subDate);
     var param = subDate.split('-');
-    var year = param[0];
-    var month = param[1]-1;
-    var day = param[2];
+    var year = parseInt(param[0]);
+    var month = parseInt(param[1])-1;
+    var day = parseInt(param[2]);
+    console.log("Parsing YMD date", text, year, month, day);
     if (param.length == 3) {
-        this.setDate(day);
-        this.setMonth(month);
         this.setFullYear(year);
+        this.setMonth(month);
+        this.setDate(day);
         this.definedDate = true;
+        console.log("post parsing", this.getFullYear(), this.getMonth(), this.getDate());
     }
     return this;
 }
