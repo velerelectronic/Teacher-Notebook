@@ -128,6 +128,7 @@ Common.ThreePanesNavigator {
 
                             onSelectedDate: {
                                 setLastSelectedDate(year, month, day);
+                                marksListView.positionAtDate(lastSelectedDate);
                             }
 
                             onLongSelectedDate: {
@@ -296,7 +297,7 @@ Common.ThreePanesNavigator {
                                     text: {
                                         var date = new Date();
                                         date.fromYYYYMMDDFormat(section);
-                                        return date.toLocaleDateString() +"-" + date.getDate() + "//" + date.getMonth() + "//" + date.getFullYear() + ":" + date.getDay();
+                                        return date.toLocaleDateString();
                                     }
                                 }
 
@@ -377,6 +378,22 @@ Common.ThreePanesNavigator {
 
                         console.log('sten', start, end);
                         mainMarksModel.selectAnnotationsBetweenDates(start, end);
+                    }
+
+                    function positionAtDate(dateStr) {
+                        var i=0;
+                        var found = false;
+                        while ((i<mainMarksModel.count) && (!found)) {
+                            var timeMark = mainMarksModel.getObjectInRow(i)['justDate'];
+                            if (timeMark == dateStr) {
+                                found = true;
+                            } else {
+                                i++;
+                            }
+                        }
+                        if (found) {
+                            marksListView.positionAtIndex(i, ListView.Beginning);
+                        }
                     }
                 }
             }

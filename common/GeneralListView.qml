@@ -161,5 +161,8 @@ Item {
         mainListView.state = 'show';
     }
 
+    function positionAtIndex(index, mode) {
+        innerListView.positionViewAtIndex(index, mode);
+    }
 }
 
