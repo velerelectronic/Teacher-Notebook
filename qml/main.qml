@@ -162,6 +162,7 @@ Window {
             Component.onCompleted: {
                 menuModel.append({caption: qsTr('Anotacions'), page: 'simpleannotations/SimpleAnnotationsList', properties: {}});
                 menuModel.append({caption: qsTr('Calendari'), page: 'simpleannotations/AnnotationsCalendar', properties: {}});
+                menuModel.append({caption: qsTr('Graelles'), page: 'multigrids/MultigridsList', properties: {}});
                 menuModel.append({caption: qsTr('Rúbriques *'), page: '', properties: {}});
                 menuModel.append({caption: qsTr('Fitxers *'), page: '', properties: {}});
                 menuModel.append({caption: qsTr('Eines *'), page: '', properties: {}});

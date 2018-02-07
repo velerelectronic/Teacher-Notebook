@@ -1,4 +1,4 @@
-import QtQuick 2.5
+import QtQuick 2.6
 import QtQuick.Layouts 1.1
 
 Item {
@@ -75,7 +75,7 @@ Item {
                 id: headerLoader
 
                 z: 2
-                width: mainListView.width
+                width: innerListView.width
                 height: units.fingerUnit * 2
 
                 sourceComponent: headingBar
@@ -92,7 +92,7 @@ Item {
                 id: delegateLoader
 
                 z: 1
-                width: mainListView.width
+                width: innerListView.width
                 height: units.fingerUnit * 2
 
                 sourceComponent: listDelegate
@@ -112,7 +112,7 @@ Item {
                 id: footerLoader
 
                 z: 1
-                width: mainListView.width
+                width: innerListView.width
                 height: units.fingerUnit * 2
 
                 sourceComponent: footerBar

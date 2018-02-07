@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/multigrids/MultigridsList.qml</file>
+        <file>modules/multigrids/MultigridsModel.qml</file>
+        <file>modules/multigrids/GenericGrid.qml</file>
+        <file>modules/multigrids/MultigridVariablesModel.qml</file>
+        <file>modules/multigrids/MultigridFixedValuesModel.qml</file>
+    </qresource>
+</RCC>

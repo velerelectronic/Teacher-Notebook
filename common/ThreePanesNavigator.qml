@@ -159,10 +159,5 @@ Item {
 
     }
 
-
-    Component.onCompleted: {
-        console.log('Three pane layout');
-    }
-
 }
 

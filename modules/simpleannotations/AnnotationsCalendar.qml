@@ -357,6 +357,7 @@ Common.ThreePanesNavigator {
 
                                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                 font.pixelSize: units.readUnit
+                                elide: Text.ElideRight
                                 text: '<p><b>' + model.annotationTitle + '</b></p><p>' + model.annotationDesc + '</p>'
                             }
                         }
