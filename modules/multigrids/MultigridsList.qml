@@ -10,7 +10,12 @@ Common.ThreePanesNavigator {
     }
 
     signal multigridSelected(int multigrid)
+    signal createNewVariable(int multigrid)
 
+    onMultigridSelected: {
+        variablesModel.selectedMultigrid = multigrid;
+        variablesModel.update();
+    }
 
     MultigridsModel {
         id: gridsModel
@@ -23,6 +28,55 @@ Common.ThreePanesNavigator {
         Component.onCompleted: select()
     }
 
+    MultigridVariablesModel {
+        id: variablesModel
+
+        property int selectedMultigrid: -1
+        signal updated()
+
+        function update() {
+            if (selectedMultigrid > -1) {
+                filters = ['multigrid=?']
+                bindValues = [variablesModel.selectedMultigrid];
+                select();
+                updated();
+            }
+        }
+
+        function addVariable() {
+            var date = new Date();
+            insertObject({multigrid: variablesModel.selectedMultigrid, title: qsTr('Var') + date.toDateString(), desc: ''});
+            update();
+
+        }
+
+        onSelectedMultigridChanged: fixedValuesModel.update();
+    }
+
+    MultigridFixedValuesModel {
+        id: fixedValuesModel
+
+        property int selectedVariable: -1
+        signal updated()
+
+        function update() {
+            if (selectedVariable > -1) {
+                filters = ["variable=?"]
+                bindValues = [fixedValuesModel.selectedVariable];
+                select();
+                updated();
+            }
+        }
+    }
+
+    MultigridMainVariablesModel {
+        id: mainVariableCandidatesModel
+    }
+
+    MultigridDataModel {
+        id: dataModel
+    }
+
     firstPane: Common.NavigationPane {
         onClosePane: openPane('first')
 
@@ -30,6 +84,8 @@ Common.ThreePanesNavigator {
             id: gridsList
 
             anchors.fill: parent
+
+            property int lastSelectedMultigrid: -1
 
             model: gridsModel
 
@@ -69,6 +125,8 @@ Common.ThreePanesNavigator {
                 width: gridsList.width
                 height: units.fingerUnit * 2
 
+                color: (model.id == gridsList.lastSelectedMultigrid)?'yellow':'white'
+
                 RowLayout {
                     anchors.fill: parent
                     anchors.margins: units.nailUnit
@@ -82,7 +140,7 @@ Common.ThreePanesNavigator {
                         font.pixelSize: units.readUnit
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
 
-                        text: model.title
+                        text: model.title + "-" + model.id
                     }
 
                     Text {
@@ -99,8 +157,9 @@ Common.ThreePanesNavigator {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        openPane('second');
+                        gridsList.lastSelectedMultigrid = model.id;
                         multigridSelected(model.id);
+                        openPane('second');
                     }
                 }
             }
@@ -126,88 +185,155 @@ Common.ThreePanesNavigator {
     secondPane: Common.NavigationPane {
         id: oneGridView
 
-        property int selectedMultigrid: -1
+        property int selectedMultigrid: variablesModel.selectedMultigrid
 
         color: Qt.lighter('green')
 
-        Connections {
-            target: gridsListBaseItem
-            onMultigridSelected: {
-                oneGridView.selectedMultigrid = multigrid;
-                mgVariablesModel.update();
+        Item {
+            anchors.fill: parent
+
+            ColumnLayout {
+                anchors.fill: parent
+                spacing: units.nailUnit
+
+                ListView {
+                    id: variablesList
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit * 2
+
+                    model: variablesModel
+
+                    orientation: ListView.Horizontal
+
+                    delegate: Rectangle {
+                        width: units.fingerUnit * 4
+                        height: variablesList.height
+
+                        border.color: 'black'
+
+                        Text {
+                            anchors.fill: parent
+                            padding: units.nailUnit
+
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            elide: Text.ElideRight
+                            text: '<b>' + model.title + '</b>' + model.desc
+                        }
+                    }
+
+                    Common.SuperposedButton {
+                        anchors {
+                            right: parent.right
+                        }
+
+                        size: units.fingerUnit
+
+                        imageSource: 'plus-24844'
+
+                        onClicked: variablesModel.addVariable()
+                    }
+                }
+
+                GenericGrid {
+                    id: genericGrid
+
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+
+                    columnSpacing: 0
+                    rowSpacing: 0
+
+                    function getHeadingsFromMainValues() {
+                        verticalHeadingModel.clear();
+                        for (var i=0; i<fixedValuesModel.count; i++) {
+                            var valueObj = fixedValuesModel.getObjectInRow(i);
+                            verticalHeadingModel.append({text: valueObj['title']});
+                        }
+                    }
+
+                    function getHeadingsFromVariables() {
+                        horizontalHeadingModel.clear();
+                        for (var i=0; i<variablesModel.count; i++) {
+                            var varObj = variablesModel.getObjectInRow(i);
+                            horizontalHeadingModel.append({text: varObj['title']});
+                        }
+                    }
+
+                    Connections {
+                        target: variablesModel
+
+                        onUpdated: {
+                            console.log('vars updated;');
+                            genericGrid.getHeadingsFromVariables();
+                        }
+                    }
+
+                    Connections {
+                        target: fixedValuesModel
+
+                        onUpdated: {
+                            genericGrid.getHeadingsFromMainValues()
+                        }
+                    }
+
+                    onCellSelected: console.log('cell', column, row)
+                    onHorizontalHeadingCellSelected: console.log('hheading', column)
+                    onVerticalHeadingCellSelected: console.log('vheading', row)
+
+                    onAddColumn: createNewVariable(variablesModel.selectedMultigrid)
+
+                    onAddRow: {
+                        // Add a new value for the main variable
+                    }
+
+                    onEditColumn: editVariable(index)
+                }
             }
         }
+    }
 
-        ColumnLayout {
+    thirdPane: Common.NavigationPane {
+        id: editorsPane
+
+        Loader {
+            id: editorLoader
+
             anchors.fill: parent
-            spacing: units.nailUnit
 
-            ListView {
-                id: variablesList
+            Connections {
+                target: gridsListBaseItem
 
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit * 2
-
-                model: mgVariablesModel
-
-                orientation: ListView.Horizontal
-
-                delegate: Rectangle {
-                    width: units.fingerUnit * 4
-                    height: variablesList.height
-
-                    border.color: 'white'
-
-                    Text {
-                        anchors.fill: parent
-                        padding: units.nailUnit
-
-                        font.pixelSize: units.readUnit
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        elide: Text.ElideRight
-                        text: '<b>' + model.title + '</b>' + model.desc
-                    }
-                }
-
-                MultigridVariablesModel {
-                    id: mgVariablesModel
-
-                    function update() {
-                        filters = ['multigrid=?']
-                        bindValues = [oneGridView.selectedMultigrid];
-                        select();
-                    }
-
-                    function addVariable() {
-                        var date = new Date();
-                        insertObject({multigrid: oneGridView.selectedMultigrid, title: qsTr('Var') + date.toDateString(), desc: ''});
-                        update();
-                    }
-                }
-
-                Common.SuperposedButton {
-                    anchors {
-                        right: parent.right
-                    }
-
-                    size: units.fingerUnit
-
-                    imageSource: 'plus-24844'
-
-                    onClicked: mgVariablesModel.addVariable()
+                onCreateNewVariable: {
+                    editorLoader.setSource('qrc:///modules/multigrids/MultigridVariableEditor.qml', {multigrid: multigrid});
+                    openPane('third');
                 }
             }
 
-            GenericGrid {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
+            Connections {
+                target: editorLoader.item
+                ignoreUnknownSignals: true
 
-                columnSpacing: 0
-                rowSpacing: 0
+                onClose: openPane('second')
 
-                onCellSelected: console.log('cell', column, row)
-                onHorizontalHeadingCellSelected: console.log('hheading', column)
-                onVerticalHeadingCellSelected: console.log('vheading', row)
+                onVariableCreated: {
+                    variablesModel.insertObject({multigrid: editorLoader.item.multigrid, title: title, desc: desc});
+                    variablesModel.update();
+                    openPane('second');
+                }
+
+                onTitleChanged: {
+                    variablesModel.updateObject(variable, {title: title});
+                    variablesModel.update();
+                    openPane('second');
+                }
+
+                onDescChanged: {
+                    variablesModel.updateObject(variable, {desc: desc});
+                    variablesModel.update();
+                    openPane('second');
+                }
             }
         }
 

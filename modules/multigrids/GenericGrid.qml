@@ -9,8 +9,8 @@ Item {
     property int columnSpacing: units.nailUnit
     property int rowHeight: units.fingerUnit * 4
     property int rowSpacing: units.nailUnit
-    property int numberOfColumns: 3
-    property int numberOfRows: 3
+    property int numberOfColumns: horizontalHeadingModel.count
+    property int numberOfRows: verticalHeadingModel.count
 
     property ListModel horizontalHeadingModel: ListModel {
         ListElement { text: 'h1' }
@@ -24,6 +24,12 @@ Item {
     }
 
     property var cellsModel: [[1, 2, 3], ['a', 'b', 'c'], ['yes', 'no', 'maybe']]
+
+    signal addColumn()
+    signal addRow()
+
+    signal editColumn(int index)
+    signal editRow(int index)
 
     signal cellSelected(int column, int row)
     signal horizontalHeadingCellSelected(int column)
@@ -83,7 +89,7 @@ Item {
             Item {
                 id: horizontalHeadingItem
 
-                width: numberOfColumns * (columnWidth + columnSpacing) - columnSpacing
+                width: (numberOfColumns+1) * (columnWidth + columnSpacing) - columnSpacing
                 height: oneGridView.rowHeight
 
                 Row {
@@ -91,7 +97,7 @@ Item {
                     spacing: oneGridView.columnSpacing
 
                     Repeater {
-                        model: oneGridView.numberOfColumns
+                        model: horizontalHeadingModel
 
                         Rectangle {
                             height: parent.height
@@ -108,7 +114,7 @@ Item {
                                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                 elide: Text.ElideRight
 
-                                text: horizontalHeadingModel.get(model.index)['text']
+                                text: model.text
                             }
 
                             MouseArea {
@@ -119,6 +125,15 @@ Item {
                                 }
                             }
                         }
+                    }
+
+                    Common.SuperposedButton {
+                        height: parent.height
+                        width: oneGridView.columnWidth
+
+                        imageSource: 'plus-24844'
+
+                        onClicked: addColumn()
                     }
                 }
             }
@@ -143,14 +158,14 @@ Item {
                 id: verticalHeadingItem
 
                 width: columnWidth
-                height: numberOfRows * (rowHeight + rowSpacing) - rowSpacing
+                height: (numberOfRows+1) * (rowHeight + rowSpacing) - rowSpacing
 
                 Column {
                     anchors.fill: parent
                     spacing: oneGridView.rowSpacing
 
                     Repeater {
-                        model: oneGridView.numberOfRows
+                        model: verticalHeadingModel
 
                         Rectangle {
                             height: oneGridView.rowHeight
@@ -167,7 +182,7 @@ Item {
                                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                 elide: Text.ElideRight
 
-                                text: verticalHeadingModel.get(model.index)['text']
+                                text: model.text
                             }
 
                             MouseArea {
@@ -178,6 +193,14 @@ Item {
                                 }
                             }
                         }
+                    }
+
+                    Common.SuperposedButton {
+                        height: oneGridView.rowHeight
+                        width: parent.width
+
+                        imageSource: 'plus-24844'
+                        onClicked: addRow()
                     }
                 }
             }

@@ -10,5 +10,8 @@ SqlTableModel {
         'config'
     ]
     primaryKey: 'id'
-    creationString: 'id INT PRIMARY KEY, variable INT, title TEXT, desc TEXT, config TEXT, FOREIGN KEY(variable) REFERENCES multigrid_variables(id) ON DELETE RESTRICT'
+    creationString: 'id INTEGER PRIMARY KEY, variable INTEGER, title TEXT, desc TEXT, config TEXT, FOREIGN KEY(variable) REFERENCES multigrid_variables(id) ON DELETE RESTRICT'
+    initStatements: [
+        'DROP TABLE ' + tableName
+    ]
 }

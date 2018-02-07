@@ -5,5 +5,8 @@
         <file>modules/multigrids/GenericGrid.qml</file>
         <file>modules/multigrids/MultigridVariablesModel.qml</file>
         <file>modules/multigrids/MultigridFixedValuesModel.qml</file>
+        <file>modules/multigrids/MultigridDataModel.qml</file>
+        <file>modules/multigrids/MultigridVariableEditor.qml</file>
+        <file>modules/multigrids/MultigridMainVariablesModel.qml</file>
     </qresource>
 </RCC>

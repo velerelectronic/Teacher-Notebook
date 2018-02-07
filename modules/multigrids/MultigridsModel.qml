@@ -9,5 +9,8 @@ SqlTableModel {
         'config'
     ]
     primaryKey: 'id'
-    creationString: 'id INT PRIMARY KEY, title TEXT, desc TEXT, config TEXT'
+    creationString: 'id INTEGER PRIMARY KEY, title TEXT, desc TEXT, config TEXT'
+    initStatements: [
+        //'DROP table multigrids'
+    ]
 }
