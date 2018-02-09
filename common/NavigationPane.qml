@@ -4,11 +4,16 @@ import 'qrc:///common' as Common
 
 
 Rectangle {
-    signal closePane()
+    id: navigationPaneBase
+
+    signal headingSelected()
 
     default property Component innerItem
 
     property int lateralMargins: units.fingerUnit
+    property int headingHeight: units.fingerUnit * 2
+    property string headingText: 'Navigation Pane'
+    property string headingColor: 'white'
 
     onInnerItemChanged: innerItemLocation.sourceComponent = innerItem;
 
@@ -18,32 +23,64 @@ Rectangle {
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: units.nailUnit
+        anchors.margins: 0
 
-        spacing: units.nailUnit
+        spacing: 0
 
         Item {
             Layout.preferredWidth: lateralMargins
             Layout.fillHeight: true
         }
 
-        Loader {
-            id: innerItemLocation
-
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            sourceComponent: innerItem
+            Text {
+                id: headingTextItem
+
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                }
+                height: navigationPaneBase.headingHeight
+
+                padding: units.nailUnit
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                elide: Text.ElideRight
+                font.pixelSize: units.readUnit
+                font.bold: true
+
+                color: headingColor
+
+                text: headingText
+
+                MouseArea {
+                    anchors.fill: parent
+
+                    onClicked: headingSelected()
+                }
+            }
+
+            Loader {
+                id: innerItemLocation
+
+                anchors {
+                    top: headingTextItem.bottom
+                    bottom: parent.bottom
+                    left: parent.left
+                    right: parent.right
+                }
+
+                sourceComponent: innerItem
+            }
         }
 
-        ImageButton {
+        Item {
             Layout.preferredWidth: lateralMargins
-            Layout.preferredHeight: lateralMargins
-            Layout.alignment: Qt.AlignTop
-
-            image: 'road-sign-147409'
-
-            onClicked: closePane()
+            Layout.fillHeight: true
         }
     }
 }

@@ -11,6 +11,10 @@ Item {
     signal textChangeAccepted(string text)
     signal editorClosed()
 
+    property string fontColor: 'black'
+    property bool fontBold: false
+    property int padding: 0
+
     property int requiredHeight
     height: requiredHeight
 
@@ -56,7 +60,11 @@ Item {
         id: baseText
 
         anchors.fill: parent
+        padding: editableTextBaseItem.padding
+        verticalAlignment: Text.AlignVCenter
         font.pixelSize: units.readUnit
+        font.bold: fontBold
+        color: fontColor
         text: editableTextBaseItem.text
     }
     MouseArea {

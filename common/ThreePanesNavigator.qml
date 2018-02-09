@@ -11,12 +11,13 @@ Item {
     property Component thirdPane: Rectangle { color: '#555555' }
 
     property int minimumFirstPaneHeight: units.fingerUnit * 2
-    property int minimumSecondPaneHeight: units.fingerUnit * 4
-    property int minimumThirdPaneHeight: units.fingerUnit * 8
+    property int minimumSecondPaneHeight: units.fingerUnit * 2
+    property int minimumThirdPaneHeight: units.fingerUnit * 2
 
     property int visibleFirstPaneHeight
     property int visibleSecondPaneHeight
     property int visibleThirdPaneHeight
+
 
     Common.UseUnits {
         id: units
@@ -25,6 +26,9 @@ Item {
     state: 'first'
 
     states: [
+        State {
+            name: 'interstate'
+        },
         State {
             name: 'first'
             PropertyChanges {
@@ -82,6 +86,14 @@ Item {
         z: 1
 
         sourceComponent: firstPane
+
+        Connections {
+            target: firstPaneLoader.item
+
+            ignoreUnknownSignals: true
+
+            onHeadingSelected: openPane('first')
+        }
     }
 
     Loader {
@@ -104,6 +116,14 @@ Item {
             drag.axis: Drag.YAxis
             drag.minimumY: minimumFirstPaneHeight
             drag.maximumY: visibleNavigatorArea.height - minimumSecondPaneHeight
+        }
+
+        Connections {
+            target: secondPaneLoader.item
+
+            ignoreUnknownSignals: true
+
+            onHeadingSelected: openPane('second')
         }
     }
 
@@ -128,6 +148,14 @@ Item {
             drag.minimumY: minimumFirstPaneHeight + minimumSecondPaneHeight
             drag.maximumY: visibleNavigatorArea.height - minimumThirdPaneHeight
         }
+
+        Connections {
+            target: thirdPaneLoader.item
+
+            ignoreUnknownSignals: true
+
+            onHeadingSelected: openPane('third')
+        }
     }
 
     function setFirstPane(component) {
@@ -143,6 +171,7 @@ Item {
     }
 
     function openPane(newstate) {
+        visibleNavigatorArea.state = 'interstate';
         visibleNavigatorArea.state = newstate;
     }
 

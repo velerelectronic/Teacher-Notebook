@@ -158,6 +158,9 @@ QVariantMap SqlTableModel2::getObject(QString primaryField, QString key) {
 
     SqlTableModel2::select();
 
+    innerFilters = auxFilters;
+    innerBindValues = auxBoundValues;
+
     QVariantMap result;
     if (rowCount() > 0) {
         QSqlRecord searchRecord = this->record(0);
@@ -165,9 +168,6 @@ QVariantMap SqlTableModel2::getObject(QString primaryField, QString key) {
             result.insert(searchRecord.fieldName(i),searchRecord.value(i));
         }
     }
-
-    innerFilters = auxFilters;
-    innerBindValues = auxBoundValues;
 
     return result;
 }

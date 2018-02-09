@@ -57,33 +57,22 @@ Rectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.max(titleText.contentHeight, units.fingerUnit * 2) + 2 * units.nailUnit
+            Layout.preferredHeight: Math.max(titleText.requiredHeight, units.fingerUnit * 2) + 2 * units.nailUnit
 
             color: 'green'
 
-            Text {
+            Common.EditableText {
                 id: titleText
 
                 anchors.fill: parent
-                padding: units.nailUnit
 
-                color: 'white'
-                font.bold: true
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                verticalAlignment: Text.AlignVCenter
-                font.pixelSize: units.readUnit
-                elide: Text.ElideRight
+                fontColor: 'white'
+                fontBold: true
+                padding: units.nailUnit
                 text: showAnnotationItem.title
 
-                Common.ImageButton {
-                    id: changeTitleButton
-                    anchors {
-                        top: parent.top
-                        right: parent.right
-                    }
-                    size: units.fingerUnit
-                    image: 'edit-153612'
-                    onClicked: titleDescEditor.openTitleEditor()
+                onTextChangeAccepted: {
+                    annotationsModel.updateObject(identifier, {title: titleText.text});
                 }
             }
         }
@@ -271,12 +260,6 @@ Rectangle {
                         width: parent.width
                         height: units.fingerUnit * 10
                         property int opc: 0
-
-                        function openTitleEditor() {
-                            opc = 1;
-                            loadComponent('../editors/TextAreaEditor3', {content: showAnnotationItem.title});
-                            open();
-                        }
 
                         function openDescEditor() {
                             opc = 2;

@@ -33,8 +33,7 @@ Common.ThreePanesNavigator {
 
     firstPane: Common.NavigationPane {
         color: Qt.darker('yellow', 1.4)
-
-        onClosePane: openPane('first')
+        headingText: qsTr("Calendari")
 
         ColumnLayout {
             anchors.fill: parent
@@ -406,18 +405,13 @@ Common.ThreePanesNavigator {
     secondPane: Common.NavigationPane {
         id: secondNavigationPane
 
-        onClosePane: {
-            console.log('closeeee');
-            secondComponent = null;
-            openPane('first');
-        }
+        headingText: qsTr("Anotació")
+        headingColor: 'black'
 
         Loader {
             id: secondPaneLoader
 
             anchors.fill: parent
-
-            sourceComponent: secondComponent
 
             Connections {
                 target: annotationsCalendarBaseItem

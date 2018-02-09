@@ -34,6 +34,15 @@ Common.ThreePanesNavigator {
             update();
         }
 
+        function lookForGrid(multigrid) {
+            for (var i=0; i<count; i++) {
+                var obj = getObjectInRow(i);
+                if (obj['id'] == multigrid)
+                    return obj;
+            }
+            return null;
+        }
+
         Component.onCompleted: select()
     }
 
@@ -92,7 +101,8 @@ Common.ThreePanesNavigator {
     }
 
     firstPane: Common.NavigationPane {
-        onClosePane: openPane('first')
+        headingText: qsTr('Llista de graelles')
+        color: '#86B404'
 
         Common.GeneralListView {
             id: gridsList
@@ -210,7 +220,11 @@ Common.ThreePanesNavigator {
     secondPane: Common.NavigationPane {
         id: oneGridView
 
+        headingText: qsTr('Graella: ') + "<b>" + multigridTitle + "</b>" + multigridDesc
         color: Qt.lighter('green')
+
+        property string multigridTitle
+        property string multigridDesc
 
         GenericGrid {
             id: genericGrid
@@ -218,6 +232,17 @@ Common.ThreePanesNavigator {
             // Columns: variables (not keys)
             // Rows: the key variable with its values
 
+            Connections {
+                target: gridsListBaseItem
+
+                onMultigridSelected: {
+                    var mg = gridsModel.lookForGrid(multigrid);
+                    if (mg != null) {
+                        oneGridView.multigridTitle = mg['title'];
+                        oneGridView.multigridDesc = mg['desc'];
+                    }
+                }
+            }
 
             columnSpacing: 0
             rowSpacing: 0
@@ -278,6 +303,9 @@ Common.ThreePanesNavigator {
     thirdPane: Common.NavigationPane {
         id: editorsPane
 
+        headingText: ''
+        headingColor: 'black'
+
         Loader {
             id: editorLoader
 
@@ -288,17 +316,20 @@ Common.ThreePanesNavigator {
 
                 onCreateNewVariable: {
                     editorLoader.setSource('qrc:///modules/multigrids/MultigridVariableEditor.qml', {multigrid: multigrid});
+                    editorsPane.headingText = qsTr('Crear una nova variable')
                     openPane('third');
                 }
 
                 onEditVariable: {
                     console.log('key----', variable);
                     editorLoader.setSource('qrc:///modules/multigrids/MultigridVariableEditor.qml', {multigrid: multigrid, variable: variable});
+                    editorsPane.headingText = qsTr('Editor de variable');
                     openPane('third');
                 }
 
                 onEditVariableValue: {
                     editorLoader.setSource('qrc:///modules/multigrids/MultigridVariableEditor.qml', {multigrid: selectedMultigrid, variable: variable});
+                    editorsPane.headingText = qsTr('Editor de variable');
                     openPane('third');
                 }
 
@@ -307,8 +338,6 @@ Common.ThreePanesNavigator {
             Connections {
                 target: editorLoader.item
                 ignoreUnknownSignals: true
-
-                onClose: openPane('second')
 
                 onVariableCreated: {
                     variablesModel.update();
