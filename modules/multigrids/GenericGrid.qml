@@ -11,16 +11,18 @@ Item {
     property int rowSpacing: units.nailUnit
     property int numberOfColumns: horizontalHeadingModel.count
     property int numberOfRows: verticalHeadingModel.count
+    property string crossHeadingText: ''
+    property int crossHeadingKey: -1
 
     property ListModel horizontalHeadingModel: ListModel {
-        ListElement { text: 'h1' }
-        ListElement { text: 'h2' }
-        ListElement { text: 'h3' }
+        ListElement { text: 'h1'; key: 1 }
+        ListElement { text: 'h2'; key: 2 }
+        ListElement { text: 'h3'; key: 3 }
     }
     property ListModel verticalHeadingModel: ListModel {
-        ListElement { text: 'v1' }
-        ListElement { text: 'v2' }
-        ListElement { text: 'v3' }
+        ListElement { text: 'v1'; key: 4 }
+        ListElement { text: 'v2'; key: 5 }
+        ListElement { text: 'v3'; key: 6 }
     }
 
     property var cellsModel: [[1, 2, 3], ['a', 'b', 'c'], ['yes', 'no', 'maybe']]
@@ -28,8 +30,8 @@ Item {
     signal addColumn()
     signal addRow()
 
-    signal editColumn(int index)
-    signal editRow(int index)
+    signal editColumn(int key)
+    signal editRow(int key)
 
     signal cellSelected(int column, int row)
     signal horizontalHeadingCellSelected(int column)
@@ -39,8 +41,8 @@ Item {
     property string selectedRowColor: Qt.lighter('orange')
     property string selectedCellColor: 'yellow'
 
-    property string verticalHeadingBackgroundColor: Qt.lighter('grey')
-    property string horizontalHeadingBackgroundColor: Qt.lighter('grey')
+    property string verticalHeadingBackgroundColor: Qt.lighter('grey', 1.33)
+    property string horizontalHeadingBackgroundColor: Qt.lighter('grey', 1.66)
     property string cellBackgroundColor: 'white'
 
     property int selectedRow: -1
@@ -61,11 +63,25 @@ Item {
             z: 2
             border.color: 'black'
 
+            Text {
+                anchors.fill: parent
+                font.pixelSize: units.readUnit
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                elide: Text.ElideRight
+
+                text: crossHeadingText
+            }
+
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
                     selectedColumn = -1;
                     selectedRow = -1;
+                }
+                onPressAndHold: {
+                    editColumn(crossHeadingKey);
                 }
             }
         }
@@ -100,6 +116,8 @@ Item {
                         model: horizontalHeadingModel
 
                         Rectangle {
+                            id: horizontalHeadingCell
+
                             height: parent.height
                             width: oneGridView.columnWidth
 
@@ -123,6 +141,7 @@ Item {
                                     selectedColumn = model.index;
                                     horizontalHeadingCellSelected(model.index);
                                 }
+                                onPressAndHold: editColumn(model.key);
                             }
                         }
                     }
@@ -168,11 +187,15 @@ Item {
                         model: verticalHeadingModel
 
                         Rectangle {
+                            id: verticalHeadingCell
+
                             height: oneGridView.rowHeight
                             width: parent.width
 
                             border.color: 'black'
                             color: (selectedRow == model.index)?selectedRowColor:verticalHeadingBackgroundColor
+
+                            property int key: model.key
 
                             Text {
                                 anchors.fill: parent
@@ -191,6 +214,7 @@ Item {
                                     selectedRow = model.index;
                                     verticalHeadingCellSelected(model.index);
                                 }
+                                onPressAndHold: editRow(verticalHeadingCell.key);
                             }
                         }
                     }
@@ -231,8 +255,8 @@ Item {
             Item {
                 id: mainGridItem
 
-                width: oneGridView.numberOfColumns * (oneGridView.columnWidth + oneGridView.columnSpacing) - oneGridView.columnSpacing
-                height: oneGridView.numberOfRows * (oneGridView.rowHeight + oneGridView.rowSpacing) - oneGridView.rowSpacing
+                width: (oneGridView.numberOfColumns+1) * (oneGridView.columnWidth + oneGridView.columnSpacing) - oneGridView.columnSpacing
+                height: (oneGridView.numberOfRows+1) * (oneGridView.rowHeight + oneGridView.rowSpacing) - oneGridView.rowSpacing
 
                 Row {
                     anchors.fill: parent

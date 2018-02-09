@@ -11,7 +11,7 @@
 */
 
 import QtQuick 2.3
-import QtQuick.Controls 1.1
+import QtQuick.Controls 1.3
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.1
 
@@ -27,7 +27,12 @@ Item {
     property bool selection: false
     property bool isVertical: width<height
     property bool edit: true
-    property var buttons: buttonsModel
+    property var buttons: editButtonsModel
+
+    property int requiredHeight: units.fingerUnit * 1.5 + Math.max(textArea.contentHeight, units.fingerUnit * 2)
+
+    signal accepted(string text)
+    signal cancelled()
 
     ListView {
         id: toolbar
@@ -87,6 +92,18 @@ Item {
 
     ObjectModel {
         id: editButtonsModel
+
+        Common.TextButton {
+            height: units.fingerUnit * 1.5
+            text: qsTr('Accepta')
+            onClicked: accepted(text)
+        }
+
+        Common.TextButton {
+            height: units.fingerUnit * 1.5
+            text: qsTr('Cancela')
+            onClicked: cancelled()
+        }
 
         Common.Button {
             width: units.fingerUnit * 1.5

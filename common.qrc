@@ -52,5 +52,6 @@
         <file>common/InsideEditor.qml</file>
         <file>common/ThreePanesNavigator.qml</file>
         <file>common/NavigationPane.qml</file>
+        <file>common/EditableText.qml</file>
     </qresource>
 </RCC>

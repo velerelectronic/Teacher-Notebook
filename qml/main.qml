@@ -112,6 +112,12 @@ Window {
 
     Common.UseUnits { id: units }
 
+    SqlTableModel {
+        initStatements: [
+            "PRAGMA foreign_keys=ON"
+        ]
+    }
+
     BasicDatabase {
         id: basicDatabase
 

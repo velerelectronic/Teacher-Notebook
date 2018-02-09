@@ -26,6 +26,7 @@ Item {
 
     property Component footerBar: null
 
+    property alias interactive: innerListView.interactive
     property int requiredHeight: toolBarLoader.height + innerListView.contentItem.height
 
     states: [
