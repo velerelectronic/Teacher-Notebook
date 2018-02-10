@@ -79,7 +79,7 @@
 
 import QtQuick 2.6
 import QtQuick.Controls 1.1
-import QtQuick.Layouts 1.1
+import QtQuick.Layouts 1.3
 import QtQuick.Window 2.1
 import QtQuick.Dialogs 1.1
 import PersonalTypes 1.0
@@ -90,6 +90,7 @@ import 'qrc:///modules/cards' as Cards
 import 'qrc:///modules/basic' as Basic
 import 'qrc:///modules/structure' as Structure
 import "qrc:///common/FormatDates.js" as FormatDates
+
 
 // Three types of navigation between pages
 // 1. Each page links to several pages (but not backwards)
@@ -170,7 +171,7 @@ Window {
                 menuModel.append({caption: qsTr('Calendari'), page: 'simpleannotations/AnnotationsCalendar', properties: {}});
                 menuModel.append({caption: qsTr('Graelles'), page: 'multigrids/MultigridsList', properties: {}});
                 menuModel.append({caption: qsTr('Rúbriques *'), page: '', properties: {}});
-                menuModel.append({caption: qsTr('Fitxers *'), page: '', properties: {}});
+                menuModel.append({caption: qsTr('Galeria'), page: 'files/Gallery', properties: {}});
                 menuModel.append({caption: qsTr('Eines *'), page: '', properties: {}});
                 menuModel.append({caption: qsTr('Feeds *'), page: '', properties: {}});
                 menuModel.append({caption: qsTr('Planificacions *'), page: '', properties: {}});
@@ -248,58 +249,7 @@ Window {
             load(qsTr('Crea nova anotació'), 'annotations2/NewAnnotationHelper', {});
         }
 
-        Connections {
-            target: otherDirectionsDialog.mainItem
-
-            onMainPageSelected: {
-                otherDirectionsDialog.close();
-                mainNavigator.addPage('cards/CardsList', {}, qsTr('Principal'), true);
-            }
-
-            onSelectedPage: {
-                otherDirectionsDialog.close();
-                mainNavigator.addPage(page, parameters, title, true);
-            }
-
-            onAnnotationSelected: {
-                pagesLoaderView.addPage('annotations2/ShowAnnotation', {identifier: annotation}, qsTr('Nova anotació'));
-            }
-
-            onPageSelected: {
-                otherDirectionsDialog.close();
-                mainNavigator.changePage(index);
-            }
-        }
     }
 
-    Models.RecentPages {
-        id: recentPagesModel
-
-        sort: 'timestamp DESC'
-
-        function addPage(page, parameters, title) {
-            var parametersStr = JSON.stringify(parameters);
-            console.log('adding', page, parametersStr);
-            var found = false;
-            var i;
-            var date = new Date();
-
-            select();
-            for (i=0; i<count; i++) {
-                var obj = getObjectInRow(i);
-                if ((obj['page'] == page) && (obj['parameters'] == parametersStr)) {
-                    var objId = obj['id'];
-                    updateObject(objId, {timestamp: date.toISOString(), title: title});
-                    found = true;
-                    console.log('TROBAT')
-                    break;
-                }
-            }
-            if (!found) {
-                insertObject({page: page, parameters: parametersStr, timestamp: date.toISOString(), title: title});
-            }
-        }
-
-    }
 }
 

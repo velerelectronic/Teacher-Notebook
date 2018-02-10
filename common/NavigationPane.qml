@@ -8,14 +8,20 @@ Rectangle {
 
     signal headingSelected()
 
-    default property Component innerItem
+    default property Component innerComponent
+
+    property alias innerItem: innerItemLocation.item
 
     property int lateralMargins: units.fingerUnit
     property int headingHeight: units.fingerUnit * 2
     property string headingText: 'Navigation Pane'
     property string headingColor: 'white'
 
-    onInnerItemChanged: innerItemLocation.sourceComponent = innerItem;
+    function setSource(page, properties) {
+        innerItemLocation.setSource(page, properties);
+    }
+
+    onInnerComponentChanged: innerItemLocation.sourceComponent = innerComponent;
 
     Common.UseUnits {
         id: units
@@ -74,7 +80,7 @@ Rectangle {
                     right: parent.right
                 }
 
-                sourceComponent: innerItem
+                sourceComponent: innerComponent
             }
         }
 

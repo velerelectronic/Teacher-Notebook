@@ -3,10 +3,9 @@ import QtQuick.Layouts 1.3
 import 'qrc:///common' as Common
 import 'qrc:///modules/basic' as Basic
 
-Common.ThreePanesNavigator {
+Common.CardsNavigator {
     id: simpleAnnotationsListBaseItem
 
-    property int lastSelectedAnnotation: -1
     property Component secondComponent
 
     signal openAnnotation(int identifier)
@@ -19,40 +18,39 @@ Common.ThreePanesNavigator {
         id: timeMarksModel
     }
 
-    SimpleAnnotationsModel {
-        id: annotationsModel
 
-        property var today: new Date()
-
-        sort: 'updated DESC'
-
-        function update() {
-            var today = new Date();
-            select();
-        }
-
-        onUpdatedAnnotation: {
-            if (annotation > -1) {
-                lastSelectedAnnotation = annotation;
-                update();
-            }
-        }
-
-        Component.onCompleted: {
-            createTable();
-            update();
-        }
-    }
-
-    firstPane: Common.NavigationPane {
-        color: Qt.darker('yellow', 1.4)
-
-        onClosePane: openPane('first')
+    Component {
+        id: annotationsListComponent
 
         Common.GeneralListView {
             id: annotationsListView
 
-            anchors.fill: parent
+            property int lastSelectedAnnotation: -1
+
+            SimpleAnnotationsModel {
+                id: annotationsModel
+
+                property var today: new Date()
+
+                sort: 'updated DESC'
+
+                function update() {
+                    var today = new Date();
+                    select();
+                }
+
+                onUpdatedAnnotation: {
+                    if (annotation > -1) {
+                        lastSelectedAnnotation = annotation;
+                        update();
+                    }
+                }
+
+                Component.onCompleted: {
+                    createTable();
+                    update();
+                }
+            }
 
             model: annotationsModel
 
@@ -80,7 +78,7 @@ Common.ThreePanesNavigator {
                         height: annotationsListButtons.height
                         width: annotationsListButtons.width / 2
 
-                        text: docAnnotationsRect.searchString
+                        text: '' // docAnnotationsRect.searchString
 
                         onIntroPressed: {
                             annotationsModel.searchFields = annotationsModel.fieldNames;
@@ -152,7 +150,7 @@ Common.ThreePanesNavigator {
                 width: annotationsListView.width
                 height: units.fingerUnit * 2
 
-                color: (model.id == lastSelectedAnnotation)?'yellow':'white'
+                color: (model.id == annotationsListView.lastSelectedAnnotation)?'yellow':'white'
 
                 RowLayout {
                     anchors.fill: parent
@@ -246,8 +244,9 @@ Common.ThreePanesNavigator {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        lastSelectedAnnotation = model.id;
-                        openAnnotation(lastSelectedAnnotation);
+                        annotationsListView.lastSelectedAnnotation = model.id;
+                        setNextComponent(annotationsListView.parent.index, showAnnotationComponent, {headingText: qsTr('Anotació'), headingColor: 'black'}, {identifier: model.id});
+                        openNextCard(annotationsListView.parent.index);
                     }
                 }
             }
@@ -280,56 +279,49 @@ Common.ThreePanesNavigator {
                 onPressAndHold: openImporter2()
             }
         }
+
     }
 
-    secondPane: Common.NavigationPane {
-        id: secondNavigationPane
+    Component {
+        id: showAnnotationComponent
 
-        onClosePane: {
-            console.log('closeeee');
-            secondComponent = null;
-            simpleAnnotationsListBaseItem.openPane('first');
-        }
+        ShowAnnotation {
 
-        Loader {
-            id: secondPaneLoader
-
-            anchors.fill: parent
-
-            sourceComponent: secondComponent
-
-            Connections {
-                target: secondPaneLoader.item
-                ignoreUnknownSignals: true
-
-                onAnnotationCreated: {
-                    lastSelectedAnnotation = identifier;
-                    annotationsModel.update();
-                }
-            }
-
-            Connections {
-                target: simpleAnnotationsListBaseItem
-
-                onOpenAnnotation: {
-                    secondPaneLoader.setSource("ShowAnnotation.qml", {identifier: identifier});
-                    openPane("second");
-                }
-            }
         }
     }
 
-    thirdPane: Common.NavigationPane {
-        color: 'gray'
+
+    Component {
+        id: thirdComponent
+
+        Item {
+
+        }
+    }
+
+    Connections {
+//        target: secondPaneItem.innerItem
+        ignoreUnknownSignals: true
+
+        onAnnotationCreated: {
+            lastSelectedAnnotation = identifier;
+            annotationsModel.update();
+        }
     }
 
     function openImporter() {
-        secondComponent = Qt.createComponent("ExtendedAnnotationsImport.qml");
+        setSecondPaneSource("simpleannotations/ExtendedAnnotationsImport", {}, {headingText: qsTr("Importador"), headingColor: 'brown'});
         openPane('second');
     }
 
     function openImporter2() {
-        secondComponent = Qt.createComponent("DocumentAnnotationsImport.qml");
+        setSecondPaneSource("simpleannotations/DocumentAnnotationsImport", {}, {headingText: qsTr("Importador"), headingColor: 'brown'});
         openPane('second');
+    }
+
+    Component.onCompleted: {
+        simpleAnnotationsListBaseItem.appendCardComponent(annotationsListComponent, {headingText: qsTr("Llista d'anotacions"), headingColor: 'white', headingBgColor: Qt.darker('green',1.9)}, {});
+        simpleAnnotationsListBaseItem.appendCardComponent(showAnnotationComponent, {headingText: qsTr("Anotació"), headingBgColor: Qt.lighter('gray')}, {});
+        simpleAnnotationsListBaseItem.appendCardComponent(thirdComponent, {headingText: qsTr('Altres'), headingBgColor: Qt.lighter('green', 1.5)}, {});
     }
 }

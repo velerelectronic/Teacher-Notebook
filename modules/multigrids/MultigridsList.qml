@@ -98,6 +98,23 @@ Common.ThreePanesNavigator {
 
     MultigridDataModel {
         id: dataModel
+
+        filters: [
+            'multigrid=?',
+            'mainVariable=?',
+            'mainValue=?',
+            'secondVariable=?'
+        ]
+
+        function lookFor(multigrid, mainVar, mainVal, secondVar) {
+            bindValues = [multigrid, mainVar, mainVal, secondVar];
+            select();
+            if (count>0) {
+                var obj = getObjectInRow(0);
+                return obj;
+            } else
+                return null;
+        }
     }
 
     firstPane: Common.NavigationPane {
@@ -250,6 +267,8 @@ Common.ThreePanesNavigator {
             crossHeadingText: variablesModel.keyVariableTitle
             crossHeadingKey: variablesModel.keyVariable
 
+            onCellReselected: console.log("C x R", colKey, rowKey)
+
             function getHeadingsFromKeyValues() {
                 verticalHeadingModel.clear();
                 for (var i=0; i<keyValuesModel.count; i++) {
@@ -266,6 +285,30 @@ Common.ThreePanesNavigator {
                 }
             }
 
+            function getDataValues() {
+                // Traverse non-key variables and for each of them, traverse key values
+                // In the crossing, look for associated pairs key-value with non-key-values
+
+                cellsModel.clear();
+                console.log("ALL DATA", variablesModel.count, keyValuesModel.count);
+                for (var i=0; i<variablesModel.count; i++) {
+                    var varId = variablesModel.getObjectInRow(i)['id'];
+
+                    var columnValues = [];
+                    for (var j=0; j<keyValuesModel.count; j++) {
+                        var keyValueId = keyValuesModel.getObjectInRow(j)['id'];
+
+                        var obj = dataModel.lookFor(selectedMultigrid, variablesModel.keyVariable, keyValueId, varId);
+                        if (obj !== null) {
+                            columnValues.push({key: keyValueId, value: obj['id'], text: obj['secondValue']});
+                        } else {
+                            columnValues.push({key: keyValueId, value: '', text: ''});
+                        }
+                    }
+                    cellsModel.append({columns: columnValues});
+                }
+            }
+
             Connections {
                 target: variablesModel
 
@@ -279,6 +322,7 @@ Common.ThreePanesNavigator {
 
                 onUpdated: {
                     genericGrid.getHeadingsFromKeyValues();
+                    genericGrid.getDataValues();
                 }
             }
 
@@ -305,66 +349,56 @@ Common.ThreePanesNavigator {
 
         headingText: ''
         headingColor: 'black'
+    }
 
-        Loader {
-            id: editorLoader
+    Connections {
+        target: thirdPaneItem.innerItem
+        ignoreUnknownSignals: true
 
-            anchors.fill: parent
+        onVariableCreated: {
+            variablesModel.update();
+            openPane('second');
+        }
 
-            Connections {
-                target: gridsListBaseItem
+        onTitleChanged: {
+            variablesModel.update();
+        }
 
-                onCreateNewVariable: {
-                    editorLoader.setSource('qrc:///modules/multigrids/MultigridVariableEditor.qml', {multigrid: multigrid});
-                    editorsPane.headingText = qsTr('Crear una nova variable')
-                    openPane('third');
-                }
+        onDescChanged: {
+            variablesModel.update();
+        }
 
-                onEditVariable: {
-                    console.log('key----', variable);
-                    editorLoader.setSource('qrc:///modules/multigrids/MultigridVariableEditor.qml', {multigrid: multigrid, variable: variable});
-                    editorsPane.headingText = qsTr('Editor de variable');
-                    openPane('third');
-                }
+        onIsKeyChanged: {
+            variablesModel.update();
+        }
 
-                onEditVariableValue: {
-                    editorLoader.setSource('qrc:///modules/multigrids/MultigridVariableEditor.qml', {multigrid: selectedMultigrid, variable: variable});
-                    editorsPane.headingText = qsTr('Editor de variable');
-                    openPane('third');
-                }
+        onVariableValueAdded: keyValuesModel.update()
 
-            }
+        onVariableValuesChanged: keyValuesModel.update()
 
-            Connections {
-                target: editorLoader.item
-                ignoreUnknownSignals: true
+        onVariableRemoved: {
+            variablesModel.update();
+            openPane('second');
+        }
+    }
 
-                onVariableCreated: {
-                    variablesModel.update();
-                    openPane('second');
-                }
+    Connections {
+        target: gridsListBaseItem
 
-                onTitleChanged: {
-                    variablesModel.update();
-                }
+        onCreateNewVariable: {
+            setThirdPaneSource('multigrids/MultigridVariableEditor', {multigrid: multigrid}, {headingText: qsTr("Crear una nova variable")});
+            openPane('third');
+        }
 
-                onDescChanged: {
-                    variablesModel.update();
-                }
+        onEditVariable: {
+            console.log('key----', variable);
+            setThirdPaneSource('multigrids/MultigridVariableEditor', {multigrid: multigrid, variable: variable}, {headingText: qsTr('Editor de variable')});
+            openPane('third');
+        }
 
-                onIsKeyChanged: {
-                    variablesModel.update();
-                }
-
-                onVariableValueAdded: keyValuesModel.update()
-
-                onVariableValuesChanged: keyValuesModel.update()
-
-                onVariableRemoved: {
-                    variablesModel.update();
-                    openPane('second');
-                }
-            }
+        onEditVariableValue: {
+            setThirdPaneSource('multigrids/MultigridVariableEditor', {multigrid: selectedMultigrid, variable: variable}, {headingText: qsTr('Editor de variable')});
+            openPane('third');
         }
 
     }

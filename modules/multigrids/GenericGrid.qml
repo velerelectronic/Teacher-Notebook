@@ -25,7 +25,9 @@ Item {
         ListElement { text: 'v3'; key: 6 }
     }
 
-    property var cellsModel: [[1, 2, 3], ['a', 'b', 'c'], ['yes', 'no', 'maybe']]
+    property ListModel cellsModel: ListModel {
+        ListElement { columns: []; key: 1 }
+    }
 
     signal addColumn()
     signal addRow()
@@ -34,6 +36,8 @@ Item {
     signal editRow(int key)
 
     signal cellSelected(int column, int row)
+    signal cellReselected(int colKey, int rowKey)
+
     signal horizontalHeadingCellSelected(int column)
     signal verticalHeadingCellSelected(int row)
 
@@ -263,12 +267,14 @@ Item {
                     spacing: oneGridView.columnSpacing
 
                     Repeater {
-                        model: oneGridView.numberOfColumns + 1
+                        model: cellModel
 
                         Item {
                             id: oneGridColumn
 
                             property int columnIndex: model.index
+                            property int colKey: model.key
+                            property ListModel columns: model.columns
 
                             width: oneGridView.columnWidth
                             height: mainGridItem.height
@@ -278,13 +284,17 @@ Item {
                                 spacing: oneGridView.rowSpacing
 
                                 Repeater {
-                                    model: oneGridView.numberOfRows + 1
+                                    model: oneGridColumn.columns
 
                                     Rectangle {
                                         id: oneGridCell
 
                                         property int rowIndex: model.index
                                         property bool isMarginal: (oneGridColumn.columnIndex == oneGridView.numberOfColumns) || (oneGridCell.rowIndex == oneGridView.numberOfRows)
+                                        property bool isSelected: (selectedRow == oneGridCell.rowIndex) && (selectedColumn == oneGridColumn.columnIndex)
+                                        property int rowKey: model.key
+                                        property int colKey: oneGridColumn.colKey
+                                        property int value: model.value
 
                                         width: oneGridView.columnWidth
                                         height: oneGridView.rowHeight
@@ -312,7 +322,7 @@ Item {
                                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                             elide: Text.ElideRight
 
-                                            text: (oneGridCell.isMarginal)?'':cellsModel[oneGridColumn.columnIndex][oneGridCell.rowIndex]
+                                            text: (oneGridCell.isMarginal)?'':model.text
                                         }
 
                                         MouseArea {
@@ -321,9 +331,13 @@ Item {
                                             enabled: !oneGridCell.isMarginal
 
                                             onClicked: {
-                                                selectedColumn = oneGridColumn.columnIndex;
-                                                selectedRow = oneGridCell.rowIndex;
-                                                oneGridView.cellSelected(oneGridColumn.columnIndex, oneGridCell.rowIndex);
+                                                if (oneGridCell.isSelected) {
+                                                    oneGridView.cellReselected(oneGridCell.colKey, oneGridCell.rowKey, oneGridCell.value);
+                                                } else {
+                                                    selectedColumn = oneGridColumn.columnIndex;
+                                                    selectedRow = oneGridCell.rowIndex;
+                                                    oneGridView.cellSelected(oneGridCell.colKey, oneGridCell.rowKey);
+                                                }
                                             }
                                         }
 

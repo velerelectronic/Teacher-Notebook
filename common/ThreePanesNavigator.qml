@@ -14,6 +14,10 @@ Item {
     property int minimumSecondPaneHeight: units.fingerUnit * 2
     property int minimumThirdPaneHeight: units.fingerUnit * 2
 
+    property alias firstPaneItem: firstPaneLoader.item
+    property alias secondPaneItem: secondPaneLoader.item
+    property alias thirdPaneItem: thirdPaneLoader.item
+
     property int visibleFirstPaneHeight
     property int visibleSecondPaneHeight
     property int visibleThirdPaneHeight
@@ -175,16 +179,28 @@ Item {
         visibleNavigatorArea.state = newstate;
     }
 
-    function setFirstPaneSource(url, properties) {
-        return firstPaneLoader.setSource(url, properties);
+    function setFirstPaneSource(url, properties, paneProps) {
+        for (var prop in paneProps) {
+            firstPaneLoader.item[prop] = paneProps[prop];
+        }
+
+        return firstPaneLoader.item.setSource('qrc:/modules/' + url + '.qml', properties);
     }
 
-    function setSecondPaneSource(url, properties) {
-        return secondPaneLoader.setSource(url, properties);
+    function setSecondPaneSource(url, properties, paneProps) {
+        for (var prop in paneProps) {
+            secondPaneLoader.item[prop] = paneProps[prop];
+        }
+
+        return secondPaneLoader.item.setSource('qrc:/modules/' + url + '.qml', properties);
     }
 
-    function setThirdPaneSource(url, properties) {
-        return thirdPaneLoader.setSource(url, properties);
+    function setThirdPaneSource(url, properties, paneProps) {
+        for (var prop in paneProps) {
+            thirdPaneLoader.item[prop] = paneProps[prop];
+        }
+
+        return thirdPaneLoader.item.setSource('qrc:/modules/' + url + '.qml', properties);
 
     }
 
