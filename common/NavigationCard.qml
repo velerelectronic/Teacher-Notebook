@@ -49,11 +49,14 @@ Item {
                 top: parent.top
                 left: parent.left
                 right: parent.right
+                leftMargin: units.fingerUnit
+                rightMargin: units.fingerUnit
             }
             height: headingHeight
 
             color: headingColor
             padding: units.nailUnit
+            font.bold: true
             font.pixelSize: fontSize
             verticalAlignment: Text.AlignVCenter
 

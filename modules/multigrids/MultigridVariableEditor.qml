@@ -205,6 +205,11 @@ Item {
 
                 property int valueId: model.id
 
+                MouseArea {
+                    anchors.fill: parent
+                    onPressAndHold: valuesModel.removeValue(oneValueRect.valueId)
+                }
+
                 RowLayout {
                     anchors.fill: parent
                     spacing: units.nailUnit
@@ -231,10 +236,6 @@ Item {
                     }
                 }
 
-                MouseArea {
-                    anchors.fill: parent
-                    onPressAndHold: valuesModel.removeValue(oneValueRect.valueId)
-                }
             }
 
             Common.SuperposedButton {

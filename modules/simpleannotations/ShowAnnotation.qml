@@ -320,6 +320,8 @@ Rectangle {
                         width: parent.width
                         height: requiredHeight
 
+                        interactive: false
+
                         model: AnnotationTimeMarksModel {
                             id: marksModel
 
@@ -328,6 +330,11 @@ Rectangle {
 
                             function newTimeMark(mark, label, type) {
                                 insertObject({annotation: identifier, timeMark: mark, label: label, markType: type});
+                                update();
+                            }
+
+                            function updateTimeMark(markId, timeMark, label, markType) {
+                                updateObject(markId, {timeMark: timeMark, label: label, markType: markType});
                                 update();
                             }
 
@@ -402,10 +409,52 @@ Rectangle {
                         }
 
                         delegate: Rectangle {
+                            id: timeMarkRect
+
                             width: timeMarksList.width
                             height: units.fingerUnit
 
+                            property int requiredShowHeight: units.fingerUnit
+                            property int requiredEditorHeight: units.fingerUnit * 8
+                            property int markId: model.id
+
+                            states: [
+                                State {
+                                    name: 'show'
+                                    PropertyChanges {
+                                        target: showLayout
+                                        visible: true
+                                    }
+                                    PropertyChanges {
+                                        target: timeMarkEditorItem
+                                        visible: false
+                                    }
+                                    PropertyChanges {
+                                        target: timeMarkRect
+                                        height: timeMarkRect.requiredShowHeight
+                                    }
+                                },
+                                State {
+                                    name: 'edit'
+                                    PropertyChanges {
+                                        target: showLayout
+                                        visible: false
+                                    }
+                                    PropertyChanges {
+                                        target: timeMarkEditorItem
+                                        visible: true
+                                    }
+                                    PropertyChanges {
+                                        target: timeMarkRect
+                                        height: timeMarkRect.requiredEditorHeight
+                                    }
+                                }
+                            ]
+
+                            state: 'show'
                             RowLayout {
+                                id: showLayout
+
                                 anchors.fill: parent
                                 anchors.margins: units.nailUnit
                                 spacing: units.nailUnit
@@ -434,7 +483,34 @@ Rectangle {
 
                             MouseArea {
                                 anchors.fill: parent
+                                onClicked: {
+                                    timeMarkEditorItem.showEditor(model.timeMark, model.label, model.markType);
+                                }
                                 onPressAndHold: deleteTimeMarkDialog.openDeleteConfirmation(model.id, model.timeMark)
+                            }
+
+                            Loader {
+                                id: timeMarkEditorItem
+
+                                anchors.fill: parent
+
+                                function showEditor(timeMark, label, markType) {
+                                    setSource('TimeMarkEditor.qml', {timeMark: timeMark, label: label, markType: markType });
+                                    timeMarkRect.state = 'edit';
+                                }
+
+                                Connections {
+                                    target: timeMarkEditorItem.item
+
+                                    onCloseEditor: {
+                                        timeMarkRect.state = 'show';
+                                    }
+
+                                    onSaveTimeMark: {
+                                        timeMarkRect.state = 'show';
+                                        marksModel.updateTimeMark(timeMarkRect.markId, timeMark, label, markType);
+                                    }
+                                }
                             }
                         }
 

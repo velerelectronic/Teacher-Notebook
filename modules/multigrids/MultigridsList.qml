@@ -98,23 +98,6 @@ Common.ThreePanesNavigator {
 
     MultigridDataModel {
         id: dataModel
-
-        filters: [
-            'multigrid=?',
-            'mainVariable=?',
-            'mainValue=?',
-            'secondVariable=?'
-        ]
-
-        function lookFor(multigrid, mainVar, mainVal, secondVar) {
-            bindValues = [multigrid, mainVar, mainVal, secondVar];
-            select();
-            if (count>0) {
-                var obj = getObjectInRow(0);
-                return obj;
-            } else
-                return null;
-        }
     }
 
     firstPane: Common.NavigationPane {
@@ -267,8 +250,6 @@ Common.ThreePanesNavigator {
             crossHeadingText: variablesModel.keyVariableTitle
             crossHeadingKey: variablesModel.keyVariable
 
-            onCellReselected: console.log("C x R", colKey, rowKey)
-
             function getHeadingsFromKeyValues() {
                 verticalHeadingModel.clear();
                 for (var i=0; i<keyValuesModel.count; i++) {
@@ -298,14 +279,17 @@ Common.ThreePanesNavigator {
                     for (var j=0; j<keyValuesModel.count; j++) {
                         var keyValueId = keyValuesModel.getObjectInRow(j)['id'];
 
-                        var obj = dataModel.lookFor(selectedMultigrid, variablesModel.keyVariable, keyValueId, varId);
+                        var obj = dataModel.getAllDataInfo(variablesModel.keyVariable, keyValueId, varId);
+                        // var obj = dataModel.lookFor(variablesModel.keyVariable, keyValueId, varId);
                         if (obj !== null) {
-                            columnValues.push({key: keyValueId, value: obj['id'], text: obj['secondValue']});
+                            console.log('data', keyValueId, obj['id'], obj['secondValue']);
+                            columnValues.push({key: keyValueId, value: obj['secondValue'], text: "<p>" + obj['secondValueTitle'] + "</p><p>" + obj['secondValueDesc'] + "</p>"});
                         } else {
-                            columnValues.push({key: keyValueId, value: '', text: ''});
+                            console.log('data', keyValueId, -1, "buit");
+                            columnValues.push({key: keyValueId, value: -1, text: ''});
                         }
                     }
-                    cellsModel.append({columns: columnValues});
+                    cellsModel.append({key: varId, columns: columnValues});
                 }
             }
 
@@ -326,22 +310,41 @@ Common.ThreePanesNavigator {
                 }
             }
 
-            onCellSelected: console.log('cell', column, row)
-            onHorizontalHeadingCellSelected: console.log('hheading', column)
-            onVerticalHeadingCellSelected: console.log('vheading', row)
-
             onAddColumn: createNewVariable(selectedMultigrid)
             onAddRow: editVariableValue(variablesModel.keyVariable, -1)
 
             onEditColumn: {
                 editVariable(selectedMultigrid, key);
             }
-
             onEditRow: {
                 console.log('key var', variablesModel.keyVariable);
                 editVariableValue(variablesModel.keyVariable, key);
             }
+
+            onCellReselected: {
+                console.log("C x R", colKey, rowKey)
+                setThirdPaneSource('multigrids/MultigridDataEditor', {keyVariable: variablesModel.keyVariable, keyValue: rowKey, secondVariable: colKey, secondValue: value}, {headingText: qsTr("Edita valors")});
+                //dataEditorConnections.target = thirdPaneItem;
+                openPane('third');
+            }
+            onCellSelected: console.log('cell', colKey, rowKey)
+
+            onHorizontalHeadingCellSelected: console.log('hheading', column)
+            onVerticalHeadingCellSelected: console.log('vheading', row)
+
+            Connections {
+                id: dataEditorConnections
+
+                target: thirdPaneItem.innerItem
+                ignoreUnknownSignals: true
+
+                onValueChanged: {
+                    variablesModel.update();
+                    openPane('second');
+                }
+            }
         }
+
     }
 
     thirdPane: Common.NavigationPane {

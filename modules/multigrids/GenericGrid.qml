@@ -35,8 +35,8 @@ Item {
     signal editColumn(int key)
     signal editRow(int key)
 
-    signal cellSelected(int column, int row)
-    signal cellReselected(int colKey, int rowKey)
+    signal cellSelected(int colKey, int rowKey)
+    signal cellReselected(int rowKey, int colKey, int value)
 
     signal horizontalHeadingCellSelected(int column)
     signal verticalHeadingCellSelected(int row)
@@ -267,7 +267,7 @@ Item {
                     spacing: oneGridView.columnSpacing
 
                     Repeater {
-                        model: cellModel
+                        model: cellsModel
 
                         Item {
                             id: oneGridColumn
@@ -318,6 +318,8 @@ Item {
                                         Text {
                                             anchors.fill: parent
                                             padding: units.nailUnit
+
+                                            verticalAlignment: Text.AlignVCenter
                                             font.pixelSize: units.readUnit
                                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                             elide: Text.ElideRight
@@ -332,7 +334,8 @@ Item {
 
                                             onClicked: {
                                                 if (oneGridCell.isSelected) {
-                                                    oneGridView.cellReselected(oneGridCell.colKey, oneGridCell.rowKey, oneGridCell.value);
+                                                    console.log('compara', oneGridCell.colKey, oneGridCell.rowKey, oneGridCell.value);
+                                                    oneGridView.cellReselected(oneGridCell.rowKey, oneGridCell.colKey, oneGridCell.value);
                                                 } else {
                                                     selectedColumn = oneGridColumn.columnIndex;
                                                     selectedRow = oneGridCell.rowIndex;

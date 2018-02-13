@@ -62,6 +62,7 @@ Item {
         anchors.fill: parent
         padding: editableTextBaseItem.padding
         verticalAlignment: Text.AlignVCenter
+        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         font.pixelSize: units.readUnit
         font.bold: fontBold
         color: fontColor
