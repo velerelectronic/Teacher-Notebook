@@ -1,4 +1,4 @@
-import QtQuick 2.5
+import QtQuick 2.7
 
 Rectangle {
     id: boxedText
@@ -24,11 +24,11 @@ Rectangle {
     Text {
         id: mainText
         anchors.fill: parent
-        anchors.margins: padding
+        padding: parent.padding
 
         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         verticalAlignment: Text.AlignVCenter
-        elide: Text.ElideRight
+        //elide: Text.ElideRight
         font.bold: boxedText.boldFont
     }
 }

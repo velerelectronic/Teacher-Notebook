@@ -80,6 +80,8 @@ Rectangle {
                     right: parent.right
                 }
 
+                clip: true
+
                 sourceComponent: innerComponent
             }
         }

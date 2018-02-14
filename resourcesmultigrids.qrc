@@ -8,5 +8,7 @@
         <file>modules/multigrids/MultigridDataModel.qml</file>
         <file>modules/multigrids/MultigridVariableEditor.qml</file>
         <file>modules/multigrids/MultigridDataEditor.qml</file>
+        <file>modules/multigrids/MultigridVariablesAndValuesModel.qml</file>
+        <file>modules/multigrids/MultigridAssignmentDataModel.qml</file>
     </qresource>
 </RCC>

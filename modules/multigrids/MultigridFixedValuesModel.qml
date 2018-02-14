@@ -18,6 +18,7 @@ SqlTableModel {
     ]
 
     function getVariablesAndValuesInfo(filterStr, bindValues) {
+        console.log("Getting variables and values info", filterStr, bindValues);
         var tbVars = "multigrid_variables";
         var filter = (filterStr !== "")?(" WHERE " + filterStr):""
 
@@ -26,8 +27,11 @@ SqlTableModel {
                + tableName + ".id AS valueId, " + tableName + ".title AS valueTitle, " + tableName + ".desc AS valueDesc, " + tableName + ".config AS valueConfig "
                + "FROM " + tbVars + " LEFT JOIN " + tableName
                + " ON " + tableName + ".variable=" + tbVars + ".id" + filter);
+
+        console.log('countttttt', count);
+
         if (count>0)
-            return getObjectInRow(0);
+            return null; //getObjectInRow(0);
         else
             return null;
     }
