@@ -13,6 +13,7 @@ Item {
     property int    headingHeight: units.fingerUnit * 2
     property string headingText: ''
     property Item navigator
+    property alias innerPageItem: innerPageLoader.item
 
     property alias actualCardVerticalOffset: cardRect.y
 

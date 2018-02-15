@@ -2,7 +2,7 @@ import QtQuick 2.7
 import QtQuick.Layouts 1.3
 import 'qrc:///common' as Common
 
-Common.ThreePanesNavigator {
+Common.CardsNavigator {
     id: gridsListBaseItem
 
     Common.UseUnits {
@@ -10,9 +10,6 @@ Common.ThreePanesNavigator {
     }
 
     signal multigridSelected(int multigrid)
-    signal createNewVariable(int multigrid)
-    signal editVariable(int multigrid, int variable)
-    signal editVariableValue(int variable, int value)
 
     property int selectedMultigrid: -1
 
@@ -100,9 +97,8 @@ Common.ThreePanesNavigator {
         id: dataModel
     }
 
-    firstPane: Common.NavigationPane {
-        headingText: qsTr('Llista de graelles')
-        color: '#86B404'
+    Component {
+        id: gridsListComponent
 
         Common.GeneralListView {
             id: gridsList
@@ -191,11 +187,17 @@ Common.ThreePanesNavigator {
                     onClicked: {
                         selectedMultigrid = model.id;
                         multigridSelected(model.id);
-                        openPane('second');
+                        setNextComponent(gridsList.parent.index, oneGridViewComponent, {headingText: qsTr("Graella")}, {multigrid: selectedMultigrid}, oneGridViewComponent, oneGridViewConnections);
+                        openNextCard(gridsList.parent.index+1);
+                        setConnections(oneGridViewConnections, gridsList);
                     }
                     onPressAndHold: {
                         enabled = false;
                     }
+                }
+
+                Connections {
+                    id: oneGridViewConnections
                 }
             }
 
@@ -214,17 +216,11 @@ Common.ThreePanesNavigator {
                 }
             }
         }
-
     }
 
-    secondPane: Common.NavigationPane {
-        id: oneGridView
 
-        headingText: qsTr('Graella: ') + "<b>" + multigridTitle + "</b>" + multigridDesc
-        color: Qt.lighter('green')
-
-        property string multigridTitle
-        property string multigridDesc
+    Component {
+        id: oneGridViewComponent
 
         GenericGrid {
             id: genericGrid
@@ -232,14 +228,18 @@ Common.ThreePanesNavigator {
             // Columns: variables (not keys)
             // Rows: the key variable with its values
 
+            property int multigrid
+            property string multigridTitle
+            property string multigridDesc
+
             Connections {
                 target: gridsListBaseItem
 
                 onMultigridSelected: {
                     var mg = gridsModel.lookForGrid(multigrid);
                     if (mg != null) {
-                        oneGridView.multigridTitle = mg['title'];
-                        oneGridView.multigridDesc = mg['desc'];
+                        genericGrid.multigridTitle = mg['title'];
+                        genericGrid.multigridDesc = mg['desc'];
                     }
                 }
             }
@@ -310,22 +310,40 @@ Common.ThreePanesNavigator {
                 }
             }
 
-            onAddColumn: createNewVariable(selectedMultigrid)
-            onAddRow: editVariableValue(variablesModel.keyVariable, -1)
+            onAddColumn: {
+                // createNewVariable(selectedMultigrid)
+                var newVarEditor = Qt.createComponent('multigrids/MultigridVariableEditor.qml');
+                setNextComponent(newVarEditor, {multigrid: genericGrid.multigrid}, {headingText: qsTr("Crear una nova variable")});
+                openNextCard(genericGrid.parent.index);
+            }
+            onAddRow: {
+                //editVariableValue(variablesModel.keyVariable, -1)
+
+                setThirdPaneSource('multigrids/MultigridVariableEditor', {multigrid: selectedMultigrid, variable: variable}, {headingText: qsTr('Editor de variable')});
+                openPane('third');
+
+            }
 
             onEditColumn: {
-                editVariable(selectedMultigrid, key);
+                //editVariable(selectedMultigrid, key);
+                console.log('key----', variable);
+                setThirdPaneSource('multigrids/MultigridVariableEditor', {multigrid: multigrid, variable: variable}, {headingText: qsTr('Editor de variable')});
+                openPane('third');
             }
             onEditRow: {
                 console.log('key var', variablesModel.keyVariable);
-                editVariableValue(variablesModel.keyVariable, key);
+                //editVariableValue(variablesModel.keyVariable, key);
+                setThirdPaneSource('multigrids/MultigridVariableEditor', {multigrid: selectedMultigrid, variable: variable}, {headingText: qsTr('Editor de variable')});
+                openPane('third');
             }
 
             onCellReselected: {
                 console.log("C x R", colKey, rowKey)
-                setThirdPaneSource('multigrids/MultigridDataEditor', {keyVariable: variablesModel.keyVariable, keyValue: rowKey, secondVariable: colKey, secondValue: value}, {headingText: qsTr("Edita valors")});
-                //dataEditorConnections.target = thirdPaneItem;
-                openPane('third');
+                appendCardPage(qsTr("Editor de dades"),
+                               'multigrids/MultigridDataEditor',
+                               {headingText: qsTr("Edita valors")},
+                               {keyVariable: variablesModel.keyVariable, keyValue: rowKey, secondVariable: colKey, secondValue: value});
+                editorsConnections.target = getNextItem(getNextItem(parent.index));
             }
             onCellSelected: console.log('cell', colKey, rowKey)
 
@@ -333,77 +351,54 @@ Common.ThreePanesNavigator {
             onVerticalHeadingCellSelected: console.log('vheading', row)
 
             Connections {
-                id: dataEditorConnections
+                id: variableEditorConnections
 
-                target: thirdPaneItem.innerItem
                 ignoreUnknownSignals: true
 
-                onValueChanged: {
+                onVariableCreated: {
+                    variablesModel.update();
+                    openPane('second');
+                }
+
+                onTitleChanged: {
+                    variablesModel.update();
+                }
+
+                onDescChanged: {
+                    variablesModel.update();
+                }
+
+                onIsKeyChanged: {
+                    variablesModel.update();
+                }
+
+                onVariableValueAdded: keyValuesModel.update()
+
+                onVariableValuesChanged: keyValuesModel.update()
+
+                onVariableRemoved: {
                     variablesModel.update();
                     openPane('second');
                 }
             }
-        }
 
-    }
+            Connections {
+                id: editorsConnections
 
-    thirdPane: Common.NavigationPane {
-        id: editorsPane
+                ignoreUnknownSignals: true
 
-        headingText: ''
-        headingColor: 'black'
-    }
+                onValueChanged: {
+                    variablesModel.update();
+                    openPreviousCard();
+                }
+            }
 
-    Connections {
-        target: thirdPaneItem.innerItem
-        ignoreUnknownSignals: true
-
-        onVariableCreated: {
-            variablesModel.update();
-            openPane('second');
-        }
-
-        onTitleChanged: {
-            variablesModel.update();
-        }
-
-        onDescChanged: {
-            variablesModel.update();
-        }
-
-        onIsKeyChanged: {
-            variablesModel.update();
-        }
-
-        onVariableValueAdded: keyValuesModel.update()
-
-        onVariableValuesChanged: keyValuesModel.update()
-
-        onVariableRemoved: {
-            variablesModel.update();
-            openPane('second');
         }
     }
 
-    Connections {
-        target: gridsListBaseItem
 
-        onCreateNewVariable: {
-            setThirdPaneSource('multigrids/MultigridVariableEditor', {multigrid: multigrid}, {headingText: qsTr("Crear una nova variable")});
-            openPane('third');
-        }
+    Component.onCompleted: appendCardComponent(gridsListComponent, {headingText: qsTr("Llista de graelles"), color: 'green'})
 
-        onEditVariable: {
-            console.log('key----', variable);
-            setThirdPaneSource('multigrids/MultigridVariableEditor', {multigrid: multigrid, variable: variable}, {headingText: qsTr('Editor de variable')});
-            openPane('third');
-        }
 
-        onEditVariableValue: {
-            setThirdPaneSource('multigrids/MultigridVariableEditor', {multigrid: selectedMultigrid, variable: variable}, {headingText: qsTr('Editor de variable')});
-            openPane('third');
-        }
-
-    }
 }
 

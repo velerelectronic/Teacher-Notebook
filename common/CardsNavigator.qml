@@ -27,12 +27,24 @@ Item {
         }
     }
 
-    function appendCardPage(title, page, properties) {
+    function appendCardPage(qmlPage, cardProperties, pageProperties) {
         // Add a card at the end of the cards list. The card is defined as a qml page
 
-        var navPane = Qt.createQmlObject();
+        var navCard = Qt.createComponent("qrc:/modules/" + qmlPage + ".qml");
 
-        appendCardObject(title, navPane, properties);
+        appendCardComponent(navCard, cardProperties, pageProperties);
+    }
+
+    function replaceCardComponent(card, pageComp, newCardProperties, pageProperties, connectionsObj) {
+        var cardIdx = card.parent.index;
+        console.log('carddddd', cardIdx);
+        while (totalCount > cardIdx+1) {
+            cardsModel.get(totalCount-1).destroy();
+            cardsModel.remove(totalCount-1);
+        }
+
+        appendCardComponent(pageComp, newCardProperties, pageProperties);
+        connectionsObj.target = getNextItem(cardIdx);
     }
 
     function appendCardComponent(pageComp, cardProperties, pageProperties) {
@@ -67,6 +79,10 @@ Item {
         // Remove the last card of the list
 
         cardsModel.remove(cardsModel.count-1);
+    }
+
+    function setConnections(connectionsObj, page) {
+        connectionsObj.target = getNextItem(page);
     }
 
     function setNextComponent(index, pageComp, cardProperties, pageProperties) {
@@ -118,5 +134,9 @@ Item {
                 break;
         }
 
+    }
+
+    function getNextItem(page) {
+        return cardsModel.get(page.parent.index+1).innerPageItem;
     }
 }
