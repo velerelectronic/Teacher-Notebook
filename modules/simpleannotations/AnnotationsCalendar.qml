@@ -6,8 +6,10 @@ import 'qrc:///modules/calendar' as Calendar
 
 import "qrc:///common/FormatDates.js" as FormatDates
 
-Common.ThreePanesNavigator {
+Item {
     id: annotationsCalendarBaseItem
+
+    signal openCard(string page, var pageProperties, var cardProperties)
 
     Common.UseUnits {
         id: units
@@ -31,174 +33,170 @@ Common.ThreePanesNavigator {
         id: mainMarksModel
     }
 
-    firstPane: Common.NavigationPane {
-        color: Qt.darker('yellow', 1.4)
-        headingText: qsTr("Calendari")
 
-        ColumnLayout {
+    ColumnLayout {
+        anchors.fill: parent
+        spacing: units.nailUnit
+
+        GridLayout {
+            id: calendarGrid
+
             anchors.fill: parent
-            spacing: units.nailUnit
 
-            GridLayout {
-                id: calendarGrid
+            property bool isHorizontal: calendarGrid.width > calendarGrid.height
 
-                anchors.fill: parent
+            columns: (isHorizontal)?2:1
+            rows: (isHorizontal)?1:2
 
-                property bool isHorizontal: calendarGrid.width > calendarGrid.height
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
 
-                columns: (isHorizontal)?2:1
-                rows: (isHorizontal)?1:2
+                ColumnLayout {
+                    anchors.fill: parent
 
-                Item {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    Item {
+                        id: selectorsRow
 
-                    ColumnLayout {
-                        anchors.fill: parent
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: units.fingerUnit
 
-                        Item {
-                            id: selectorsRow
+                        RowLayout {
+                            anchors.fill: parent
+                            spacing: units.nailUnit
 
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: units.fingerUnit
+                            Common.ImageButton {
+                                Layout.preferredWidth: size
+                                size: units.fingerUnit
+                                image: 'arrow-145769'
 
-                            RowLayout {
-                                anchors.fill: parent
-                                spacing: units.nailUnit
-
-                                Common.ImageButton {
-                                    Layout.preferredWidth: size
-                                    size: units.fingerUnit
-                                    image: 'arrow-145769'
-
-                                    onClicked: {
-                                        weeksCalendarView.decreaseWeek();
-                                        referenceDate.text = weeksCalendarView.firstMonthDate.toShortReadableDate();
-                                    }
-                                }
-                                Text {
-                                    id: referenceDate
-
-                                    Layout.fillWidth: true
-                                    Layout.fillHeight: true
-
-                                    font.pixelSize: units.readUnit
-                                    font.bold: true
-
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-
-                                    text: {
-                                        return weeksCalendarView.initialDate.toShortReadableDate();
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: weeksCalendarView.setTodayDate()
-                                    }
-                                }
-                                Common.ImageButton {
-                                    Layout.preferredWidth: size
-                                    size: units.fingerUnit
-                                    image: 'arrow-145766'
-
-                                    onClicked: {
-                                        weeksCalendarView.advanceWeek();
-                                        //referenceDate.text = weeksCalendarView.initialDate.toShortReadableDate();
-                                        referenceDate.text = weeksCalendarView.firstMonthDate.toShortReadableDate();
-                                    }
+                                onClicked: {
+                                    weeksCalendarView.decreaseWeek();
+                                    referenceDate.text = weeksCalendarView.firstMonthDate.toShortReadableDate();
                                 }
                             }
+                            Text {
+                                id: referenceDate
 
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+
+                                font.pixelSize: units.readUnit
+                                font.bold: true
+
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
+                                text: {
+                                    return weeksCalendarView.initialDate.toShortReadableDate();
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: weeksCalendarView.setTodayDate()
+                                }
+                            }
+                            Common.ImageButton {
+                                Layout.preferredWidth: size
+                                size: units.fingerUnit
+                                image: 'arrow-145766'
+
+                                onClicked: {
+                                    weeksCalendarView.advanceWeek();
+                                    //referenceDate.text = weeksCalendarView.initialDate.toShortReadableDate();
+                                    referenceDate.text = weeksCalendarView.firstMonthDate.toShortReadableDate();
+                                }
+                            }
                         }
 
-                        Calendar.WeeksView {
-                            id: weeksCalendarView
+                    }
 
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
+                    Calendar.WeeksView {
+                        id: weeksCalendarView
 
-                            property string todayDate: { return (new Date()).toYYYYMMDDFormat(); }
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
 
-                            weeksNumber: 5
-                            interactive: false
-                            daysOverWidget: true
+                        property string todayDate: { return (new Date()).toYYYYMMDDFormat(); }
 
-                            onSelectedDate: {
-                                setLastSelectedDate(year, month, day);
-                                marksListView.positionAtDate(lastSelectedDate);
+                        weeksNumber: 5
+                        interactive: false
+                        daysOverWidget: true
+
+                        onSelectedDate: {
+                            setLastSelectedDate(year, month, day);
+                            marksListView.positionAtDate(lastSelectedDate);
+                        }
+
+                        onLongSelectedDate: {
+                            setLastSelectedDate(year, month, day);
+                            console.log(lastSelectedDate);
+                            createTimeMarkDialog.openTimeMarkDialog(lastSelectedDate);
+                        }
+
+                        function setLastSelectedDate(year, month, day) {
+                            var date = new Date(year, month, day, 0, 0, 0, 0);
+                            lastSelectedDate = date.toYYYYMMDDFormat();
+                        }
+
+                        onPeriodChanged: {
+                            marksListView.updateTimeMarksList();
+                        }
+
+                        subWidget: Rectangle {
+                            id: dayCell
+
+                            property int day
+                            property int month
+                            property int year
+                            property string dateStr
+
+                            border.color: '#D7DF01'
+                            border.width: (dateStr == lastSelectedDate)?units.nailUnit:0
+
+                            Rectangle {
+                                anchors.fill: parent
+                                anchors.margins: units.nailUnit * 2
+                                color: 'green'
+
+                                visible: dateStr == weeksCalendarView.todayDate
                             }
 
-                            onLongSelectedDate: {
-                                setLastSelectedDate(year, month, day);
-                                console.log(lastSelectedDate);
-                                createTimeMarkDialog.openTimeMarkDialog(lastSelectedDate);
+                            AnnotationsWithTimeMarksModel {
+                                id: marksModel
                             }
 
-                            function setLastSelectedDate(year, month, day) {
-                                var date = new Date(year, month, day, 0, 0, 0, 0);
-                                lastSelectedDate = date.toYYYYMMDDFormat();
-                            }
+                            Connections {
+                                target: annotationsCalendarBaseItem
 
-                            onPeriodChanged: {
-                                marksListView.updateTimeMarksList();
-                            }
-
-                            subWidget: Rectangle {
-                                id: dayCell
-
-                                property int day
-                                property int month
-                                property int year
-                                property string dateStr
-
-                                border.color: '#D7DF01'
-                                border.width: (dateStr == lastSelectedDate)?units.nailUnit:0
-
-                                Rectangle {
-                                    anchors.fill: parent
-                                    anchors.margins: units.nailUnit * 2
-                                    color: 'green'
-
-                                    visible: dateStr == weeksCalendarView.todayDate
-                                }
-
-                                AnnotationsWithTimeMarksModel {
-                                    id: marksModel
-                                }
-
-                                Connections {
-                                    target: annotationsCalendarBaseItem
-
-                                    onTimeMarkCreated: {
-                                        if (timeMark == dayCell.dateStr) {
-                                            dayCell.dateUpdated();
-                                        }
+                                onTimeMarkCreated: {
+                                    if (timeMark == dayCell.dateStr) {
+                                        dayCell.dateUpdated();
                                     }
                                 }
+                            }
 
-                                function dateUpdated() {
-                                    var date = new Date(year, month, day, 0, 0, 0, 0);
-                                    dayCell.dateStr = date.toYYYYMMDDFormat();
-                                    getTimeMarks(dayCell.dateStr);
-                                }
+                            function dateUpdated() {
+                                var date = new Date(year, month, day, 0, 0, 0, 0);
+                                dayCell.dateStr = date.toYYYYMMDDFormat();
+                                getTimeMarks(dayCell.dateStr);
+                            }
 
-                                function getTimeMarks(dateStr) {
-                                    marksModel.selectAnnotations(dateStr);
-                                    var c = marksModel.count
+                            function getTimeMarks(dateStr) {
+                                marksModel.selectAnnotations(dateStr);
+                                var c = marksModel.count
 
-                                    if (c == 0) {
-                                        dayCell.color = 'white';
+                                if (c == 0) {
+                                    dayCell.color = 'white';
+                                } else {
+                                    if (c == 1) {
+                                        dayCell.color = 'yellow';
                                     } else {
-                                        if (c == 1) {
-                                            dayCell.color = 'yellow';
+                                        if (c>10) {
+                                            dayCell.color = 'red';
                                         } else {
-                                            if (c>10) {
-                                                dayCell.color = 'red';
-                                            } else {
-                                                dayCell.color = 'orange';
-                                            }
+                                            dayCell.color = 'orange';
                                         }
                                     }
                                 }
@@ -206,225 +204,204 @@ Common.ThreePanesNavigator {
                         }
                     }
                 }
+            }
 
 
-                Common.GeneralListView {
-                    id: marksListView
+            Common.GeneralListView {
+                id: marksListView
 
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.fillHeight: true
 
-                    model: mainMarksModel
+                model: mainMarksModel
 
-                    toolBarHeight: 0
-                    headingBar: Rectangle {
-                        color: '#DDFFDD'
-                        z: 2
+                toolBarHeight: 0
+                headingBar: Rectangle {
+                    color: '#DDFFDD'
+                    z: 2
 
-                        RowLayout {
-                            anchors.fill: parent
-                            Text {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: parent.width / 4
+                    RowLayout {
+                        anchors.fill: parent
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: parent.width / 4
 
-                                verticalAlignment: Text.AlignVCenter
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                font.bold: true
-                                text: qsTr('Temps')
-                            }
-                            Text {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: parent.width / 4
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            text: qsTr('Temps')
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: parent.width / 4
 
-                                verticalAlignment: Text.AlignVCenter
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                font.bold: true
-                                text: qsTr('Tipus')
-                            }
-                            Text {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: parent.width / 4
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            text: qsTr('Tipus')
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: parent.width / 4
 
-                                verticalAlignment: Text.AlignVCenter
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                font.bold: true
-                                text: qsTr('Etiqueta')
-                            }
-                            Text {
-                                Layout.fillHeight: true
-                                Layout.fillWidth: true
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            text: qsTr('Etiqueta')
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
 
-                                verticalAlignment: Text.AlignVCenter
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                font.bold: true
-                                text: qsTr('Anotació')
-                            }
+                            verticalAlignment: Text.AlignVCenter
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+                            text: qsTr('Anotació')
                         }
                     }
+                }
 
-                    sectionProperty: 'justDate'
-                    sectionCriteria: ViewSection.FullString
-                    sectionDelegate: sectionHeading
+                sectionProperty: 'justDate'
+                sectionCriteria: ViewSection.FullString
+                sectionDelegate: sectionHeading
 
-                    Component {
-                        id: sectionHeading
+                Component {
+                    id: sectionHeading
 
-                        Rectangle {
-                            z: 1
+                    Rectangle {
+                        z: 1
 
-                            width: marksListView.width
-                            height: units.fingerUnit * 2
-
-                            color: (section == lastSelectedDate)?Qt.lighter('gray'):'gray'
-
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.margins: units.nailUnit
-
-                                Text {
-                                    Layout.fillHeight: true
-                                    Layout.fillWidth: true
-                                    verticalAlignment: Text.AlignVCenter
-
-                                    font.pixelSize: units.readUnit
-                                    font.bold: true
-                                    color: 'white'
-                                    text: {
-                                        var date = new Date();
-                                        date.fromYYYYMMDDFormat(section);
-                                        return date.toLocaleDateString();
-                                    }
-                                }
-
-                                Common.SuperposedButton {
-                                    Layout.fillHeight: true
-                                    size: units.fingerUnit
-                                    imageSource: 'plus-24844'
-
-                                    onClicked: createTimeMarkDialog.openTimeMarkDialog(section)
-
-                                }
-                            }
-
-                        }
-                    }
-
-                    delegate: Rectangle {
                         width: marksListView.width
-                        height: units.fingerUnit * 4
+                        height: units.fingerUnit * 2
 
-                        color: (model.markId == lastSelectedMarkId)?'yellow':'white'
+                        color: (section == lastSelectedDate)?Qt.lighter('gray'):'gray'
 
                         RowLayout {
                             anchors.fill: parent
                             anchors.margins: units.nailUnit
-                            spacing: units.nailUnit
 
-                            Text {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: parent.width / 4
-
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                text: model.timeMark
-                            }
-                            Text {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: parent.width / 4
-
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-
-                                text: model.markType
-                            }
-                            Text {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: parent.width / 4
-
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.pixelSize: units.readUnit
-                                elide: Text.ElideRight
-                                text: model.markLabel
-                            }
                             Text {
                                 Layout.fillHeight: true
                                 Layout.fillWidth: true
+                                verticalAlignment: Text.AlignVCenter
 
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                 font.pixelSize: units.readUnit
-                                elide: Text.ElideRight
-                                text: '<p><b>' + model.annotationTitle + '</b></p><p>' + model.annotationDesc + '</p>'
+                                font.bold: true
+                                color: 'white'
+                                text: {
+                                    var date = new Date();
+                                    date.fromYYYYMMDDFormat(section);
+                                    return date.toLocaleDateString();
+                                }
+                            }
+
+                            Common.SuperposedButton {
+                                Layout.fillHeight: true
+                                size: units.fingerUnit
+                                imageSource: 'plus-24844'
+
+                                onClicked: createTimeMarkDialog.openTimeMarkDialog(section)
+
                             }
                         }
 
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                lastSelectedMarkId = -1;
-                                // the following order of assignments is important
-                                lastSelectedAnnotation = model.annotationId;
-                                lastSelectedMarkId = model.markId;
-                            }
+                    }
+                }
+
+                delegate: Rectangle {
+                    width: marksListView.width
+                    height: units.fingerUnit * 4
+
+                    color: (model.markId == lastSelectedMarkId)?'yellow':'white'
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: units.nailUnit
+                        spacing: units.nailUnit
+
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: parent.width / 4
+
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.pixelSize: units.readUnit
+                            text: model.timeMark
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: parent.width / 4
+
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.pixelSize: units.readUnit
+
+                            text: model.markType
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: parent.width / 4
+
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.pixelSize: units.readUnit
+                            elide: Text.ElideRight
+                            text: model.markLabel
+                        }
+                        Text {
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.pixelSize: units.readUnit
+                            elide: Text.ElideRight
+                            text: '<p><b>' + model.annotationTitle + '</b></p><p>' + model.annotationDesc + '</p>'
                         }
                     }
 
-                    function updateTimeMarksList() {
-                        var start = weeksCalendarView.getFirstDate().toYYYYMMDDFormat();
-                        var end = weeksCalendarView.getLastDate().toYYYYMMDDFormat();
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            lastSelectedMarkId = -1;
+                            // the following order of assignments is important
+                            lastSelectedAnnotation = model.annotationId;
+                            lastSelectedMarkId = model.markId;
 
-                        console.log('sten', start, end);
-                        mainMarksModel.selectAnnotationsBetweenDates(start, end);
-                    }
-
-                    function positionAtDate(dateStr) {
-                        var i=0;
-                        var found = false;
-                        while ((i<mainMarksModel.count) && (!found)) {
-                            var timeMark = mainMarksModel.getObjectInRow(i)['justDate'];
-                            if (timeMark == dateStr) {
-                                found = true;
-                            } else {
-                                i++;
+                            if ((lastSelectedMarkId > -1) && (lastSelectedAnnotation > -1)) {
+                                openCard("simpleannotations/ShowAnnotation", {identifier: lastSelectedAnnotation}, {headingText: qsTr('Anotació')});
                             }
-                        }
-                        if (found) {
-                            marksListView.positionAtIndex(i, ListView.Beginning);
+
                         }
                     }
                 }
-            }
 
-        }
+                function updateTimeMarksList() {
+                    var start = weeksCalendarView.getFirstDate().toYYYYMMDDFormat();
+                    var end = weeksCalendarView.getLastDate().toYYYYMMDDFormat();
 
-    }
+                    console.log('sten', start, end);
+                    mainMarksModel.selectAnnotationsBetweenDates(start, end);
+                }
 
-    secondPane: Common.NavigationPane {
-        id: secondNavigationPane
-
-        headingText: qsTr("Anotació")
-        headingColor: 'black'
-
-        Loader {
-            id: secondPaneLoader
-
-            anchors.fill: parent
-
-            Connections {
-                target: annotationsCalendarBaseItem
-
-                onLastSelectedMarkIdChanged: {
-                    if ((lastSelectedMarkId > -1) && (lastSelectedAnnotation > -1)) {
-                        secondPaneLoader.sourceComponent = null;
-                        secondPaneLoader.setSource("ShowAnnotation.qml", {identifier: lastSelectedAnnotation});
-                        openPane("second");
+                function positionAtDate(dateStr) {
+                    var i=0;
+                    var found = false;
+                    while ((i<mainMarksModel.count) && (!found)) {
+                        var timeMark = mainMarksModel.getObjectInRow(i)['justDate'];
+                        if (timeMark == dateStr) {
+                            found = true;
+                        } else {
+                            i++;
+                        }
+                    }
+                    if (found) {
+                        marksListView.positionAtIndex(i, ListView.Beginning);
                     }
                 }
             }
         }
+
     }
 
     MessageDialog {
@@ -458,4 +435,5 @@ Common.ThreePanesNavigator {
             }
         }
     }
+
 }

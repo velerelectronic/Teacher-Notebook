@@ -10,5 +10,6 @@
         <file>modules/multigrids/MultigridDataEditor.qml</file>
         <file>modules/multigrids/MultigridVariablesAndValuesModel.qml</file>
         <file>modules/multigrids/MultigridAssignmentDataModel.qml</file>
+        <file>modules/multigrids/ShowMultigrid.qml</file>
     </qresource>
 </RCC>

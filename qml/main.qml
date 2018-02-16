@@ -134,9 +134,13 @@ Window {
 
         globalMargins: 0
 
-        function openPage(page, properties) {
-            dbPanel.setMainSource('qrc:///modules/' + page + '.qml', properties);
+        signal openPage(string page, var pageProperties, var cardProperties)
+
+        /*
+        {
+            //dbPanel.setMainSource('qrc:///modules/' + page + '.qml', properties);
         }
+        */
 
         itemSubPanel: Rectangle {
             color: 'green'
@@ -162,32 +166,54 @@ Window {
                     }
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: dbPanel.openPage(model.page, model.properties);
+                        onClicked: dbPanel.openPage(model.page, model.properties, {headingText: caption, color: Qt.lighter('green')});
                     }
                 }
             }
             Component.onCompleted: {
-                menuModel.append({caption: qsTr('Anotacions'), page: 'simpleannotations/SimpleAnnotationsList', properties: {}});
-                menuModel.append({caption: qsTr('Calendari'), page: 'simpleannotations/AnnotationsCalendar', properties: {}});
-                menuModel.append({caption: qsTr('Graelles'), page: 'multigrids/MultigridsList', properties: {}});
+                menuModel.append({caption: qsTr('Anotacions'), page: 'simpleannotations/SimpleAnnotationsList', properties: {headingText: qsTr("Llista d'anotacions"), headingColor: 'white', headingBgColor: Qt.darker('green',1.9)}});
+                menuModel.append({caption: qsTr('Calendari'), page: 'simpleannotations/AnnotationsCalendar', properties: {headingText: qsTr("Calendari")}});
+                menuModel.append({caption: qsTr('Graelles'), page: 'multigrids/MultigridsList', properties: {headingText: qsTr('Graelles'), backgroundColor: 'green', headingColor: 'white'}});
                 menuModel.append({caption: qsTr('Rúbriques *'), page: '', properties: {}});
-                menuModel.append({caption: qsTr('Galeria'), page: 'files/Gallery', properties: {}});
+                menuModel.append({caption: qsTr('Galeria'), page: 'files/Gallery', properties: {headingText: qsTr("Galeria")}});
                 menuModel.append({caption: qsTr('Eines *'), page: '', properties: {}});
                 menuModel.append({caption: qsTr('Feeds *'), page: '', properties: {}});
                 menuModel.append({caption: qsTr('Planificacions *'), page: '', properties: {}});
             }
         }
 
-        itemMainPanel: Rectangle {
-            color: 'yellow'
-            Image {
+        itemMainPanel: Item {
+            Rectangle {
                 anchors.fill: parent
-                anchors.margins: Math.min(parent.width * 0.1, parent.height * 0.1)
+                color: '#AAAAAA'
+                Image {
+                    anchors.fill: parent
+                    anchors.margins: Math.min(parent.width * 0.1, parent.height * 0.1)
 
-                fillMode: Image.PreserveAspectFit
-                source: 'qrc:///icons/small-41255.svg'
+                    fillMode: Image.PreserveAspectFit
+                    source: 'qrc:///icons/small-41255.svg'
+                }
+            }
+
+            Common.CardsNavigator {
+                id: cardsNavigator
+
+                anchors.fill: parent
+
+                Connections {
+                    target: dbPanel
+
+                    onOpenPage: {
+                        cardsNavigator.insertFirstPage(page, cardProperties, pageProperties);
+                    }
+
+                    onClosePage: {
+
+                    }
+                }
             }
         }
+
     }
 
     // Proposal

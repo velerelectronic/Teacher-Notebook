@@ -50,8 +50,6 @@
         <file>common/GeneralListView.qml</file>
         <file>common/ExpandableToolPanel.qml</file>
         <file>common/InsideEditor.qml</file>
-        <file>common/ThreePanesNavigator.qml</file>
-        <file>common/NavigationPane.qml</file>
         <file>common/EditableText.qml</file>
         <file>common/CardsNavigator.qml</file>
         <file>common/NavigationCard.qml</file>

@@ -142,8 +142,12 @@ Item {
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
-                                    selectedColumn = model.index;
-                                    horizontalHeadingCellSelected(model.index);
+                                    if (selectedColumn == model.index) {
+                                        editColumn(model.key);
+                                    } else {
+                                        selectedColumn = model.index;
+                                        horizontalHeadingCellSelected(model.index);
+                                    }
                                 }
                                 onPressAndHold: editColumn(model.key);
                             }
@@ -215,8 +219,12 @@ Item {
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
-                                    selectedRow = model.index;
-                                    verticalHeadingCellSelected(model.index);
+                                    if (selectedRow == model.index) {
+                                        editRow(verticalHeadingCell.key);
+                                    } else {
+                                        selectedRow = model.index;
+                                        verticalHeadingCellSelected(model.index);
+                                    }
                                 }
                                 onPressAndHold: editRow(verticalHeadingCell.key);
                             }

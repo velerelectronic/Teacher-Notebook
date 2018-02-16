@@ -4,6 +4,8 @@ import QtQml.Models 2.3
 Item {
     id: cardsNavigatorBase
 
+    objectName: "CardsNavigator"
+
     ObjectModel {
         id: cardsModel
     }
@@ -18,6 +20,28 @@ Item {
             anchors.fill: cardsNavigatorBase
 
             totalCount: cardsNavigatorBase.totalCount
+
+            onOpenIndexedCard: {
+                removeNextCards(index);
+                console.log('appending indexed', page, pageProperties, cardProperties);
+                appendCardComponent(page, pageProperties, cardProperties);
+                openCard(index+1);
+            }
+
+            onCardSelected: {
+                closeNextCard(index);
+            }
+
+            onCardHasMoved: {
+                movePreviousCards(index);
+                moveNextCards(index+1);
+            }
+
+            onConnectToNextCard: {
+                if (index+1<totalCount) {
+                    connections.target = cardsModel.get(index+1).innerPageItem;
+                }
+            }
         }
     }
 
@@ -27,57 +51,27 @@ Item {
         }
     }
 
-    function appendCardPage(qmlPage, cardProperties, pageProperties) {
-        // Add a card at the end of the cards list. The card is defined as a qml page
-
-        var navCard = Qt.createComponent("qrc:/modules/" + qmlPage + ".qml");
-
-        appendCardComponent(navCard, cardProperties, pageProperties);
-    }
-
-    function replaceCardComponent(card, pageComp, newCardProperties, pageProperties, connectionsObj) {
-        var cardIdx = card.parent.index;
-        console.log('carddddd', cardIdx);
-        while (totalCount > cardIdx+1) {
-            cardsModel.get(totalCount-1).destroy();
-            cardsModel.remove(totalCount-1);
-        }
-
-        appendCardComponent(pageComp, newCardProperties, pageProperties);
-        connectionsObj.target = getNextItem(cardIdx);
-    }
-
-    function appendCardComponent(pageComp, cardProperties, pageProperties) {
+    function appendCardComponent(pageComp, pageProperties, cardProperties) {
         // Add a card at the end of the cards list. The card is an existing object
 
         cardProperties['navigator'] = cardsNavigatorBase;
         var navCard = navigationCardComponent.createObject(cardsNavigatorBase, cardProperties);
 
-        /*
-        for (var prop in cardProperties) {
-            navCard[prop] = cardProperties[prop];
-        }
-        */
-
         console.log('setting ', pageComp);
-        navCard.setSourceComponent(pageComp, pageProperties);
+        if (typeof pageComp !== 'string') {
+            navCard.setSourceComponent(pageComp, pageProperties);
+        } else {
+            navCard.setPageSource(pageComp, pageProperties);
+        }
 
 //        navCard.parent = cardsModel;
         cardsModel.append(navCard);
     }
 
-    Component {
-        id: tempComp
-
-        Rectangle {
-            border.color: 'black'
-            color: 'pink'
-        }
-    }
-
     function popCard() {
         // Remove the last card of the list
 
+        cardsModel.get(cardsModel.count-1).destroy();
         cardsModel.remove(cardsModel.count-1);
     }
 
@@ -85,12 +79,14 @@ Item {
         connectionsObj.target = getNextItem(page);
     }
 
-    function setNextComponent(index, pageComp, cardProperties, pageProperties) {
-        console.log('index', index, totalCount);
-        if (index+1 < totalCount) {
-            cardsModel.get(index+1).setSourceComponent(pageComp, pageProperties);
-        } else {
-            appendCardComponent(pageComp, cardProperties, pageProperties);
+    function insertFirstPage(page, pageProperties, cardProperties) {
+        removeNextCards(-1);
+        appendCardComponent(page, pageProperties, cardProperties, false)
+    }
+
+    function removeNextCards(index) {
+        while (cardsModel.count > index+1) {
+            popCard();
         }
     }
 
@@ -128,6 +124,7 @@ Item {
         for (var i=index; i<totalCount-1; i++) {
             var next = cardsModel.get(i+1);
             var actual = cardsModel.get(i);
+            console.log('obj name', next.objectName, 'obj name', actual.objectName);
             if (actual.actualCardVerticalOffset + actual.headingHeight > next.actualCardVerticalOffset) {
                 next.actualCardVerticalOffset = actual.actualCardVerticalOffset + actual.headingHeight;
             } else

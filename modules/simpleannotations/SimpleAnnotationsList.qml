@@ -3,300 +3,266 @@ import QtQuick.Layouts 1.3
 import 'qrc:///common' as Common
 import 'qrc:///modules/basic' as Basic
 
-Common.CardsNavigator {
-    id: simpleAnnotationsListBaseItem
+Common.GeneralListView {
+    id: annotationsListView
 
-    property Component secondComponent
-
-    signal openAnnotation(int identifier)
+    property int lastSelectedAnnotation: -1
+    signal openCard(string page, var pageProperties, var cardProperties)
 
     Common.UseUnits {
         id: units
     }
 
-    AnnotationTimeMarksModel {
-        id: timeMarksModel
+
+    SimpleAnnotationsModel {
+        id: annotationsModel
+
+        property var today: new Date()
+
+        sort: 'updated DESC'
+
+        function update() {
+            var today = new Date();
+            select();
+        }
+
+        onUpdatedAnnotation: {
+            if (annotation > -1) {
+                lastSelectedAnnotation = annotation;
+                update();
+            }
+        }
+
+        Component.onCompleted: {
+            createTable();
+            update();
+        }
     }
 
+    model: annotationsModel
 
-    Component {
-        id: annotationsListComponent
+    toolBarHeight: (units.fingerUnit + units.nailUnit) * 2
 
-        Common.GeneralListView {
-            id: annotationsListView
+    toolBar: Item {
+        Basic.ButtonsRow {
+            id: annotationsListButtons
 
-            property int lastSelectedAnnotation: -1
+            color: '#AAFFAA'
+            clip: true
 
-            SimpleAnnotationsModel {
-                id: annotationsModel
+            anchors.fill: parent
 
-                property var today: new Date()
+            buttonsSpacing: units.fingerUnit
 
-                sort: 'updated DESC'
+            Item {
+                height: annotationsListButtons.height
+                width: annotationsListButtons.height
+            }
 
-                function update() {
-                    var today = new Date();
-                    select();
-                }
+            Common.SearchBox {
+                id: searchBox
 
-                onUpdatedAnnotation: {
-                    if (annotation > -1) {
-                        lastSelectedAnnotation = annotation;
-                        update();
-                    }
-                }
+                height: annotationsListButtons.height
+                width: annotationsListButtons.width / 2
 
-                Component.onCompleted: {
-                    createTable();
-                    update();
+                text: '' // docAnnotationsRect.searchString
+
+                onIntroPressed: {
+                    annotationsModel.searchFields = annotationsModel.fieldNames;
+                    annotationsModel.searchString = text;
+                    annotationsModel.update();
                 }
             }
 
-            model: annotationsModel
+            Common.ImageButton {
+                height: annotationsListButtons.height
+                width: height
 
-            toolBarHeight: (units.fingerUnit + units.nailUnit) * 2
-
-            toolBar: Item {
-                Basic.ButtonsRow {
-                    id: annotationsListButtons
-
-                    color: '#AAFFAA'
-                    clip: true
-
-                    anchors.fill: parent
-
-                    buttonsSpacing: units.fingerUnit
-
-                    Item {
-                        height: annotationsListButtons.height
-                        width: annotationsListButtons.height
-                    }
-
-                    Common.SearchBox {
-                        id: searchBox
-
-                        height: annotationsListButtons.height
-                        width: annotationsListButtons.width / 2
-
-                        text: '' // docAnnotationsRect.searchString
-
-                        onIntroPressed: {
-                            annotationsModel.searchFields = annotationsModel.fieldNames;
-                            annotationsModel.searchString = text;
-                            annotationsModel.update();
-                        }
-                    }
-
-                    Common.ImageButton {
-                        height: annotationsListButtons.height
-                        width: height
-
-                        image: 'check-mark-303498'
-                        onClicked: {
-                        }
-                    }
+                image: 'check-mark-303498'
+                onClicked: {
                 }
             }
+        }
+    }
 
-            headingBar: Rectangle {
-                color: '#DDFFDD'
+    headingBar: Rectangle {
+        color: '#DDFFDD'
 
-                RowLayout {
-                    anchors.fill: parent
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: parent.width / 4
+        RowLayout {
+            anchors.fill: parent
+            Text {
+                Layout.fillHeight: true
+                Layout.preferredWidth: parent.width / 4
 
-                        verticalAlignment: Text.AlignVCenter
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        font.pixelSize: units.readUnit
-                        font.bold: true
-                        text: qsTr('Anotació')
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: parent.width / 4
-
-                        verticalAlignment: Text.AlignVCenter
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        font.pixelSize: units.readUnit
-                        font.bold: true
-                        text: qsTr('Propietari')
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: parent.width / 4
-
-                        verticalAlignment: Text.AlignVCenter
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        font.pixelSize: units.readUnit
-                        font.bold: true
-                        text: qsTr('Modificada')
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-
-                        verticalAlignment: Text.AlignVCenter
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        font.pixelSize: units.readUnit
-                        font.bold: true
-                        text: qsTr('Estat')
-                    }
-                }
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                font.pixelSize: units.readUnit
+                font.bold: true
+                text: qsTr('Anotació')
             }
+            Text {
+                Layout.fillHeight: true
+                Layout.preferredWidth: parent.width / 4
 
-            delegate: Rectangle {
-                width: annotationsListView.width
-                height: units.fingerUnit * 2
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                font.pixelSize: units.readUnit
+                font.bold: true
+                text: qsTr('Propietari')
+            }
+            Text {
+                Layout.fillHeight: true
+                Layout.preferredWidth: parent.width / 4
 
-                color: (model.id == annotationsListView.lastSelectedAnnotation)?'yellow':'white'
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                font.pixelSize: units.readUnit
+                font.bold: true
+                text: qsTr('Modificada')
+            }
+            Text {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
 
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: units.nailUnit
-                    spacing: units.nailUnit
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                font.pixelSize: units.readUnit
+                font.bold: true
+                text: qsTr('Estat')
+            }
+        }
+    }
 
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: parent.width / 4
+    delegate: Rectangle {
+        width: annotationsListView.width
+        height: units.fingerUnit * 2
 
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        font.pixelSize: units.readUnit
-                        elide: Text.ElideRight
-                        text: '<p><b>' + model.title + '</b></p><p>' + model.desc + '</p>'
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: parent.width / 4
+        color: (model.id == annotationsListView.lastSelectedAnnotation)?'yellow':'white'
 
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        font.pixelSize: units.readUnit
-                        text: model.owner
-                    }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: parent.width / 4
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: units.nailUnit
+            spacing: units.nailUnit
 
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        font.pixelSize: units.readUnit
-                        text: {
-                            var updated = new Date(Date.parse(model.updated));
-                            var diff = annotationsModel.today.getTime() - updated.getTime();
+            Text {
+                Layout.fillHeight: true
+                Layout.preferredWidth: parent.width / 4
 
-                            var years = 0;
-                            var months = 0;
-                            var days = 0;
-                            var hours = 0;
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                font.pixelSize: units.readUnit
+                elide: Text.ElideRight
+                text: '<p><b>' + model.title + '</b></p><p>' + model.desc + '</p>'
+            }
+            Text {
+                Layout.fillHeight: true
+                Layout.preferredWidth: parent.width / 4
 
-                            hours = Math.floor(diff / (60 * 60 * 1000));
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                font.pixelSize: units.readUnit
+                text: model.owner
+            }
+            Text {
+                Layout.fillHeight: true
+                Layout.preferredWidth: parent.width / 4
 
-                            days = Math.floor(hours / 24);
-                            hours = hours % 24;
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                font.pixelSize: units.readUnit
+                text: {
+                    var updated = new Date(Date.parse(model.updated));
+                    var diff = annotationsModel.today.getTime() - updated.getTime();
 
-                            months = Math.floor(days / 30);
-                            years = Math.floor(days / 365);
-                            days = days % 30;
+                    var years = 0;
+                    var months = 0;
+                    var days = 0;
+                    var hours = 0;
 
-                            var time0 = qsTr("Fa");
-                            var time1 = "";
-                            var time2 = "";
+                    hours = Math.floor(diff / (60 * 60 * 1000));
 
-                            if (years >=1) {
-                                time1 = years + qsTr(" anys");
-                                time2 = months + qsTr(" mesos");
+                    days = Math.floor(hours / 24);
+                    hours = hours % 24;
+
+                    months = Math.floor(days / 30);
+                    years = Math.floor(days / 365);
+                    days = days % 30;
+
+                    var time0 = qsTr("Fa");
+                    var time1 = "";
+                    var time2 = "";
+
+                    if (years >=1) {
+                        time1 = years + qsTr(" anys");
+                        time2 = months + qsTr(" mesos");
+                    } else {
+                        if (months >=1) {
+                            time1 = months + qsTr(" mesos");
+                            time2 = days + qsTr(" dies");
+                        } else {
+                            if (days >=1) {
+                                time1 = days + qsTr(" dies");
+                                time2 = hours + qsTr(" hores");
                             } else {
-                                if (months >=1) {
-                                    time1 = months + qsTr(" mesos");
-                                    time2 = days + qsTr(" dies");
+                                if (hours >= 1) {
+                                    time1 = hours + qsTr(" hores");
+                                    time2 = "";
                                 } else {
-                                    if (days >=1) {
-                                        time1 = days + qsTr(" dies");
-                                        time2 = hours + qsTr(" hores");
-                                    } else {
-                                        if (hours >= 1) {
-                                            time1 = hours + qsTr(" hores");
-                                            time2 = "";
-                                        } else {
-                                            time0 = qsTr("A les");
-                                            var h = updated.getHours()
-                                            var m = updated.getMinutes()
-                                            time1 = h + ":" + ((m<10)?'0':'') + m
-                                            time2 = ""
-                                        }
-                                    }
+                                    time0 = qsTr("A les");
+                                    var h = updated.getHours()
+                                    var m = updated.getMinutes()
+                                    time1 = h + ":" + ((m<10)?'0':'') + m
+                                    time2 = ""
                                 }
                             }
-
-                            return [time0, time1, time2].join(" ");
                         }
                     }
-                    Text {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
 
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        font.pixelSize: units.readUnit
-                        text: model.state
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        annotationsListView.lastSelectedAnnotation = model.id;
-                        setNextComponent(annotationsListView.parent.index, showAnnotationComponent, {headingText: qsTr('Anotació'), headingColor: 'black'}, {identifier: model.id});
-                        openNextCard(annotationsListView.parent.index);
-                    }
+                    return [time0, time1, time2].join(" ");
                 }
             }
+            Text {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
 
-            Common.SuperposedButton {
-                id: addAnnotationButton
-                anchors {
-                    right: parent.right
-                    bottom: parent.bottom
-                }
-                size: units.fingerUnit * 2
-                imageSource: 'plus-24844'
-                onClicked: {
-                    var annotId = annotationsModel.newAnnotation(qsTr('Nova anotació'), '');
-                    if (annotId>-1)
-                        lastSelectedAnnotation = annotId;
-                }
-            }
-
-            Common.SuperposedButton {
-                id: importAnnotationButton
-
-                anchors {
-                    right: addAnnotationButton.left
-                    bottom: parent.bottom
-                }
-                size: units.fingerUnit * 2
-                imageSource: 'box-24557'
-                onClicked: openImporter()
-                onPressAndHold: openImporter2()
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                font.pixelSize: units.readUnit
+                text: model.state
             }
         }
 
-    }
-
-    Component {
-        id: showAnnotationComponent
-
-        ShowAnnotation {
-
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                lastSelectedAnnotation = model.id;
+                openCard('simpleannotations/ShowAnnotation', {identifier: lastSelectedAnnotation}, {headingText: qsTr('Anotació'), headingColor: 'black'});
+            }
         }
     }
 
-
-    Component {
-        id: thirdComponent
-
-        Item {
-
+    Common.SuperposedButton {
+        id: addAnnotationButton
+        anchors {
+            right: parent.right
+            bottom: parent.bottom
         }
+        size: units.fingerUnit * 2
+        imageSource: 'plus-24844'
+        onClicked: {
+            var annotId = annotationsModel.newAnnotation(qsTr('Nova anotació'), '');
+            if (annotId>-1)
+                lastSelectedAnnotation = annotId;
+        }
+    }
+
+    Common.SuperposedButton {
+        id: importAnnotationButton
+
+        anchors {
+            right: addAnnotationButton.left
+            bottom: parent.bottom
+        }
+        size: units.fingerUnit * 2
+        imageSource: 'box-24557'
+        onClicked: openImporter()
+        onPressAndHold: openImporter2()
     }
 
     Connections {
@@ -310,18 +276,13 @@ Common.CardsNavigator {
     }
 
     function openImporter() {
-        setSecondPaneSource("simpleannotations/ExtendedAnnotationsImport", {}, {headingText: qsTr("Importador"), headingColor: 'brown'});
-        openPane('second');
+        openCard("simpleannotations/ExtendedAnnotationsImport", {}, {headingText: qsTr("Importador"), headingColor: 'brown'});
     }
 
     function openImporter2() {
-        setSecondPaneSource("simpleannotations/DocumentAnnotationsImport", {}, {headingText: qsTr("Importador"), headingColor: 'brown'});
-        openPane('second');
+        openCard("simpleannotations/DocumentAnnotationsImport", {}, {headingText: qsTr("Importador"), headingColor: 'brown'});
     }
 
-    Component.onCompleted: {
-        simpleAnnotationsListBaseItem.appendCardComponent(annotationsListComponent, {headingText: qsTr("Llista d'anotacions"), headingColor: 'white', headingBgColor: Qt.darker('green',1.9)}, {});
-        simpleAnnotationsListBaseItem.appendCardComponent(showAnnotationComponent, {headingText: qsTr("Anotació"), headingBgColor: Qt.lighter('gray')}, {});
-        simpleAnnotationsListBaseItem.appendCardComponent(thirdComponent, {headingText: qsTr('Altres'), headingBgColor: Qt.lighter('green', 1.5)}, {});
-    }
+
 }
+
