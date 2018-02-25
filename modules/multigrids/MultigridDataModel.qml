@@ -8,6 +8,7 @@ SqlTableModel {
         'mainValue',
         'secondVariable',
         'secondValue',
+        'ord',
         'updated'
     ]
     primaryKey: 'id'
@@ -15,38 +16,33 @@ SqlTableModel {
         "id INTEGER PRIMARY KEY,
          mainVariable INTEGER NOT NULL, mainValue INTEGER NOT NULL,
          secondVariable INTEGER NOT NULL, secondValue INTEGER NOT NULL,
+         ord INTEGER,
          updated TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-         UNIQUE(mainVariable, mainValue, secondVariable) ON CONFLICT REPLACE,
          FOREIGN KEY(mainVariable) REFERENCES multigrid_variables(id) ON DELETE RESTRICT,
          FOREIGN KEY(mainValue) REFERENCES multigrid_fixedvalues(id) ON DELETE RESTRICT,
          FOREIGN KEY(secondVariable) REFERENCES multigrid_variables(id) ON DELETE RESTRICT"
 
     initStatements: [
         //"DROP TABLE " + tableName,
-        "DROP TRIGGER IF EXISTS multigrid_data_avoid_duplicates",
+
         "DROP TRIGGER IF EXISTS multigrid_data_updated",
-
-        /*
-        "CREATE TRIGGER IF NOT EXISTS multigrid_data_avoid_duplicates
-         BEFORE INSERT ON " + tableName + " FOR EACH ROW
-         WHEN EXISTS (SELECT id FROM " + tableName + "
-             WHERE mainVariable=NEW.mainVariable
-                AND mainValue=NEW.mainValue
-                AND secondVariable=NEW.secondVariable)
-         BEGIN
-             SELECT raise(IGNORE);
-             UPDATE " + tableName + " SET secondValue=NEW.secondValue, updated=strftime('%Y-%m-%dT%H:%M:%fZ','now')
-             WHERE mainVariable=NEW.mainVariable
-                 AND mainValue=NEW.mainValue
-                 AND secondVariable=NEW.secondVariable;
-         END",
-         */
-
         "CREATE TRIGGER IF NOT EXISTS multigrid_data_updated
          AFTER UPDATE OF mainVariable, mainValue, secondVariable, secondValue ON " + tableName + " FOR EACH ROW
          BEGIN
              UPDATE " + tableName + " SET updated=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.id;
          END",
+
+        "DROP TRIGGER IF EXISTS multigrid_data_update_order",
+        "CREATE TRIGGER IF NOT EXISTS multigrid_data_update_order
+         AFTER INSERT ON " + tableName + " FOR EACH ROW
+         BEGIN
+             UPDATE " + tableName + "
+                SET ord=(
+                    SELECT MAX(IFNULL(ord,0))+1 FROM " + tableName + " WHERE mainVariable=NEW.mainVariable AND mainValue=NEW.mainValue AND secondVariable=NEW.secondVariable
+                    )
+                WHERE id=NEW.id;
+         END
+        ",
 
         "DROP TRIGGER IF EXISTS multigrid_check_mainvariable",
         "CREATE TRIGGER IF NOT EXISTS multigrid_check_mainvariable
@@ -56,7 +52,7 @@ SqlTableModel {
              SELECT RAISE(ROLLBACK, 'Main variable must be key');
          END",
 
-        "DROP TRIGGER multigrid_ensure_keys",
+        "DROP TRIGGER IF EXISTS multigrid_ensure_keys",
         "CREATE TRIGGER IF NOT EXISTS multigrid_ensure_keys
          AFTER UPDATE OF isKey ON multigrid_variables FOR EACH ROW
          WHEN OLD.isKey=1 AND NEW.isKey!=1
@@ -71,15 +67,10 @@ SqlTableModel {
 
         bindValues = [keyVar, keyValue, secondVar];
         select("SELECT " + tableName + ".id AS id, " + tableName + ".mainVariable AS mainVariable, " + tableName + ".mainValue AS mainValue, "
-               + tableName + ".secondVariable AS secondVariable, " + tableName + ".secondValue AS secondValue, "
+               + tableName + ".secondVariable AS secondVariable, " + tableName + ".secondValue AS secondValue, " + tableName + ".ord AS ord, "
                + fixValTable + ".title AS secondValueTitle, " + fixValTable + ".desc AS secondValueDesc"
                + " FROM " + tableName + ", " + fixValTable
-               + " WHERE secondValue=" + fixValTable + ".id AND mainVariable=? AND mainValue=? AND secondVariable=?");
-
-        if (count>0)
-            return getObjectInRow(0);
-        else
-            return null;
+               + " WHERE secondValue=" + fixValTable + ".id AND mainVariable=? AND mainValue=? AND secondVariable=? ORDER BY ord ASC");
     }
 
     function lookFor(keyVar, keyVal, secondVar) {

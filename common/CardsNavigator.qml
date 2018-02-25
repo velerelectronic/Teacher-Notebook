@@ -25,7 +25,8 @@ Item {
                 removeNextCards(index);
                 console.log('appending indexed', page, pageProperties, cardProperties);
                 appendCardComponent(page, pageProperties, cardProperties);
-                openCard(index+1);
+                console.log('trying to open', index+1);
+                cardsModel.get(index+1).openCard();
             }
 
             onCardSelected: {

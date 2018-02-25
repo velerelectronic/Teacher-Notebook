@@ -1,7 +1,12 @@
 import QtQuick 2.7
+import 'qrc:///common' as Common
 
 GenericGrid {
     id: genericGrid
+
+    Common.UseUnits {
+        id: units
+    }
 
     // Columns: variables (not keys)
     // Rows: the key variable with its values
@@ -13,6 +18,8 @@ GenericGrid {
     signal newHeading(string text)
     signal openCard(string page, var pageProperties, var cardProperties)
     signal connectToNextCard(var connections)
+
+    cellPadding: units.nailUnit
 
     MultigridsModel {
         id: gridsModel
@@ -122,15 +129,20 @@ GenericGrid {
             for (var j=0; j<keyValuesModel.count; j++) {
                 var keyValueId = keyValuesModel.getObjectInRow(j)['id'];
 
-                var obj = dataModel.getAllDataInfo(variablesModel.keyVariable, keyValueId, varId);
-                // var obj = dataModel.lookFor(variablesModel.keyVariable, keyValueId, varId);
-                if (obj !== null) {
-                    console.log('data', keyValueId, obj['id'], obj['secondValue']);
-                    columnValues.push({key: keyValueId, value: obj['secondValue'], text: "<p>" + obj['secondValueTitle'] + "</p><p>" + obj['secondValueDesc'] + "</p>"});
+                dataModel.getAllDataInfo(variablesModel.keyVariable, keyValueId, varId);
+                var newObj = {key: keyValueId, value: -1};
+                if (dataModel.count>0) {
+                    var lastObj = dataModel.getObjectInRow(dataModel.count-1);
+                    newObj['value'] = lastObj['secondValue'];
+                    if (dataModel.count == 1) {
+                        newObj['text'] = "<p>" + lastObj['secondValueTitle'] + "</p><p>" + lastObj['secondValueDesc'] + "</p>";
+                    } else {
+                        newObj['text'] = "<p>" + dataModel.count + qsTr(" enregistrats.") + "</p><p>Últim: " + "<p>" + lastObj['secondValueTitle'] + "</p><p>" + lastObj['secondValueDesc'] + "</p>";
+                    }
                 } else {
-                    console.log('data', keyValueId, -1, "buit");
-                    columnValues.push({key: keyValueId, value: -1, text: ''});
+                    newObj['text'] = '';
                 }
+                columnValues.push(newObj);
             }
             cellsModel.append({key: varId, columns: columnValues});
         }

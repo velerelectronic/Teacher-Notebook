@@ -8,6 +8,7 @@ SqlTableModel {
         'isKey', // Whether this variable can be a primary key in a multigrid. 0 false and 1 true
         'title',
         'desc',
+        'ord', // Order in the multigrid variables list
         'config',
         'parentVariable'
     ]
@@ -20,7 +21,8 @@ SqlTableModel {
         'id INTEGER PRIMARY KEY,
          multigrid INTEGER,
          isKey INTEGER DEFAULT 0,
-         title TEXT, desc TEXT, config TEXT,
+         title TEXT, desc TEXT,
+         ord INTEGER, config TEXT,
          parentVariable INTEGER NULL,
          CHECK(isKey=0 OR parentVariable IS NULL),
          FOREIGN KEY(multigrid) REFERENCES multigrids(id) ON DELETE RESTRICT,

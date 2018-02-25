@@ -18,10 +18,6 @@ Item {
 
     property string secondVariableTitle
     property string secondVariableDesc
-    property string secondValueTitle
-    property string secondValueDesc
-
-    property int assignmentId: -1
 
     signal valueChanged()
 
@@ -50,6 +46,8 @@ Item {
 
     MultigridAssignmentDataModel {
         id: assignmentsModel
+
+        sort: 'secondValueOrder ASC'
     }
 
     MultigridDataModel {
@@ -61,6 +59,8 @@ Item {
 
         contentWidth: innerDataEditor.width
         contentHeight: innerDataEditor.height
+
+        clip: true
 
         Item {
             id: innerDataEditor
@@ -74,13 +74,14 @@ Item {
                     left: parent.left
                     right: parent.right
                 }
-                height: keyVarHeight + secondVarHeight + rowSpacing
+                height: keyVarHeight + secondVarHeight + rowSpacing + modifyHeight + rowSpacing
                 columns: 3
                 columnSpacing: 0
                 rowSpacing: units.fingerUnit
 
                 property int keyVarHeight: Math.max(labelKey.contentHeight, keyVarText.contentHeight, keyValueText.contentHeight)
-                property int secondVarHeight: Math.max(labelSecondVar.contentHeight, secondVarText.contentHeight, secondValueText.contentHeight)
+                property int secondVarHeight: Math.max(labelSecondVar.contentHeight, secondVarText.contentHeight, secondValueList.contentItem.height)
+                property int modifyHeight: Math.max(units.fingerUnit, secondPossibleValuesList.height, saveValueButton.height)
 
                 Common.BoxedText {
                     id: labelKey
@@ -142,19 +143,64 @@ Item {
 
                     text: '<p><b>' + secondVariableTitle + '</b></p><p>' + secondVariableDesc + '</p>'
                 }
-                Common.BoxedText {
-                    id: secondValueText
 
+                Rectangle {
                     Layout.preferredWidth: parent.width * 0.4
                     Layout.preferredHeight: parent.secondVarHeight
-                    Layout.alignment: Qt.AlignTop
 
-                    fontSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    padding: units.nailUnit
+                    border.color: 'black'
 
-                    text: '<p><b>' + secondValueTitle + '</b></p><p>' + secondValueDesc + '</p>'
+                    ListView {
+                        id: secondValueList
+
+                        anchors.fill: parent
+
+                        interactive: false
+                        model: assignmentsModel
+
+                        delegate: Rectangle {
+                            width: secondValueList.width
+                            height: Math.max(units.fingerUnit, secondValueText.contentHeight + units.nailUnit * 2)
+                            border.color: 'black'
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.margins: units.nailUnit
+                                spacing: units.nailUnit
+                                Text {
+                                    Layout.fillHeight: true
+                                    Layout.preferredWidth: units.fingerUnit
+
+                                    text: model.secondValueOrder
+                                }
+
+                                Text {
+                                    id: secondValueText
+
+                                    Layout.fillHeight: true
+                                    Layout.fillWidth: true
+
+                                    verticalAlignment: Text.AlignVCenter
+                                    font.pixelSize: units.readUnit
+                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
+                                    text: "<p><b>" + model.secondValueTitle + "</b><p>" + model.secondValueDesc + "</p>"
+                                }
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                onPressAndHold: {
+                                    // Remove selected second value
+                                    saveDataModel.removeObject(model.id);
+                                    assignmentsModel.select();
+                                    multigridDataEditorBaseItem.valueChanged();
+                                }
+                            }
+                        }
+
+                    }
                 }
+
                 Text {
                     Layout.fillWidth: true
                     Layout.preferredHeight: units.fingerUnit
@@ -164,7 +210,7 @@ Item {
                     text: qsTr('Modifica valor')
                 }
                 ListView {
-                    id: secondValueList
+                    id: secondPossibleValuesList
 
                     Layout.preferredWidth: parent.width * 0.4
                     Layout.preferredHeight: contentItem.height
@@ -217,23 +263,57 @@ Item {
                             anchors.fill: parent
 
                             onClicked: {
-                                secondValueList.currentIndex = model.index;
+                                secondPossibleValuesList.currentIndex = model.index;
                                 saveValueButton.key = model.id;
                                 console.log('savikng', model.id);
                             }
                         }
                     }
-                }
-                Item {
-                    Layout.preferredWidth: parent.width / 3
-                    Layout.preferredHeight: units.fingerUnit * 2
+
+                    footer: Rectangle {
+                        color: '#DDDDDD'
+                        width: secondValueList.width
+                        height: units.fingerUnit * 5
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: units.nailUnit
+
+                            Text {
+                                Layout.fillHeight: true
+                                Layout.preferredWidth: contentWidth
+
+                                font.bold: true
+                                font.pixelSize: units.readUnit
+                                color: 'black'
+                                text: qsTr('Nou valor')
+                            }
+
+                            Common.EditableText {
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+
+                                onTextChangeAccepted: {
+                                    var newValueId = secondValuesModel.insertObject({variable: secondVariable, title: text, desc: ''});
+                                    var newValueObj = {
+                                        mainVariable: keyVariable,
+                                        mainValue: keyValue,
+                                        secondVariable: secondVariable,
+                                        secondValue: newValueId
+                                    }
+                                    saveDataModel.insertObject(newValueObj);
+                                    getAllInfo();
+                                }
+                            }
+                        }
+                    }
                 }
 
                 Common.TextButton {
                     id: saveValueButton
 
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    Layout.preferredWidth: parent.width * 0.4
+                    Layout.preferredHeight: units.fingerUnit * 2
 
                     property int key: -1
 
@@ -250,34 +330,15 @@ Item {
                             }
                             console.log(newVal);
                             //dataModel.select();
-                            if (saveDataModel.insertObject(newVal)>-1)
+                            if (saveDataModel.insertObject(newVal)>-1) {
                                 valueChanged();
+                                assignmentsModel.select();
+                            }
                             saveValueButton.key = -1;
                         }
                     }
                 }
 
-                Item {
-                    Layout.preferredWidth: parent.width / 3
-                    Layout.preferredHeight: units.fingerUnit * 2
-                }
-
-                Common.TextButton {
-                    id: deleteValueButton
-
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-
-                    color: 'red'
-                    text: qsTr('Esborra')
-
-                    onClicked: {
-                        if (assignmentId > -1) {
-                            saveDataModel.removeObject(assignmentId);
-                            valueChanged();
-                        }
-                    }
-                }
             }
         }
     }
@@ -324,17 +385,7 @@ Item {
             secondVariableDesc = ifnull(secondObj['varDesc'], '');
         }
 
-        var secondValueObj = assignmentsModel.getAllDataInfo(keyVariable, keyValue, secondVariable);
-
-        if (secondValueObj !== null) {
-            assignmentId = secondValueObj['id'];
-            secondValueTitle = ifnull(secondValueObj['secondValueTitle'], '');
-            secondValueDesc = ifnull(secondValueObj['secondValueDesc'], '');
-        } else {
-            assignmentId = -1;
-            secondValueTitle = qsTr("- No definit encara -")
-            secondValueDesc = "";
-        }
+        assignmentsModel.getAllDataInfo(keyVariable, keyValue, secondVariable);
 
         secondValuesModel.update();
     }

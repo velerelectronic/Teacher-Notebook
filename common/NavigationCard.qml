@@ -45,6 +45,12 @@ Item {
 
         color: backgroundColor
 
+        Behavior on y {
+            PropertyAnimation {
+                duration: 100
+            }
+        }
+
         onYChanged: {
             cardHasMoved(index);
         }
@@ -141,6 +147,7 @@ Item {
         // Propagate opening previous cards
         // and closing next cards
 
+        console.log('opening', index);
         cardRect.y = cardRect.initialY;
 
         cardHasMoved(index);

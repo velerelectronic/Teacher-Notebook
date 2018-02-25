@@ -13,6 +13,7 @@ Item {
     property int numberOfRows: verticalHeadingModel.count
     property string crossHeadingText: ''
     property int crossHeadingKey: -1
+    property int cellPadding: 0
 
     property ListModel horizontalHeadingModel: ListModel {
         ListElement { text: 'h1'; key: 1 }
@@ -69,6 +70,8 @@ Item {
 
             Text {
                 anchors.fill: parent
+                padding: cellPadding
+
                 font.pixelSize: units.readUnit
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -130,6 +133,7 @@ Item {
 
                             Text {
                                 anchors.fill: parent
+                                padding: cellPadding
                                 font.pixelSize: units.readUnit
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
@@ -207,6 +211,7 @@ Item {
 
                             Text {
                                 anchors.fill: parent
+                                padding: cellPadding
                                 font.pixelSize: units.readUnit
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
@@ -325,7 +330,7 @@ Item {
                                         }
                                         Text {
                                             anchors.fill: parent
-                                            padding: units.nailUnit
+                                            padding: cellPadding
 
                                             verticalAlignment: Text.AlignVCenter
                                             font.pixelSize: units.readUnit

@@ -127,7 +127,7 @@ Item {
         }
 
         Text {
-            Layout.fillHeight: true
+            Layout.preferredHeight: units.fingerUnit
             Layout.fillWidth: true
 
             text: qsTr("Variable principal")
@@ -159,10 +159,10 @@ Item {
         Common.GeneralListView {
             id: valuesListView
 
-            Layout.preferredHeight: requiredHeight
+            Layout.fillHeight: true
             Layout.fillWidth: true
 
-            interactive: false
+            interactive: true
             model: valuesModel
 
             toolBarHeight: 0
@@ -174,6 +174,7 @@ Item {
 
                 RowLayout {
                     anchors.fill: parent
+                    anchors.margins: units.nailUnit
                     spacing: units.nailUnit
 
                     Text {
@@ -201,7 +202,7 @@ Item {
                 id: oneValueRect
 
                 width: valuesListView.width
-                height: Math.max(titleText.height, descText.height)
+                height: Math.max(titleText.height, descText.height) + units.nailUnit * 2
 
                 property int valueId: model.id
 
@@ -212,6 +213,7 @@ Item {
 
                 RowLayout {
                     anchors.fill: parent
+                    anchors.margins: units.nailUnit
                     spacing: units.nailUnit
 
                     Common.EditableText {
@@ -275,7 +277,7 @@ Item {
         }
 
         Common.TextButton {
-            Layout.fillHeight: true
+            Layout.preferredHeight: units.fingerUnit * 2
             Layout.fillWidth: true
 
             text: qsTr("Tanca")

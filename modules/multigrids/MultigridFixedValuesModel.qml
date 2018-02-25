@@ -9,10 +9,11 @@ SqlTableModel {
         'variable',
         'title',
         'desc',
+        'ord', // Order in the variable values list
         'config'
     ]
     primaryKey: 'id'
-    creationString: 'id INTEGER PRIMARY KEY, variable INTEGER, title TEXT, desc TEXT, config TEXT, FOREIGN KEY(variable) REFERENCES multigrid_variables(id) ON DELETE RESTRICT'
+    creationString: 'id INTEGER PRIMARY KEY, variable INTEGER, title TEXT, desc TEXT, ord INTEGER, config TEXT, FOREIGN KEY(variable) REFERENCES multigrid_variables(id) ON DELETE RESTRICT'
     initStatements: [
         //'DROP TABLE ' + tableName
     ]

@@ -9,7 +9,9 @@ SqlTableModel {
         'secondVariable',
         'secondValue',
         'secondValueTitle',
-        'secondValueDesc'
+        'secondValueDesc',
+        //'secondVariableOrder',
+        'secondValueOrder'
     ]
     primaryKey: 'id'
     creationString: ""
@@ -20,7 +22,7 @@ SqlTableModel {
     initStatements: [
         "CREATE TEMP VIEW IF NOT EXISTS " + tableName
         + " AS SELECT " + dataTable + ".id AS id, " + dataTable + ".mainVariable AS mainVariable, " + dataTable + ".mainValue AS mainValue, "
-        + dataTable + ".secondVariable AS secondVariable, " + dataTable + ".secondValue AS secondValue, "
+        + dataTable + ".secondVariable AS secondVariable, " + dataTable + ".secondValue AS secondValue, " + dataTable + ".ord AS secondValueOrder, "
         + fixValTable + ".title AS secondValueTitle, " + fixValTable + ".desc AS secondValueDesc"
         + " FROM " + dataTable + ", " + fixValTable + " WHERE secondValue=" + fixValTable + ".id"
     ]
@@ -34,11 +36,6 @@ SqlTableModel {
                 ];
         bindValues = [keyVar, keyValue, secondVar];
         select();
-
-        if (count>0)
-            return getObjectInRow(0);
-        else
-            return null;
     }
 
     function lookFor(keyVar, keyVal, secondVar) {
