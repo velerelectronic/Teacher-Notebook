@@ -308,11 +308,10 @@ Item {
                                         property int rowKey: model.key
                                         property int colKey: oneGridColumn.colKey
                                         property int value: model.value
+                                        property var contents: model.contents
 
                                         width: oneGridView.columnWidth
                                         height: oneGridView.rowHeight
-
-                                        border.color: 'gray'
 
                                         color: {
                                             if ((selectedRow == oneGridCell.rowIndex) && (selectedColumn == oneGridColumn.columnIndex)) {
@@ -328,16 +327,34 @@ Item {
                                                 }
                                             }
                                         }
-                                        Text {
+
+                                        Column {
+                                            id: cellContentsList
+
                                             anchors.fill: parent
-                                            padding: cellPadding
 
-                                            verticalAlignment: Text.AlignVCenter
-                                            font.pixelSize: units.readUnit
-                                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                            elide: Text.ElideRight
+                                            Repeater {
+                                                model: oneGridCell.contents
+                                                delegate: Rectangle {
+                                                    width: cellContentsList.width
+                                                    height: Math.floor(cellContentsList.height / Math.max(oneGridCell.contents.count,1))
 
-                                            text: (oneGridCell.isMarginal)?'':model.text
+                                                    border.color: 'gray'
+
+                                                    Text {
+                                                        anchors.fill: parent
+                                                        clip: true
+                                                        padding: cellPadding
+
+                                                        verticalAlignment: Text.AlignVCenter
+
+                                                        font.pixelSize: units.readUnit
+                                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                                        elide: Text.ElideRight
+                                                        text: model.text
+                                                    }
+                                                }
+                                            }
                                         }
 
                                         MouseArea {
@@ -355,6 +372,13 @@ Item {
                                                     oneGridView.cellSelected(oneGridCell.colKey, oneGridCell.rowKey);
                                                 }
                                             }
+                                        }
+
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            color: 'transparent'
+
+                                            border.color: 'black'
                                         }
 
                                         Common.SuperposedButton {

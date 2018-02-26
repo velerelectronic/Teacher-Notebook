@@ -130,18 +130,13 @@ GenericGrid {
                 var keyValueId = keyValuesModel.getObjectInRow(j)['id'];
 
                 dataModel.getAllDataInfo(variablesModel.keyVariable, keyValueId, varId);
-                var newObj = {key: keyValueId, value: -1};
-                if (dataModel.count>0) {
-                    var lastObj = dataModel.getObjectInRow(dataModel.count-1);
-                    newObj['value'] = lastObj['secondValue'];
-                    if (dataModel.count == 1) {
-                        newObj['text'] = "<p>" + lastObj['secondValueTitle'] + "</p><p>" + lastObj['secondValueDesc'] + "</p>";
-                    } else {
-                        newObj['text'] = "<p>" + dataModel.count + qsTr(" enregistrats.") + "</p><p>Últim: " + "<p>" + lastObj['secondValueTitle'] + "</p><p>" + lastObj['secondValueDesc'] + "</p>";
-                    }
-                } else {
-                    newObj['text'] = '';
+                var newContents = [];
+
+                for (var k=0; k<dataModel.count; k++) {
+                    var singleObj = dataModel.getObjectInRow(k);
+                    newContents.push({key: singleObj['id'], value: singleObj['secondValue'], text: "<p>" + singleObj['secondValueTitle'] + "</p><p>" + singleObj['secondValueDesc'] + "</p>"});
                 }
+                var newObj = {key: keyValueId, value: -1, contents: newContents};
                 columnValues.push(newObj);
             }
             cellsModel.append({key: varId, columns: columnValues});
