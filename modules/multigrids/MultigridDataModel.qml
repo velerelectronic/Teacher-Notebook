@@ -88,4 +88,11 @@ SqlTableModel {
             return null;
     }
 
+    function getMaxValueListCount(keyVar, keyValue) {
+        // Get the maximum SecondValue list count among all SecondVariables with the same keyVar and the same keyValue
+
+        bindValues = [keyVar, keyValue];
+        select("SELECT max(c) AS maxC FROM (SELECT count(id) AS c FROM " + tableName + " WHERE mainVariable=? AND mainValue=? GROUP BY secondVariable UNION SELECT 0)");
+        return getObjectInRow(0)['maxC'];
+    }
 }

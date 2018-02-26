@@ -10,6 +10,7 @@ Item {
     property int rowHeight: units.fingerUnit * 4
     property int rowSpacing: units.nailUnit
     property int numberOfColumns: horizontalHeadingModel.count
+    property int numberOfSpanRows: 0
     property int numberOfRows: verticalHeadingModel.count
     property string crossHeadingText: ''
     property int crossHeadingKey: -1
@@ -21,9 +22,9 @@ Item {
         ListElement { text: 'h3'; key: 3 }
     }
     property ListModel verticalHeadingModel: ListModel {
-        ListElement { text: 'v1'; key: 4 }
-        ListElement { text: 'v2'; key: 5 }
-        ListElement { text: 'v3'; key: 6 }
+        ListElement { text: 'v1'; key: 4; span: 1 }
+        ListElement { text: 'v2'; key: 5; span: 1 }
+        ListElement { text: 'v3'; key: 6; span: 1 }
     }
 
     property ListModel cellsModel: ListModel {
@@ -189,7 +190,7 @@ Item {
                 id: verticalHeadingItem
 
                 width: columnWidth
-                height: (numberOfRows+1) * (rowHeight + rowSpacing) - rowSpacing
+                height: (numberOfSpanRows+1) * (rowHeight + rowSpacing) - rowSpacing
 
                 Column {
                     anchors.fill: parent
@@ -201,7 +202,7 @@ Item {
                         Rectangle {
                             id: verticalHeadingCell
 
-                            height: oneGridView.rowHeight
+                            height: oneGridView.rowHeight * Math.max(model.span, 1)
                             width: parent.width
 
                             border.color: 'black'
@@ -273,7 +274,7 @@ Item {
                 id: mainGridItem
 
                 width: (oneGridView.numberOfColumns+1) * (oneGridView.columnWidth + oneGridView.columnSpacing) - oneGridView.columnSpacing
-                height: (oneGridView.numberOfRows+1) * (oneGridView.rowHeight + oneGridView.rowSpacing) - oneGridView.rowSpacing
+                height: (oneGridView.numberOfSpanRows+1) * (oneGridView.rowHeight + oneGridView.rowSpacing) - oneGridView.rowSpacing
 
                 Row {
                     anchors.fill: parent
@@ -303,7 +304,7 @@ Item {
                                         id: oneGridCell
 
                                         property int rowIndex: model.index
-                                        property bool isMarginal: (oneGridColumn.columnIndex == oneGridView.numberOfColumns) || (oneGridCell.rowIndex == oneGridView.numberOfRows)
+                                        property bool isMarginal: (oneGridColumn.columnIndex == oneGridView.numberOfColumns) || (oneGridCell.rowIndex == oneGridView.numberOfSpanRows)
                                         property bool isSelected: (selectedRow == oneGridCell.rowIndex) && (selectedColumn == oneGridColumn.columnIndex)
                                         property int rowKey: model.key
                                         property int colKey: oneGridColumn.colKey
@@ -311,7 +312,7 @@ Item {
                                         property var contents: model.contents
 
                                         width: oneGridView.columnWidth
-                                        height: oneGridView.rowHeight
+                                        height: oneGridView.rowHeight * verticalHeadingModel.get(rowIndex)['span']
 
                                         color: {
                                             if ((selectedRow == oneGridCell.rowIndex) && (selectedColumn == oneGridColumn.columnIndex)) {
@@ -340,6 +341,7 @@ Item {
                                                     height: Math.floor(cellContentsList.height / Math.max(oneGridCell.contents.count,1))
 
                                                     border.color: 'gray'
+                                                    color: 'transparent'
 
                                                     Text {
                                                         anchors.fill: parent
@@ -376,8 +378,8 @@ Item {
 
                                         Rectangle {
                                             anchors.fill: parent
-                                            color: 'transparent'
 
+                                            color: 'transparent'
                                             border.color: 'black'
                                         }
 

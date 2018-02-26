@@ -102,9 +102,13 @@ GenericGrid {
 
     function getHeadingsFromKeyValues() {
         verticalHeadingModel.clear();
+        numberOfSpanRows = 0;
         for (var i=0; i<keyValuesModel.count; i++) {
             var valueObj = keyValuesModel.getObjectInRow(i);
-            verticalHeadingModel.append({text: valueObj['title'], key: valueObj['id']});
+            var listCount = Math.max(dataModel.getMaxValueListCount(valueObj['variable'], valueObj['id']), 1);
+            console.log('llist count', listCount);
+            verticalHeadingModel.append({text: valueObj['title'], key: valueObj['id'], span: listCount});
+            numberOfSpanRows = numberOfSpanRows + listCount;
         }
     }
 
