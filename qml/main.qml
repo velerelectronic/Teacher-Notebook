@@ -89,6 +89,7 @@ import 'qrc:///modules/pagesfolder' as PagesFolder
 import 'qrc:///modules/cards' as Cards
 import 'qrc:///modules/basic' as Basic
 import 'qrc:///modules/structure' as Structure
+import 'qrc:///modules/spaces' as Spaces
 import "qrc:///common/FormatDates.js" as FormatDates
 
 
@@ -131,6 +132,7 @@ Window {
         id: dbPanel
 
         anchors.fill: parent
+        visible: false
 
         globalMargins: 0
 
@@ -240,8 +242,6 @@ Window {
             mainNavigator.addPage('cards/CardsList', {}, qsTr('Principal'));
             mainNavigator.addPage('simpleannotations/SimpleAnnotationsList', {}, qsTr('Anotacions simples'));
             mainNavigator.addPage('simpleannotations/AnnotationsCalendar', {}, qsTr("Calendari d'anotacions"));
-            //mainNavigator.addPage('annotations2/Example', {}, qsTr('Tres taulers'));
-            mainNavigator.addPage('annotations2/AnnotationListAndShow', {}, qsTr('Tres taulers'));
             //mainNavigator.addPage('files/FilesystemBrowser', {}, qsTr('Sistema de fitxers'));
 
             informationMessage.publishMessage(qsTr('Benvingut!'))
@@ -260,11 +260,30 @@ Window {
 
     }
 
+    MouseArea {
+        anchors.fill: spacesView
+
+        onDoubleClicked: {
+            otherDirectionsDialog.openPagesMenu()
+        }
+    }
+
+    Spaces.SpacesView {
+        id: spacesView
+
+        anchors.fill: parent
+    }
+
     Common.SuperposedWidget {
         id: otherDirectionsDialog
 
         function openOpenedPages() {
             load(qsTr('Canvia a...'), 'structure/OpenedPages', {model: mainNavigator.pagesModel});
+        }
+
+        function openPagesMenu() {
+            load(qsTr('Accions'), '../qml/MainPagesMenu', {});
+            otherDirectionsConnections.target = otherDirectionsDialog.mainItem
         }
 
         function openOtherDirections() {
@@ -275,6 +294,16 @@ Window {
             load(qsTr('Crea nova anotació'), 'annotations2/NewAnnotationHelper', {});
         }
 
+        Connections {
+            id: otherDirectionsConnections
+
+            target: otherDirectionsDialog.mainItem
+
+            onOpenPage: {
+                spacesView.addSpace(caption, qmlPage, properties);
+                otherDirectionsDialog.close();
+            }
+        }
     }
 
 }

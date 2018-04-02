@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/spaces/SpacesView.qml</file>
+        <file>modules/spaces/SpaceItem.qml</file>
+    </qresource>
+</RCC>

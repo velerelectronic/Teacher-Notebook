@@ -47,5 +47,6 @@
         <file>qml/AnnotationsListModule2.qml</file>
         <file>qml/RelatedListsModule.qml</file>
         <file>qml/PagesFolderModule.qml</file>
+        <file>qml/MainPagesMenu.qml</file>
     </qresource>
 </RCC>
