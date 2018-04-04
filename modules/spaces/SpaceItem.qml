@@ -8,11 +8,26 @@ Rectangle {
 
     property string caption: ''
     property string qmlPage: ''
-    property var pageProperties: null
+    property string pageProperties: ''
+
+    property int initialWidth
+    property int initialHeight
 
     signal selectedSpace(int index)
+    signal spaceHasBeenDragged()
+    signal doubleSelectedSpace(int index)
 
     // z will contain the space index in the whole list
+
+
+    // Main properties
+
+
+    x: z * units.fingerUnit
+    y: z * units.fingerUnit
+
+//    width: initialWidth
+//    height: initialHeight
 
     border.color: 'black'
 
@@ -70,8 +85,20 @@ Rectangle {
                 drag.minimumX: 0
                 drag.minimumY: 0
 
+                property bool beingDragged: drag.active
+
+                onBeingDraggedChanged: {
+                    if (!beingDragged) {
+                        spaceHasBeenDragged();
+                    }
+                }
+
                 onPressed: {
                     selectedSpace(spacesItem.z);
+                }
+
+                onDoubleClicked: {
+                    doubleSelectedSpace(spacesItem.z);
                 }
             }
         }
@@ -86,15 +113,78 @@ Rectangle {
             function loadPage() {
                 console.log('SETTINGG', 'qrc:///modules/' + qmlPage + ".qml", pageProperties);
                 if ((qmlPage !== "") && (pageProperties !== null))
-                    pageLoader.setSource('qrc:///modules/' + qmlPage + ".qml", pageProperties);
+                    pageLoader.setSource('qrc:///modules/' + qmlPage + ".qml", (pageProperties !== "")?JSON.parse(pageProperties):{});
+
+            }
+
+            onLoaded: {
+                console.log('PROPERTIES of pageLoader item');
+                /*
+                for (var prop in pageLoader.item) {
+                    console.log(prop, "(", typeof(pageLoader.item[prop]), ")", pageLoader.item[prop]);
+                }
+                */
+                console.log(pageLoader.item.toSource());
+
             }
 
             Connections {
                 target: spacesItem
+
                 onQmlPageChanged: pageLoader.loadPage()
                 onPagePropertiesChanged: pageLoader.loadPage()
             }
+
+            Connections {
+                target: pageLoader.item
+                ignoreUnknownSignals: true
+
+                onOpenCard: {
+                    openSubSpace(qsTr('SubSpace'), page, pageProperties);
+                }
+            }
         }
+    }
+
+    Item {
+        id: secondSpaceItem
+
+        width: parent.width
+        height: parent.height
+        x: units.fingerUnit
+        y: units.fingerUnit
+
+        visible: false
+
+        Loader {
+            id: secondSpace
+
+            anchors.fill: parent
+        }
+
+        Common.ImageButton {
+            anchors {
+                right: parent.right
+                top: parent.top
+            }
+            size: units.fingerUnit
+            image: 'road-sign-147409'
+
+            onClicked: {
+                secondSpace.sourceComponent = null;
+                secondSpaceItem.visible = false;
+            }
+        }
+    }
+
+    function openSubSpace(caption, qmlPage, properties) {
+        secondSpaceItem.visible = true;
+        secondSpace.setSource("SpaceItem.qml", {caption: caption, qmlPage: qmlPage, pageProperties: JSON.stringify(properties)});
+    }
+
+    function resize(newWidth, newHeight) {
+        spacesItem.width = newWidth;
+        spacesItem.height = newHeight;
     }
 
     Component.onCompleted: {

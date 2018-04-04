@@ -1,5 +1,7 @@
 import QtQuick 2.6
+import QtQuick.Layouts 1.3
 import QtGraphicalEffects 1.0
+import Qt.labs.settings 1.0
 import 'qrc:///common' as Common
 
 Rectangle {
@@ -9,35 +11,218 @@ Rectangle {
 
     property int otherSpacesSize: units.fingerUnit * 2
 
+    Common.UseUnits {
+        id: units
+    }
+
+    Item {
+        id: barItem
+
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+        height: units.fingerUnit * 2
+
+        RowLayout {
+            anchors.fill: parent
+            spacing: units.fingerUnit
+
+            Common.ImageButton {
+                Layout.fillHeight: true
+                size: units.fingerUnit * 1.5
+                image: 'outline-27146'
+
+                onClicked: spaceItemsModel.select()
+            }
+            Common.ImageButton {
+                Layout.fillHeight: true
+                size: units.fingerUnit * 1.5
+                image: 'microsoft-windows-23242'
+
+                onClicked: spaceItemsOptions.openPagesMenu()
+            }
+            Common.ImageButton {
+                Layout.fillHeight: true
+                size: units.fingerUnit * 1.5
+                image: 'garbage-1295900'
+
+                onClicked: {
+                    spaceItemsList.removeAllObjects();
+                    spaceItemsList.select();
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+            Common.ImageButton {
+                Layout.fillHeight: true
+                size: units.fingerUnit * 1.5
+                image: 'plus-24844'
+
+                onClicked: spaceItemsOptions.openPagesMenu()
+            }
+        }
+    }
+
     Item {
         id: spacesZone
 
-        anchors.fill: parent
+        anchors {
+            top: barItem.bottom
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
+
+        Repeater {
+            model: spaceItemsList
+
+            SpaceItem {
+                id: oneSpaceItem
+
+                initialWidth: spacesZone.width / 2
+                initialHeight: spacesZone.height / 2
+
+                width: model.itemWidth
+                height: model.itemHeight
+
+                x: model.itemX
+                y: model.itemY
+
+                z: model.itemIndex
+
+                caption: model.caption
+                qmlPage: model.qmlPage
+                pageProperties: model.pageProperties
+
+
+                onSelectedSpace: {
+                    spaceItemsModel.moveUp(caption);
+                    spacesView.moveUp(index);
+                }
+
+                onSpaceHasBeenDragged: {
+                    spaceItemsModel.updateCoordinates(oneSpaceItem.caption, oneSpaceItem.x, oneSpaceItem.y);
+                }
+
+                onDoubleSelectedSpace: spaceItemsOptions.openOptions()
+
+                Common.SuperposedWidget {
+                    id: spaceItemsOptions
+
+                    function openOptions(caption) {
+                        load(qsTr('Opcions'), 'spaces/SpaceItemsOptions', {});
+                    }
+
+                    Connections {
+                        target: spaceItemsOptions.mainItem
+                        ignoreUnknownSignals: true
+
+                        onMinimumSize: {
+                            spaceItemsModel.updateSize(oneSpaceItem.caption, units.fingerUnit * 10, units.fingerUnit * 10)
+                            oneSpaceItem.resize(units.fingerUnit * 10, units.fingerUnit * 10);
+                            spaceItemsOptions.close();
+                        }
+                        onMediumSize: {
+                            spaceItemsModel.updateSize(oneSpaceItem.caption, spacesZone.width / 2, spacesZone.height / 2);
+                            oneSpaceItem.resize(spacesZone.width / 2, spacesZone.height / 2);
+                            spaceItemsOptions.close();
+                        }
+                        onColumnSize: {
+                            spaceItemsModel.updateSize(oneSpaceItem.caption, units.fingerUnit * 10, spacesZone.height);
+                            oneSpaceItem.resize(units.fingerUnit * 10, spacesZone.height);
+                            spaceItemsOptions.close();
+                        }
+                        onRowSize: {
+                            spaceItemsModel.updateSize(oneSpaceItem.caption, spacesZone.width, units.fingerUnit * 10);
+                            oneSpaceItem.resize(spacesZone.width, units.fingerUnit * 10);
+                            spaceItemsOptions.close();
+                        }
+                        onScreenSize: {
+                            spaceItemsModel.updateSize(oneSpaceItem.caption, spacesZone.width, spacesZone.height);
+                            oneSpaceItem.resize(spacesZone.width, spacesZone.height);
+                            spaceItemsOptions.close();
+                        }
+
+                        onCloseSpace: {
+                            spaceItemsList.removeSpace(oneSpaceItem.caption);
+                            spaceItemsOptions.close();
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    Component {
-        id: spaceItemComponent
+    SpaceItemModel {
+        id: spaceItemsList
 
-        SpaceItem {
-            onSelectedSpace: spacesView.moveUp(index)
+        function removeSpace(caption) {
+            removeObject(caption);
+            select();
+        }
+
+        Component.onCompleted: select()
+    }
+
+    SpaceItemModel {
+        id: spaceItemsModel
+
+        function updateCoordinates(caption, posX, posY) {
+            updateObject(caption, {itemX: posX, itemY: posY});
+        }
+
+        function updateSize(caption, width, height) {
+            updateObject(caption, {itemWidth: width, itemHeight: height});
+        }
+
+        function moveUp(caption) {
+            updateObject(caption, {itemIndex: spaceItemsList.count-1});
+        }
+    }
+
+    Common.SuperposedWidget {
+        id: spaceItemsOptions
+
+        function openPagesMenu() {
+            load(qsTr('Accions'), '../qml/MainPagesMenu', {});
+        }
+
+        Connections {
+            target: spaceItemsOptions.mainItem
+            ignoreUnknownSignals: true
+
+            // Check all these
+            onOpenPage: {
+                addSpace(caption, qmlPage, properties);
+                spaceItemsOptions.close();
+            }
+            onNewAnnotation: {
+                spaceItemsOptions.close();
+                addSpace(qsTr('Anotació'), 'simpleannotations/ShowAnnotation', {identifier: -1, newText: text});
+            }
+
         }
     }
 
     function addSpace(caption, qmlPage, properties) {
-        var index = spacesZone.children.length;
+        var index = spaceItemsList.count;
         var spaceProperties = {
-            x: index * units.fingerUnit,
-            y: index * units.fingerUnit,
-            z: index,
-            width: parent.width / 3,
-            height: parent.height / 3,
+            itemX: index * units.fingerUnit,
+            itemY: index * units.fingerUnit,
+            itemIndex: index,
+            itemWidth: spacesZone.width / 3,
+            itemHeight: spacesZone.height / 3,
             caption: caption,
             qmlPage: qmlPage,
-            pageProperties: properties
+            pageProperties: JSON.stringify(properties)
         }
 
-        console.log('addingg', JSON.stringify(spaceProperties));
-        spaceItemComponent.createObject(spacesZone, spaceProperties);
+        spaceItemsModel.insertObject(spaceProperties);
+        spaceItemsList.select();
     }
 
     function moveUp(index) {
@@ -52,5 +237,6 @@ Rectangle {
             }
         }
     }
+
 }
 

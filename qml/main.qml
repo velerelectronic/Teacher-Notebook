@@ -173,14 +173,6 @@ Window {
                 }
             }
             Component.onCompleted: {
-                menuModel.append({caption: qsTr('Anotacions'), page: 'simpleannotations/SimpleAnnotationsList', properties: {headingText: qsTr("Llista d'anotacions"), headingColor: 'white', headingBgColor: Qt.darker('green',1.9)}});
-                menuModel.append({caption: qsTr('Calendari'), page: 'simpleannotations/AnnotationsCalendar', properties: {headingText: qsTr("Calendari")}});
-                menuModel.append({caption: qsTr('Graelles'), page: 'multigrids/MultigridsList', properties: {headingText: qsTr('Graelles'), backgroundColor: 'green', headingColor: 'white'}});
-                menuModel.append({caption: qsTr('Rúbriques *'), page: '', properties: {}});
-                menuModel.append({caption: qsTr('Galeria'), page: 'files/Gallery', properties: {headingText: qsTr("Galeria")}});
-                menuModel.append({caption: qsTr('Eines *'), page: '', properties: {}});
-                menuModel.append({caption: qsTr('Feeds *'), page: '', properties: {}});
-                menuModel.append({caption: qsTr('Planificacions *'), page: '', properties: {}});
             }
         }
 
@@ -218,17 +210,6 @@ Window {
 
     }
 
-    // Proposal
-
-    // Main bar with icons for pages/tasks as these:
-    // * Annotations
-    // * Rubrics
-    // * Filesystem
-    // * Tools
-    // * Feeds
-    // * Plannings
-    // * Checklists?
-    // * Workflow?
 
     Structure.MainNavigator {
         id: mainNavigator
@@ -238,14 +219,6 @@ Window {
 
         onMainIconSelected: otherDirectionsDialog.openOpenedPages()
 
-        Component.onCompleted: {
-            mainNavigator.addPage('cards/CardsList', {}, qsTr('Principal'));
-            mainNavigator.addPage('simpleannotations/SimpleAnnotationsList', {}, qsTr('Anotacions simples'));
-            mainNavigator.addPage('simpleannotations/AnnotationsCalendar', {}, qsTr("Calendari d'anotacions"));
-            //mainNavigator.addPage('files/FilesystemBrowser', {}, qsTr('Sistema de fitxers'));
-
-            informationMessage.publishMessage(qsTr('Benvingut!'))
-        }
 
         Basic.InformationMessages {
             id: informationMessage
@@ -260,18 +233,15 @@ Window {
 
     }
 
-    MouseArea {
-        anchors.fill: spacesView
-
-        onDoubleClicked: {
-            otherDirectionsDialog.openPagesMenu()
-        }
-    }
-
     Spaces.SpacesView {
         id: spacesView
 
         anchors.fill: parent
+
+        Component.onCompleted: {
+
+            informationMessage.publishMessage(qsTr('Benvingut!'))
+        }
     }
 
     Common.SuperposedWidget {
@@ -281,17 +251,8 @@ Window {
             load(qsTr('Canvia a...'), 'structure/OpenedPages', {model: mainNavigator.pagesModel});
         }
 
-        function openPagesMenu() {
-            load(qsTr('Accions'), '../qml/MainPagesMenu', {});
-            otherDirectionsConnections.target = otherDirectionsDialog.mainItem
-        }
-
         function openOtherDirections() {
             load(qsTr('Canvia a...'), 'cards/OtherDirections', {});
-        }
-
-        function createAnnotation() {
-            load(qsTr('Crea nova anotació'), 'annotations2/NewAnnotationHelper', {});
         }
 
         Connections {
@@ -302,6 +263,10 @@ Window {
             onOpenPage: {
                 spacesView.addSpace(caption, qmlPage, properties);
                 otherDirectionsDialog.close();
+            }
+            onNewAnnotation: {
+                otherDirectionsDialog.close();
+                spacesView.addSpace(qsTr('Anotació'), 'simpleannotations/ShowAnnotation', {identifier: -1, newText: text});
             }
         }
     }

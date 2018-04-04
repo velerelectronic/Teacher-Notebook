@@ -35,6 +35,8 @@ Rectangle {
     property string updated: ''
     property int stateValue: 0
 
+    property string newText: '' // Text to create new annotations
+
     color: 'transparent'
 
     onIdentifierChanged: getText()
@@ -608,25 +610,30 @@ Rectangle {
 
     function getText() {
         console.log('identifier is ', showAnnotationItem.identifier);
+        if (showAnnotationItem.identifier < 0) {
+            // No annotation. It must be created
+
+            var newTitle = qsTr('Nova anotació');
+            if (newText !== "") {
+                var re = /^(.*)$/m;
+                var match = re.exec(newText);
+                if (match != null) {
+                    newTitle = match[0];
+                    console.log('matched', match[0]);
+                }
+
+                var newAnnot = annotationsModel.insertObject({title: newTitle, desc: newText});
+                if (newAnnot > -1)
+                    identifier = newAnnot;
+            }
+        }
+
         if (showAnnotationItem.identifier > -1) {
             annotationsModel.filters = ["id = ?"];
             annotationsModel.bindValues = [showAnnotationItem.identifier];
-        } else {
-            var today = new Date();
-            var filters = [];
-            filters.push("title != ''");
-            filters.push("(start <= ?) OR (end <= ?)");
-            annotationsModel.filters = filters;
-            var todayText = today.toYYYYMMDDHHMMFormat();
-            var values = [];
-            values.push(todayText);
-            values.push(todayText);
-            annotationsModel.bindValues = values;
-            annotationsModel.sort = 'start DESC, end DESC, title DESC';
         }
 
         annotationsModel.select();
-        console.log('annotations with id', showAnnotationItem.identifier, 'count', annotationsModel.count);
 
         if (annotationsModel.count>0) {
             var obj;
