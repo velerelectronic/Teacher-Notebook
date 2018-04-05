@@ -54,8 +54,43 @@ Rectangle {
                 }
             }
 
-            Item {
+            ListView {
+                id: spacesNamesList
+
                 Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                model: spaceItemsModel
+
+                orientation: ListView.Horizontal
+                clip: true
+                spacing: units.nailUnit
+
+                delegate: Rectangle {
+                    width: units.fingerUnit * 6
+                    height: spacesNamesList.height
+
+                    color: (ListView.isCurrentItem)?'yellow':'white'
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            spacesView.moveUp(model.itemIndex);
+                            spacesNamesList.currentIndex = model.index;
+                            spaceItemsModel.moveUp(caption);
+                        }
+                    }
+
+                    Text {
+                        anchors.fill: parent
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
+                        text: model.caption
+                    }
+                }
             }
             Common.ImageButton {
                 Layout.fillHeight: true
@@ -96,8 +131,7 @@ Rectangle {
 
                 caption: model.caption
                 qmlPage: model.qmlPage
-                pageProperties: model.pageProperties
-
+                pageProperties: JSON.parse(model.pageProperties)
 
                 onSelectedSpace: {
                     spaceItemsModel.moveUp(caption);
@@ -109,6 +143,15 @@ Rectangle {
                 }
 
                 onDoubleSelectedSpace: spaceItemsOptions.openOptions()
+
+                onSavePageProperties: {
+                    console.log('saving page properties', JSON.stringify(pageProperties), 'on', caption);
+                    spaceItemsModel.updateObject(caption, {pageProperties: JSON.stringify(pageProperties)});
+                }
+
+                onToMainSpace: {
+                    addSpace(caption, qmlPage, pageProperties);
+                }
 
                 Common.SuperposedWidget {
                     id: spaceItemsOptions
@@ -153,6 +196,10 @@ Rectangle {
                         }
                     }
                 }
+
+                Component.onCompleted: {
+                    console.log('page-properties', JSON.stringify(oneSpaceItem.pageProperties));
+                }
             }
         }
     }
@@ -173,15 +220,20 @@ Rectangle {
 
         function updateCoordinates(caption, posX, posY) {
             updateObject(caption, {itemX: posX, itemY: posY});
+            select();
         }
 
         function updateSize(caption, width, height) {
             updateObject(caption, {itemWidth: width, itemHeight: height});
+            select();
         }
 
         function moveUp(caption) {
             updateObject(caption, {itemIndex: spaceItemsList.count-1});
+            select();
         }
+
+        Component.onCompleted: select()
     }
 
     Common.SuperposedWidget {
@@ -209,6 +261,7 @@ Rectangle {
     }
 
     function addSpace(caption, qmlPage, properties) {
+        console.log('to main space', caption, qmlPage, properties);
         var index = spaceItemsList.count;
         var spaceProperties = {
             itemX: index * units.fingerUnit,

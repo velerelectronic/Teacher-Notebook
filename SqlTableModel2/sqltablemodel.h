@@ -80,6 +80,7 @@ public:
     Q_INVOKABLE QVariantMap getObjectInRow(int row) const;
     Q_INVOKABLE QString     getSearchString();
     Q_INVOKABLE QVariant    insertObject(const QVariantMap &);
+    Q_INVOKABLE QVariant    insertOrIgnoreObject(const QVariantMap &);
     Q_INVOKABLE int         removeAllObjects();
     Q_INVOKABLE int         removeObject(const QVariant &);
     Q_INVOKABLE bool        select();

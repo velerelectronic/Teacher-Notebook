@@ -8,6 +8,7 @@ Rectangle {
 
     clip: true
 
+    property string initialDateString: ''
     property var initialDate: new Date()
     property var firstMonthDate: new Date()
     property bool interactive: true
@@ -20,6 +21,7 @@ Rectangle {
     signal periodChanged()
     signal selectedDate(int day, int month, int year)
     signal longSelectedDate(int day, int month, int year)
+    signal updatedInitialDateString(string dateStr)
 
     Common.UseUnits {
         id: units
@@ -73,6 +75,7 @@ Rectangle {
             cellHeight: dayHeight
 
             function setDates() {
+                updatedInitialDateString(initialDate.toISOString());
                 firstMonthDate = new Date();
                 firstMonthDate.setFullYear(initialDate.getFullYear());
                 firstMonthDate.setMonth(initialDate.getMonth());
@@ -191,10 +194,17 @@ Rectangle {
     }
 
     function setTodayDate() {
-        initialDate = new Date();
+        if (initialDateString !== "") {
+            initialDate = new Date(initialDateString);
+        } else {
+            initialDate = new Date();
+        }
+
         updateContents();
         periodChanged();
     }
+
+    onInitialDateStringChanged: setTodayDate()
 
     function getFirstDate() {
         var first = new Date(firstMonthDate);

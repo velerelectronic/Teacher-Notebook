@@ -1,5 +1,5 @@
 import QtQuick 2.7
-import QtQuick.Layouts 1.1
+import QtQuick.Layouts 1.3
 import QtQml.Models 2.2
 import QtQuick.Dialogs 1.2
 
@@ -28,6 +28,9 @@ Rectangle {
     signal showRelatedAnnotationsByLabels()
     signal showRelatedAnnotationsByPeriod()
 
+    signal abcabc(string name, var value)
+    signal saveProperty(string name, var value)
+
     property int identifier
     property string title: ''
     property string descText: ''
@@ -39,7 +42,11 @@ Rectangle {
 
     color: 'transparent'
 
-    onIdentifierChanged: getText()
+    onIdentifierChanged: {
+        console.log('Changed identifier to', identifier);
+        showAnnotationItem.saveProperty('identifier', identifier);
+        getText();
+    }
 
     Common.UseUnits {
         id: units
@@ -241,7 +248,9 @@ Rectangle {
 
                                 size: units.fingerUnit
                                 image: 'plus-24844'
-                                onClicked: titleDescEditor.openAppender()
+                                onClicked: {
+                                    titleDescEditor.openAppender()
+                                }
                             }
                         }
                         Files.FileViewer {
@@ -406,7 +415,11 @@ Rectangle {
 
                                 imageSource: 'plus-24844'
 
-                                onClicked: timeEditor.openNewTimeEditor()
+                                onClicked: {
+                                    timeEditor.openNewTimeEditor();
+                                    console.log('oooooo');
+                                    saveProperty('identifier', identifier);
+                                }
                             }
                         }
 
@@ -623,8 +636,11 @@ Rectangle {
                 }
 
                 var newAnnot = annotationsModel.insertObject({title: newTitle, desc: newText});
-                if (newAnnot > -1)
+                if (newAnnot > -1) {
+                    saveProperty('newText', '');
                     identifier = newAnnot;
+                    abcabc('ident',10);
+                }
             }
         }
 
@@ -772,5 +788,7 @@ Rectangle {
         }
     }
 
-    Component.onCompleted: getText()
+    Component.onCompleted: {
+        getText();
+    }
 }

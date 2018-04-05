@@ -7,12 +7,20 @@ Common.GeneralListView {
     id: annotationsListView
 
     property int lastSelectedAnnotation: -1
+    property string searchString: ''
+
     signal openCard(string page, var pageProperties, var cardProperties)
+    signal saveProperty(string name, var value)
 
     Common.UseUnits {
         id: units
     }
 
+
+    onSearchStringChanged: {
+        searchBox.text = searchString;
+        filterResults();
+    }
 
     SimpleAnnotationsModel {
         id: annotationsModel
@@ -35,6 +43,7 @@ Common.GeneralListView {
 
         Component.onCompleted: {
             createTable();
+
             update();
         }
     }
@@ -65,12 +74,12 @@ Common.GeneralListView {
                 height: annotationsListButtons.height
                 width: annotationsListButtons.width / 2
 
-                text: '' // docAnnotationsRect.searchString
+                text: searchString
 
                 onIntroPressed: {
-                    annotationsModel.searchFields = annotationsModel.fieldNames;
-                    annotationsModel.searchString = text;
-                    annotationsModel.update();
+                    annotationsListView.searchString = text;
+                    saveProperty('searchString', text);
+                    filterResults();
                 }
             }
 
@@ -283,6 +292,16 @@ Common.GeneralListView {
         openCard("simpleannotations/DocumentAnnotationsImport", {}, {headingText: qsTr("Importador"), headingColor: 'brown'});
     }
 
+    function filterResults() {
+        annotationsModel.searchFields = annotationsModel.fieldNames;
+        annotationsModel.searchString = searchString;
+        annotationsModel.update();
+    }
 
+    Component.onCompleted: {
+        if (searchString !== "") {
+            filterResults();
+        }
+    }
 }
 

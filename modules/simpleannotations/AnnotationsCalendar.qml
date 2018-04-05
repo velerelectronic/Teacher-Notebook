@@ -10,6 +10,9 @@ Item {
     id: annotationsCalendarBaseItem
 
     signal openCard(string page, var pageProperties, var cardProperties)
+    signal saveProperty(string name, var value)
+
+    property alias initialDateString: weeksCalendarView.initialDateString
 
     Common.UseUnits {
         id: units
@@ -20,6 +23,10 @@ Item {
     property string lastSelectedDate: ''
     property int lastSelectedMarkId: -1
     property int lastSelectedAnnotation: -1
+
+    onLastSelectedDateChanged: saveProperty('lastSelectedDate', lastSelectedDate)
+    onLastSelectedMarkIdChanged: saveProperty('lastSelectedMarkId', lastSelectedMarkId)
+    onLastSelectedAnnotationChanged: saveProperty('lastSelectedAnnotation', lastSelectedAnnotation)
 
     SimpleAnnotationsModel {
         id: annotationsModel
@@ -119,6 +126,8 @@ Item {
                         Layout.fillHeight: true
 
                         property string todayDate: { return (new Date()).toYYYYMMDDFormat(); }
+
+                        onUpdatedInitialDateString: saveProperty('initialDateString', dateStr)
 
                         weeksNumber: 5
                         interactive: false

@@ -8,14 +8,19 @@ Rectangle {
 
     property string caption: ''
     property string qmlPage: ''
-    property string pageProperties: ''
+    property var pageProperties: null
 
     property int initialWidth
     property int initialHeight
 
+    property bool isSubSpace: false
+
     signal selectedSpace(int index)
     signal spaceHasBeenDragged()
     signal doubleSelectedSpace(int index)
+    signal toMainSpace(string caption, string qmlPage, var pageProperties)
+    signal closeSubSpace()
+    signal savePageProperties()
 
     // z will contain the space index in the whole list
 
@@ -53,28 +58,6 @@ Rectangle {
             // Upper bar
             Layout.fillWidth: true
             Layout.preferredHeight: units.fingerUnit
-            RowLayout {
-                anchors.fill: parent
-
-                Common.ImageButton {
-                    size: units.fingerUnit
-
-                    image: 'outline-27146'
-                }
-
-                Text {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-
-                    padding: units.nailUnit
-
-                    verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-
-                    text: caption
-                }
-            }
 
             MouseArea {
                 anchors.fill: parent
@@ -101,6 +84,43 @@ Rectangle {
                     doubleSelectedSpace(spacesItem.z);
                 }
             }
+            RowLayout {
+                anchors.fill: parent
+
+                Common.ImageButton {
+                    size: units.fingerUnit
+
+                    image: (isSubSpace)?'screen-capture-23236':'outline-27146'
+
+                    onClicked: {
+                        if (isSubSpace) {
+                            spacesItem.toMainSpace(caption, qmlPage, pageProperties);
+                            closeSubSpace();
+                        }
+                    }
+                }
+
+                Text {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+
+                    padding: units.nailUnit
+
+                    verticalAlignment: Text.AlignVCenter
+                    font.pixelSize: units.readUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+
+                    text: caption
+                }
+
+                Common.ImageButton {
+                    size: units.fingerUnit
+                    image: (isSubSpace)?'road-sign-147409':''
+
+                    onClicked: spacesItem.closeSubSpace()
+                }
+            }
+
         }
         Loader {
             id: pageLoader
@@ -112,39 +132,57 @@ Rectangle {
 
             function loadPage() {
                 console.log('SETTINGG', 'qrc:///modules/' + qmlPage + ".qml", pageProperties);
-                if ((qmlPage !== "") && (pageProperties !== null))
-                    pageLoader.setSource('qrc:///modules/' + qmlPage + ".qml", (pageProperties !== "")?JSON.parse(pageProperties):{});
-
+                if ((qmlPage !== "") && (pageProperties != null)) {
+                    pageLoader.setSource('qrc:///modules/' + qmlPage + ".qml", pageProperties);
+                    pageLoaderConnections.target = pageLoader.item;
+                }
             }
 
             onLoaded: {
-                console.log('PROPERTIES of pageLoader item');
-                /*
-                for (var prop in pageLoader.item) {
-                    console.log(prop, "(", typeof(pageLoader.item[prop]), ")", pageLoader.item[prop]);
-                }
-                */
-                console.log(pageLoader.item.toSource());
-
+                pageLoaderConnections.target = pageLoader.item;
             }
 
-            Connections {
-                target: spacesItem
 
-                onQmlPageChanged: pageLoader.loadPage()
-                onPagePropertiesChanged: pageLoader.loadPage()
-            }
-
-            Connections {
-                target: pageLoader.item
-                ignoreUnknownSignals: true
-
-                onOpenCard: {
-                    openSubSpace(qsTr('SubSpace'), page, pageProperties);
-                }
-            }
         }
     }
+
+
+    Connections {
+        id: pageLoaderConnections
+
+        target: pageLoader.item
+
+        ignoreUnknownSignals: true
+
+        onOpenCard: {
+            console.log('Now opening card');
+            openSubSpace(qsTr('SubSpace'), page, pageProperties);
+        }
+
+        // This signal will be emitted when a property needs to be stored
+
+        onAbcabc: {
+            console.log('ABCABC', name, value);
+        }
+
+        onIdentifierChanged: {
+            console.log('ident,ident--', pageLoader.item.identifier);
+        }
+
+        onSaveProperty: {
+            console.log('-saveeee');
+            pageProperties[name] = value;
+            savePageProperties();
+        }
+    }
+
+    Connections {
+        target: spacesItem
+
+        onQmlPageChanged: pageLoader.loadPage()
+        onPagePropertiesChanged: pageLoader.loadPage()
+    }
+
 
     Item {
         id: secondSpaceItem
@@ -157,21 +195,17 @@ Rectangle {
         visible: false
 
         Loader {
-            id: secondSpace
+            id: secondSpaceLoader
 
             anchors.fill: parent
         }
 
-        Common.ImageButton {
-            anchors {
-                right: parent.right
-                top: parent.top
-            }
-            size: units.fingerUnit
-            image: 'road-sign-147409'
+        Connections {
+            target: secondSpaceLoader.item
 
-            onClicked: {
-                secondSpace.sourceComponent = null;
+            onToMainSpace: spacesItem.toMainSpace(caption, qmlPage, pageProperties)
+            onCloseSubSpace: {
+                secondSpaceLoader.sourceComponent = null;
                 secondSpaceItem.visible = false;
             }
         }
@@ -179,7 +213,7 @@ Rectangle {
 
     function openSubSpace(caption, qmlPage, properties) {
         secondSpaceItem.visible = true;
-        secondSpace.setSource("SpaceItem.qml", {caption: caption, qmlPage: qmlPage, pageProperties: JSON.stringify(properties)});
+        secondSpaceLoader.setSource("SpaceItem.qml", {isSubSpace: true, caption: caption, qmlPage: qmlPage, pageProperties: properties});
     }
 
     function resize(newWidth, newHeight) {

@@ -128,97 +128,11 @@ Window {
         }
     }
 
-    Common.DoublePanel {
-        id: dbPanel
+
+    Spaces.SpacesView {
+        id: spacesView
 
         anchors.fill: parent
-        visible: false
-
-        globalMargins: 0
-
-        signal openPage(string page, var pageProperties, var cardProperties)
-
-        /*
-        {
-            //dbPanel.setMainSource('qrc:///modules/' + page + '.qml', properties);
-        }
-        */
-
-        itemSubPanel: Rectangle {
-            color: 'green'
-
-            ListView {
-                id: menuList
-                anchors.fill: parent
-
-                model: ListModel {
-                    id: menuModel
-                }
-
-                delegate: Rectangle {
-                    width: menuList.width
-                    height: units.fingerUnit * 2
-
-                    Text {
-                        anchors.fill: parent
-                        padding: units.nailUnit
-                        verticalAlignment: Text.AlignVCenter
-                        font.pixelSize: units.readUnit
-                        text: model.caption
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: dbPanel.openPage(model.page, model.properties, {headingText: caption, color: Qt.lighter('green')});
-                    }
-                }
-            }
-            Component.onCompleted: {
-            }
-        }
-
-        itemMainPanel: Item {
-            Rectangle {
-                anchors.fill: parent
-                color: '#AAAAAA'
-                Image {
-                    anchors.fill: parent
-                    anchors.margins: Math.min(parent.width * 0.1, parent.height * 0.1)
-
-                    fillMode: Image.PreserveAspectFit
-                    source: 'qrc:///icons/small-41255.svg'
-                }
-            }
-
-            Common.CardsNavigator {
-                id: cardsNavigator
-
-                anchors.fill: parent
-
-                Connections {
-                    target: dbPanel
-
-                    onOpenPage: {
-                        cardsNavigator.insertFirstPage(page, cardProperties, pageProperties);
-                    }
-
-                    onClosePage: {
-
-                    }
-                }
-            }
-        }
-
-    }
-
-
-    Structure.MainNavigator {
-        id: mainNavigator
-
-        anchors.fill: parent
-        visible: false
-
-        onMainIconSelected: otherDirectionsDialog.openOpenedPages()
-
 
         Basic.InformationMessages {
             id: informationMessage
@@ -230,13 +144,6 @@ Window {
                 bottom: parent.bottom
             }
         }
-
-    }
-
-    Spaces.SpacesView {
-        id: spacesView
-
-        anchors.fill: parent
 
         Component.onCompleted: {
 

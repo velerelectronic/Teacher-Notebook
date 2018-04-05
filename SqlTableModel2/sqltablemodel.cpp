@@ -236,6 +236,36 @@ QVariant SqlTableModel2::insertObject(const QVariantMap &object) {
     return lastId;
 }
 
+QVariant SqlTableModel2::insertOrIgnoreObject(const QVariantMap &object) {
+    QStringList keys = object.keys();
+    QStringList placeHolders;
+
+    for (int i=0; i<object.size(); i++)
+        placeHolders << "?";
+
+    QSqlQuery query;
+    query.prepare("INSERT OR IGNORE INTO " + innerTableName + " (\"" + keys.join("\", \"") + "\") VALUES (" + placeHolders.join(",") + ")");
+
+    QVariantMap::const_iterator values = object.cbegin();
+    while ( values != object.cend()) {
+        query.addBindValue(*values);
+        ++values;
+    }
+
+    query.exec();
+
+    setQuery(query);
+
+    QVariant lastId = query.lastInsertId();
+
+    qDebug() << "INSERT" << query.lastQuery();
+    qDebug() << object;
+    qDebug() << query.lastError();
+    updated();
+    qDebug() << "Last ID " << lastId;
+    return lastId;
+}
+
 bool SqlTableModel2::isSelectedObject(const int &row) {
     return subselectedRows.contains(row);
 }
