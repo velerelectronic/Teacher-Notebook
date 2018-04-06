@@ -13,6 +13,7 @@ Item {
     }
 
     property int toolBarHeight: units.fingerUnit * 4 + units.nailUnit
+    property int headingBarHeight: units.fingerUnit * 2
 
     property Component headingBar: null
     property Component listDelegate: null
@@ -77,8 +78,9 @@ Item {
 
                 z: 2
                 width: innerListView.width
-                height: units.fingerUnit * 2
+                height: headingBarHeight
 
+                clip: true
                 sourceComponent: headingBar
 
                 onLoaded: {

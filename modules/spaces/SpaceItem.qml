@@ -14,6 +14,7 @@ Rectangle {
     property int initialHeight
 
     property bool isSubSpace: false
+    property alias innerItem: pageLoader.item
 
     signal selectedSpace(int index)
     signal spaceHasBeenDragged()
@@ -35,6 +36,17 @@ Rectangle {
 //    height: initialHeight
 
     border.color: 'black'
+
+    // Two states for Space Items
+
+    states: [
+        State {
+            name: 'card'
+        },
+        State {
+            name: 'window'
+        }
+    ]
 
     Common.UseUnits {
         id: units

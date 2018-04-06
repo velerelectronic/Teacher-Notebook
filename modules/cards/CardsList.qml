@@ -11,6 +11,9 @@ Item {
     property int columnsNumber: Math.max(Math.round(width / (units.fingerUnit * 10)),1)
     property Item slotsObject
 
+    property int requiredWidth: units.fingerUnit * 8
+    property int requiredHeight: units.fingerUnit * 16
+
     Common.UseUnits {
         id: units
     }

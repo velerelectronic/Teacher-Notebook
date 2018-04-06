@@ -8,6 +8,8 @@ Common.GeneralListView {
 
     property int lastSelectedAnnotation: -1
     property string searchString: ''
+    property int requiredWidth: units.fingerUnit * 12
+    property int requiredHeight: units.fingerUnit * 12
 
     signal openCard(string page, var pageProperties, var cardProperties)
     signal saveProperty(string name, var value)
@@ -94,6 +96,8 @@ Common.GeneralListView {
         }
     }
 
+
+    headingBarHeight: (annotationsListView.height > annotationsListView.requiredHeight)?(units.fingerUnit * 2):0
     headingBar: Rectangle {
         color: '#DDFFDD'
 
@@ -155,7 +159,7 @@ Common.GeneralListView {
 
             Text {
                 Layout.fillHeight: true
-                Layout.preferredWidth: parent.width / 4
+                Layout.fillWidth: true
 
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 font.pixelSize: units.readUnit
@@ -165,6 +169,8 @@ Common.GeneralListView {
             Text {
                 Layout.fillHeight: true
                 Layout.preferredWidth: parent.width / 4
+
+                visible: (annotationsListView.width > annotationsListView.requiredWidth)
 
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 font.pixelSize: units.readUnit
@@ -229,7 +235,7 @@ Common.GeneralListView {
             }
             Text {
                 Layout.fillHeight: true
-                Layout.fillWidth: true
+                Layout.preferredWidth: parent.width / 4
 
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 font.pixelSize: units.readUnit

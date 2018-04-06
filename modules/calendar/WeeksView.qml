@@ -34,7 +34,7 @@ Rectangle {
         Rectangle {
             id: weeksHeader
             Layout.fillWidth: true
-            Layout.preferredHeight: units.fingerUnit * 2
+            Layout.preferredHeight: units.fingerUnit
 
             z: 2
             RowLayout {

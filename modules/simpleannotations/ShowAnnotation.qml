@@ -40,6 +40,9 @@ Rectangle {
 
     property string newText: '' // Text to create new annotations
 
+    property int requiredWidth: units.fingerUnit * 10
+    property int requiredHeight: units.fingerUnit * 8
+
     color: 'transparent'
 
     onIdentifierChanged: {
@@ -91,6 +94,8 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: units.fingerUnit * 2
 
+            visible: (showAnnotationItem.width > showAnnotationItem.requiredWidth)
+
             spacing: units.nailUnit
             underlineColor: 'orange'
             underlineWidth: units.nailUnit
@@ -116,7 +121,7 @@ Rectangle {
 
                 Common.BasicSection {
                     width: partsList.width
-                    padding: units.fingerUnit
+                    padding: (showAnnotationItem.width > showAnnotationItem.requiredWidth)?units.fingerUnit:units.nailUnit
                     captionSize: units.readUnit
                     caption: qsTr('Principal')
 
@@ -209,7 +214,7 @@ Rectangle {
                     id: titleRect
 
                     width: partsList.width
-                    padding: units.fingerUnit
+                    padding: (showAnnotationItem.width > showAnnotationItem.requiredWidth)?units.fingerUnit:units.nailUnit
                     captionSize: units.readUnit
                     caption: qsTr('Descripció')
 
@@ -309,7 +314,7 @@ Rectangle {
                     width: partsList.width
                     height: requiredHeight
 
-                    padding: units.fingerUnit
+                    padding: (showAnnotationItem.width > showAnnotationItem.requiredWidth)?units.fingerUnit:units.nailUnit
                     captionSize: units.readUnit
                     caption: qsTr('Etiquetes')
 
@@ -321,7 +326,7 @@ Rectangle {
 
                 Common.BasicSection {
                     width: partsList.width
-                    padding: units.fingerUnit
+                    padding: (showAnnotationItem.width > showAnnotationItem.requiredWidth)?units.fingerUnit:units.nailUnit
                     captionSize: units.readUnit
                     caption: qsTr('Marques de temps')
 

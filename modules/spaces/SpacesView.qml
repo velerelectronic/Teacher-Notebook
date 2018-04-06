@@ -1,6 +1,5 @@
 import QtQuick 2.6
 import QtQuick.Layouts 1.3
-import QtGraphicalEffects 1.0
 import Qt.labs.settings 1.0
 import 'qrc:///common' as Common
 
@@ -165,8 +164,12 @@ Rectangle {
                         ignoreUnknownSignals: true
 
                         onMinimumSize: {
-                            spaceItemsModel.updateSize(oneSpaceItem.caption, units.fingerUnit * 10, units.fingerUnit * 10)
-                            oneSpaceItem.resize(units.fingerUnit * 10, units.fingerUnit * 10);
+                            var reqWidth = Math.max(oneSpaceItem.innerItem.requiredWidth, units.fingerUnit * 2);
+                            var reqHeight = Math.max(oneSpaceItem.innerItem.requiredHeight, units.fingerUnit * 2);
+                            console.log('RW-RH', reqWidth, reqHeight);
+
+                            spaceItemsModel.updateSize(oneSpaceItem.caption, reqWidth, reqHeight);
+                            oneSpaceItem.resize(reqWidth, reqHeight);
                             spaceItemsOptions.close();
                         }
                         onMediumSize: {

@@ -12,6 +12,9 @@ Item {
     signal openCard(string page, var pageProperties, var cardProperties)
     signal saveProperty(string name, var value)
 
+    property int requiredWidth: units.fingerUnit * 10
+    property int requiredHeight: units.fingerUnit * 15
+
     property alias initialDateString: weeksCalendarView.initialDateString
 
     Common.UseUnits {
@@ -225,6 +228,8 @@ Item {
                 model: mainMarksModel
 
                 toolBarHeight: 0
+
+                headingBarHeight: (annotationsCalendarBaseItem.height > annotationsCalendarBaseItem.requiredHeight)?(units.fingerUnit * 2):0
                 headingBar: Rectangle {
                     color: '#DDFFDD'
                     z: 2
