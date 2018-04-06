@@ -52,7 +52,7 @@ Common.GeneralListView {
 
     model: annotationsModel
 
-    toolBarHeight: (units.fingerUnit + units.nailUnit) * 2
+    toolBarHeight: (annotationsListView.height > annotationsListView.requiredHeight)?((units.fingerUnit + units.nailUnit) * 2): (units.fingerUnit + units.nailUnit * 2)
 
     toolBar: Item {
         Basic.ButtonsRow {
@@ -73,7 +73,7 @@ Common.GeneralListView {
             Common.SearchBox {
                 id: searchBox
 
-                height: annotationsListButtons.height
+                height: annotationsListButtons.height - annotationsListButtons.margins * 2
                 width: annotationsListButtons.width / 2
 
                 text: searchString
@@ -86,7 +86,7 @@ Common.GeneralListView {
             }
 
             Common.ImageButton {
-                height: annotationsListButtons.height
+                height: annotationsListButtons.height - annotationsListButtons.margins * 2
                 width: height
 
                 image: 'check-mark-303498'

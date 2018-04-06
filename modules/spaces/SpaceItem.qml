@@ -32,6 +32,9 @@ Rectangle {
     x: z * units.fingerUnit
     y: z * units.fingerUnit
 
+    property int maxX
+    property int maxY
+
 //    width: initialWidth
 //    height: initialHeight
 
@@ -79,6 +82,9 @@ Rectangle {
                 drag.axis: Drag.XandYAxis
                 drag.minimumX: 0
                 drag.minimumY: 0
+
+                drag.maximumX: maxX - spacesItem.width
+                drag.maximumY: maxY - spacesItem.height
 
                 property bool beingDragged: drag.active
 

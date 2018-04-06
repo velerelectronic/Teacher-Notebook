@@ -128,6 +128,9 @@ Rectangle {
 
                 z: model.itemIndex
 
+                maxX: spacesZone.width
+                maxY: spacesZone.height
+
                 caption: model.caption
                 qmlPage: model.qmlPage
                 pageProperties: JSON.parse(model.pageProperties)
