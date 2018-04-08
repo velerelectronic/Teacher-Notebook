@@ -4,5 +4,6 @@
         <file>modules/spaces/SpaceItem.qml</file>
         <file>modules/spaces/SpaceItemModel.qml</file>
         <file>modules/spaces/SpaceItemsOptions.qml</file>
+        <file>modules/spaces/NewAnnotation.qml</file>
     </qresource>
 </RCC>

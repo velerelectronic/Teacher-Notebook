@@ -40,7 +40,7 @@ Rectangle {
                 size: units.fingerUnit * 1.5
                 image: 'microsoft-windows-23242'
 
-                onClicked: spaceItemsOptions.openPagesMenu()
+                onClicked: spaceItemsActions.openPagesMenu()
             }
             Common.ImageButton {
                 Layout.fillHeight: true
@@ -53,41 +53,52 @@ Rectangle {
                 }
             }
 
-            ListView {
+            Flow {
                 id: spacesNamesList
 
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                model: spaceItemsModel
+                property int cellsForRowNumber: Math.floor(width / (3 * units.fingerUnit))
+                property int cellsWidth: Math.max((width / spaceItemsModel.count) - units.nailUnit, units.fingerUnit * 3)
 
-                orientation: ListView.Horizontal
-                clip: true
                 spacing: units.nailUnit
+                clip: true
 
-                delegate: Rectangle {
-                    width: units.fingerUnit * 6
-                    height: spacesNamesList.height
+                property string lastSpaceCaption: ''
 
-                    color: (ListView.isCurrentItem)?'yellow':'white'
+                function getLastSpace() {
+                    var captionObj = spaceItemsModel.getObjectInRow(spaceItemsModel.count-1);
+                    var caption = captionObj['caption'];
+                    lastSpaceCaption = caption;
+                }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            spacesView.moveUp(model.itemIndex);
-                            spacesNamesList.currentIndex = model.index;
-                            spaceItemsModel.moveUp(caption);
+                Repeater {
+                    model: spaceItemsModel
+
+                    delegate: Rectangle {
+                        width: spacesNamesList.cellsWidth
+                        height: units.fingerUnit
+
+                        color: (model.caption == spacesNamesList.lastSpaceCaption)?'yellow':'white'
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                spacesNamesList.lastSpaceCaption = model.caption;
+                                spacesView.relayer(model.caption);
+                            }
                         }
-                    }
 
-                    Text {
-                        anchors.fill: parent
-                        verticalAlignment: Text.AlignVCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        font.pixelSize: units.readUnit
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        Text {
+                            anchors.fill: parent
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            font.pixelSize: units.readUnit
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
 
-                        text: model.caption
+                            text: model.caption
+                        }
                     }
                 }
             }
@@ -96,7 +107,7 @@ Rectangle {
                 size: units.fingerUnit * 1.5
                 image: 'plus-24844'
 
-                onClicked: spaceItemsOptions.openPagesMenu()
+                onClicked: newAnnotationWidget.openNewAnnotation();
             }
         }
     }
@@ -136,8 +147,8 @@ Rectangle {
                 pageProperties: JSON.parse(model.pageProperties)
 
                 onSelectedSpace: {
-                    spaceItemsModel.moveUp(caption);
-                    spacesView.moveUp(index);
+                    relayer(caption);
+                    spacesNamesList.lastSpaceCaption = caption;
                 }
 
                 onSpaceHasBeenDragged: {
@@ -243,26 +254,37 @@ Rectangle {
     }
 
     Common.SuperposedWidget {
-        id: spaceItemsOptions
+        id: spaceItemsActions
 
         function openPagesMenu() {
             load(qsTr('Accions'), '../qml/MainPagesMenu', {});
         }
 
         Connections {
-            target: spaceItemsOptions.mainItem
+            target: spaceItemsActions.mainItem
             ignoreUnknownSignals: true
 
             // Check all these
             onOpenPage: {
                 addSpace(caption, qmlPage, properties);
-                spaceItemsOptions.close();
+                spaceItemsActions.close();
             }
-            onNewAnnotation: {
-                spaceItemsOptions.close();
-                addSpace(qsTr('Anotació'), 'simpleannotations/ShowAnnotation', {identifier: -1, newText: text});
-            }
+        }
+    }
 
+    Common.SuperposedWidget {
+        id: newAnnotationWidget
+
+        function openNewAnnotation() {
+            load(qsTr('Nova anotació'), 'spaces/NewAnnotation', {});
+        }
+
+        Connections {
+            target: newAnnotationWidget.mainItem
+
+            onCloseNewAnnotation: newAnnotationWidget.close();
+
+            onOpenPage: addSpace(caption, qmlPage, properties);
         }
     }
 
@@ -284,16 +306,17 @@ Rectangle {
         spaceItemsList.select();
     }
 
-    function moveUp(index) {
+    function relayer(caption) {
+        // Put space with caption "caption" in front of others
+        spaceItemsModel.moveUp(caption);
+
+        // Recalculate z for all existing spaces
+
         var spacesObjList = spacesZone.children;
-        for (var i=0; i<spacesObjList.length; i++) {
-            if (spacesObjList[i].z > index) {
-                spacesObjList[i].z = spacesObjList[i].z - 1;
-            } else {
-                if (spacesObjList[i].z == index) {
-                    spacesObjList[i].z = spacesObjList.length;
-                }
-            }
+        for (var i=0; i<spaceItemsModel.count; i++) {
+            var spaceObj = spaceItemsModel.getObjectInRow(i);
+            var newZ = spaceObj['itemIndex'];
+            spacesObjList[i].z = newZ;
         }
     }
 

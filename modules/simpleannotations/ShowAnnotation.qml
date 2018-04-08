@@ -94,7 +94,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: units.fingerUnit * 2
 
-            visible: (showAnnotationItem.width > showAnnotationItem.requiredWidth)
+            visible: (showAnnotationItem.height > showAnnotationItem.requiredHeight)
 
             spacing: units.nailUnit
             underlineColor: 'orange'

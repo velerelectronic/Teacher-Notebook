@@ -126,7 +126,7 @@ Rectangle {
 
                     verticalAlignment: Text.AlignVCenter
                     font.pixelSize: units.readUnit
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    elide: Text.ElideRight
 
                     text: caption
                 }

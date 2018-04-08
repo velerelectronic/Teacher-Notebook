@@ -71,10 +71,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         enabled: editable
-        onClicked: {
-            textEditor.text = baseText.text;
-            editableTextBaseItem.state = 'editor';
-        }
+        onClicked: activateEditor()
     }
 
     Common.TextAreaEditor {
@@ -93,5 +90,14 @@ Item {
             editableTextBaseItem.state = 'text';
             editorClosed();
         }
+    }
+
+    function pasteClipboard() {
+        textEditor.pasteClipboard();
+    }
+
+    function activateEditor() {
+        textEditor.text = baseText.text;
+        editableTextBaseItem.state = 'editor';
     }
 }

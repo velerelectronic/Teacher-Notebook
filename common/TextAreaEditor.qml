@@ -243,4 +243,9 @@ Item {
            onClicked: textArea.cursorPosition = textArea.cursorPosition + 1
        }
    }
+
+    function pasteClipboard() {
+        textArea.selectAll();
+        textArea.paste();
+    }
 }
