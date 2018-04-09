@@ -2,6 +2,7 @@
 
 #include <QString>
 #include <QRegExp>
+#include <QRegularExpression>
 #include <QDebug>
 
 MarkDownParser::MarkDownParser(QObject *parent) :
@@ -32,33 +33,36 @@ QString MarkDownParser::parseTokenAlt(QString infix) {
 
     int pos = 0;
 
-    QRegExp rx(QString("(\\n*#\\s+([^\\n\\n]+)\\n{2,})")
+    QRegularExpression rx(QString("(\\n*#\\s+([^\\n\\n]+)\\n{2,})")
                + "|(\\*\\s+((?:[^\\n]|\\n[^\\n])+\\n{2,}))"
                + "|(((?:\\n[^\\n]|[^\\n])+)\\n{2,})"
                + "|(\\*{2}([^\\*]+)\\*{2})"
                + "|(_{2}([^_]+)_{2})"
+               + "|(\\[([^\\]\\s]+)((?:\\s+)([^\\]]+))?\\])"
                + "|(\\[\\[([^\\]]+)\\|(.+)\\]\\])"
                + "|(\\[\\[([^\\]]+)\\]\\])"
                );
+
     while (pos >= 0) {
-        int newPos = rx.indexIn(infix, pos);
+        QRegularExpressionMatch match = rx.match(infix, pos);
+        int newPos = match.capturedStart();
         qDebug() << "CAP";
 
         if (newPos >= pos) {
             output += infix.mid(pos,newPos-pos);
 
             int n = 1;
-            if (rx.cap(n) != "") {
-                output += "<h1>" + parseTokenAlt(rx.cap(n+1)) + "</h1>";
+            if (match.captured(n) != "") {
+                output += "<h1>" + parseTokenAlt(match.captured(n+1)) + "</h1>";
             }
             n = n + 2;
-            if (rx.cap(n) != "") {
+            if (match.captured(n) != "") {
                 output += "<ul>";
 
                 QRegExp rxsub("^\\*(?:\\s*)([^\\n]+)(?:\\n|$)");
                 int posSub = 0;
                 while (posSub >= 0) {
-                    posSub = rxsub.indexIn(rx.cap(n),posSub,QRegExp::CaretAtOffset);
+                    posSub = rxsub.indexIn(match.captured(n),posSub,QRegExp::CaretAtOffset);
                     if (posSub >= 0) {
                         output += "<li>" + parseTokenAlt(rxsub.cap(1)) + "</li>";
                         posSub = posSub + rxsub.matchedLength();
@@ -67,29 +71,51 @@ QString MarkDownParser::parseTokenAlt(QString infix) {
                 output += "</ul>";
             }
             n = n + 2;
-            if (rx.cap(n) != "") {
-                output += "<p>" + parseTokenAlt(rx.cap(n+1)) + "</p><br/>";
+            if (match.captured(n) != "") {
+                output += "<p>" + parseTokenAlt(match.captured(n+1)) + "</p><br/>";
             }
             n = n + 2;
-            if (rx.cap(n) != "") {
-                output += "<b>" + parseTokenAlt(rx.cap(n+1)) + "</b>";
+            if (match.captured(n) != "") {
+                output += "<b>" + parseTokenAlt(match.captured(n+1)) + "</b>";
             }
             n = n + 2;
-            if (rx.cap(n) != "") {
-                output += "<u>" + parseTokenAlt(rx.cap(n+1)) + "</u>";
+            if (match.captured(n) != "") {
+                output += "<u>" + parseTokenAlt(match.captured(n+1)) + "</u>";
             }
             n = n + 2;
-            if (rx.cap(n) != "") {
-                output += "<a href=\"" + parseTokenAlt(rx.cap(n+1)) + "\">" + parseTokenAlt(rx.cap(n+2)) + "</a>";
+
+            if (match.captured(n) != "") {
+                QString link = match.captured(n+1);
+                QString text;
+                if (match.captured(n+2) != "") {
+                    text = parseTokenAlt(match.captured(n+3));
+                    n = n + 3;
+                } else {
+                    text = link;
+                    n = n + 2;
+                }
+                output += "<a href=\"" + link + "\">" + text + "</a>";
+            }
+
+            if (match.captured(n) != "") {
+                output += "<a href=\"" + parseTokenAlt(match.captured(n+1)) + "\">" + parseTokenAlt(match.captured(n+2)) + "</a>";
             }
             n = n + 3;
-            if (rx.cap(n) != "") {
-                QString link = parseTokenAlt(rx.cap(n+1));
+            if (match.captured(n) != "") {
+                QString link = parseTokenAlt(match.captured(n+1));
                 output += "<a href=\"" + link + "\">" + link + "</a>";
             }
             n = n + 2;
 
-            pos = newPos + rx.matchedLength();
+            /*
+
+            if (rx.cap(n) != "") {
+                output += rx.cap(n);
+            }
+            n = n + 1;
+            */
+
+            pos = newPos + match.capturedLength();
         } else {
             output += infix.mid(pos);
             pos = -1;

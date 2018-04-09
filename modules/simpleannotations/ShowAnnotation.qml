@@ -232,7 +232,7 @@ Rectangle {
 
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            onLinkActivated: openAnnotation(link)
+                            onLinkActivated: Qt.openUrlExternally(link) // openAnnotation(link)
                             Common.ImageButton {
                                 id: changeDescriptionButton
                                 anchors {
