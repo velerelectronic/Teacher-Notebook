@@ -232,7 +232,21 @@ Rectangle {
 
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            onLinkActivated: Qt.openUrlExternally(link) // openAnnotation(link)
+                            onLinkActivated: {
+                                console.log("This link", link);
+                                var rx = new RegExp("notebook://checkmark\\?mark=(x?|\\s)\\&position=(\\d+)");
+                                console.log(rx);
+                                var result = rx.exec(link);
+                                rx = "";
+                                if (result != null) {
+                                    console.log(result[1], result[1].length, result[2]);
+                                    toggleCheckMark(result[1], parseInt(result[2]), (result[1]=='x')?' ':'x');
+                                } else {
+                                    Qt.openUrlExternally(link) // openAnnotation(link)
+                                }
+                                //result = null;
+                                rx = null;
+                            }
                             Common.ImageButton {
                                 id: changeDescriptionButton
                                 anchors {
@@ -256,6 +270,15 @@ Rectangle {
                                 onClicked: {
                                     titleDescEditor.openAppender()
                                 }
+                            }
+
+                            function toggleCheckMark(oldMark, position, newMark) {
+                                var partBefore = descText.substring(0, position);
+                                var partAfter = descText.substring(position + oldMark.length);
+                                var newDesc = partBefore + newMark + partAfter;
+                                console.log(newDesc);
+                                annotationsModel.updateObject(identifier, {desc: newDesc});
+                                getText();
                             }
                         }
                         Files.FileViewer {

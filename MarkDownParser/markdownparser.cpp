@@ -28,7 +28,7 @@ QString MarkDownParser::toHtml(QString text) {
         return "";
 }
 
-QString MarkDownParser::parseTokenAlt(QString infix) {
+QString MarkDownParser::parseTokenAlt(QString infix, int relativePos) {
     QString output = "";
 
     QRegularExpression rx(QString("(\\n*#\\s+([^\\n\\n]+)\\n{2,})")
@@ -39,9 +39,11 @@ QString MarkDownParser::parseTokenAlt(QString infix) {
                + "|(\\*{2}([^\\*]+)\\*{2})"
                + "|(\\*([^\\*]+)\\*)"
                + "|(_{2}([^_]+)_{2})"
+               + "|(\\[(x?|\\s)\\]\\s+((?:.|.\\n)*)(?:\\n\\n|\\n$|$))"
                + "|(\\[([^\\]\\s]+)((?:\\s+)([^\\]]+))?\\])"
                + "|(\\[\\[([^\\]]+)\\|(.+)\\]\\])"
                + "|(\\[\\[([^\\]]+)\\]\\])"
+//               + "|((.+)(?:\\n\\n|\\n$|$))"
                );
 
     QRegularExpression innerNumbering("\\d+\\.\\s+((?:[^\\n]|(?:[^\\n]\\n))+)(?:\\n\\n|\\n$|$)");
@@ -56,21 +58,19 @@ QString MarkDownParser::parseTokenAlt(QString infix) {
 
             int n = 1;
             if (match.captured(n) != "") {
-                output += "<h1>" + parseTokenAlt(match.captured(n+1)) + "</h1>";
+                output += "<h1>" + parseTokenAlt(match.captured(n+1), relativePos + match.capturedStart(n+1)) + "</h1>";
             }
             n = n + 2;
             if (match.captured(n) != "") {
                 output += "<ul>";
 
-                QRegExp rxsub("^\\*(?:\\s*)([^\\n]+)(?:\\n|$)");
-                int posSub = 0;
-                while (posSub >= 0) {
-                    posSub = rxsub.indexIn(match.captured(n),posSub,QRegExp::CaretAtOffset);
-                    if (posSub >= 0) {
-                        output += "<li>" + parseTokenAlt(rxsub.cap(1)) + "</li>";
-                        posSub = posSub + rxsub.matchedLength();
-                    }
+                QRegularExpression rxsub("^\\*(?:\\s*)([^\\n]+)(?:\\n|$)");
+                QRegularExpressionMatchIterator j=rxsub.globalMatch(match.captured(n));
+                while (j.hasNext()) {
+                    QRegularExpressionMatch submatch = j.next();
+                    output += "<li>" + parseTokenAlt(submatch.captured(1), relativePos + match.capturedStart(n) + submatch.capturedStart(1)) + "</li>";
                 }
+
                 output += "</ul>";
             }
             n = n + 2;
@@ -80,38 +80,47 @@ QString MarkDownParser::parseTokenAlt(QString infix) {
                 QRegularExpressionMatchIterator j=innerNumbering.globalMatch(match.captured(n));
                 while (j.hasNext()) {
                     QRegularExpressionMatch submatch = j.next();
-                    output += "<li>" + parseTokenAlt(submatch.captured(1)) + "</li>";
+                    output += "<li>" + parseTokenAlt(submatch.captured(1), relativePos + match.capturedStart(n) + submatch.capturedStart(1)) + "</li>";
                 }
 
                 output += "</ol>";
             }
             n = n+1;
             if (match.captured(n) != "") {
-                output += "<p>" + parseTokenAlt(match.captured(n+1)) + "</p><br/>";
+                output += "<p>" + parseTokenAlt(match.captured(n+1), relativePos + match.capturedStart(n+1)) + "</p><br/>";
             }
             n = n + 2;
             if (match.captured(n) != "") {
-                output += "<b><i>" + parseTokenAlt(match.captured(n+1)) + "</i></b>";
+                output += "<b><i>" + parseTokenAlt(match.captured(n+1), relativePos + match.capturedStart(n+1)) + "</i></b>";
             }
             n = n + 2;
             if (match.captured(n) != "") {
-                output += "<b>" + parseTokenAlt(match.captured(n+1)) + "</b>";
+                output += "<b>" + parseTokenAlt(match.captured(n+1), relativePos + match.capturedStart(n+1)) + "</b>";
             }
             n = n + 2;
             if (match.captured(n) != "") {
-                output += "<i>" + parseTokenAlt(match.captured(n+1)) + "</i>";
+                output += "<i>" + parseTokenAlt(match.captured(n+1), relativePos + match.capturedStart(n+1)) + "</i>";
             }
             n = n + 2;
             if (match.captured(n) != "") {
-                output += "<u>" + parseTokenAlt(match.captured(n+1)) + "</u>";
+                output += "<u>" + parseTokenAlt(match.captured(n+1), relativePos + match.capturedStart(n+1)) + "</u>";
             }
             n = n + 2;
+
+            if (match.captured(n) != "") {
+                QString optionValue = match.captured(n+1);
+                QString optionText = parseTokenAlt(match.captured(n+2), match.capturedStart(n+2));
+                QString optionDisplay = (optionValue == "x")?"x":"&nbsp;";
+                qDebug() << "POS" << (relativePos + match.capturedStart(n+1));
+                output += "<a href=\"notebook://checkmark?mark=" + optionValue + "&position=" + QString::number(relativePos + match.capturedStart(n+1)) + "\">[" + optionDisplay + "] " + optionText + "</a>";
+            }
+            n = n + 3;
 
             if (match.captured(n) != "") {
                 QString link = match.captured(n+1);
                 QString text;
                 if (match.captured(n+2) != "") {
-                    text = parseTokenAlt(match.captured(n+3));
+                    text = parseTokenAlt(match.captured(n+3), relativePos + match.capturedStart(n+3));
                     n = n + 3;
                 } else {
                     text = link;
@@ -121,14 +130,21 @@ QString MarkDownParser::parseTokenAlt(QString infix) {
             }
 
             if (match.captured(n) != "") {
-                output += "<a href=\"" + parseTokenAlt(match.captured(n+1)) + "\">" + parseTokenAlt(match.captured(n+2)) + "</a>";
+                output += "<a href=\"" + parseTokenAlt(match.captured(n+1), relativePos + match.capturedStart(n+1)) + "\">" + parseTokenAlt(match.captured(n+2), relativePos + match.capturedStart(n+2)) + "</a>";
             }
             n = n + 3;
             if (match.captured(n) != "") {
-                QString link = parseTokenAlt(match.captured(n+1));
+                QString link = parseTokenAlt(match.captured(n+1), relativePos + match.capturedStart(n+1));
                 output += "<a href=\"" + link + "\">" + link + "</a>";
             }
             n = n + 2;
+
+            /*
+            if (match.captured(n) != "") {
+                output += "<p>" + match.captured(n+1) + "</p>";
+            }
+            n = n + 2;
+            */
 
             pos = match.capturedEnd();
         } else {
