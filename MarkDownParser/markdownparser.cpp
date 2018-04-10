@@ -31,25 +31,28 @@ QString MarkDownParser::toHtml(QString text) {
 QString MarkDownParser::parseTokenAlt(QString infix) {
     QString output = "";
 
-    int pos = 0;
-
     QRegularExpression rx(QString("(\\n*#\\s+([^\\n\\n]+)\\n{2,})")
-               + "|(\\*\\s+((?:[^\\n]|\\n[^\\n])+\\n{2,}))"
+               + "|(\\*\\s+((?:[^\\n]|\\n[^\\n])+(?:\\n{2,}|\\n$|$)))"
+               + "|((?:\\d+\\.\\s+(?:[^\\n]|(?:[^\\n]\\n))+(?:\\n\\n|\\n$|$))+)"
                + "|(((?:\\n[^\\n]|[^\\n])+)\\n{2,})"
+               + "|(\\*{3}([^\\*]+)\\*{3})"
                + "|(\\*{2}([^\\*]+)\\*{2})"
+               + "|(\\*([^\\*]+)\\*)"
                + "|(_{2}([^_]+)_{2})"
                + "|(\\[([^\\]\\s]+)((?:\\s+)([^\\]]+))?\\])"
                + "|(\\[\\[([^\\]]+)\\|(.+)\\]\\])"
                + "|(\\[\\[([^\\]]+)\\]\\])"
                );
 
-    while (pos >= 0) {
-        QRegularExpressionMatch match = rx.match(infix, pos);
-        int newPos = match.capturedStart();
-        qDebug() << "CAP";
+    QRegularExpression innerNumbering("\\d+\\.\\s+((?:[^\\n]|(?:[^\\n]\\n))+)(?:\\n\\n|\\n$|$)");
 
-        if (newPos >= pos) {
-            output += infix.mid(pos,newPos-pos);
+    int pos = 0;
+
+    while (pos < infix.length()) {
+        QRegularExpressionMatch match = rx.match(infix, pos);
+
+        if (match.capturedStart()>-1) {
+            output += infix.mid(pos, match.capturedStart()-pos);
 
             int n = 1;
             if (match.captured(n) != "") {
@@ -72,11 +75,31 @@ QString MarkDownParser::parseTokenAlt(QString infix) {
             }
             n = n + 2;
             if (match.captured(n) != "") {
+                output += "<ol>";
+
+                QRegularExpressionMatchIterator j=innerNumbering.globalMatch(match.captured(n));
+                while (j.hasNext()) {
+                    QRegularExpressionMatch submatch = j.next();
+                    output += "<li>" + parseTokenAlt(submatch.captured(1)) + "</li>";
+                }
+
+                output += "</ol>";
+            }
+            n = n+1;
+            if (match.captured(n) != "") {
                 output += "<p>" + parseTokenAlt(match.captured(n+1)) + "</p><br/>";
             }
             n = n + 2;
             if (match.captured(n) != "") {
+                output += "<b><i>" + parseTokenAlt(match.captured(n+1)) + "</i></b>";
+            }
+            n = n + 2;
+            if (match.captured(n) != "") {
                 output += "<b>" + parseTokenAlt(match.captured(n+1)) + "</b>";
+            }
+            n = n + 2;
+            if (match.captured(n) != "") {
+                output += "<i>" + parseTokenAlt(match.captured(n+1)) + "</i>";
             }
             n = n + 2;
             if (match.captured(n) != "") {
@@ -107,21 +130,13 @@ QString MarkDownParser::parseTokenAlt(QString infix) {
             }
             n = n + 2;
 
-            /*
-
-            if (rx.cap(n) != "") {
-                output += rx.cap(n);
-            }
-            n = n + 1;
-            */
-
-            pos = newPos + match.capturedLength();
+            pos = match.capturedEnd();
         } else {
             output += infix.mid(pos);
-            pos = -1;
+
+            pos = infix.length();
         }
     }
-
 
     return output;
 }

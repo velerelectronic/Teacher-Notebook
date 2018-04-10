@@ -43,7 +43,7 @@ Rectangle {
     property int requiredWidth: units.fingerUnit * 10
     property int requiredHeight: units.fingerUnit * 8
 
-    color: 'transparent'
+    color: 'gray'
 
     onIdentifierChanged: {
         console.log('Changed identifier to', identifier);
