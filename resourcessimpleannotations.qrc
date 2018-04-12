@@ -13,5 +13,6 @@
         <file>modules/simpleannotations/AnnotationsCalendar.qml</file>
         <file>modules/simpleannotations/AnnotationsWithTimeMarksModel.qml</file>
         <file>modules/simpleannotations/NewSimpleAnnotation.qml</file>
+        <file>modules/simpleannotations/CheckMarkEditor.qml</file>
     </qresource>
 </RCC>

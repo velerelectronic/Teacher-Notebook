@@ -39,7 +39,7 @@ QString MarkDownParser::parseTokenAlt(QString infix, int relativePos) {
                + "|(\\*{2}([^\\*]+)\\*{2})"
                + "|(\\*([^\\*]+)\\*)"
                + "|(_{2}([^_]+)_{2})"
-               + "|(\\[(x?|\\s)\\]\\s+((?:.|.\\n)*)(?:\\n\\n|\\n$|$))"
+               + "|(\\[(x?|\\s)\\]\\s+((?:.|.\\n)*)(\\n\\n|\\n$|$))"
                + "|(\\[([^\\]\\s]+)((?:\\s+)([^\\]]+))?\\])"
                + "|(\\[\\[([^\\]]+)\\|(.+)\\]\\])"
                + "|(\\[\\[([^\\]]+)\\]\\])"
@@ -111,10 +111,11 @@ QString MarkDownParser::parseTokenAlt(QString infix, int relativePos) {
                 QString optionValue = match.captured(n+1);
                 QString optionText = parseTokenAlt(match.captured(n+2), match.capturedStart(n+2));
                 QString optionDisplay = (optionValue == "x")?"x":"&nbsp;";
-                qDebug() << "POS" << (relativePos + match.capturedStart(n+1));
-                output += "<a href=\"notebook://checkmark?mark=" + optionValue + "&position=" + QString::number(relativePos + match.capturedStart(n+1)) + "\">[" + optionDisplay + "] " + optionText + "</a>";
+                QString pos = QString::number(relativePos + match.capturedStart(n+1)-1);
+                QString len = QString::number(match.capturedLength(n) - match.capturedLength(n+3));
+                output += "<a href=\"notebook://checkmark?mark=" + optionValue + "&position=" + pos + "&length=" + len + "\">[" + optionDisplay + "] " + optionText + "</a>";
             }
-            n = n + 3;
+            n = n + 4;
 
             if (match.captured(n) != "") {
                 QString link = match.captured(n+1);

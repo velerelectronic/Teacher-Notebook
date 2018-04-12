@@ -218,6 +218,19 @@ Rectangle {
                     captionSize: units.readUnit
                     caption: qsTr('Descripció')
 
+                    function toggleCheckMark(oldMark, markPosition, newMark, markLength, newComment) {
+                        console.log("PARAM", oldMark, markPosition, newMark, markLength, newComment);
+                        var partBeforeBrakes = descText.substring(0, markPosition+1);
+                        var partAfterBrakes = descText.substring(markPosition + oldMark.length + 1, markPosition + markLength);
+                        var partAfterCheckMark = descText.substring(markPosition + markLength);
+                        var date = new Date();
+                        var commentSegment = (newComment !== "")?("\n (*" + (date.toLocaleString()) + " " + newComment + "*)"):"";
+                        var newDesc = partBeforeBrakes + newMark + partAfterBrakes + commentSegment + partAfterCheckMark;
+                        console.log("NNEW DESC", newDesc);
+                        annotationsModel.updateObject(identifier, {desc: newDesc});
+                        getText();
+                    }
+
                     ColumnLayout {
                         width: parent.width
                         height: contentText.height + contentImage.height
@@ -234,13 +247,14 @@ Rectangle {
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             onLinkActivated: {
                                 console.log("This link", link);
-                                var rx = new RegExp("notebook://checkmark\\?mark=(x?|\\s)\\&position=(\\d+)");
+                                var rx = new RegExp("notebook://checkmark\\?mark=(x?|\\s)\\&position=(\\d+)&length=(\\d+)");
                                 console.log(rx);
                                 var result = rx.exec(link);
                                 rx = "";
                                 if (result != null) {
-                                    console.log(result[1], result[1].length, result[2]);
-                                    toggleCheckMark(result[1], parseInt(result[2]), (result[1]=='x')?' ':'x');
+                                    console.log(result[1], result[1].length, result[2], result[3]);
+                                    checkMarkEditor.openCheckMarkEditor(result[1], parseInt(result[2]), (result[1]=='x')?' ':'x', parseInt(result[3]));
+                                    //toggleCheckMark(result[1], parseInt(result[2]), (result[1]=='x')?' ':'x');
                                 } else {
                                     Qt.openUrlExternally(link) // openAnnotation(link)
                                 }
@@ -272,14 +286,6 @@ Rectangle {
                                 }
                             }
 
-                            function toggleCheckMark(oldMark, position, newMark) {
-                                var partBefore = descText.substring(0, position);
-                                var partAfter = descText.substring(position + oldMark.length);
-                                var newDesc = partBefore + newMark + partAfter;
-                                console.log(newDesc);
-                                annotationsModel.updateObject(identifier, {desc: newDesc});
-                                getText();
-                            }
                         }
                         Files.FileViewer {
                             id: contentImage
@@ -812,6 +818,33 @@ Rectangle {
             onSaveTimeMark: {
                 marksModel.newTimeMark(timeMark, label, markType);
                 timeEditor.close();
+            }
+        }
+    }
+
+    Common.SuperposedWidget {
+        id: checkMarkEditor
+
+        property int markPosition: -1
+        property int markLength: -1
+        property string oldMark: ""
+        property string newMark: ""
+
+        function openCheckMarkEditor(oldMark, position, newMark, markLength) {
+            markPosition = position;
+            checkMarkEditor.oldMark = oldMark;
+            checkMarkEditor.newMark = newMark;
+            checkMarkEditor.markLength = markLength;
+
+            load(qsTr('Afegeix text'), 'simpleannotations/CheckMarkEditor', {actualMarkIsPending: (oldMark != 'x')});
+        }
+
+        Connections {
+            target: checkMarkEditor.mainItem
+
+            onSaveCheckMark: {
+                checkMarkEditor.close();
+                titleRect.toggleCheckMark(checkMarkEditor.oldMark, checkMarkEditor.markPosition, (done)?'x':' ', checkMarkEditor.markLength, comment);
             }
         }
     }
