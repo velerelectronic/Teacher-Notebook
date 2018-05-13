@@ -24,7 +24,9 @@ SOURCES += main.cpp \
     standardpaths.cpp \
     fileio.cpp \
     imagedata.cpp \
-    imagefromblob.cpp
+    imagefromblob.cpp \
+    markdownitemmodel.cpp \
+    MarkDownItem/markdownitem.cpp
 
 RESOURCES += qml.qrc \
     common.qrc \
@@ -58,7 +60,8 @@ RESOURCES += qml.qrc \
     resourcessuggestions.qrc \
     resourcessimpleannotations.qrc \
     resourcesmultigrids.qrc \
-    resourcesspaces.qrc
+    resourcesspaces.qrc \
+    resourcesmarkdown.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -112,7 +115,9 @@ HEADERS += \
     fileio.h \
     imagedata.h \
     TeachingPlanning/xmlmodel.h \
-    imagefromblob.h
+    imagefromblob.h \
+    markdownitemmodel.h \
+    MarkDownItem/markdownitem.h
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 

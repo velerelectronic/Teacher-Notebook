@@ -19,6 +19,10 @@ bool MarkDownParser::getNextChar() {
         return false;
 }
 
+QStringList MarkDownParser::getParagraphs() {
+
+}
+
 QString MarkDownParser::toHtml(QString text) {
     interText = text;
     return parseTokenAlt(text);
@@ -26,6 +30,10 @@ QString MarkDownParser::toHtml(QString text) {
         return "<p>" + parseToken(QRegExp("$")) + "</p>";
     else
         return "";
+}
+
+QString MarkDownParser::parseAsParagraph(QString text) {
+
 }
 
 QString MarkDownParser::parseTokenAlt(QString infix, int relativePos) {
@@ -156,6 +164,139 @@ QString MarkDownParser::parseTokenAlt(QString infix, int relativePos) {
     }
 
     return output;
+}
+
+MarkDownItem MarkDownParser::parseSingleToken(QString text, int &relativePos) {
+    // text: the main processed text string
+    // relativePos: the position inside text
+
+    QRegularExpression rx(QString("(\\n*#\\s+([^\\n\\n]+)\\n{2,})")
+               + "|(\\*\\s+((?:[^\\n]|\\n[^\\n])+(?:\\n{2,}|\\n$|$)))"
+               + "|((\\d+\\.\\s+(?:[^\\n]|(?:[^\\n]\\n))+(?:\\n\\n|\\n$|$))+)"
+               + "|(((?:\\n[^\\n]|[^\\n])+)\\n{2,})"
+               + "|(\\*{3}([^\\*]+)\\*{3})"
+               + "|(\\*{2}([^\\*]+)\\*{2})"
+               + "|(\\*([^\\*]+)\\*)"
+               + "|(_{2}([^_]+)_{2})"
+               + "|(\\[(x?|\\s)\\]\\s+((?:.|.\\n)*)(\\n\\n|\\n$|$))"
+               + "|(\\[([^\\]\\s]+)((?:\\s+)([^\\]]+))?\\])"
+               + "|(\\[\\[([^\\]]+)\\|(.+)\\]\\])"
+               + "|(\\[\\[([^\\]]+)\\]\\])"
+//               + "|((.+)(?:\\n\\n|\\n$|$))"
+               );
+
+    QRegularExpressionMatch match = rx.match(text, relativePos);
+
+    MarkDownItem item;
+
+    if (match.hasMatch()) {
+        if (match.capturedStart() == relativePos) {
+            int n = 1;
+            if (match.captured(n) != "") {
+                item.setText(match.captured(n));
+                item.setType(MarkDownParser::Heading);
+                item.appendSubText(match.captured(n+1));
+            }
+            n = n + 2;
+            if (match.captured(n) != "") {
+                item.setText(match.captured(n));
+                item.setType(MarkDownParser::List);
+                item.appendSubText(match.captured(n+1));
+
+                // We need to parse list items
+            }
+            n = n + 2;
+            if (match.captured(n) != "") {
+                item.setText(match.captured(n));
+                item.setType(MarkDownParser::Enumeration);
+                item.appendSubText(match.captured(n+1));
+
+                // We need to parse list items
+            }
+            n = n+2;
+            if (match.captured(n) != "") {
+                item.setText(match.captured(n));
+                item.setType(MarkDownParser::Paragraph);
+                item.appendSubText(match.captured(n+1));
+            }
+            n = n + 2;
+            if (match.captured(n) != "") {
+                item.setText(match.captured(n));
+                item.setType(MarkDownParser::BoldAndItalics);
+                item.appendSubText(match.captured(n+1));
+            }
+            n = n + 2;
+            if (match.captured(n) != "") {
+                item.setText(match.captured(n));
+                item.setType(MarkDownParser::Bold);
+                item.appendSubText(match.captured(n+1));
+            }
+            n = n + 2;
+            if (match.captured(n) != "") {
+                item.setText(match.captured(n));
+                item.setType(MarkDownParser::Heading);
+                item.appendSubText(match.captured(n+1));
+            }
+            n = n + 2;
+            if (match.captured(n) != "") {
+                item.setText(match.captured(n));
+                item.setType(MarkDownParser::Underline);
+                item.appendSubText(match.captured(n+1));
+            }
+            n = n + 2;
+
+            if (match.captured(n) != "") {
+                item.setText(match.captured(n));
+                item.setType(MarkDownParser::CheckList);
+                item.appendSubText(match.captured(n+1));
+                item.appendSubText(match.captured(n+2));
+                item.appendSubText(match.captured(n+3));
+            }
+            n = n + 4;
+
+            if (match.captured(n) != "") {
+                item.setText(match.captured(n));
+                item.setType(MarkDownParser::Link);
+                item.appendSubText(match.captured(n+1));
+                item.appendSubText(match.captured(n+2));
+                QString link = match.captured(n+1);
+                QString text;
+                if (match.captured(n+2) != "") {
+                    item.appendSubText(match.captured(n+3));
+                    n = n + 3;
+                } else {
+                    n = n + 2;
+                }
+            }
+
+            if (match.captured(n) != "") {
+                item.setText(match.captured(n));
+                item.setType(MarkDownParser::Link);
+                item.appendSubText(match.captured(n+1));
+                item.appendSubText(match.captured(n+2));
+            }
+            n = n + 3;
+
+            if (match.captured(n) != "") {
+                item.setText(match.captured(n));
+                item.setType(MarkDownParser::Link);
+                item.appendSubText(match.captured(n+1));
+            }
+            n = n + 2;
+
+            relativePos = match.capturedEnd();
+        } else {
+            relativePos = match.capturedStart();
+            item.setText(text.mid(relativePos, match.capturedStart() - relativePos));
+            item.setType(MarkDownTypes::Text);
+        }
+    } else {
+        relativePos = -1;
+        item.setText(text.mid(relativePos));
+        item.setType(MarkDownTypes::Text);
+    }
+
+    return item;
 }
 
 QString MarkDownParser::parseToken(QRegExp suffix) {

@@ -27,6 +27,8 @@
 #include "RubricXml/rubricdescriptorsmodel.h"
 #include "RubricXml/rubricpopulationmodel.h"
 
+#include "markdownitemmodel.h"
+
 #include "imagefromblob.h"
 
 int main(int argc, char *argv[])
@@ -58,6 +60,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<SqlTableModel2>("PersonalTypes", 1, 0, "SqlTableModel");
     qmlRegisterType<StandardPaths>("PersonalTypes", 1, 0, "StandardPaths");
     qmlRegisterType<MarkDownParser>("PersonalTypes", 1, 0, "MarkDownParser");
+    qmlRegisterType<MarkDownItemModel>("PersonalTypes", 1, 0, "MarkDownItemModel");
 
     qRegisterMetaType<RubricDescriptorsModel>();
 

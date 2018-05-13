@@ -13,6 +13,7 @@ import 'qrc:///editors' as Editors
 import 'qrc:///modules/documents' as Documents
 import 'qrc:///modules/calendar' as Calendar
 import 'qrc:///modules/files' as Files
+import 'qrc:///modules/markdown' as MarkDown
 
 Rectangle {
     id: showAnnotationItem
@@ -233,8 +234,15 @@ Rectangle {
 
                     ColumnLayout {
                         width: parent.width
-                        height: contentText.height + contentImage.height
+                        height: contentText.height + contentImage.height + markdownContentText.requiredHeight
                         spacing: 0
+
+                        MarkDown.MarkDown {
+                            id: markdownContentText
+
+                            Layout.preferredHeight: markdownContentText.requiredHeight
+                            Layout.fillWidth: true
+                        }
 
                         Text {
                             id: contentText
@@ -242,6 +250,7 @@ Rectangle {
 
                             Layout.preferredHeight: contentText.requiredHeight
                             Layout.fillWidth: true
+                            visible: false
 
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -693,6 +702,7 @@ Rectangle {
             created = obj['created'];
             updated = obj['updated'];
             contentText.text = parser.toHtml(descText);
+            markdownContentText.parseMarkDown(descText);
 
             stateValue = obj['state'];
         }

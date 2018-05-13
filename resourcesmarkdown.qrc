@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>modules/markdown/Table.qml</file>
+        <file>modules/markdown/Paragraph.qml</file>
+        <file>modules/markdown/Body.qml</file>
+        <file>modules/markdown/MarkDown.qml</file>
+    </qresource>
+</RCC>
