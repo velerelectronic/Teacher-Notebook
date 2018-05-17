@@ -4,5 +4,12 @@
         <file>modules/markdown/Paragraph.qml</file>
         <file>modules/markdown/Body.qml</file>
         <file>modules/markdown/MarkDown.qml</file>
+        <file>modules/markdown/Generic.qml</file>
+        <file>modules/markdown/SimpleText.qml</file>
+        <file>modules/markdown/None.qml</file>
+        <file>modules/markdown/WholeWord.qml</file>
+        <file>modules/markdown/Heading.qml</file>
+        <file>modules/markdown/Link.qml</file>
+        <file>modules/markdown/CheckList.qml</file>
     </qresource>
 </RCC>

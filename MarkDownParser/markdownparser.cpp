@@ -194,13 +194,13 @@ MarkDownItem MarkDownParser::parseSingleToken(QString text, int &relativePos) {
             int n = 1;
             if (match.captured(n) != "") {
                 item.setText(match.captured(n));
-                item.setType(MarkDownParser::Heading);
+                item.setType(MarkDownItem::Heading);
                 item.appendSubText(match.captured(n+1));
             }
             n = n + 2;
             if (match.captured(n) != "") {
                 item.setText(match.captured(n));
-                item.setType(MarkDownParser::List);
+                item.setType(MarkDownItem::List);
                 item.appendSubText(match.captured(n+1));
 
                 // We need to parse list items
@@ -208,7 +208,7 @@ MarkDownItem MarkDownParser::parseSingleToken(QString text, int &relativePos) {
             n = n + 2;
             if (match.captured(n) != "") {
                 item.setText(match.captured(n));
-                item.setType(MarkDownParser::Enumeration);
+                item.setType(MarkDownItem::Enumeration);
                 item.appendSubText(match.captured(n+1));
 
                 // We need to parse list items
@@ -216,38 +216,38 @@ MarkDownItem MarkDownParser::parseSingleToken(QString text, int &relativePos) {
             n = n+2;
             if (match.captured(n) != "") {
                 item.setText(match.captured(n));
-                item.setType(MarkDownParser::Paragraph);
+                item.setType(MarkDownItem::Paragraph);
                 item.appendSubText(match.captured(n+1));
             }
             n = n + 2;
             if (match.captured(n) != "") {
                 item.setText(match.captured(n));
-                item.setType(MarkDownParser::BoldAndItalics);
+                item.setType(MarkDownItem::BoldAndItalics);
                 item.appendSubText(match.captured(n+1));
             }
             n = n + 2;
             if (match.captured(n) != "") {
                 item.setText(match.captured(n));
-                item.setType(MarkDownParser::Bold);
+                item.setType(MarkDownItem::Bold);
                 item.appendSubText(match.captured(n+1));
             }
             n = n + 2;
             if (match.captured(n) != "") {
                 item.setText(match.captured(n));
-                item.setType(MarkDownParser::Heading);
+                item.setType(MarkDownItem::Heading);
                 item.appendSubText(match.captured(n+1));
             }
             n = n + 2;
             if (match.captured(n) != "") {
                 item.setText(match.captured(n));
-                item.setType(MarkDownParser::Underline);
+                item.setType(MarkDownItem::Underline);
                 item.appendSubText(match.captured(n+1));
             }
             n = n + 2;
 
             if (match.captured(n) != "") {
                 item.setText(match.captured(n));
-                item.setType(MarkDownParser::CheckList);
+                item.setType(MarkDownItem::CheckList);
                 item.appendSubText(match.captured(n+1));
                 item.appendSubText(match.captured(n+2));
                 item.appendSubText(match.captured(n+3));
@@ -256,7 +256,7 @@ MarkDownItem MarkDownParser::parseSingleToken(QString text, int &relativePos) {
 
             if (match.captured(n) != "") {
                 item.setText(match.captured(n));
-                item.setType(MarkDownParser::Link);
+                item.setType(MarkDownItem::Link);
                 item.appendSubText(match.captured(n+1));
                 item.appendSubText(match.captured(n+2));
                 QString link = match.captured(n+1);
@@ -271,7 +271,7 @@ MarkDownItem MarkDownParser::parseSingleToken(QString text, int &relativePos) {
 
             if (match.captured(n) != "") {
                 item.setText(match.captured(n));
-                item.setType(MarkDownParser::Link);
+                item.setType(MarkDownItem::Link);
                 item.appendSubText(match.captured(n+1));
                 item.appendSubText(match.captured(n+2));
             }
@@ -279,7 +279,7 @@ MarkDownItem MarkDownParser::parseSingleToken(QString text, int &relativePos) {
 
             if (match.captured(n) != "") {
                 item.setText(match.captured(n));
-                item.setType(MarkDownParser::Link);
+                item.setType(MarkDownItem::Link);
                 item.appendSubText(match.captured(n+1));
             }
             n = n + 2;
@@ -288,12 +288,12 @@ MarkDownItem MarkDownParser::parseSingleToken(QString text, int &relativePos) {
         } else {
             relativePos = match.capturedStart();
             item.setText(text.mid(relativePos, match.capturedStart() - relativePos));
-            item.setType(MarkDownTypes::Text);
+            item.setType(MarkDownItem::Text);
         }
     } else {
         relativePos = -1;
         item.setText(text.mid(relativePos));
-        item.setType(MarkDownTypes::Text);
+        item.setType(MarkDownItem::Text);
     }
 
     return item;

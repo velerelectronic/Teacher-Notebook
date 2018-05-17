@@ -1,52 +1,83 @@
 import QtQuick 2.7
 import PersonalTypes 1.0
 
-ListView {
-    id: mainList
+Item {
+    id: genericMarkDownItem
 
-    property int requiredHeight: contentItem.height
+    property int markDownType: mdValues.Body
+    property var parameters
 
-    model: MarkDownItemModel {
-        id: mdModel
+    property int requiredHeight: units.readUnit
+    property int requiredWidth: width
 
-        onDataChanged: {
-            console.log('Data changed', rowCount());
+    onMarkDownTypeChanged: setMarkDownType()
+
+    MarkDownItem {
+        id: mdValues
+    }
+
+    Loader {
+        id: mdLoader
+
+        anchors.fill: parent
+
+        Connections {
+            target: mdLoader
+            ignoreUnknownSignals: true
+
+            onUpdatedHeight: genericMarkDownItem.requiredHeight = mdLoader.item.requiredHeight
+            onUpdatedWidth: genericMarkDownItem.requiredWidth = newWidth
+        }
+
+        onLoaded: {
+            genericMarkDownItem.requiredHeight = mdLoader.item.requiredHeight
         }
     }
 
-    header: Rectangle {
-        color: 'black'
-        width: mainList.width
-        height: 20
-    }
+    function setMarkDownType() {
+        var page = '';
+        var param = {};
 
-    delegate: Rectangle {
-        width: mainList.width
-        height: Math.max(childrenRect.height, 10)
-        color: 'red'
+        console.log('md type', markDownType);
 
-        Text {
-            anchors {
-                top: parent.top
-                left: parent.left
-                right: parent.right
-            }
-
-            height: contentHeight
-
-            font.pixelSize: units.readUnit
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-
-            text: model.type + "PAR:" + (model.parameters.join("-"))
+        switch(markDownType) {
+        case mdValues.Paragraph:
+            page = 'Paragraph';
+            param['text'] = parameters[0];
+            break;
+        case mdValues.Text:
+            page = 'Text';
+            param['text'] = parameters[0];
+            break;
+        case mdValues.Table:
+            page = 'Table';
+            param['body'] = parameters;
+            break;
+        case mdValues.Body:
+            page = 'Body';
+            param['text'] = parameters;
+            break;
+        case mdValues.CheckList:
+            page = 'CheckList';
+            param['option'] = parameters[0];
+            param['text'] = parameters[1];
+            break;
+        case mdValues.Link:
+            page = 'Link';
+            param['text']=parameters[1];
+            param['address']=parameters[2];
+            break;
+        case mdValues.Heading:
+            page = 'Heading';
+            param['text'] = parameters;
+            break;
+        default:
+            page = 'WholeWord';
+            param['text'] = parameters
+            break;
         }
-    }
-
-    function parseMarkDown(text) {
-        mdModel.parseMarkDown(text);
-        for (var i=0; i<mdModel.rowCount(); i++) {
-            console.log(i, mainList.contentItem.children.length);
+        if (page != "") {
+            mdLoader.setSource('qrc:///modules/markdown/' + page + ".qml", param);
         }
-
-        console.log('cccc', mdModel.rowCount())
     }
 }

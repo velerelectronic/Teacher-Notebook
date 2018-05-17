@@ -392,6 +392,7 @@ bool SqlTableModel2::select() {
     }
 
     QSqlQuery query(this->query());
+    qDebug() << "field names" << fieldNames();
     query.prepare("SELECT \"" + fieldNames().join("\", \"") + "\"" +
                   ((calculatedFieldNames().size()>0)?(", " + calculatedFieldNames().join(", ")):"") +
                   " FROM " + innerTableName +
@@ -506,8 +507,10 @@ bool SqlTableModel2::setData(const QModelIndex &item, const QVariant &value, int
 }
 
 void SqlTableModel2::setFieldNames(const QStringList &fields) {
+    beginInsertColumns(QModelIndex(), 0, fields.length()-1);
     innerFieldNames = fields;
     generateRoleNames();
+    endInsertColumns();
     fieldNamesChanged();
 }
 

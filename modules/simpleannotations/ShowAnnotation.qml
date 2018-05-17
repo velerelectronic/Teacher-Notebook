@@ -250,7 +250,7 @@ Rectangle {
 
                             Layout.preferredHeight: contentText.requiredHeight
                             Layout.fillWidth: true
-                            visible: false
+                            visible: true
 
                             font.pixelSize: units.readUnit
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -692,6 +692,7 @@ Rectangle {
             annotationsModel.bindValues = [showAnnotationItem.identifier];
         }
 
+        console.log('field names', annotationsModel.fieldNames)
         annotationsModel.select();
 
         if (annotationsModel.count>0) {
@@ -702,7 +703,7 @@ Rectangle {
             created = obj['created'];
             updated = obj['updated'];
             contentText.text = parser.toHtml(descText);
-            markdownContentText.parseMarkDown(descText);
+            markdownContentText.parameters = descText;
 
             stateValue = obj['state'];
         }

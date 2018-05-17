@@ -5,7 +5,8 @@ QT += qml quick widgets \
     gui \
     multimedia \
     sql \
-    core
+    core \
+    webview
 
 CONFIG += c++11
 

@@ -3,6 +3,7 @@
 #include <QtCore>
 #include <QWidget>
 #include <QStandardPaths>
+#include <QtWebView>
 
 #include <QGuiApplication>
 #include <QtQml/QtQml>
@@ -34,6 +35,8 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    QtWebView::initialize();
+
     app.setOrganizationName("developerjmpc");
     app.setApplicationVersion("1.0");
     QString specificPath("TeacherNotebook");
@@ -60,6 +63,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<SqlTableModel2>("PersonalTypes", 1, 0, "SqlTableModel");
     qmlRegisterType<StandardPaths>("PersonalTypes", 1, 0, "StandardPaths");
     qmlRegisterType<MarkDownParser>("PersonalTypes", 1, 0, "MarkDownParser");
+    qmlRegisterType<MarkDownItem>("PersonalTypes", 1, 0, "MarkDownItem");
     qmlRegisterType<MarkDownItemModel>("PersonalTypes", 1, 0, "MarkDownItemModel");
 
     qRegisterMetaType<RubricDescriptorsModel>();

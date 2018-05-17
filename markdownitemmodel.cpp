@@ -7,13 +7,18 @@ MarkDownItemModel::MarkDownItemModel(QObject *parent) : QAbstractListModel(paren
 }
 
 
-QVariant MarkDownItemModel::data(const QModelIndex &index, int role = 0) const {
+QVariant MarkDownItemModel::data(const QModelIndex &index, int role) const {
     if (index.row() < innerItems.length()) {
         switch(role) {
-        case 1:
+        case ParametersRole:
+            qDebug() << "VAR LIST";
+            qDebug() << innerItems.at(index.row()).getType();
+            qDebug() << innerItems.at(index.row()).getParameters();
             return QVariant(innerItems.at(index.row()).getParameters());
             break;
-        case 0:
+        case TextRole:
+            return QVariant(innerItems.at(index.row()).getText());
+        case TypeRole:
         default:
             return QVariant(innerItems.at(index.row()).getType());
         }
@@ -23,11 +28,27 @@ QVariant MarkDownItemModel::data(const QModelIndex &index, int role = 0) const {
 }
 
 Qt::ItemFlags MarkDownItemModel::flags(const QModelIndex &index) const {
-    return Qt::ItemIsEditable;
+    return Qt::ItemIsEditable | Qt::ItemIsEnabled;
+}
+
+QVariant MarkDownItemModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    Q_UNUSED(section);
+
+    if (orientation == Qt::Orientation::Vertical) {
+        switch(role) {
+        case MarkDownRoles::TypeRole:
+            return QVariant("type");
+        case MarkDownRoles::TextRole:
+            return QVariant("text");
+        case MarkDownRoles::ParametersRole:
+            return QVariant("parameters");
+        }
+    } else {
+        return QVariant();
+    }
 }
 
 int MarkDownItemModel::parseMarkDown(QString text) {
-    qDebug() << "PARSING";
     beginRemoveRows(QModelIndex(), 0, innerItems.length());
     innerItems.clear();
     endRemoveRows();
@@ -35,25 +56,27 @@ int MarkDownItemModel::parseMarkDown(QString text) {
     int relativePos = 0;
     while (relativePos > -1) {
         MarkDownItem item = mdParser.parseSingleToken(text, relativePos);
-        beginInsertRows(QModelIndex(), innerItems.length(), innerItems.length()+1);
+        beginInsertRows(QModelIndex(), innerItems.length(), innerItems.length());
         innerItems.append(item);
         endInsertRows();
     }
     QVector<int> roles;
-    roles.append(0);
-    roles.append(1);
-    qDebug() << "INNER ITEMS" << innerItems.length();
+    roles.append(TextRole);
+    roles.append(TypeRole);
+    roles.append(ParametersRole);
     dataChanged(index(0), index(innerItems.length()-1), roles);
 }
 
 QHash<int,QByteArray> MarkDownItemModel::roleNames() const {
     QHash<int,QByteArray> roles;
-    roles[0] = QByteArray("type");
-    roles[1] = QByteArray("parameters");
+    roles[TypeRole] = QByteArray("type");
+    roles[TextRole] = QByteArray("text");
+    roles[ParametersRole] = QByteArray("parameters");
     return roles;
 }
 
 int MarkDownItemModel::rowCount(const QModelIndex &parent) const {
+    Q_UNUSED(parent);
     return innerItems.length();
 }
 
