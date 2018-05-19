@@ -27,7 +27,8 @@ SOURCES += main.cpp \
     imagedata.cpp \
     imagefromblob.cpp \
     markdownitemmodel.cpp \
-    MarkDownItem/markdownitem.cpp
+    MarkDownItem/markdownitem.cpp \
+    MarkDownViewer/markdownviewer.cpp
 
 RESOURCES += qml.qrc \
     common.qrc \
@@ -118,7 +119,8 @@ HEADERS += \
     TeachingPlanning/xmlmodel.h \
     imagefromblob.h \
     markdownitemmodel.h \
-    MarkDownItem/markdownitem.h
+    MarkDownItem/markdownitem.h \
+    MarkDownViewer/markdownviewer.h
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 

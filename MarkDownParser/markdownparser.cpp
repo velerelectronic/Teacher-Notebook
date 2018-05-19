@@ -36,6 +36,40 @@ QString MarkDownParser::parseAsParagraph(QString text) {
 
 }
 
+void MarkDownParser::parseIntoCursor(const QString &text, QTextCursor &cursor) {
+    QRegularExpression rx(QString("(\\n*#\\s+([^\\n\\n]+)\\n{2,})")
+               + "|(\\*\\s+((?:[^\\n]|\\n[^\\n])+(?:\\n{2,}|\\n$|$)))"
+               + "|((\\d+\\.\\s+(?:[^\\n]|(?:[^\\n]\\n))+(?:\\n\\n|\\n$|$))+)"
+               + "|(((?:\\n[^\\n]|[^\\n])+)\\n{2,})"
+               + "|(\\*{3}([^\\*]+)\\*{3})"
+               + "|(\\*{2}([^\\*]+)\\*{2})"
+               + "|(\\*([^\\*]+)\\*)"
+               + "|(_{2}([^_]+)_{2})"
+               + "|(\\[(x?|\\s)\\]\\s+((?:.|.\\n)*)(\\n\\n|\\n$|$))"
+               + "|(\\[([^\\]\\s]+)((?:\\s+)([^\\]]+))?\\])"
+               + "|(\\[\\[([^\\]]+)\\|(.+)\\]\\])"
+               + "|(\\[\\[([^\\]]+)\\]\\])"
+//               + "|((.+)(?:\\n\\n|\\n$|$))"
+               );
+
+    int relativePos = 0;
+    QRegularExpressionMatch match = rx.match(text, relativePos);
+
+    if (match.hasMatch()) {
+        // Insert first characters before the first match
+        cursor.insertBlock();
+        cursor.insertText(text.mid(relativePos, match.capturedStart() - relativePos));
+        cursor.insertBlock();
+        QTextCursor subCursor(cursor.block());
+        parseIntoCursor(text.mid(match.capturedStart(), match.capturedEnd()-match.capturedStart()), subCursor);
+        relativePos = match.capturedEnd()+1;
+    } else {
+        // The string was not detected as MarkDown
+        cursor.insertBlock();
+        cursor.insertText(text);
+    }
+}
+
 QString MarkDownParser::parseTokenAlt(QString infix, int relativePos) {
     QString output = "";
 

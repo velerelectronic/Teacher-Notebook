@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QString>
 #include <QChar>
+#include <QTextBlock>
+#include <QTextCursor>
 #include "MarkDownItem/markdownitem.h"
 
 class MarkDownParser : public QObject
@@ -25,6 +27,7 @@ private:
     QChar nextChar;
     QString interText;
 
+    void    parseIntoCursor(const QString &text, QTextCursor &cursor);
     QString parseToken(QRegExp suffix);
     QString parseTokenAlt(QString suffix, int relativePos = 0);
     QString parseAsParagraph(QString text);

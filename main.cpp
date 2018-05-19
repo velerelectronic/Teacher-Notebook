@@ -27,6 +27,7 @@
 #include "RubricXml/rubriccriteria.h"
 #include "RubricXml/rubricdescriptorsmodel.h"
 #include "RubricXml/rubricpopulationmodel.h"
+#include "MarkDownViewer/markdownviewer.h"
 
 #include "markdownitemmodel.h"
 
@@ -34,7 +35,7 @@
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
     QtWebView::initialize();
 
     app.setOrganizationName("developerjmpc");
@@ -65,6 +66,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<MarkDownParser>("PersonalTypes", 1, 0, "MarkDownParser");
     qmlRegisterType<MarkDownItem>("PersonalTypes", 1, 0, "MarkDownItem");
     qmlRegisterType<MarkDownItemModel>("PersonalTypes", 1, 0, "MarkDownItemModel");
+    qmlRegisterType<MarkDownViewer>("PersonalTypes", 1, 0, "MarkDownViewer");
 
     qRegisterMetaType<RubricDescriptorsModel>();
 

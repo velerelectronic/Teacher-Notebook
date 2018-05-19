@@ -863,4 +863,9 @@ Rectangle {
     Component.onCompleted: {
         getText();
     }
+
+    MarkDownViewer {
+        anchors.fill: parent
+    }
+
 }
