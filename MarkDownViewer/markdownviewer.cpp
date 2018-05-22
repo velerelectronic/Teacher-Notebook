@@ -33,17 +33,10 @@ MarkDownViewer::~MarkDownViewer() {
 void MarkDownViewer::parseMarkDown(const QString &text) {
     //mdDocument->setHtml("<h1>Un encapçalament</h1><p>Com estam?</p><p>Molt bé!</p><p>...</p><table border=\"1\"><tr><td>1<td>2<td>3<tr><td>a<td>b<td>c</table>");
     QTextCursor cursor(mdDocument);
+    mdDocument->clear();
     MarkDownParser parser;
-    cursor.insertBlock();
-    parser.parseIntoBlock(text);
-    cursor.beginEditBlock();
-    cursor.insertText("hola");
-    cursor.endEditBlock();
-    cursor.insertBlock();
-    cursor.beginEditBlock();
-    cursor.insertText("com anam");
-    cursor.endEditBlock();
-
+    //cursor.insertBlock();
+    parser.parseIntoCursor(text, cursor);
 }
 
 void MarkDownViewer::paint(QPainter *painter) {

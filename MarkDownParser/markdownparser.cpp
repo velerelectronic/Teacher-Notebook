@@ -3,6 +3,9 @@
 #include <QString>
 #include <QRegExp>
 #include <QRegularExpression>
+#include <QTextList>
+#include <QTextBlock>
+#include <QTextDocument>
 #include <QDebug>
 
 MarkDownParser::MarkDownParser(QObject *parent) :
@@ -32,42 +35,214 @@ QString MarkDownParser::toHtml(QString text) {
         return "";
 }
 
-QString MarkDownParser::parseAsParagraph(QString text) {
-
-}
-
 void MarkDownParser::parseIntoCursor(const QString &text, QTextCursor &cursor) {
+    QString enumString("(?:\\d+\\.\\s+)((?:[^\\n]|(?:\\n[^\\n]))+)(?:\\n\\n|\\n$|$)");
+
     QRegularExpression rx(QString("(\\n*#\\s+([^\\n\\n]+)\\n{2,})")
-               + "|(\\*\\s+((?:[^\\n]|\\n[^\\n])+(?:\\n{2,}|\\n$|$)))"
-               + "|((\\d+\\.\\s+(?:[^\\n]|(?:[^\\n]\\n))+(?:\\n\\n|\\n$|$))+)"
+               + "|(\\*\\s+(?:((?:[^\\n]|\\n[^\\n])+)(?:\\n{2,}|\\n$|$)))"
+               + "|((?:" + "(?:\\d+\\.\\s+)(?:(?:[^\\n]|(?:\\n[^\\n]))+)(?:\\n\\n|\\n$|$)" + ")+)"
                + "|(((?:\\n[^\\n]|[^\\n])+)\\n{2,})"
                + "|(\\*{3}([^\\*]+)\\*{3})"
                + "|(\\*{2}([^\\*]+)\\*{2})"
                + "|(\\*([^\\*]+)\\*)"
-               + "|(_{2}([^_]+)_{2})"
+               + "|(_{2}([^__]+)_{2})"
                + "|(\\[(x?|\\s)\\]\\s+((?:.|.\\n)*)(\\n\\n|\\n$|$))"
-               + "|(\\[([^\\]\\s]+)((?:\\s+)([^\\]]+))?\\])"
                + "|(\\[\\[([^\\]]+)\\|(.+)\\]\\])"
                + "|(\\[\\[([^\\]]+)\\]\\])"
+               + "|(\\[([^\\]\\s]+)((?:\\s+)([^\\]]+))?\\])"
 //               + "|((.+)(?:\\n\\n|\\n$|$))"
                );
 
     int relativePos = 0;
     QRegularExpressionMatch match = rx.match(text, relativePos);
 
-    if (match.hasMatch()) {
+    while (match.hasMatch()) {
         // Insert first characters before the first match
-        cursor.insertBlock();
         cursor.insertText(text.mid(relativePos, match.capturedStart() - relativePos));
-        cursor.insertBlock();
-        QTextCursor subCursor(cursor.block());
-        parseIntoCursor(text.mid(match.capturedStart(), match.capturedEnd()-match.capturedStart()), subCursor);
-        relativePos = match.capturedEnd()+1;
-    } else {
-        // The string was not detected as MarkDown
-        cursor.insertBlock();
-        cursor.insertText(text);
+
+        // Analyze subTexts
+
+        QTextCharFormat prevCharFormat = cursor.charFormat();
+        QTextBlockFormat prevBlockFormat = cursor.blockFormat();
+
+        if (match.captured(1) != "") {
+            // Heading (first level?)
+            QTextBlockFormat blockFormat;
+            blockFormat.setTopMargin(20);
+            QTextCharFormat charFormat;
+
+            charFormat.setFontWeight(QFont::ExtraBold);
+            charFormat.setFontPointSize(20);
+
+            cursor.insertBlock(blockFormat, charFormat);
+            parseIntoCursor(match.captured(2), cursor);
+            blockFormat.setTopMargin(10);
+            blockFormat.setBottomMargin(10);
+            cursor.insertBlock(blockFormat);
+        }
+
+        if (match.captured(3) != "") {
+            // List
+            // We need to parse list items
+
+            QTextListFormat listFormat;
+            cursor.beginEditBlock();
+            listFormat.setStyle(QTextListFormat::ListCircle);
+
+            cursor.insertList(listFormat);
+            //cursor.insertText(match.captured(4));
+            parseIntoCursor(match.captured(4), cursor);
+            cursor.insertBlock();
+            QTextBlockFormat paragraphFormat;
+            paragraphFormat.setTopMargin(10);
+            paragraphFormat.setBottomMargin(10);
+            cursor.mergeBlockFormat(paragraphFormat);
+
+            cursor.endEditBlock();
+
+            qDebug() << "LIST" << match.captured(4);
+        }
+
+        if (match.captured(5) != "") {
+            // Enumeration
+            // We need to parse list items
+
+            qDebug() << "ENUM ALL" << match.captured(5);
+
+            cursor.beginEditBlock();
+            QTextListFormat enumerationFormat;
+            enumerationFormat.setStyle(QTextListFormat::ListDecimal);
+            cursor.insertList(enumerationFormat);
+            QTextBlockFormat paragraphFormat;
+            paragraphFormat.setTopMargin(10);
+            paragraphFormat.setBottomMargin(10);
+
+            QRegularExpression enumList(enumString);
+            QRegularExpressionMatchIterator enumIterator = enumList.globalMatch(match.captured(5));
+            while (enumIterator.hasNext()) {
+                QRegularExpressionMatch enumMatch = enumIterator.next();
+                parseIntoCursor(enumMatch.captured(1), cursor);
+                qDebug() << "ENUM ITEM" << enumMatch.captured(1);
+                cursor.insertBlock();
+                cursor.mergeBlockFormat(paragraphFormat);
+            }
+            cursor.endEditBlock();
+            //cursor.movePosition(QTextCursor::NextBlock);
+
+        }
+
+        if (match.captured(6) != "") {
+            // Paragraph
+
+            QTextBlockFormat paragraphFormat;
+            paragraphFormat.setTopMargin(10);
+            paragraphFormat.setBottomMargin(10);
+
+            cursor.insertBlock();
+            cursor.mergeBlockFormat(paragraphFormat);
+
+            //subCursor.movePosition(QTextCursor::NextBlock);
+            parseIntoCursor(match.captured(7), cursor);
+        }
+
+        if (match.captured(8) != "") {
+            // Bold and italics
+
+            QTextCharFormat charFormat;
+            charFormat.setFontWeight(QFont::Bold);
+            charFormat.setFontItalic(true);
+            cursor.mergeCharFormat(charFormat);
+            parseIntoCursor(match.captured(9), cursor);
+        }
+
+        if (match.captured(10) != "") {
+            // Bold
+            QTextCharFormat charFormat;
+            charFormat.setFontWeight(QFont::Bold);
+            cursor.mergeCharFormat(charFormat);
+            parseIntoCursor(match.captured(11), cursor);
+        }
+
+        if (match.captured(12) != "") {
+            // Italics
+            QTextCharFormat charFormat;
+            charFormat.setFontItalic(true);
+            cursor.mergeCharFormat(charFormat);
+            parseIntoCursor(match.captured(13), cursor);
+        }
+
+        if (match.captured(14) != "") {
+            // Underline
+            QTextCharFormat charFormat;
+            charFormat.setFontUnderline(true);
+            cursor.mergeCharFormat(charFormat);
+            parseIntoCursor(match.captured(15), cursor);
+        }
+
+
+        if (match.captured(16) != "") {
+            // Checklist
+            cursor.insertText(match.captured(16));
+
+            /*
+            item.setText(match.captured(17));
+            item.setType(MarkDownItem::CheckList);
+            item.appendSubText(match.captured(18));
+            item.appendSubText(match.captured(19));
+            item.appendSubText(match.captured(20));
+            */
+        }
+
+        if (match.captured(20) != "") {
+            // Link
+            QTextCharFormat format;
+            format.setAnchorHref(match.captured(21));
+            format.setForeground(QBrush(QColor(0,0,255)));
+            format.setUnderlineColor(QColor(0,0,255));
+            format.setFontUnderline(true);
+            cursor.setCharFormat(format);
+            cursor.insertText(match.captured(22));
+        }
+
+        if (match.captured(23) != "") {
+            // Link
+
+            QTextCharFormat format;
+            format.setAnchorHref(match.captured(24));
+            format.setForeground(QBrush(QColor(0,0,255)));
+            format.setUnderlineColor(QColor(0,0,255));
+            format.setFontUnderline(true);
+            cursor.setCharFormat(format);
+            cursor.insertText(match.captured(24));
+
+        }
+
+        if (match.captured(25) != "") {
+            // Link
+            //cursor.insertText(match.captured(25));
+
+            QTextCharFormat format;
+            format.setAnchorHref(match.captured(26));
+            format.setForeground(QBrush(QColor(0,0,255)));
+            format.setUnderlineColor(QColor(0,0,255));
+            format.setFontUnderline(true);
+            cursor.setCharFormat(format);
+            if (match.captured(27) != "")
+                parseIntoCursor(match.captured(28), cursor);
+            else
+                cursor.insertText(match.captured(26));
+        }
+
+
+        cursor.setCharFormat(prevCharFormat);
+        cursor.setBlockFormat(prevBlockFormat);
+
+        relativePos = match.capturedEnd();
+        match = rx.match(text, relativePos);
     }
+    // Insert last text after the last match
+    if (relativePos < text.length())
+        cursor.insertText(text.mid(relativePos));
 }
 
 QString MarkDownParser::parseTokenAlt(QString infix, int relativePos) {
@@ -82,9 +257,9 @@ QString MarkDownParser::parseTokenAlt(QString infix, int relativePos) {
                + "|(\\*([^\\*]+)\\*)"
                + "|(_{2}([^_]+)_{2})"
                + "|(\\[(x?|\\s)\\]\\s+((?:.|.\\n)*)(\\n\\n|\\n$|$))"
-               + "|(\\[([^\\]\\s]+)((?:\\s+)([^\\]]+))?\\])"
                + "|(\\[\\[([^\\]]+)\\|(.+)\\]\\])"
                + "|(\\[\\[([^\\]]+)\\]\\])"
+               + "|(\\[([^\\]\\s]+)((?:\\s+)([^\\]]+))?\\])"
 //               + "|((.+)(?:\\n\\n|\\n$|$))"
                );
 
@@ -160,6 +335,16 @@ QString MarkDownParser::parseTokenAlt(QString infix, int relativePos) {
             n = n + 4;
 
             if (match.captured(n) != "") {
+                output += "<a href=\"" + parseTokenAlt(match.captured(n+1), relativePos + match.capturedStart(n+1)) + "\">" + parseTokenAlt(match.captured(n+2), relativePos + match.capturedStart(n+2)) + "</a>";
+            }
+            n = n + 3;
+            if (match.captured(n) != "") {
+                QString link = parseTokenAlt(match.captured(n+1), relativePos + match.capturedStart(n+1));
+                output += "<a href=\"" + link + "\">" + link + "</a>";
+            }
+            n = n + 2;
+
+            if (match.captured(n) != "") {
                 QString link = match.captured(n+1);
                 QString text;
                 if (match.captured(n+2) != "") {
@@ -171,16 +356,6 @@ QString MarkDownParser::parseTokenAlt(QString infix, int relativePos) {
                 }
                 output += "<a href=\"" + link + "\">" + text + "</a>";
             }
-
-            if (match.captured(n) != "") {
-                output += "<a href=\"" + parseTokenAlt(match.captured(n+1), relativePos + match.capturedStart(n+1)) + "\">" + parseTokenAlt(match.captured(n+2), relativePos + match.capturedStart(n+2)) + "</a>";
-            }
-            n = n + 3;
-            if (match.captured(n) != "") {
-                QString link = parseTokenAlt(match.captured(n+1), relativePos + match.capturedStart(n+1));
-                output += "<a href=\"" + link + "\">" + link + "</a>";
-            }
-            n = n + 2;
 
             /*
             if (match.captured(n) != "") {

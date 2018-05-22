@@ -234,15 +234,8 @@ Rectangle {
 
                     ColumnLayout {
                         width: parent.width
-                        height: contentText.height + contentImage.height + markdownContentText.requiredHeight
+                        height: contentText.height + contentImage.height
                         spacing: 0
-
-                        MarkDown.MarkDown {
-                            id: markdownContentText
-
-                            Layout.preferredHeight: markdownContentText.requiredHeight
-                            Layout.fillWidth: true
-                        }
 
                         Text {
                             id: contentText
@@ -703,7 +696,7 @@ Rectangle {
             created = obj['created'];
             updated = obj['updated'];
             contentText.text = parser.toHtml(descText);
-            markdownContentText.parameters = descText;
+            mdViewer.parseMarkDown(descText);
 
             stateValue = obj['state'];
         }
@@ -865,7 +858,9 @@ Rectangle {
     }
 
     MarkDownViewer {
+        id: mdViewer
         anchors.fill: parent
+        //visible: false
     }
 
 }

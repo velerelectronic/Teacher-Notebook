@@ -21,16 +21,15 @@ public slots:
     Q_INVOKABLE QString toHtml(QString text);
 
 public:
-    MarkDownItem parseSingleToken(QString text, int &relativePos);
+    void            parseIntoCursor(const QString &text, QTextCursor &cursor);
+    MarkDownItem    parseSingleToken(QString text, int &relativePos);
 
 private:
     QChar nextChar;
     QString interText;
 
-    void    parseIntoCursor(const QString &text, QTextCursor &cursor);
     QString parseToken(QRegExp suffix);
     QString parseTokenAlt(QString suffix, int relativePos = 0);
-    QString parseAsParagraph(QString text);
 
 
     bool getNextChar();
