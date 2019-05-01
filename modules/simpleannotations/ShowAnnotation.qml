@@ -857,10 +857,21 @@ Rectangle {
         getText();
     }
 
-    MarkDownViewer {
-        id: mdViewer
+    Flickable {
+        id: mdViewerFlickable
         anchors.fill: parent
-        //visible: false
+        contentWidth: width
+        contentHeight: mdViewer.textHeight;
+
+        MarkDownViewer {
+            id: mdViewer
+
+            width: mdViewerFlickable.contentWidth
+            height: textHeight
+            //visible: false
+        }
+
     }
+
 
 }

@@ -7,26 +7,28 @@
 #include <QTextDocument>
 #include <QTextEdit>
 #include <QWidget>
+#include <QWheelEvent>
 
 class MarkDownViewer: public QQuickPaintedItem
 {
     Q_OBJECT
+
+    Q_PROPERTY(int textHeight READ textHeight NOTIFY textHeightChanged)
 
 public:
     explicit MarkDownViewer(QQuickItem *parent = 0);
     ~MarkDownViewer();
 
     Q_INVOKABLE void parseMarkDown(const QString &text);
-    void paint(QPainter *painter);
 
-    void update(const QRect &rect = QRect());
+    void    paint(QPainter *painter);
+    int     textHeight();
 
-protected slots:
-    void    resizeEditor();
+signals:
+    void textHeightChanged();
 
 protected:
     QTextDocument *mdDocument;
-    QTextEdit *textEditor;
 };
 
 #endif // MARKDOWNVIEWER_H
